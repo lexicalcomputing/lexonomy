@@ -6,8 +6,8 @@ INSTALL_JS=bundle.js bundle.css bundle.static.js
 SOURCE_PY=lexonomy.py ops.py bottle.py media.py
 SOURCE_CONF=siteconfig.json.template package.json rollup.config.js config.js.template
 SOURCE_WEBDIRS=adminscripts css dictTemplates docs furniture img js libs widgets
-SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html website/index.browsercompile.html
-INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html website/index.browsercompile.html
+SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
+INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
 SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md
 
 build: website/bundle.js
