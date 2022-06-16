@@ -283,17 +283,18 @@ def skeget_corpora(user):
 @authDict(["canEdit"])
 def skeget_xampl(dictID, user, dictDB, configs):
     url = request.query.url
-    url += "/first"
+    url += "/view"
     url += "?corpname=" + urllib.parse.quote_plus(request.query.corpus)
     url += "&username=" + request.query.username
     url += "&api_key=" + request.query.apikey
     url += "&format=json"
     if request.query.querytype == "skesimple":
-        url += "&iquery=" + urllib.parse.quote_plus(request.query.query)
+        url += "&q=q[lemma=\"" + urllib.parse.quote_plus(request.query.query) + "\"]"
     else:
-        url += "&queryselector=cqlrow&cql=" + urllib.parse.quote_plus(request.query.query)
+        url += "&q=q" + urllib.parse.quote_plus(request.query.query)
     url += "&viewmode=sen"
-    url += "&gdex_enabled=1"
+    url += "&q=e30"
+    url += "&async=0"
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
