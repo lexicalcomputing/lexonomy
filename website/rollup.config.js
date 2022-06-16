@@ -37,7 +37,8 @@ export default [{
     file: 'bundle.static.js',
     format: 'iife',
     strict: false
-  }
+  },
+  plugins: [uglify()]
 }, {
   input: "app.css.js",
   output: {
