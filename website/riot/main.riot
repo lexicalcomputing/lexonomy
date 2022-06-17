@@ -1,8 +1,8 @@
 <main class="main">
-   <loading-overlay if={authData.isCheckingAuth || dictData.isSiteconfigLoading} fullscreen=1/>
+   <loading-overlay if={state.isLoading} fullscreen=1/>
    <app-header/>
    <div class="contentWrapper">
-      <div if={!authData.isCheckingAuth && !dictData.isSiteconfigLoading}
+      <div if={!state.isLoading}
             is={ state.content }
             class="container content row {['dict-edit', 'dict-public-entry', 'dict-public'].includes(state.content) ? 'wideContainer' : ''}"
             token={state.token}
@@ -27,9 +27,11 @@
    <script>
       export default {
          state: {
+            isLoading: true,
             content: '',
             subPage: 'login',
-            token: ''
+            token: '',
+            isShowingDictionary: false
          },
          bindings: [["auth", "authChanged", "update"],
                     ["auth", "checkingAuthChanged", "onCheckingAuthChange"],
@@ -47,7 +49,8 @@
             if(!this.authData.authorized && this.needAuthorization(content, subPage)){
                this.update({
                   subPage: 'login',
-                  content: 'main-page'
+                  content: 'main-page',
+                  isShowingDictionary: false
                })
             } else {
                storeParams && this.store.open(...storeParams)
@@ -59,7 +62,8 @@
 
                this.update(Object.assign({
                   content: content,
-                  subPage: subPage || ''
+                  subPage: subPage || '',
+                  isShowingDictionary: !!storeParams
                }, updateParams || {}))
             }
          },
@@ -162,6 +166,12 @@
             route('/', () => {
                this.goTo('main-page', 'login')
             })
+         },
+
+         onBeforeUpdate(){
+            this.state.isLoading = this.authData.isCheckingAuth
+                  || this.dictData.isSiteconfigLoading
+                  || (this.state.isShowingDictionary && !this.dictData.isDictionaryLoaded)
          }
       }
    </script>
