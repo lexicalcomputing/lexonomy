@@ -172,8 +172,6 @@
 
    <script>
       export default {
-         bindings: [["store", "dictionaryChanged", "loadConfig"]],
-
          state: {
             isLoading: true,
             isSaving: false,
@@ -191,7 +189,7 @@
             }
          },
 
-         loadConfig(){
+         onMounted(){
             this.store.loadDictionaryConfig("ske")
                   .done(response => {
                      this.state.data = response.content
@@ -267,12 +265,6 @@
                      M.updateTextFields()
                      M.textareaAutoResize($('#xampl_template'))
                   })
-         },
-
-         onMounted() {
-            if(this.dictData.isDictionaryLoaded){
-               this.loadConfig()
-            }
          },
 
          onUpdated() {
