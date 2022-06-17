@@ -293,7 +293,7 @@ def skeget_xampl(dictID, user, dictDB, configs):
     else:
         url += "&q=q" + urllib.parse.quote_plus(request.query.query)
     url += "&viewmode=sen"
-    url += "&q=e1000"
+    url += "&q=e500"
     url += "&async=0"
     if request.query.fromp:
         url += "&" + request.query.fromp
