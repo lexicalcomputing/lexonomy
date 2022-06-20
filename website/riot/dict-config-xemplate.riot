@@ -87,7 +87,7 @@
             delete this.state.data._xsl
             delete this.state.data._css
             this.update({override: false})
-            XemplateDesigner.start(this.dictData.dictConfigs.xema, this.state.data, this.dictData.dictId)
+            this.xemplateDesigner.start(this.dictData.dictConfigs.xema, this.state.data, this.dictData.dictId)
          },
 
          exampleXsl() {
@@ -115,6 +115,7 @@ div.myEntry span.myHeadword {font-weight: bold}
          },
 
          onMounted() {
+            this.xemplateDesigner = new XemplateDesignerClass()
             this.store.loadDictionaryConfig("xemplate")
                   .done(response => {
                      this.state.data = response.content
@@ -132,14 +133,14 @@ div.myEntry span.myHeadword {font-weight: bold}
 
          onUpdated() {
             if (this.dictData.dictConfigs.xema && this.state.data != {} && !this.state.override) {
-               XemplateDesigner.start(this.dictData.dictConfigs.xema, this.state.data, this.dictData.dictId)
+               this.xemplateDesigner.start(this.dictData.dictConfigs.xema, this.state.data, this.dictData.dictId)
             }
          },
 
          getConfigData() {
             var newData = {}
-            if (XemplateDesigner.xemplate) {
-               newData = XemplateDesigner.xemplate
+            if (this.xemplateDesigner.xemplate) {
+               newData = this.xemplateDesigner.xemplate
             }
             if (this.state.override) {
                if ($('#editor_css').val() != "") newData._css = $('#editor_css').val()

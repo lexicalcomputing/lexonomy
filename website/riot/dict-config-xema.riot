@@ -109,7 +109,7 @@
             delete this.state.data._dtd
             delete this.state.data._newXml
             this.update({override: false})
-            XemaDesigner.start(this.state.data)
+            this.xemaDesigner.start(this.state.data)
          },
 
          exampleDoc() {
@@ -141,6 +141,7 @@
          },
 
          onMounted() {
+            this.xemaDesigner = new XemaDesignerClass()
             this.store.loadDictionaryConfig("xema")
                   .done(response => {
                      this.state.data = response.content
@@ -154,20 +155,20 @@
                         M.textareaAutoResize($('#editor_xml'))
                         M.textareaAutoResize($('#editor_dtd'))
                      } else {
-                        XemaDesigner.start(this.state.data)
+                        this.xemaDesigner.start(this.state.data)
                      }
                   })
          },
 
          getConfigData() {
             var newData = {}
-            if (XemaDesigner.xema.elements) {
-               for(var el in XemaDesigner.xema.elements){
-                  for(var prop in XemaDesigner.xema.elements[el]){
-                     if(prop.indexOf("_")==0) delete XemaDesigner.xema.elements[el][prop]
+            if (this.xemaDesigner.xema.elements) {
+               for(var el in this.xemaDesigner.xema.elements){
+                  for(var prop in this.xemaDesigner.xema.elements[el]){
+                     if(prop.indexOf("_")==0) delete this.xemaDesigner.xema.elements[el][prop]
                   }
                }
-               newData = XemaDesigner.xema
+               newData = this.xemaDesigner.xema
             }
             if (this.state.override) {
                if ($('#editor_doc').val() != "") newData._xonomyDocSpec = $('#editor_doc').val()
