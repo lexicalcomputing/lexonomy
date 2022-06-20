@@ -22,9 +22,8 @@ div#editor.designer button.iconAccept { background-image: url(./furniture/accept
 div#editor.designer button.iconAdd { background-image: url(./furniture/add.png);}
 div#editor.designer button.iconArrowUp { background-image: url(./furniture/arrow_up.png);}
 div#editor.designer button.iconArrowDown { background-image: url(./furniture/arrow_down.png);}
-div#editor.designer label.radio { position: relative; top: -3px; }
-div#editor.designer label.radio input { position: relative; top: 3px;}
-div#editor.designer label {cursor: pointer; margin-right: 10px; white-space: nowrap;}
+div#editor.designer label.radio input { position: relative; top: 1px;margin-right: 5px;}
+div#editor.designer label {cursor: pointer; margin-right: 15px; white-space: nowrap;}
 div#editor.designer label:hover { background-color: #f7f9ea; padding: 5px 0px 5px 0px; }
 div#editor.designer label.big {font-weight: bold; font-size: 1rem;}
 div#editor.designer label.readonly {color: #999999; cursor: default;}
