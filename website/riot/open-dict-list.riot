@@ -42,6 +42,7 @@
          </thead>
          <tbody>
             <tr each={(row, idx) in state.visibleDictionaries}
+                  key={row.id}
                   id="r_{idx}">
                <td>
                   <a href="#/{row.id}">
@@ -56,7 +57,7 @@
                   </span>
                </td>
                <td>
-                  <span id="l_{idx}">
+                  <span>
                      {row.size}
                   </span>
                </td>
@@ -81,6 +82,12 @@
          </tbody>
       </table>
    </div>
+
+   <style>
+      table td:nth-child(5){
+         white-space: nowrap;
+      }
+   </style>
 
    <script>
       export default {
