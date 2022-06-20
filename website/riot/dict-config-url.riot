@@ -35,11 +35,6 @@
    <div>
       <span id="error"
             style="display:none">This URL is already taken.</span>
-      <span id="success"
-            style="display:none">
-         Your dictionary has been moved to a new URL.
-         <a href="" id="newlink">Go to new dictionary URL</a>.
-      </span>
    </div>
 
    <script>
@@ -50,8 +45,8 @@
             if (newurl != "" && $('#url').hasClass('valid')) {
                $.post(window.API_URL + this.dictData.dictId + "/move.json", {url: newurl}, (response) => {
                   if (response.success) {
-                     $('#success').show()
-                     $('#newlink').attr('href', '#/' + newurl)
+                     route('/' + newurl)
+                     M.toast({html: `Dictionary URL has been changed.`})
                   } else {
                      $('#error').show()
                   }
