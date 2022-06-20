@@ -90,7 +90,7 @@
                      </label>
                   </td>
                   <td>
-                     <a class="btn btn-floating delete-user"
+                     <a class="btn btn-floating right"
                            onclick={ doDeleteUser.bind(this, idx) }>
                         <i class="material-icons">delete</i>
                      </a>
@@ -108,20 +108,15 @@
          </div>
          <br><br>
          <dict-config-buttons save-data={saveData}></dict-config-buttons>
-         <div id="userConfigError"></div>
+         <div if={state.errorMessage} class="message messageError">
+            <raw-html content={state.errorMessage}></raw-html>
+         </div>
       </div>
    </template>
 
    <style>
-      .user-checkbox {
-         padding-right: 2em;
-      }
-      .delete-user, .add-user {
-         float: right;
-      }
-      #userConfigError {
-         margin-left: 1em;
-         color: red;
+      .messageError{
+         margin-top: 1rem;
       }
    </style>
 
@@ -130,6 +125,7 @@
          state: {
             isLoading: true,
             isSaving: false,
+            errorMessage: '',
             data: {users: []}
          },
 
@@ -180,9 +176,12 @@
 
          saveData() {
             if (Object.values(this.state.data.users).find(row => row.canConfig) == undefined) {
-               $('#userConfigError').html('At least one user must have <i>Configure</i> permission.')
+               this.update({errorMessage: 'At least one user must have <i>Configure</i> permission.'})
+            } else if(Object.values(this.state.data.users).find(row => row.email == "")) {
+               this.update({errorMessage: 'Email must not be empty.'})
+            } else if (Object.values(this.state.data.users).find(row => !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
+               this.update({errorMessage: 'User should have assigned at least one privilege.'})
             } else {
-               $('#userConfigError').html('')
                let data = {}
                this.state.data.users.forEach(u => {
                   data[u.email] = {
@@ -192,7 +191,10 @@
                      canUpload: u.canUpload
                   }
                })
-               this.update({isSaving: true})
+               this.update({
+                  isSaving: true,
+                  errorMessage: ''
+               })
                this.store.updateDictionaryConfig('users', data)
                      .always(() => this.update({isSaving: false}))
             }
