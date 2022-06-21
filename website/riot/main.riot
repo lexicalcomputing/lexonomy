@@ -42,7 +42,8 @@
             if(this.authData.authorized){
                this.store.loadDictionaryList()
             }
-            route.start(true)
+            route.start()
+            route.exec()
          },
 
          goTo(content, subPage, storeParams, updateParams){
