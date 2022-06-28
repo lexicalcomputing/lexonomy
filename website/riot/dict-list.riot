@@ -3,7 +3,7 @@
    <template if={!dictData.isDictionaryListLoading}>
       <div if={dictData.dictionaryList.length}>
          <h1>Your dictionaries</h1>
-         <div style="display: flex; align-items: center; flex-wrap: wrap;">
+         <div class="topBar">
             <span if={dictData.dictionaryList.length}
                   class="searchBox input-field">
                   <i class="material-icons prefix grey-text">search</i>
@@ -12,7 +12,7 @@
                <i onclick={onClearFilterClick}
                   class="material-icons clearFilterIcon grey-text clickable">close</i>
             </span>
-            <span style="margin-left: auto;">
+            <span class="newDictionaryButton">
                <a href="#/make"
                      class="btn waves-effect waves-light">
                   <i class="material-icons left">add</i>
@@ -26,41 +26,42 @@
                   id="r_{idx}"
                   class="collection-item {dict.selected ? 'selected' : ''}"
                   key={dict.id}>
-               <div>
-                  <label if={dict.currentUserCanDelete}
-                           class="checkbox">
-                     <input id="chb_{idx}"
-                           type="checkbox"
-                           idx={idx}
-                           checked={dict.selected}
-                           onclick={onCheckboxClick}/>
-                     <span></span>
-                  </label>
+               <label if={dict.currentUserCanDelete}
+                        class="checkbox">
+                  <input id="chb_{idx}"
+                        type="checkbox"
+                        idx={idx}
+                        checked={dict.selected}
+                        onclick={onCheckboxClick}/>
+                  <span></span>
+               </label>
+               <span class="dict">
                   <a href="#/{ dict.id }"
-                        id="t_{idx}"
-                        class="title">{ dict.title }</a>
+                        id="t_{idx}">{ dict.title }</a>
                   <span if={ dict.lang }
                         class="dict-lang">{ dict.lang }</span>
-                  <span class="dict-lang grey-text">{ dict.size } entries</span>
+                  <span class="dict-size grey-text">{ dict.size } entries</span>
+               </span>
+               <span class="secondary-content">
                   <a if={ dict.currentUserCanDelete }
-                        class="secondary-content clickable"
+                        class="clickable"
                         title="delete dictionary"
                         onclick={ doDeleteDict.bind(this, dict.id) }>
                      <i class="material-icons">delete</i>
                   </a>
-                  <a class="secondary-content clickable"
+                  <a class="clickable"
                         title="clone dictionary"
                         onclick={ doCloneDict.bind(this, dict.id) }>
                      <i class="material-icons">content_copy</i>
                   </a>
                   <a  if={ dict.currentUserCanDelete }
-                        class="secondary-content clickable"
+                        class="clickable"
                         title="config dictionary"
                         onclick={ doConfigDict.bind(this, dict.id) }>
                      <i class="material-icons">settings</i>
                   </a>
                   <a if={ dict.currentUserCanEdit }
-                        class="secondary-content clickable"
+                        class="clickable"
                         data-dict-id={ dict.id }
                         title="edit dictionary"
                         onclick={ doEditDict.bind(this, dict.id) }>
@@ -108,6 +109,14 @@
    </template>
 
    <style>
+      .topBar{
+         display: flex;
+         align-items: center;
+         flex-wrap: wrap;
+      }
+      .newDictionaryButton{
+         margin-left: auto;
+      }
       .searchBox{
          max-width: 200px;
          display: inline-block;
@@ -121,26 +130,20 @@
          right: 5px;
          top: 11px;
       }
-      .dict-lang {
+      .dict-lang,
+      .dict-size {
          padding-left: 0.5em;
       }
       ul li{
          position: relative;
+         display: flex;
+         justify-content: space-between;
       }
       ul li:hover{
          background-color: #f8f8f8f2!important;
       }
       ul li.selected{
          background-color: #fffde7 !important;
-      }
-      .title{
-         padding-left: 35px;
-      }
-      .checkbox{
-         display: inline-block;
-         vertical-align: middle;
-         position: absolute;
-         left: 20px;
       }
       .checkbox span{
          opacity: 0.2;
@@ -150,6 +153,9 @@
       }
       .checkbox input:checked + span{
          opacity: 1;
+      }
+      .dict{
+         flex: 1;
       }
       .deleteAllBox{
          text-align: center;
