@@ -2,6 +2,12 @@
    <loading-overlay if={dictData.isDictionaryListLoading || dictData.isDictionaryLoading}/>
    <dict-nav links={[["edit", "Edit"]]}/>
    <h1 class="header">
+      <span class="entryListMenuButton">
+         <button class="btn sidenav-trigger btn-floating pulse"
+               data-target="entryListSidenav">
+            <i class="material-icons">menu</i>
+         </button>
+      </span>
       { dictData.title }
       <span if={dictData.entryCount}
             class="totalEntries">total {dictData.entryCount} entries</span>
@@ -17,12 +23,11 @@
             </li>
          </ul>
       </div>
-      <div id="dictEditContainer" >
-         <div class="dictLeftCol entryList"
+      <div id="dictEditContainer">
+         <div id="entryListSidenav"
+               class="entryListContainer"
                style="width: max({dictData.config.flagging.flags.length ? '25vw' : '20vw'}, 250px);">
-            <div if={dictData.isEntryListLoading}>
-               <loading-overlay/>
-            </div>
+            <loading-overlay if={dictData.isEntryListLoading}/>
             <template if={dictData.isEntryListLoaded}>
                <dict-entry-filter search-func={store.searchEntryList.bind(store)}/>
                <div if={dictData.entryCount > dictData.entryList.length}
@@ -73,7 +78,7 @@
          </div>
          <div class="resizeHandle"
                onmousedown={onResizeHandleMouseDown}></div>
-         <div class="dictRightCol">
+         <div class="dictEditEntry">
             <dict-edit-entry></dict-entry-edit>
          </div>
       </div>
@@ -111,12 +116,7 @@
          max-height: 80vh;
          overflow-y: auto;
       }
-      .dictLeftCol{
-         min-width: 200px;
-         min-height: 50vh;
-         position: relative;
-      }
-      .dictRightCol{
+      .dictEditEntry{
          min-width: 500px;
          flex: 1;
       }
@@ -192,6 +192,33 @@
          min-width: 30px;
          text-align: right;
       }
+      .entryListMenuButton{
+         margin-right: 10px;
+         display: none;
+         right: unset;
+         left: 23px;
+      }
+      :host.isMobile .entryListContainer{
+         width: min(400px, 85vw)!important;
+      }
+      :host.isMobile .entryListMenuButton{
+         display: inline-block;
+      }
+      :host.isMobile .resizeHandle{
+         display: none;
+      }
+      :host.isMobile .entry-list {
+         max-height: calc(100vh - 170px);
+      }
+      :host.isMobile dict-entry-filter{
+         padding: 10px;
+      }
+      :host.isMobile dict-entry-filter .filterForm{
+         flex-direction: column;
+      }
+      :host.isMobile dict-entry-filter .filterForm .searchBox{
+         width: auto;
+      }
    </style>
 
    <script>
@@ -203,9 +230,11 @@
 
          state: {
             focused: false,
+            isMobile: false,
             size: 10,
             mousePos: null,
-            cursorPosition: null
+            cursorPosition: null,
+            timer: null
          },
 
          getFlagStyle(flag){
@@ -217,6 +246,7 @@
          onHeadwordClick(entryId, evt){
             if(!window.editorNeedsSaving(evt)){
                this.store.changeEntryId(entryId)
+               this.closeSidenav()
             }
          },
 
@@ -225,6 +255,7 @@
             if(!window.editorNeedsSaving(evt)){
                this.onDocumentClick(evt)
                this.store.changeEntryId(entryId)
+               this.closeSidenav()
             }
          },
 
@@ -255,7 +286,7 @@
          },
 
          onDocumentClick(evt){
-            let entryList = $(".entryList")[0]
+            let entryList = $(".entryListContainer")[0]
             if(entryList && evt.target.parentNode){ // no parent -> probably detached element by comoponent update()
                let inComponent = entryList.contains(evt.target)
                if(inComponent || inComponent != this.state.focused){
@@ -285,6 +316,7 @@
                            if(entry){
                               this.store.changeEntryId(entry.id)
                               this.updateCursor()
+                              this.closeSidenav()
                            }
                         }
                      }
@@ -312,11 +344,13 @@
                   $("#searchbox").focus()
                } else if(evt.keyCode == 37){  // left
                   if(!this.state.focused){
-                     this.update({focused: true})
+                     this.state.focused = true
+                     this.state.isMobile && this.openSidenav()
                      document.getElementById("container").blur()
                   }
                } else if(evt.keyCode == 39){  // right
-                  this.update({focused: false})
+                  this.state.focused = false
+                  this.state.isMobile && this.closeSidenav()
                   $("#container").focus()
                } else if(evt.keyCode == 38){  // up
                   let previousEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) - 1]
@@ -411,8 +445,8 @@
          resizeColumn(evt){
             const distance = evt.x - this.state.mousePos
             this.state.mousePos = evt.x
-            let leftColWidth = $(".dictLeftCol").width()
-            $(".dictLeftCol").css("width", leftColWidth + distance + "px")
+            let leftColWidth = $(".entryListContainer").width()
+            $(".entryListContainer").css("width", leftColWidth + distance + "px")
          },
 
          setCursorByEntryId(){
@@ -425,22 +459,68 @@
             }
          },
 
+         onResizeDebounced(){
+            this.state.timer && clearTimeout(this.state.timer)
+            this.state.timer = setTimeout(() => {
+                clearTimeout(this.state.timer)
+                this.refreshEntryListMenu()
+            }, 200)
+         },
+
+         closeSidenav(){
+            let sidenav = M.Sidenav.getInstance($('#entryListSidenav')[0])
+            if(sidenav){
+               sidenav.close()
+               this.state.focused = false
+            }
+         },
+
+         openSidenav(){
+            let sidenav = M.Sidenav.getInstance($('#entryListSidenav')[0])
+            sidenav && sidenav.open()
+         },
+
+         refreshEntryListMenu(){
+            let isMobile = $(window).width() < 900
+            this.state.isMobile = isMobile
+            $(this.root).toggleClass("isMobile", isMobile)
+            let sidenav = $("#entryListSidenav")
+            sidenav.toggleClass("sidenav", isMobile)
+            if(isMobile){
+               sidenav.css("transform", "")
+               if(sidenav[0]
+                  && this.state.isMobile
+                  && !M.Sidenav.getInstance(sidenav[0])){
+                  sidenav.sidenav()
+               }
+            } else {
+               sidenav.css("transform", "translateX(0px)")
+            }
+         },
+
          onMounted(){
             document.addEventListener('click', this.onDocumentClick)
             document.addEventListener('keydown', this.onDocumentKeyDown)
+            window.addEventListener('resize', this.onResizeDebounced)
             if(this.dictData.isEntryListLoaded){
                this.setCursorByEntryId()
             } else {
                this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
             }
+            this.refreshEntryListMenu()
+            setTimeout(() => {$(".sidenav-trigger").removeClass("pulse")}, 3000)
          },
 
          onBeforeUnmount(){
             document.removeEventListener('click', this.onDocumentClick)
             document.removeEventListener('keydown', this.onDocumentKeyDown)
+            window.removeEventListener('resize', this.onResizeDebounced)
          },
 
          onUpdated() {
+            if($('#entryListSidenav')[0] && !M.Sidenav.getInstance($('#entryListSidenav')[0])){
+               this.refreshEntryListMenu()
+            }
             this.updateCursor()
          }
       }

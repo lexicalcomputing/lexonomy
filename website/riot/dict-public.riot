@@ -29,7 +29,7 @@
          </div>
          <template if={dictData.public || dictData.userAccess}>
             <div class="sectionDivider"></div>
-            <div class="firstRowCol">
+            <div class="firstRowCol search">
                <h3>Search</h3>
                <dict-entry-filter search-func={search}/>
                <div if={!state.isEntryListLoading && state.showFoundEntries && dictData.entryList}

@@ -63,12 +63,11 @@
             </span>
          </span>
          <a href="#"
-               data-target="mobile-demo"
+               data-target="nav-mobile"
                class="sidenav-trigger">
             <i class="material-icons">menu</i>
          </a>
-         <ul id="nav-mobile"
-               class="right hide-on-med-and-down">
+         <ul class="right hide-on-med-and-down">
             <li if={ authData.authorized && dictData.isDictionaryLoaded }>
                <a class="dropdown-trigger"
                      href="#/"
@@ -97,28 +96,35 @@
       </div>
    </nav>
 
-   <ul class="sidenav">
+   <ul id="nav-mobile"
+         class="sidenav">
       <template if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess} >
          <li class="sideNavSection">
             <span>Dictionary</span>
          </li>
          <li if={ dictData.userAccess.canEdit }>
-            <a href="#/{ dictData.dictId }">View</a>
+            <a href="#/{ dictData.dictId }"
+                  class="sidenav-close">View</a>
          </li>
          <li if={ dictData.userAccess.canEdit }>
-            <a href="#/{ dictData.dictId }/edit">Edit</a>
+            <a href="#/{ dictData.dictId }/edit"
+                  class="sidenav-close">Edit</a>
          </li>
          <li if={ dictData.userAccess.canConfig }>
-            <a href="#/{ dictData.dictId }/config">Configure</a>
+            <a href="#/{ dictData.dictId }/config"
+                  class="sidenav-close">Configure</a>
          </li>
          <li if={ dictData.userAccess.canDownload }>
-            <a href="#/{ dictData.dictId }/download">Download</a>
+            <a href="#/{ dictData.dictId }/download"
+                  class="sidenav-close">Download</a>
          </li>
          <li if={ dictData.userAccess.canUpload }>
-            <a href="#/{ dictData.dictId }/upload">Upload</a>
+            <a href="#/{ dictData.dictId }/upload"
+                  class="sidenav-close">Upload</a>
          </li>
          <li>
-            <a href="#/{ dictData.dictId }/links">Links</a>
+            <a href="#/{ dictData.dictId }/links"
+                  class="sidenav-close">Links</a>
          </li>
       </template>
       <template if={ !authData.authorized }>
@@ -138,10 +144,12 @@
          </li>
          <li>
             <a href="#/"
+                  class="sidenav-close"
                   onclick={ doLogout }>Log out</a>
          </li>
          <li>
-            <a href="#/userprofile">Your profile</a>
+            <a href="#/userprofile"
+                  class="sidenav-close">Your profile</a>
          </li>
       </template>
    </ul>
@@ -170,6 +178,7 @@
          top: 20px
       }
       .sidenav-trigger i{
+         color: #000;
          font-size: 36px;
       }
       .sideNavSection{
@@ -239,7 +248,7 @@
 
          onMounted(){
             $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
-            $('.sidenav').sidenav()
+            $('#nav-mobile').sidenav()
          }
       }
    </script>

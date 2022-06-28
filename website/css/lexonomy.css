@@ -22,8 +22,10 @@ app-footer{
 .nav-breadcrumbs{
    box-shadow: none;
    background-color: unset;
+   min-height: 50px;
+   line-height: 1.3rem;
    height: 50px;
-   line-height: 50px;
+   padding-top: 15px;
 }
 .nav-breadcrumbs .nav-wrapper{
    position: absolute;
@@ -37,6 +39,31 @@ app-footer{
    text-decoration: none;
    pointer-events: none;
    cursor: default;
+}
+.loadingAnimation{
+   display: inline-block;
+   width: 1.5em;
+ }
+.loadingAnimation i{
+   display: inline-block;
+   width: 1.5em;
+   overflow: hidden;
+   animation: loadingFrames linear 0.7s;
+   animation-iteration-count: infinite;
+   -webkit-animation: loadingFrames linear 0.7s;
+   -webkit-animation-iteration-count: infinite;
+}
+
+@keyframes loadingFrames{
+   0% {
+      max-width: 0;
+   }
+   50% {
+      max-width: 1.5em;
+   }
+   100% {
+      max-width: 0px;
+   }
 }
 
 /* MATERIALIZE TWEAKS  */
@@ -108,6 +135,7 @@ h6{
    font-size: 0.9rem;
    height: 2.25rem;
    line-height: 2.25rem;
+   white-space: nowrap;
 }
 .btn-floating{
    width: 2.5rem;
@@ -388,7 +416,6 @@ nav .brand-logo{
    font-size: initial;
 }
 .sidenav-trigger{
-   color: #000;
    text-decoration: none;
 }
 
@@ -493,8 +520,166 @@ span.badge{
 
 /* responsivity  */
 
+.container{
+   width: unset;
+}
+
 @media screen and (max-width: 1500px) {
    .container.wideContainer{
       width: 95vw;
+   }
+}
+
+@media screen and (max-width: 1200px) {
+   .container{
+      max-width: 98vw;
+   }
+}
+
+@media screen and (max-width: 1000px){
+   .nav-breadcrumbs .nav-wrapper{
+      left: 15px;
+   }
+   .nav-wrapper .breadcrumb:before{
+      margin: 0;
+   }
+}
+
+@media screen and (max-width: 900px){
+   h1{
+      font-size: 2.6rem;
+      margin: 0.9rem 0 0.8rem -0.5rem;
+   }
+   h2{
+      font-size: 2.1rem;
+      margin: 0.8rem 0 0.7rem -0.5rem;
+   }
+   h3{
+      font-size: 1.7rem;
+      margin: 0.7rem  0 0.6rem -0.5rem;
+   }
+   h4{
+      font-size: 1.5rem;
+      margin: 0.6rem  0 0.5rem -0.5rem;
+   }
+   h5{
+      font-size: 1.2rem;
+      margin: 0.5rem  0 0.4rem -0.5rem;
+   }
+   h6{
+      font-size: 1.1rem;
+      margin: 0.4rem  0 0.3rem -0.5rem;
+   }
+   dict-list .dict-size{
+      display: none;
+   }
+   #root div[is="dict-public"] .firstRowContainer{
+      flex-direction: column;
+   }
+   #root div[is="dict-public"] .description{
+      order: 2;
+   }
+   #root div[is="dict-public"] .sectionDivider{
+      display: none;
+   }
+   #root div[is="dict-public"] .search{
+      order: 1;
+   }
+}
+
+@media screen and (max-width: 700px){
+   h1{
+      font-size: 2.3rem;
+      margin: 0.9rem 0 0.8rem -0.5rem;
+   }
+   h2{
+      font-size: 1.9rem;
+      margin: 0.8rem 0 0.7rem -0.5rem;
+   }
+   h3{
+      font-size: 1.5rem;
+      margin: 0.7rem  0 0.6rem -0.5rem;
+   }
+   h4{
+      font-size: 1.4rem;
+      margin: 0.6rem  0 0.5rem -0.5rem;
+   }
+   h5{
+      font-size: 1.2rem;
+      margin: 0.5rem  0 0.4rem -0.5rem;
+   }
+   h6{
+      font-size: 1.1rem;
+      margin: 0.4rem  0 0.3rem -0.5rem;
+   }
+   #root .container{
+      max-width: 96vw;
+   }
+   #root .collection-item {
+      padding-left: 0.3rem;
+      padding-right: 0.3rem;
+   }
+   dict-list .checkbox{
+      display: none;
+   }
+   .columnContainer{
+      flex-wrap: wrap;
+   }
+}
+
+@media screen and (max-width: 600px){
+   .columnContainer > div{
+      width: 100%;
+   }
+   #root h1,
+   #root h2,
+   #root h3,
+   #root h4,
+   #root h5,
+   #root h6{
+      margin-left: 0;
+   }
+}
+
+@media screen and (max-width: 500px) {
+   #root .container{
+      padding-left: 0;
+   }
+   #root dict-list .topBar{
+      flex-direction: column;
+      align-items: normal;
+   }
+   #root dict-list .topBar .newDictionaryButton{
+      margin-left: unset;
+   }
+   dict-list .collection-item{
+      flex-direction: column;
+   }
+   dict-list .secondary-content{
+      height: 25px;
+      margin-top: 5px;
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+   }
+}
+
+@media screen and (max-width: 400px) {
+   #root .fontSize {
+      display: none;
+   }
+   #root .brand-logo{
+      right: 0;
+      left: unset;
+      padding-right: 20px;
+      transform: none;
+   }
+}
+
+@media screen and (max-width: 350px) {
+   #root .site-logo {
+      height: 35px;
+      position: relative;
+      top: 11px;
    }
 }
