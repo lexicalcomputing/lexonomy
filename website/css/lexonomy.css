@@ -659,8 +659,6 @@ span.badge{
       height: 25px;
       margin-top: 5px;
       display: flex;
-      flex-direction: row-reverse;
-      justify-content: flex-end;
    }
 }
 

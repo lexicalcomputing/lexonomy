@@ -43,16 +43,12 @@
                   <span class="dict-size grey-text">{ dict.size } entries</span>
                </span>
                <span class="secondary-content">
-                  <a if={ dict.currentUserCanDelete }
+                  <a if={ dict.currentUserCanEdit }
                         class="clickable"
-                        title="delete dictionary"
-                        onclick={ doDeleteDict.bind(this, dict.id) }>
-                     <i class="material-icons">delete</i>
-                  </a>
-                  <a class="clickable"
-                        title="clone dictionary"
-                        onclick={ doCloneDict.bind(this, dict.id) }>
-                     <i class="material-icons">content_copy</i>
+                        data-dict-id={ dict.id }
+                        title="edit dictionary"
+                        onclick={ doEditDict.bind(this, dict.id) }>
+                     <i class="material-icons">edit</i>
                   </a>
                   <a  if={ dict.currentUserCanDelete }
                         class="clickable"
@@ -60,12 +56,16 @@
                         onclick={ doConfigDict.bind(this, dict.id) }>
                      <i class="material-icons">settings</i>
                   </a>
-                  <a if={ dict.currentUserCanEdit }
+                  <a class="clickable"
+                        title="clone dictionary"
+                        onclick={ doCloneDict.bind(this, dict.id) }>
+                     <i class="material-icons">content_copy</i>
+                  </a>
+                  <a if={ dict.currentUserCanDelete }
                         class="clickable"
-                        data-dict-id={ dict.id }
-                        title="edit dictionary"
-                        onclick={ doEditDict.bind(this, dict.id) }>
-                     <i class="material-icons">edit</i>
+                        title="delete dictionary"
+                        onclick={ doDeleteDict.bind(this, dict.id) }>
+                     <i class="material-icons">delete</i>
                   </a>
                </div>
             </li>
