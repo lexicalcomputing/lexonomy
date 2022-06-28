@@ -1708,7 +1708,7 @@ Xonomy.setFocus=function(htmlID, what){
 };
 Xonomy.key=function(event){
 	if(!Xonomy.notKeyUp) {
-		if(!event.shiftKey && !$("#xonomyBubble").length>0 ) {
+		if(!event.shiftKey && !event.ctrlKey && !event.altKey && !$("#xonomyBubble").length>0 ) {
 			if(event.which==27) { //escape key
 				event.preventDefault();
 				event.stopImmediatePropagation();

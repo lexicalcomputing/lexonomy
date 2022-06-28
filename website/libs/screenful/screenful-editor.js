@@ -57,7 +57,7 @@ Screenful.Editor={
     $("<span id='errorMessage' style='display: none;'></span>").appendTo($toolbar);
     if(!Screenful.Editor.singleton) {
       if(Screenful.Editor.createUrl) {
-    		$("<button id='butNew' title='Ctrl + Shift + N' class='btn btn-secondary'>"+Screenful.Loc.new+"<i class='material-icons right'>add<i></button></button>").appendTo($toolbar).on("click", Screenful.Editor.new);
+    		$("<button id='butNew' title='Ctrl + Alt + N or Ctrl + Cmd + N' class='btn btn-secondary'>"+Screenful.Loc.new+"<i class='material-icons right'>add<i></button></button>").appendTo($toolbar).on("click", Screenful.Editor.new);
     		$("<span class='divider'></span>").appendTo($toolbar);
       }
       //$("<span id='idlabel'>ID</span>").appendTo($toolbar);
@@ -72,10 +72,10 @@ Screenful.Editor={
   		$("<button id='butOpen' class='btn btn-secondary'><i class='material-icons'>send</i></button>").appendTo($toolbar).on("click", Screenful.Editor.open);
   		$("<span class='divider'></span>").appendTo($toolbar);
   	}
-    $("<button id='butSave' title='Ctrl + Shift + S' class='btn btn-secondary'>"+Screenful.Loc.save+"<span class='star' style='display: none'>*</span><i class='material-icons right'>save<i></button>").appendTo($toolbar).on("click", Screenful.Editor.save);
+    $("<button id='butSave' title='Ctrl + Alt + S or Ctrl + Cmd + S' class='btn btn-secondary'>"+Screenful.Loc.save+"<span class='star' style='display: none'>*</span><i class='material-icons right'>save<i></button>").appendTo($toolbar).on("click", Screenful.Editor.save);
     if(Screenful.Editor.viewer) {
-  		$("<button id='butEdit' title='Ctrl + Shift + E' class='btn btn-secondary'>"+Screenful.Loc.edit+"<i class='material-icons right'>edit<i></button>").appendTo($toolbar).on("click", Screenful.Editor.edit);
-  		$("<button id='butView' title='Ctrl + Shift + E' class='btn btn-secondary'>"+Screenful.Loc.cancel+"<i class='material-icons right'>cancel<i></button>").appendTo($toolbar).on("click", Screenful.Editor.view);
+  		$("<button id='butEdit' title='Ctrl + Alt + E or Ctrl + Cmd + E' class='btn btn-secondary'>"+Screenful.Loc.edit+"<i class='material-icons right'>edit<i></button>").appendTo($toolbar).on("click", Screenful.Editor.edit);
+  		$("<button id='butView' title='Ctrl + Alt + E or Ctrl + Cmd + E' class='btn btn-secondary'>"+Screenful.Loc.cancel+"<i class='material-icons right'>cancel<i></button>").appendTo($toolbar).on("click", Screenful.Editor.view);
   	}
     if(!Screenful.Editor.singleton) $("<button id='butNonew' class='btn btn-secondary'>"+Screenful.Loc.cancel+"</button>").appendTo($toolbar).on("click", Screenful.Editor.nonew);
     if(Screenful.Editor.leaveUrl) $("<button id='butLeave' class='btn btn-secondary'>"+Screenful.Loc.cancel+"</button>").appendTo($toolbar).on("click", function(){window.location=Screenful.Editor.leaveUrl});

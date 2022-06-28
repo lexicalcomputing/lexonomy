@@ -18,7 +18,7 @@
          </ul>
       </div>
       <div id="dictEditContainer" >
-         <div class="dictLeftCol"
+         <div class="dictLeftCol entryList"
                style="width: max({dictData.config.flagging.flags.length ? '25vw' : '20vw'}, 250px);">
             <div if={dictData.isEntryListLoading}>
                <loading-overlay/>
@@ -255,7 +255,7 @@
          },
 
          onDocumentClick(evt){
-            let entryList = $(".entry-list")[0]
+            let entryList = $(".entryList")[0]
             if(entryList && evt.target.parentNode){ // no parent -> probably detached element by comoponent update()
                let inComponent = entryList.contains(evt.target)
                if(inComponent || inComponent != this.state.focused){
@@ -267,33 +267,63 @@
          },
 
          onDocumentKeyDown(evt){
-            if([38, 40, 33, 34, 13].includes(evt.keyCode)){
-               evt.preventDefault()
-               if(evt.keyCode == 38){
-                this.moveCursorUp(1)
-               } else if(evt.keyCode == 40){
-                   this.moveCursorDown(1)
-               } else if(evt.keyCode == 33){
-                   this.moveCursorUp(this.state.size) //pgUp
-               } else if(evt.keyCode == 34){
-                   this.moveCursorDown(this.state.size) // pgDown
-               } else if(evt.keyCode == 13){
-                  if(this.state.cursorPosition){
-                     let entry = this.dictData.entryList[this.state.cursorPosition - 1]
-                     if(entry){
-                        this.store.changeEntryId(entry.id)
-                        this.updateCursor()
+            if(this.state.focused){
+               if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
+                  if([38, 40, 33, 34, 13].includes(evt.keyCode)){
+                     evt.preventDefault()
+                     if(evt.keyCode == 38){
+                      this.moveCursorUp(1)
+                     } else if(evt.keyCode == 40){
+                         this.moveCursorDown(1)
+                     } else if(evt.keyCode == 33){
+                         this.moveCursorUp(this.state.size) //pgUp
+                     } else if(evt.keyCode == 34){
+                         this.moveCursorDown(this.state.size) // pgDown
+                     } else if(evt.keyCode == 13){
+                        if(this.state.cursorPosition){
+                           let entry = this.dictData.entryList[this.state.cursorPosition - 1]
+                           if(entry){
+                              this.store.changeEntryId(entry.id)
+                              this.updateCursor()
+                           }
+                        }
+                     }
+                  } else if(this.dictData.config.flagging.flags.length && this.state.cursorPosition){
+                     if(evt.keyCode == 46){
+                        this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, '')
+                     } else if(this.dictData.config.flagging.flags.map(f => f.key).includes(evt.key)){
+                        let flag = this.dictData.config.flagging.flags.find(f => f.key == evt.key)
+                        if(flag){
+                           this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, flag.name)
+                        }
                      }
                   }
                }
-            } else if(this.dictData.config.flagging.flags.length && this.state.cursorPosition){
-               if(evt.keyCode == 46){
-                  this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, '')
-               } else if(this.dictData.config.flagging.flags.map(f => f.key).includes(evt.key)){
-                  let flag = this.dictData.config.flagging.flags.find(f => f.key == evt.key)
-                  if(flag){
-                     this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, flag.name)
+            }
+
+            if((evt.ctrlKey || evt.metaKey) && evt.altKey){
+               if(evt.keyCode == 78){ // N
+                  $("#butNew:visible").click()
+               } else if(evt.keyCode == 83){  // S
+                  $("#butSave:visible").click()
+               } else if(evt.keyCode == 69){  // E
+                  $("#butEdit:visible").click()
+               } else if(evt.keyCode == 70){  // F
+                  $("#searchbox").focus()
+               } else if(evt.keyCode == 37){  // left
+                  if(!this.state.focused){
+                     this.update({focused: true})
+                     document.getElementById("container").blur()
                   }
+               } else if(evt.keyCode == 39){  // right
+                  this.update({focused: false})
+                  $("#container").focus()
+               } else if(evt.keyCode == 38){  // up
+                  let previousEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) - 1]
+                  previousEntry && this.store.changeEntryId(previousEntry.id)
+               } else if(evt.keyCode == 40){  // down
+                  let nextEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) + 1]
+                  nextEntry && this.store.changeEntryId(nextEntry.id)
                }
             }
          },
