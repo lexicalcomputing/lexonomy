@@ -269,11 +269,14 @@ def getmedia(dictID, query, user, dictDB, configs):
     res = media.get_images(configs, query)
     return {"images": res}
 
-@get(siteconfig["rootPath"] + "skeget/corpora")
-@auth
-def skeget_corpora(user):
+@get(siteconfig["rootPath"] + "<dictID>/skeget/corpora")
+@authDict([])
+def skeget_corpora(dictID, user, dictDB, configs):
     import base64
-    req = urllib.request.Request("https://api.sketchengine.eu/ca/api/corpora",
+    apiurl = "https://api.sketchengine.eu/"
+    if configs.get("kex") and configs["kex"].get("apiurl") != "":
+        apiurl = configs["kex"].get("apiurl").replace("bonito/run.cgi", "")
+    req = urllib.request.Request(apiurl + "/ca/api/corpora",
                                   headers = {"Authorization": "Basic " + base64.b64encode(str.encode(str(user['ske_username'])+':'+str(user['ske_apiKey']))).decode('ascii')})
     ske_response = urllib.request.urlopen(req)
     response.headers['Content-Type'] = ske_response.getheader('Content-Type')
