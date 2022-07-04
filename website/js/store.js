@@ -493,7 +493,7 @@ class StoreClass {
 
    loadCorpora(){
       return $.ajax({
-         url: `${window.API_URL}skeget/corpora`
+         url: `${window.API_URL}${this.data.dictId}/skeget/corpora`
       })
             .fail(response => {
                M.toast({html: "Could not load Sketch Engine corpora."})
