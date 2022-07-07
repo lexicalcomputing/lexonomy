@@ -242,8 +242,7 @@
                   fs.obj.score = fs.score
                   return fs.obj
                }).sort((a, b) => {
-
-                  return (a.score == b.score) ? a.title.localeCompare(b.title) : Math.sign(b.score - a.score)
+                  return (a.score == b.score) ? a.title.localeCompare(b.title, undefined, {numeric: true}) : Math.sign(b.score - a.score)
                })
             }
             this.update()
