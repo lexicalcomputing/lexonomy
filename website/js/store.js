@@ -193,6 +193,7 @@ class StoreClass {
       return $.ajax(`${window.API_URL}userdicts.json`)
             .done(response => {
                this.data.dictionaryList = response.dicts || []
+               this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
                this.data.isDictionaryListLoaded = true
                this.trigger("dictionaryListChanged")
             })
