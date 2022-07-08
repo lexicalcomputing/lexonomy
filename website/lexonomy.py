@@ -349,7 +349,7 @@ def skeget_defo(dictID, user, dictDB, configs):
     url += "&username=" + request.query.username
     url += "&api_key=" + request.query.apikey
     url += "&format=json"
-    url += "&iquery=" + ops.makeQuery(request.query.lemma)
+    url += "&iquery=" + urllib.parse.quote_plus(ops.makeQuery(request.query.lemma))
     url += "&viewmode=sen"
     if request.query.fromp:
         url += "&" + request.query.fromp
