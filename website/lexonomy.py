@@ -88,7 +88,7 @@ def authDict(checkRights, errorRedirect=False):
             for r in checkRights:
                 if not res.get(r, False):
                     if errorRedirect:
-                        redirect("/"+kwargs["dictID"])
+                        redirect("/#"+kwargs["dictID"])
                     else:
                         return res
             kwargs["user"] = res
