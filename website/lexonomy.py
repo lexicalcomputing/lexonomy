@@ -686,7 +686,7 @@ def downloadxml(dictID, user, dictDB, configs):
     if request.query.clean and request.query.clean == "true":
         clean = True
     response.content_type = "text/xml; charset=utf-8"
-    #response.set_header("Content-Disposition", "attachment; filename="+dictID+".xml")
+    response.set_header("Content-Disposition", "attachment; filename="+dictID+".xml")
     return ops.download(dictDB, dictID, configs, clean)
 
 @post(siteconfig["rootPath"]+"<dictID>/upload.html")
