@@ -1377,8 +1377,8 @@ def makeQuery(lemma):
     words = []
     for w in lemma.split(" "):
         if w != "":
-            words.append('[lc="'+w+'"+|+lemma_lc="'+w+'"]')
-    ret = re.sub(" ","+", lemma) + ";q=aword," + "".join(words) + ";q=p+0+0>0+1+[ws(\".*\",+\"definitions\",+\".*\")];exceptmethod=PREV-CONC"
+            words.append('[lc="'+w+'"|lemma_lc="'+w+'"]')
+    ret = "aword," + "".join(words)
     return ret
 
 def clearRefac(dictDB):
