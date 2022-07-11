@@ -349,7 +349,8 @@ def skeget_defo(dictID, user, dictDB, configs):
     url += "&username=" + request.query.username
     url += "&api_key=" + request.query.apikey
     url += "&format=json"
-    url += "&iquery=" + urllib.parse.quote_plus(ops.makeQuery(request.query.lemma))
+    url += "&q=" + urllib.parse.quote_plus(ops.makeQuery(request.query.lemma))
+    url += "&q=p+0+0>0+1+[ws(\".*\",\"definitions\",\".*\")]"
     url += "&viewmode=sen"
     if request.query.fromp:
         url += "&" + request.query.fromp
