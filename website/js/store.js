@@ -289,7 +289,7 @@ class StoreClass {
          modifier: this.data.modifier,
          howmany: howmany ? howmany : (this.data.dictConfigs.titling.numberEntries || 1000)
       }
-      if(authorized){
+      if(authorized && this.data.userAccess.canEdit){
          url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
       } else {
          url = `${window.API_URL}${this.data.dictId}/search.json`
