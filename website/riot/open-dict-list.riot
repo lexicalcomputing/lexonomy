@@ -32,12 +32,32 @@
       <table if={state.visibleDictionaries.length}
             class="striped highlight"
             style="margin: 0 15px;">
-         <thead>
-            <th>Title</th>
-            <th>Language</th>
-            <th>Size</th>
-            <th>Author</th>
-            <th>Licence</th>
+         <thead class="activeOrder_{state.orderBy}">
+            <th>
+               <span onclick={onSortClick.bind(this, "title")}>
+                  Title<i class="material-icons order_title">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "language")}>
+                  Language<i class="material-icons order_language">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "size")}>
+                  Size <i class="material-icons order_size">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "author")}>
+                  Author<i class="material-icons order_author">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "licence")}>
+                  Licence<i class="material-icons order_licence">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
             <th></th>
          </thead>
          <tbody>
@@ -87,6 +107,34 @@
       table td:nth-child(5){
          white-space: nowrap;
       }
+      th{
+         white-space: nowrap;
+         cursor: pointer;
+      }
+      th span{
+         line-height: 24px;
+      }
+      th span:hover{
+         text-decoration: underline;
+      }
+      th span i{
+         opacity: 0;
+         margin-left: 0.5rem;
+         vertical-align: middle;
+      }
+      th span:hover i{
+         opacity: 0.5;
+      }
+      th span i:hover{
+         opacity: 1;
+      }
+      .activeOrder_title .order_title,
+      .activeOrder_language .order_language,
+      .activeOrder_size .order_size,
+      .activeOrder_author .order_author,
+      .activeOrder_licence .order_licenc{
+         opacity: 1;
+      }
    </style>
 
    <script>
@@ -96,7 +144,9 @@
          state: {
             visibleDictionaries: [],
             language: "",
-            query: ""
+            query: "",
+            orderBy: "title",
+            asc: true
          },
 
          loadData(){
@@ -112,6 +162,8 @@
          },
 
          onSearchInput(evt){
+            this.state.orderBy = null
+            this.state.asc = true
             this.state.query = evt.target.value
             this.filter()
          },
@@ -119,6 +171,16 @@
          onLanguageChange(evt){
             this.state.language = evt.target.value
             this.filter()
+         },
+
+         onSortClick(orderBy){
+            if(this.state.orderBy == orderBy){
+               this.state.asc = !this.state.asc
+            } else {
+               this.state.orderBy = orderBy
+            }
+            this.sort()
+            this.update()
          },
 
          filter(){
@@ -147,9 +209,40 @@
                }).sort((a, b) => {
                   return a.score == b.score ? a.title.localeCompare(b.title, undefined, {numeric: true}) : Math.sign(b.score - a.score)
                })
+               this.sort()
             }
             this.update()
             this.highlightOccurrences()
+         },
+
+         sort(){
+            this.state.visibleDictionaries.sort((a, b) => {
+               if(this.state.orderBy == "lang"){
+                  if(a.lang != b.lang){
+                     return a.lang.localeCompare(b.lang)
+                  }
+               } else if(this.state.orderBy == "size"){
+                  if(a.size != b.size){
+                     return Math.sign(a.size - b.size)
+                  }
+               } else if(this.state.orderBy == "author"){
+                  if(a.author != b.author){
+                     return a.author.localeCompare(b.author)
+                  }
+               } else if(this.state.orderBy == "licence"){
+                  if(a.licence != b.licence){
+                     return a.licence.localeCompare(b.licence)
+                  }
+               } else if(this.state.query !== ""){
+                  if(a.score != b.score){
+                     return Math.sign(b.score - a.score)
+                  }
+               }
+               return a.title.localeCompare(b.title, undefined, {numeric: true})
+            })
+            if(!this.state.asc){
+               this.state.visibleDictionaries.reverse()
+            }
          },
 
          highlightOccurrences(){
