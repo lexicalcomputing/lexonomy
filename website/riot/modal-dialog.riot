@@ -1,0 +1,285 @@
+<modal-dialog class="modal-dialogs">
+   <div each={(dialog, idx) in state.dialogs}
+         id={dialog.id}
+         class="modal-dialog {dialog.class} {dialog.small && 'small'} {dialog.big && 'big'} {dialog.large && 'large'} {dialog.tall && 'tall'} {dialog.fullScreen && 'fullScreen'} ">
+      <span if={dialog.fullScreen && (typeof dialog.dismissible != "undefined" ? dialog.dismissible : true)}
+            class="fullScreenClose">
+         <i class="material-icons material-clickable"
+               onclick={onCloseClick}>close</i>
+      </span>
+      <div id="dialog_{idx}"
+            class="modal {dialog.fixedFooter && 'modal-fixed-footer'} {dialog.bottom && 'bottom-sheet'} {dialog.autowidth && 'autowidth'} {dialog.onTop && 'onTop'}">
+         <div class="{dialog.autowidth && 'modal-center'}">
+            <div class="modal-content">
+               <h4 if={dialog.title}>
+                  {dialog.title}
+               </h4>
+               <div class="clearfix dialogContent">
+                  <div if={dialog.tag}
+                        is={dialog.tag}
+                        {...dialog.opts}></div>
+                  <div if={dialog.content}>
+                     {dialog.content}
+                  </div>
+               </div>
+            </div>
+
+            <div class="modal-footer primaryButtons"
+                  if={!dialog.fullScreen && (dialog.showCloseButton || dialog.buttons.length)}>
+               <a if={dialog.showCloseButton}
+                     class="btn modal-action modal-close btn-flat">Close</a>
+               <a each={button in dialog.buttons}
+                     id={button.id}
+                     href={button.href}
+                     class="btn modal-action btn-flat {button.class}"
+                     onclick={onButtonClick.bind(this, dialog, button)}>{button.label}</a>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <style type="scss">
+      .modal-dialog{
+         top: 0;
+         bottom: 0;
+         left: 0;
+         right: 0;
+         overflow-y: auto;
+
+         .modal{
+            &.onTop{
+               z-index: 999999!important;
+            }
+         }
+
+         .fullScreenClose{
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            z-index: 1500;
+            i{
+               font-size: 45px;
+            }
+         }
+
+         &.small{
+            .modal{
+               max-width: 500px;
+            }
+         }
+
+         &.big{
+            @media only screen and (max-width: 1900px){
+               .modal {
+                  width: 70%;
+               }
+            }
+            @media only screen and (max-width: 1600px){
+               .modal {
+                  width: 80%;
+               }
+            }
+            @media only screen and (max-width: 992px){
+               .modal {
+                  width: 90%;
+               }
+            }
+         }
+
+         &.large{
+            .modal {
+               width: 90%;
+               top: 5%!important;
+               max-height: 90%;
+               height: 90%;
+            }
+            @media only screen and (max-width: 992px){
+               .modal {
+                  width: 95%;
+               }
+            }
+         }
+
+         &.fullScreen{
+            .modal{
+               width: 100%;
+               max-height: 100%;
+               height: 100%;
+               top: 0!important;
+               left: 0;
+               right: 0;
+               bottom: 0;
+            }
+         }
+
+         &.tall{
+            .modal{
+               margin-top: -5vh;
+               height: 90vh;
+               max-height: 90vh;
+            }
+         }
+
+         @media only screen and (max-height: 1050px){
+            .modal{
+               max-height: 90%;
+               top: 5%!important;
+               &.modal-fixed-footer{
+                  max-height: 80%;
+               }
+            }
+            &.tall{
+               .modal{
+                  max-height: 90%;
+                  height: 90%;
+                  margin-top: -2.5vh;
+               }
+            }
+         }
+
+         @media only screen and (max-height: 900px){
+            .modal {
+               &.modal-fixed-footer{
+                  max-height: 90%;
+               }
+            }
+         }
+         @media only screen and (max-height: 600px){
+            .modal.modal-fixed-footer{
+               height: 90%;
+            }
+         }
+
+         @media only screen and (max-width: 1400px){
+            .modal {
+               width: 70%;
+            }
+         }
+
+         @media only screen and (max-width: 1100px){
+            .modal {
+               width: 80%;
+            }
+         }
+
+         @media only screen and (max-width: 800px){
+            .modal {
+               width: 90%;
+            }
+         }
+
+         @media only screen and (max-width: 500px){
+            .modal {
+               width: 99%!important;
+            }
+         }
+
+         @media only screen and (max-width: 500px), screen and (max-height: 500px){
+            .modal .modal-content{
+               padding: 14px;
+            }
+         }
+      }
+   </style>
+
+   <script>
+      export default{
+         state:{
+            dialogs: []
+         },
+         /*
+            options = {
+               id: string - optional, used for closing dialog
+               title: string - optional
+               tag: string - name of tag to use for dialog content, optional
+               opts: Object - opts for content tag - optional
+               content: string - alternative to tag for simple content
+               showCloseButton: Bool -
+               buttons: array [{label: string, class: string, href: string, onClick: function},...]
+               autowidth: center with fit-to-content width,
+
+            }
+          */
+         open(dialog){
+            if(this.state.dialogs.find((d) => {return (d.content && d.content == dialog.content) || (d.id && d.id == dialog.id)})){
+               return // already displayed
+            }
+            dialog.showCloseButton = 'showCloseButton' in dialog ? dialog.showCloseButton : true
+            dialog.buttons = dialog.buttons || []
+            this.state.dialogs.push(dialog)
+
+            this.update()
+
+            dialog.node = $("#" + "dialog_" + (this.state.dialogs.length - 1))
+            dialog.contentNode = dialog.node.find(".dialogContent > div")
+            dialog.htmlScroll = $("html").scrollTop()
+            dialog.htmlScroll && $("html").scrollTop(0) // fix of misplaced dialog, if html element is scrolled
+            dialog.node.modal({
+               onCloseStart: this.onCloseStart.bind(this, dialog),
+               onCloseEnd: this.onCloseEnd.bind(this, dialog),
+               onOpenEnd: this.onDialogOpen.bind(this, dialog),
+               dismissible: 'dismissible' in dialog ? dialog.dismissible : true,
+               inDuration: dialog.fullScreen ? 500 : 250,
+               outDuration: dialog.fullScreen ? 500 : 250
+            }).modal('open')
+            dialog.width && dialog.node.css("max-width", dialog.width) // after dialog is open -> avoid style override
+
+            dialog.contentNode.find('input:first').focus()
+         },
+
+         onButtonClick(dialog, button){
+            button.onClick && button.onClick(dialog, this)
+         },
+
+         close(dialogId){
+            if(this.state.dialogs.length){
+               let dialog
+               if(!dialogId){
+                  dialog = this.state.dialogs[this.state.dialogs.length -1]
+               } else{
+                  dialog = this.state.dialogs.find(d => {
+                     return d.id == dialogId
+                  })
+               }
+               dialog && dialog.node[0].M_Modal && dialog.node.modal('close')
+            }
+         },
+
+         closeAll(){
+            this.state.dialogs.forEach(d => {
+               this.close()
+            })
+         },
+
+         onCloseStart(dialog){
+            dialog.onCloseStart && dialog.onCloseStart(dialog, this)
+            this.state.dialogs = this.state.dialogs.filter(d => {
+               return d != dialog
+            })
+            dialog.htmlScroll && $("html").scrollTop(dialog.htmlScroll)
+         },
+
+         onCloseEnd(dialog){
+            dialog.onClose && dialog.onClose(dialog, this)
+            this.update()
+         },
+
+         onDialogOpen(dialog){
+            dialog.onOpen && dialog.onOpen(dialog, this)
+         },
+
+         onCloseClick(evt){
+            evt.target.classList.add("hidden")
+            this.close()
+         },
+
+         onMounted(){
+            window.modal = {
+               open: this.open.bind(this),
+               close: this.close.bind(this),
+               closeAll: this.closeAll.bind(this)
+            }
+         }
+      }
+   </script>
+</modal-dialog>
