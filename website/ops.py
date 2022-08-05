@@ -541,7 +541,7 @@ def attachDict(dictDB, dictID):
     conn.execute("delete from user_dict where dict_id=?", (dictID,))
     lang = ''
     title = configs["ident"]["title"]
-    if configs["ident"]["lang"]:
+    if configs["ident"].get("lang"):
         lang = configs["ident"]["lang"]
     conn.execute("insert into dicts (id, title, language) values (?, ?, ?)", (dictID, title, lang))
     for email in configs["users"]:
@@ -559,6 +559,14 @@ def cloneDict(dictID, email):
         ident = json.loads(row["json"])
         ident["title"] = "Clone of " + ident["title"]
     newDB.execute("update configs set json=? where id='ident'", (json.dumps(ident),))
+    res = newDB.execute("select json from configs where id='users'")
+    row = res.fetchone()
+    users = json.loads(row["json"])
+    if users.get(email):
+        users[email]['canConfig'] = True
+    else:
+        users[email] = {'canConfig': True, 'canEdit': True, 'canDownload': True, 'canUpload': True}
+    newDB.execute("update configs set json=? where id='users'", (json.dumps(users),))
     newDB.commit()
     attachDict(newDB, newID)
     return {"success": True, "dictID": newID, "title": ident["title"]}
