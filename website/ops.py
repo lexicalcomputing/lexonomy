@@ -539,10 +539,13 @@ def attachDict(dictDB, dictID):
     conn = getMainDB()
     conn.execute("delete from dicts where id=?", (dictID,))
     conn.execute("delete from user_dict where dict_id=?", (dictID,))
+    lang = ''
     title = configs["ident"]["title"]
-    conn.execute("insert into dicts(id, title) values (?, ?)", (dictID, title))
+    if configs["ident"]["lang"]:
+        lang = configs["ident"]["lang"]
+    conn.execute("insert into dicts (id, title, language) values (?, ?, ?)", (dictID, title, lang))
     for email in configs["users"]:
-        conn.execute("insert into user_dict(dict_id, user_email) values (?, ?)", (dictID, email.lower()))
+        conn.execute("insert into user_dict (dict_id, user_email) values (?, ?)", (dictID, email.lower()))
     conn.commit()
 
 def cloneDict(dictID, email):
