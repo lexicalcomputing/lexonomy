@@ -1,4 +1,4 @@
-import './libs/riot/riot.min.js'
+import './libs/riot/riot.js'
 import './libs/riot/route.js'
 import './libs/riot/observable.js'
 import './libs/materialize/materialize.min.js'
