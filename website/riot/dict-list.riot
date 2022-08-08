@@ -12,6 +12,18 @@
                <i onclick={onClearFilterClick}
                   class="material-icons clearFilterIcon grey-text clickable">close</i>
             </span>
+
+            <label id="favoriteToggleWrapper"
+                  class="onlyFavoritesChbWrapper"
+                  class="checkbox"
+                  style="display: none;"}>
+               <input id="onlyFavoritesChb"
+                     type="checkbox"
+                     checked={state.showOnlyFavorites}
+                     onclick={onOnlyFavoritesClick}/>
+               <span>Only favorites</span>
+            </label>
+
             <span class="newDictionaryButton">
                <a href="#/make"
                      class="btn waves-effect waves-light">
@@ -50,13 +62,14 @@
                         onclick={ doEditDict.bind(this, dict.id) }>
                      <i class="material-icons">edit</i>
                   </a>
-                  <a  if={ dict.currentUserCanDelete }
+                  <a if={ dict.currentUserCanDelete }
                         class="clickable"
                         title="config dictionary"
                         onclick={ doConfigDict.bind(this, dict.id) }>
                      <i class="material-icons">settings</i>
                   </a>
-                  <a class="clickable"
+                  <a  if={ dict.currentUserCanEdit }
+                        class="clickable"
                         title="clone dictionary"
                         onclick={ doCloneDict.bind(this, dict.id) }>
                      <i class="material-icons">content_copy</i>
@@ -67,6 +80,9 @@
                         onclick={ doDeleteDict.bind(this, dict.id) }>
                      <i class="material-icons">delete</i>
                   </a>
+                  <span>
+                     <dict-favorite-toggle dict-id={dict.id}></dict-favorite-toggle>
+                  </span>
                </div>
             </li>
          </ul>
@@ -130,6 +146,9 @@
          right: 5px;
          top: 11px;
       }
+      .onlyFavoritesChbWrapper{
+         margin-left: 2rem;
+      }
       .dict-lang,
       .dict-size {
          padding-left: 0.5em;
@@ -145,14 +164,17 @@
       ul li.selected{
          background-color: #fffde7 !important;
       }
-      .checkbox span{
+      ul .checkbox span{
          opacity: 0.2;
       }
-      .checkbox:hover span{
+      ul .checkbox:hover span{
          opacity: 1;
       }
-      .checkbox input:checked + span{
+      ul .checkbox input:checked + span{
          opacity: 1;
+      }
+      .secondary-content{
+         display: flex;
       }
       .dict{
          flex: 1;
@@ -176,17 +198,32 @@
    <script>
       export default {
          bindings: [["store", "dictionaryListChanged", "onDictionaryListChange"],
-                    ["store", "dictionaryListLoadingChanged", "update"]],
+                    ["store", "dictionaryListLoadingChanged", "update"],
+                    ["store", "favoriteChanged", "onFavoriteChanged"]],
          state: {
             isLoading: false,
             lastCheckedIdx: null,
             visibleDictionaries: [],
             selectedCount: 0,
-            query: ""
+            query: "",
+            hasFavorite: false,
+            showOnlyFavorites: false
+         },
+
+         onFavoriteChanged(){
+            this.dictData.isPublicDictionaryListLoaded = false  // force to reload dictionary list
+            this.refreshShowFavoriteToggle()
+         },
+
+         refreshShowFavoriteToggle(){
+            if(this.authData.authorized){
+               let hasFavorite = this.dictData.dictionaryList.findIndex(d => d.favorite) != -1
+               $("#favoriteToggleWrapper").toggle(hasFavorite || this.state.showOnlyFavorites)
+               !hasFavorite && localStorage.setItem("showOnlyFavorites_open", 0)
+            }
          },
 
          onDictionaryListChange(){
-            this.update()
             this.filter()
          },
 
@@ -207,6 +244,12 @@
             let idx = $(evt.currentTarget).attr("idx")
             this.toggleLineSelection(idx, evt.shiftKey)
             this.state.lastCheckedIdx = idx
+         },
+
+         onOnlyFavoritesClick(evt){
+            this.state.showOnlyFavorites = $("#onlyFavoritesChb").is(":checked")
+            localStorage.setItem("showOnlyFavorites_user", this.state.showOnlyFavorites ? 1 : 0)
+            this.filter()
          },
 
          toggleLineSelection(idx, shiftKey){
@@ -232,6 +275,9 @@
                delete c.h_title
             })
             this.state.visibleDictionaries = this.dictData.dictionaryList
+            if(this.state.showOnlyFavorites){
+               this.state.visibleDictionaries = this.state.visibleDictionaries.filter(d => d.favorite)
+            }
             if(this.state.query !== ""){
                let sortResult = FuzzySort.go(this.state.query, this.state.visibleDictionaries, {
                   key: "id",
@@ -300,11 +346,27 @@
 
          onBeforeUpdate(){
             this.state.selectedCount = this.state.visibleDictionaries.filter(dict => dict.selected).length
+            this.state.hasFavorite = this.dictData.dictionaryList.findIndex(d => d.favorite) != -1
+         },
+
+         onUpdated(){
+            this.refreshShowFavoriteToggle()
          },
 
          onBeforeMount() {
+            this.state.showOnlyFavorites = localStorage.getItem("showOnlyFavorites_user") == 1
             if(this.dictData.isDictionaryListLoaded){
                this.state.visibleDictionaries = this.dictData.dictionaryList
+               this.state.hasFavorite = this.dictData.dictionaryList.findIndex(d => d.favorite) != -1
+            } else {
+               this.store.loadDictionaryList()
+            }
+         },
+
+         onMounted(){
+            if(this.dictData.isDictionaryListLoaded){
+               this.state.showOnlyFavorites && this.filter()
+               this.refreshShowFavoriteToggle()
             }
          }
       }

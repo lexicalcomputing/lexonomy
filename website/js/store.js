@@ -10,7 +10,7 @@ class StoreClass {
          dictionaryList: [],
          isPublicDictionaryListLoaded: false,
          isPublicDictionaryListLoading: false,
-         publicDictionaryList: null
+         publicDictionaryList: []
       }
 
       this.resetDictionary()
@@ -214,6 +214,14 @@ class StoreClass {
                this.data.isPublicDictionaryListLoaded = true
                this.data.publicDictionaryList = response.entries || []
                this.data.publicDictionaryLanguageList = [...new Set(this.data.publicDictionaryList.map(d => d.lang))].filter(l => !!l)
+               if(this.data.isDictionaryListLoaded){
+                  let favouriteIds = this.data.dictionaryList.filter(d => d.favorite).map(d => d.id)
+                  this.data.publicDictionaryList.forEach(d => {
+                     if(favouriteIds.includes(d.id)){
+                        d.favorite = true
+                     }
+                  })
+               }
             })
             .fail(response => {
                M.toast({html: "Dictionary list could not be loaded."})
@@ -240,7 +248,6 @@ class StoreClass {
                         xemaOverride: false,
                         xemplateOverride: false,
                         editingOverride: false,
-                        userAccess: response.userAccess,
                         dictConfigs: response.configs,
                         doctype: response.doctype,
                         doctypes: response.doctypes
@@ -448,6 +455,40 @@ class StoreClass {
             .always(repsonse => {
 
             })
+   }
+
+   toggleDictionaryFavorite(dictId, favorite){
+      this.setDictionaryAttribute(dictId, "isSaving", true)
+      this.trigger("favoriteChanged")
+      return $.ajax({
+            url: `${window.API_URL}changefavdict.json`,
+            method: 'POST',
+            data: {
+               dictId: dictId,
+               status: favorite
+            }
+         })
+               .done(function(dictId, response) {
+                  this.setDictionaryAttribute(dictId, "favorite", favorite)
+                  if(favorite && !this.getDictionary(dictId)){
+                     // if user add public dictionary to the favorite list, we need to reload
+                     // user dictionary list - it contains favorite dictionaries
+                     this.loadDictionaryList()
+                  }
+               }.bind(this, dictId))
+               .fail(response => {
+               })
+               .always(() => {
+                  this.setDictionaryAttribute(dictId, "isSaving", false)
+                  this.trigger("favoriteChanged")
+               })
+   }
+
+   setDictionaryAttribute(dictId, attrName, attrValue){
+      let dictionary = this.getDictionary(dictId)
+      if(dictionary){
+         dictionary[attrName] = attrValue
+      }
    }
 
    uploadXML(data){

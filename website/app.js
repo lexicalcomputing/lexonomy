@@ -55,6 +55,7 @@ import dict_public_entry from './riot/dict-public-entry.riot'
 import dict_public from './riot/dict-public.riot'
 import dict_upload from './riot/dict-upload.riot'
 import dict_links from './riot/dict-links.riot'
+import dict_favorite_toggle from './riot/dict-favorite-toggle.riot'
 import e404 from './riot/e404.riot'
 import entry_view from './riot/entry-view.riot'
 import app_footer from './riot/app-footer.riot'
@@ -106,6 +107,7 @@ riot_register('dict-public-entry', dict_public_entry)
 riot_register('dict-public', dict_public)
 riot_register('dict-upload', dict_upload)
 riot_register('dict-links', dict_links)
+riot_register('dict-favorite-toggle', dict_favorite_toggle)
 riot_register('e404', e404)
 riot_register('entry-view', entry_view)
 riot_register('app-footer', app_footer)

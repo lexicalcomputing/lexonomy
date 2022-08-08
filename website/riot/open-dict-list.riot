@@ -1,4 +1,7 @@
 <open-dict-list>
+   <a if={authData.authorized}
+         href="/"
+         class="btn right">my dictionaries</a>
    <h1>Open dictionaries</h1>
    <loading-overlay if={dictData.isPublicDictionaryListLoading}></loading-overlay>
    <div if={!dictData.isPublicDictionaryListLoading}>
@@ -23,12 +26,24 @@
             </select>
             <label>Language</label>
          </div>
+         <label if={authData.authorized}
+               id="favoriteToggleWrapper"
+               class="onlyFavoritesChbWrapper"
+               class="checkbox"
+               style="display: none;"}>
+            <input id="onlyFavoritesChb"
+                  type="checkbox"
+                  checked={state.showOnlyFavorites}
+                  onclick={onOnlyFavoritesClick}/>
+            <span>Only favorites</span>
+         </label>
       </div>
       <div if={!state.visibleDictionaries.length}
             class="center"
             style="margin: 20vh auto;">
          <h1 class="grey-text lighten-2">Nothing found</h1>
       </div>
+      {state.visibleDictionaries.length}
       <table if={state.visibleDictionaries.length}
             class="striped highlight"
             style="margin: 0 15px;">
@@ -91,12 +106,14 @@
                      {row.licence}
                   </span>
                </td>
-               <td>
+               <td class="btns">
                   <a if={ row.isAdmin }
                         href="#/{ row.id }/edit"
                         title="edit dictionary">
                      <i class="material-icons">edit</i>
                   </a>
+                  <dict-favorite-toggle if={authData.authorized}
+                        dict-id={row.id}></dict-favorite-toggle>
                </td>
             </tr>
          </tbody>
@@ -104,6 +121,9 @@
    </div>
 
    <style>
+      .onlyFavoritesChbWrapper{
+         margin-left: 2.5rem;
+      }
       table td:nth-child(5){
          white-space: nowrap;
       }
@@ -135,27 +155,50 @@
       .activeOrder_licence .order_licenc{
          opacity: 1;
       }
+      .btns{
+         white-space: nowrap;
+         vertical-align: middle;
+      }
+      .btns > a{
+         vertical-align: middle;
+      }
+      dict-favorite-toggle{
+         margin-left: 0.4rem;
+      }
    </style>
 
    <script>
       export default {
-         bindings: [["store", "isPublicDictionaryListLoadingChanged", "update"]],
+         bindings: [["store", "favoriteChanged", "onFavoriteChanged"]],
 
          state: {
             visibleDictionaries: [],
             language: "",
             query: "",
             orderBy: "title",
-            asc: true
+            asc: true,
+            showOnlyFavorites: false
+         },
+
+         onFavoriteChanged(){
+            this.dictData.isDictionaryListLoaded = false  // force to reload dictionary list
+            this.refreshShowFavoriteToggle()
+         },
+
+         refreshShowFavoriteToggle(){
+            if(this.authData.authorized){
+               let hasFavorite = this.dictData.publicDictionaryList.findIndex(d => d.favorite) != -1
+               $("#favoriteToggleWrapper").toggle(hasFavorite || this.state.showOnlyFavorites)
+               !hasFavorite && localStorage.setItem("showOnlyFavorites_open", 0)
+            }
          },
 
          loadData(){
             this.store.loadPublicDictionaryList()
-                  .done(response => {
-                     this.state.visibleDictionaries = this.dictData.publicDictionaryList
-                  })
                   .always(() => {
-                     this.update({isLoading: false})
+                     this.state.visibleDictionaries = this.dictData.publicDictionaryList
+                     this.state.isLoading = false
+                     this.filter()
                      this.initializeLanguageSelect()
                      $("#search").focus()
                   })
@@ -183,6 +226,12 @@
             this.update()
          },
 
+         onOnlyFavoritesClick(evt){
+            this.state.showOnlyFavorites = $("#onlyFavoritesChb").is(":checked")
+            localStorage.setItem("showOnlyFavorites_open", this.state.showOnlyFavorites ? 1 : 0)
+            this.filter()
+         },
+
          filter(){
             this.dictData.publicDictionaryList.forEach(c => {
                delete c.h_title
@@ -193,6 +242,9 @@
             this.state.visibleDictionaries = this.dictData.publicDictionaryList
             if(this.state.language){
                this.state.visibleDictionaries = this.state.visibleDictionaries.filter(d => d.lang == this.state.language)
+            }
+            if(this.state.showOnlyFavorites){
+               this.state.visibleDictionaries = this.state.visibleDictionaries.filter(d => d.favorite)
             }
             if(this.state.query !== ""){
                let sortResult = FuzzySort.go(this.state.query, this.state.visibleDictionaries, {
@@ -271,9 +323,15 @@
                .on("change", this.onLanguageChange)
          },
 
+         onUpdated(){
+            this.refreshShowFavoriteToggle()
+         },
+
          onBeforeMount(){
+            this.state.showOnlyFavorites = this.authData.authorized && localStorage.getItem("showOnlyFavorites_open") == 1
             if(this.dictData.isPublicDictionaryListLoaded){
                this.state.visibleDictionaries = this.dictData.publicDictionaryList
+               this.state.hasFavorite = this.dictData.publicDictionaryList.findIndex(d => d.favorite) != -1
             } else {
                this.loadData()
             }
@@ -282,6 +340,8 @@
          onMounted(){
             if(this.dictData.isPublicDictionaryListLoaded){
                this.initializeLanguageSelect()
+               this.state.showOnlyFavorites && this.filter()
+               this.refreshShowFavoriteToggle()
             }
          }
       }

@@ -4,6 +4,8 @@
    <template if={!dictData.isDictionaryLoading}>
       <h1 class="header">
          { dictData.title }
+         <dict-favorite-toggle if={authData.authorized}
+               dict-id={dictData.dictId}/>
          <div class="dictBtns buttons">
             <a if={dictData.userAccess.canEdit}
                   href="#/{dictData.dictId}/edit"
@@ -81,6 +83,10 @@
    </template>
 
    <style>
+      dict-favorite-toggle{
+         font-size: 0.6em;
+         margin-left: 0.5rem;
+      }
       .dictBtns{
          margin-top: 5px;
       }
