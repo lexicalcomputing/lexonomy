@@ -1,0 +1,82 @@
+<dict-favorite-toggle>
+   <a href="javascript:void(0);"
+         onmouseover={showTooltip}
+         class="favoriteToggle {state.favorite && 'isFavorite'} {state.isSaving && 'isSaving loadingAnimation'}"
+         onclick={onToggleFavoriteClick}>
+      <i class="material-icons">{state.isSaving ? "more_horiz" : (state.favorite ? "star" : "star_border")}</i>
+   </a>
+
+   <style>
+      :host{
+         line-height: 100%;
+         display: inline-block;
+         vertical-align: middle;
+      }
+      .favoriteToggle{
+         opacity: 0.6;
+         width: 1.5em;
+         display: inline-block;
+      }
+      .favoriteToggle i{
+         font-size: 1.5em;
+         width: 1.5em;
+      }
+      .favoriteToggle:hover{
+         opacity: 1
+      }
+      .favoriteToggle.isFavorite{
+         opacity: 1;
+      }
+      .favoriteToggle.isFavorite i{
+         color: #F8CD13;
+      }
+      .favoriteToggle.isSaving i{
+         color:  grey;
+         pointer-events: none;
+      }
+   </style>
+
+   <script>
+      export default{
+         bindings: [["store", "dictionaryListLoadingChanged", "onDictionaryListLoadingChanged"]],
+
+         state: {
+            favorite: false,
+            isSaving: false
+         },
+
+         onDictionaryListLoadingChanged(){
+            this.initDictionaryData()
+            this.update()
+         },
+
+         showTooltip(evt){
+            let message = this.state.favorite ? "Remove dictionary from favorite list." : "Add dictionary to the favorite list."
+            showTooltip(evt.currentTarget, message, 500)
+         },
+
+         onToggleFavoriteClick(){
+            this.update({isSaving: true})
+            this.store.toggleDictionaryFavorite(this.props.dictId, !this.state.favorite)
+                  .always(payload => {
+                     if(payload.success){
+                        this.state.favorite = !this.state.favorite
+                     }
+                     this.update({isSaving: false})
+                  })
+         },
+
+         initDictionaryData(){
+            let dictionary = this.store.getDictionary(this.props.dictId)
+            if(dictionary){
+               this.state.favorite = dictionary.favorite
+               this.state.isSaving = dictionary.isSaving
+            }
+         },
+
+         onBeforeMount(){
+            this.initDictionaryData()
+         }
+      }
+   </script>
+</dict-favorite-toggle>
