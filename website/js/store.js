@@ -369,6 +369,11 @@ class StoreClass {
    }
 
    updateDictionaryConfig(configId, data){
+      if(configId == "publico"){
+         // it may affect publicDictionaryList, load it next time it is needed
+         this.data.isPublicDictionaryListLoaded = false
+         this.data.publicDictionaryList = []
+      }
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/configupdate.json`,
          method: 'POST',
