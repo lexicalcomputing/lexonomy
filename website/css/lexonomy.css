@@ -366,6 +366,9 @@ textarea.materialize-textarea:focus:not([readonly])+label{
 [type="radio"].with-gap:checked+span:after{
    background-color: #000;
 }
+[type="radio"][disabled] + span{
+   cursor: default;
+}
 
 .select-wrapper input.select-dropdown:focus{
    border-bottom-color: #000;
