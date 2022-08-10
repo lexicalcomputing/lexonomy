@@ -188,6 +188,9 @@ class StoreClass {
    }
 
    loadDictionaryList(){
+      if(this.data.isDictionaryListLoading){
+         return
+      }
       this.data.isDictionaryListLoading = true
       this.trigger("dictionaryListLoadingChanged")
       return $.ajax(`${window.API_URL}userdicts.json`)
