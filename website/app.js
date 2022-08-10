@@ -75,6 +75,7 @@ import raw_html from './riot/raw-html.riot'
 import loading_overlay from './riot/loading-overlay.riot'
 import docs_intro from './riot/docs-intro.riot'
 import modal_dialog from './riot/modal-dialog.riot'
+import dict_description_dialog from './riot/dict-description-dialog.riot'
 
 riot_register('api', api)
 riot_register('dict-config-autonumber', dict_config_autonumber)
@@ -127,6 +128,7 @@ riot_register('raw-html', raw_html)
 riot_register('loading-overlay', loading_overlay)
 riot_register('docs-intro', docs_intro)
 riot_register('modal-dialog', modal_dialog)
+riot_register('dict-description-dialog', dict_description_dialog)
 
 
 component(App)(document.getElementById('root'))

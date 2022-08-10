@@ -1,0 +1,29 @@
+<dict-description-dialog>
+   <loading-overlay if={state.isLoading}/>
+   <raw-html content={state.content}></raw-html>
+
+   <style>
+      :host{
+         min-height: 150px;
+      }
+   </style>
+
+   <script>
+      export default{
+         state: {
+            isLoading: true,
+            content: ""
+         },
+
+         onBeforeMount(){
+            this.store.loadDictionary(this.props.dictId)
+                  .done(payload => {
+                     this.update({
+                        isLoading: false,
+                        content: payload.success ? payload.publicInfo.blurb: "Description could not be loaded."
+                     })
+                  })
+         }
+      }
+   </script>
+</dict-description-dialog>

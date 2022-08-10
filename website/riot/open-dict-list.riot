@@ -106,6 +106,10 @@
                   </span>
                </td>
                <td class="btns">
+                  <a href="javascript:void(0);"
+                        onclick={onShowDescriptionClick.bind(this, row)}>
+                     <i class="material-icons">description</i>
+                  </a>
                   <a if={ row.isAdmin }
                         href="#/{ row.id }/edit"
                         title="edit dictionary">
@@ -161,7 +165,7 @@
       .btns > a{
          vertical-align: middle;
       }
-      dict-favorite-toggle{
+      .btns > *:not(:first-child){
          margin-left: 0.4rem;
       }
    </style>
@@ -182,6 +186,16 @@
          onFavoriteChanged(){
             this.dictData.isDictionaryListLoaded = false  // force to reload dictionary list
             this.refreshShowFavoriteToggle()
+         },
+
+         onShowDescriptionClick(dict){
+            let dialog = window.modal.open({
+               title: dict.title.length > 150 ? (dict.title.substr(0, 150) + "…") : dict.title,
+               tag: "dict-description-dialog",
+               opts: {
+                  dictId: dict.id
+               }
+            })
          },
 
          refreshShowFavoriteToggle(){
