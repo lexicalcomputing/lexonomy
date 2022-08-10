@@ -4,6 +4,10 @@
    <h1>Publishing</h1>
    <template if={!isLoading}>
       <div class="row">
+         <div if={!state.isPublicEnabled}
+               class="message messageInfo">
+            Only dictionaries with 100 entries or more can be published.
+         </div>
          <div class="input-field">
             <p>
                <label>
@@ -12,7 +16,7 @@
                         class="with-gap"
                         value="0"
                         checked={ !state.data.public }
-                        onchange={onCheckboxChange}/>
+                        onclick={onCheckboxClick}/>
                   <span>Private</span>
                </label>
                <label style="margin-left: 30px;">
@@ -20,8 +24,9 @@
                         type="radio"
                         class="with-gap"
                         value="1"
+                        disabled={!state.isPublicEnabled}
                         checked={ state.data.public }
-                        onchange={onCheckboxChange} />
+                        onclick={onCheckboxClick} />
                   <span>Public</span>
                </label>
             </p>
@@ -51,9 +56,12 @@
 
    <script>
       export default {
+         bindings: [["store", "dictionaryListLoadingChanged", "onDictionaryListLoadingChanged"]],
+
          state: {
             isLoading: true,
             isSaving: false,
+            isPublicEnabled: false,
             data: {}
          },
          licences: [
@@ -74,14 +82,46 @@
             }
          ],
 
-         onCheckboxChange(evt){
-            this.state.data.public = evt.target.value == "1"
-            if(!this.state.data.public){
-               this.state.data.licence = ""
-            } else {
-               this.state.data.licence = "cc-by-4.0"
-            }
+         onDictionaryListLoadingChanged(){
+            this.setIsPublicEnabled()
             this.update()
+         },
+
+         onCheckboxClick(evt){
+            if(evt.target.value == "1"){
+               evt.preventDefault()
+               window.modal.open({
+                  content: "Are you sure your dictionary is ready to be publicly available for anyone?",
+                  title: "Is dictionary ready?",
+                  small: true,
+                  buttons: [{
+                     label: "publish",
+                     onClick: (dialog, modal) => {
+                        this.state.data.public = true
+                        this.state.data.licence = "cc-by-4.0"
+                        modal.close()
+                        this.update()
+                     }
+                  }]
+               })
+            } else {
+               this.state.data.public = false
+               this.state.data.licence = ""
+               this.update()
+            }
+         },
+
+         refreshLicenceInfo(){
+            var url = $('#publico_licence option:selected').data('url')
+            $('#publico_licence_info .helper-text').html('More information about this licence: <a target="_blank" href="' + url + '">' + url + "</a>.")
+         },
+
+         setIsPublicEnabled(){
+            this.state.isPublicEnabled = this.store.getDictionary(this.dictData.dictId).size >= 100
+         },
+
+         onBeforeMount(){
+            this.dictData.isDictionaryListLoaded && this.setIsPublicEnabled()
          },
 
          onMounted() {
@@ -92,11 +132,6 @@
                   .always(() => {
                      this.update({isLoading: false})
                   })
-         },
-
-         refreshLicenceInfo(){
-            var url = $('#publico_licence option:selected').data('url')
-            $('#publico_licence_info .helper-text').html('More information about this licence: <a target="_blank" href="' + url + '">' + url + "</a>.")
          },
 
          onUpdated(){
