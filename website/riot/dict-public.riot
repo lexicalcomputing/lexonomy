@@ -1,6 +1,6 @@
 <dict-public>
    <dict-nav/>
-   <loading-overlay if={dictData.isDictionaryLoading || state.isEntryListLoading}/>
+   <loading-overlay if={state.isLoading || dictData.isDictionaryLoading || state.isEntryListLoading}/>
    <template if={!dictData.isDictionaryLoading}>
       <h1 class="header">
          { dictData.title }
@@ -21,6 +21,29 @@
                   class="btn">download</a>
             <a if={authData.authorized} href="#/{dictData.dictId}/links"
                   class="btn">links</a>
+            <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit}
+                  class="dropdown-trigger btn btn-floating btn-flat"
+                  href="#"
+                  data-target="dictMenuDropdown">
+               <i class="material-icons black-text">more_horiz</i>
+            </a>
+            <ul id="dictMenuDropdown"
+                  class="dropdown-content">
+               <li if={dictData.userAccess.canConfig}>
+                  <a href=""
+                        onclick={onClone}>
+                     <i class="material-icons left">content_copy</i>
+                     Clone
+                  </a>
+               </li>
+               <li if={dictData.userAccess.canEdit}>
+                  <a href="javascript:void(0);"
+                        onclick={onDelete}>
+                     <i class="material-icons left">delete</i>
+                     Delete
+                  </a>
+               </li>
+            </ul>
          </div>
       </h1>
 
@@ -144,8 +167,22 @@
                     ["store", "isDictionaryExamplesLoading", "update"]],
 
          state: {
+            isLoading: false,
             isEntryListLoading: false,
             showFoundEntries: false
+         },
+
+         onClone(){
+            this.store.cloneDictionary(this.dictData.dictId)
+         },
+
+         onDelete(){
+            var dictTitle = this.store.getDictionary(this.dictData.dictId).title
+            if (confirm("Are you sure you want to delete dictionary " + dictTitle + "? You will not be able to undo this.")) {
+               this.update({isLoading: true})
+               this.store.deleteDictionary(this.dictData.dictId)
+                     .always(() => {this.update({isLoading: false})})
+            }
          },
 
          reloadDictionaryExamples(){
@@ -172,10 +209,18 @@
 
          onDictionaryChanged(){
             this.reloadDictionaryExamples()
+            this.initializeDropdown()
          },
 
          onCloseSearchResultClick(){
             this.update({showFoundEntries: false})
+         },
+
+         initializeDropdown(){
+            $(".dropdown-trigger").dropdown({
+               coverTrigger: false,
+               constrainWidth: false
+            })
          },
 
          getEntryUrl(entry){
@@ -199,6 +244,9 @@
             this.dictData.searchtext = ""
             if(!this.dictData.dictionaryExamples && !this.dictData.isDictionaryExamplesLoading){
                this.reloadDictionaryExamples()
+            }
+            if(!this.dictData.isDictionaryLoading){
+               this.initializeDropdown()
             }
          }
       }
