@@ -443,6 +443,7 @@ thead tr{
    font-size: 1rem;
    padding: 0.9rem 1rem;
    line-height: 1.3rem;
+   white-space: nowrap;
 }
 
 .collection .collection-item{
