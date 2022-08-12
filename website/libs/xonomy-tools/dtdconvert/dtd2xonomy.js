@@ -1,4 +1,5 @@
 //var Xonomy = require('./xonomy.js');
+window.Dtd2xonomy = {}
 
 //element name
 var nameRe = '[:A-Z_a-z][:A-Z_a-z.\\-0-9]*';
@@ -171,7 +172,7 @@ function SplitBalanced(input, split, open, close, toggle, escape) {
 }
 
 //parse DTD in text string to structure object
-function parseDTD(dtdData) {
+Dtd2xonomy.parseDTD=function(dtdData) {
   elements = new Array();
   attributes = new Array();
   usedChildren = new Array();
@@ -233,7 +234,7 @@ function initialElement(element) {
 }
 
 //initial XML document - select root+required children
-function initialDocument(xmlStructure) {
+Dtd2xonomy.initialDocument=function(xmlStructure) {
   var ret = "<"+xmlStructure.root+">";
   var children = getFlatChildren(xmlStructure.elements.find(function(xe) {return xe.name==xmlStructure.root}));
   if (children != null) {
@@ -248,7 +249,7 @@ function initialDocument(xmlStructure) {
 }
 
 //transform xml structure to Xonomy docSpec
-function struct2Xonomy(xmlStructure) {
+Dtd2xonomy.struct2Xonomy=function(xmlStructure) {
 	var docSpec = {
 		elements: {},
 		unknownElement: function(elName){
