@@ -162,7 +162,7 @@
 
          getConfigData() {
             var newData = {}
-            if (this.xemaDesigner.xema.elements) {
+            if (this.xemaDesigner.xema && this.xemaDesigner.xema.elements) {
                for(var el in this.xemaDesigner.xema.elements){
                   for(var prop in this.xemaDesigner.xema.elements[el]){
                      if(prop.indexOf("_")==0) delete this.xemaDesigner.xema.elements[el][prop]
