@@ -173,7 +173,12 @@
             if (this.state.override) {
                if ($('#editor_doc').val() != "") newData._xonomyDocSpec = $('#editor_doc').val()
                if ($('#editor_xml').val() != "") newData._newXml = $('#editor_xml').val()
-               if ($('#editor_dtd').val() != "") newData._dtd = $('#editor_dtd').val()
+               if ($('#editor_dtd').val() != "") {
+                  newData._dtd = $('#editor_dtd').val()
+                  try {
+                     newData.elements = Dtd2xonomy.struct2Xonomy(Dtd2xonomy.parseDTD(newData._dtd)).elements
+                  } catch(e) {}
+               }
             }
             return newData
          },
