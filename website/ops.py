@@ -620,7 +620,7 @@ def getDictsByUser(email):
         favs.append(r['dict_id'])
     c = conn.execute("SELECT DISTINCT d.id, d.title FROM dicts AS d INNER JOIN user_dict AS ud ON ud.dict_id=d.id WHERE ud.user_email=? OR d.id IN (SELECT dict_id FROM dict_fav WHERE user_email=?) ORDER BY d.title", (email, email))
     for r in c.fetchall():
-        info = {"id": r["id"], "title": r["title"], "hasLinks": False, "lang": "", "favorite": False}
+        info = {"id": r["id"], "title": r["title"], "hasLinks": False, "lang": "", "favorite": False, "owners": []}
         try:
             dictDB = getDB(r["id"])
             cc = dictDB.execute("select count(*) as total from entries")
@@ -636,6 +636,9 @@ def getDictsByUser(email):
                 info["lang"] = configs["ident"]["lang"]
             if r["id"] in favs:
                 info["favorite"] = True
+            for user_email in configs["users"]:
+                if configs["users"][user_email]["canEdit"] and configs["users"][user_email]["canConfig"]:
+                    info["owners"].append(user_email)
         except:
             info["broken"] = True
         dicts.append(info)
