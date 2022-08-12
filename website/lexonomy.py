@@ -680,6 +680,40 @@ def publicrandom(dictID):
 def randomone(dictID, user, dictDB, configs):
     return ops.readRandomOne(dictDB, dictID, configs)
 
+@post(siteconfig["rootPath"]+"<dictID>/exportconfigs.json")
+@authDict(["canConfig"])
+def exportconfigs(dictID, user, dictDB, configs):
+    output = {}
+    for configid in request.forms.configs.split(','):
+        output[configid] = configs[configid]
+    response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
+    return output
+
+@post(siteconfig["rootPath"]+"<dictID>/importconfigs.json")
+@authDict(["canConfig"])
+def importconfigs(dictID, user, dictDB, configs):
+    if not request.files.get("myfile"):
+        return {"success": False}
+    else:
+        upload = request.files.get("myfile")
+        try:
+            data = json.loads(upload.file.read().decode())
+            resaveNeeded = False
+            for key in data:
+                if key == 'ske':
+                    adjustedJson = {}
+                    adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', data['ske']['kex'])
+                    adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', data['ske']['xampl'])
+                    adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', data['ske']['collx'])
+                    adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', data['ske']['defo'])
+                    adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', data['ske']['thes'])
+                    resaveNeeded = False
+                else:
+                    adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
+            return {"success": True}
+        except:
+            return {"success": False}
+
 @get(siteconfig["rootPath"]+"<dictID>/download.xml")
 @authDict(["canDownload"], True)
 def downloadxml(dictID, user, dictDB, configs):
