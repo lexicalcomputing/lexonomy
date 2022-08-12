@@ -143,9 +143,9 @@
                         newXml = xema["_newXml"];
                      }
                   } else if (xema["_dtd"]) {
-                     var xmlStructure = parseDTD(xema["_dtd"]);
-                     var docSpec = struct2Xonomy(xmlStructure);
-                     newXml = initialDocument(xmlStructure);
+                     var xmlStructure = Dtd2xonomy.parseDTD(xema["_dtd"]);
+                     var docSpec = Dtd2xonomy.struct2Xonomy(xmlStructure);
+                     newXml = Dtd2xonomy.initialDocument(xmlStructure);
                   } else {
                      var docSpec = Xematron.xema2docspec(xema, editing.xonomyTextEditor);
                   }
