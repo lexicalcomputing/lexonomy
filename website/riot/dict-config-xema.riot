@@ -176,7 +176,9 @@
                if ($('#editor_dtd').val() != "") {
                   newData._dtd = $('#editor_dtd').val()
                   try {
-                     newData.elements = Dtd2xonomy.struct2Xonomy(Dtd2xonomy.parseDTD(newData._dtd)).elements
+                     let parsed = Dtd2xonomy.parseDTD(newData._dtd);
+                     newData.elements = Dtd2xonomy.struct2Xonomy(parsed).elements
+                     newData.root = parsed.root
                   } catch(e) {}
                }
             }
