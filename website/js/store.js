@@ -197,6 +197,11 @@ class StoreClass {
             .done(response => {
                this.data.dictionaryList = response.dicts || []
                this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
+               this.data.dictionaryList.forEach(d => {
+                  if(!d.owners.includes(window.auth.data.email)){
+                     d.shared = true
+                  }
+               })
                this.data.isDictionaryListLoaded = true
                this.trigger("dictionaryListChanged")
             })

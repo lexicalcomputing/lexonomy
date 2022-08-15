@@ -32,59 +32,78 @@
                </a>
             </span>
          </div>
-         <ul if={state.visibleDictionaries.length}
-               class="collection">
-            <li each={ (dict, idx) in state.visibleDictionaries }
-                  id="r_{idx}"
-                  class="collection-item {dict.selected ? 'selected' : ''}"
-                  key={dict.id}>
-               <label if={dict.currentUserCanDelete}
-                        class="checkbox">
-                  <input id="chb_{idx}"
-                        type="checkbox"
-                        idx={idx}
-                        checked={dict.selected}
-                        onclick={onCheckboxClick}/>
-                  <span></span>
-               </label>
-               <span class="dict">
-                  <a href="#/{ dict.id }"
-                        id="t_{idx}">{ dict.title }</a>
-                  <span if={ dict.lang }
-                        class="dict-lang">{ dict.lang }</span>
-                  <span class="dict-size grey-text">{ dict.size } entries</span>
-               </span>
-               <span class="secondary-content">
-                  <a if={ dict.currentUserCanEdit }
-                        class="clickable"
-                        data-dict-id={ dict.id }
-                        title="edit dictionary"
-                        onclick={ doEditDict.bind(this, dict.id) }>
-                     <i class="material-icons">edit</i>
-                  </a>
-                  <a if={ dict.currentUserCanDelete }
-                        class="clickable"
-                        title="config dictionary"
-                        onclick={ doConfigDict.bind(this, dict.id) }>
-                     <i class="material-icons">settings</i>
-                  </a>
-                  <a  if={ dict.currentUserCanEdit }
-                        class="clickable"
-                        title="clone dictionary"
-                        onclick={ doCloneDict.bind(this, dict.id) }>
-                     <i class="material-icons">content_copy</i>
-                  </a>
-                  <a if={ dict.currentUserCanDelete }
-                        class="clickable"
-                        title="delete dictionary"
-                        onclick={ doDeleteDict.bind(this, dict.id) }>
-                     <i class="material-icons">delete</i>
-                  </a>
-                  <span>
-                     <dict-favorite-toggle dict-id={dict.id}></dict-favorite-toggle>
-                  </span>
-               </div>
-            </li>
+         <table if={state.visibleDictionaries.length}
+               class="highlight">
+            <thead>
+               <tr>
+                  <th class="checkboxColumn"></th>
+                  <th class="titleColumn">Title</th>
+                  <!--th>Language</th-->
+                  <th class="sizeColumn">Size</th>
+                  <th class="actionColumn"></th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr each={ (dict, idx) in state.visibleDictionaries }
+                     id="r_{idx}"
+                     class="{dict.selected ? 'selected' : ''}"
+                     key={dict.id}>
+                  <td>
+                     <label if={dict.currentUserCanDelete}
+                              class="checkbox">
+                        <input id="chb_{idx}"
+                              type="checkbox"
+                              idx={idx}
+                              checked={dict.selected}
+                              onclick={onCheckboxClick}/>
+                        <span></span>
+                     </label>
+                  </td>
+                  <td class="dict">
+                     <a href="#/{ dict.id }"
+                           id="t_{idx}">{ dict.title }</a>
+                     <span if={dict.shared} class="green white-text badge">
+                        shared with me
+                     </span>
+                  </td>
+                  <!--td class="dict-lang">
+                     <template if={ dict.lang }>{ dict.lang }</template>
+                  </td-->
+                  <td class="dict-size grey-text">
+                     { dict.size }
+                  </td>
+                  <td class="dict-actions">
+                     <a if={ dict.currentUserCanEdit }
+                           class="clickable"
+                           data-dict-id={ dict.id }
+                           title="edit dictionary"
+                           onclick={ doEditDict.bind(this, dict.id) }>
+                        <i class="material-icons">edit</i>
+                     </a>
+                     <a if={ dict.currentUserCanDelete }
+                           class="clickable"
+                           title="config dictionary"
+                           onclick={ doConfigDict.bind(this, dict.id) }>
+                        <i class="material-icons">settings</i>
+                     </a>
+                     <a  if={ dict.currentUserCanEdit }
+                           class="clickable"
+                           title="clone dictionary"
+                           onclick={ doCloneDict.bind(this, dict.id) }>
+                        <i class="material-icons">content_copy</i>
+                     </a>
+                     <a if={ dict.currentUserCanDelete }
+                           class="clickable"
+                           title="delete dictionary"
+                           onclick={ doDeleteDict.bind(this, dict.id) }>
+                        <i class="material-icons">delete</i>
+                     </a>
+                     <span>
+                        <dict-favorite-toggle dict-id={dict.id}></dict-favorite-toggle>
+                     </span>
+                  </td>
+               </tr>
+            </tbody>
          </ul>
          <div if={!state.visibleDictionaries.length}
                class="center"
@@ -149,35 +168,49 @@
       .onlyFavoritesChbWrapper{
          margin-left: 2rem;
       }
-      .dict-lang,
+      .checkboxColumn,
+      .sizeColumn,
+      .actionColumn{
+         width: 1px;
+      }
+
+      tr .checkbox input[type="checkbox"]+span{
+         padding-left: 20px;
+         height: 19px;
+      }
+      .dict .badge{
+         margin-left: 10px;
+         font-size: 0.8rem;
+      }
       .dict-size {
-         padding-left: 0.5em;
+         text-align: right;
+         padding-right: 15px;
+         white-space: nowrap;
       }
-      ul li{
-         position: relative;
-         display: flex;
-         justify-content: space-between;
+      .dict-actions{
+         text-align: right;
+         white-space: nowrap;
       }
-      ul li:hover{
-         background-color: #f8f8f8f2!important;
+      .dict-actions dict-favorite-toggle{
+         vertical-align: initial;
       }
-      ul li.selected{
+      table{
+         margin-bottom: 90px;
+      }
+      table td{
+         padding: 10px 10px;
+      }
+      tbody tr.selected{
          background-color: #fffde7 !important;
       }
-      ul .checkbox span{
+      table .checkbox span{
          opacity: 0.2;
       }
-      ul .checkbox:hover span{
+      table .checkbox:hover span{
          opacity: 1;
       }
-      ul .checkbox input:checked + span{
+      table .checkbox input:checked + span{
          opacity: 1;
-      }
-      .secondary-content{
-         display: flex;
-      }
-      .dict{
-         flex: 1;
       }
       .deleteAllBox{
          text-align: center;
