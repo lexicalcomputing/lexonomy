@@ -407,6 +407,23 @@ class StoreClass {
             .always(response => {})
    }
 
+   importDictionaryConfiguration(data){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/importconfigs.json`,
+         method: 'POST',
+         data: data,
+         processData: false,
+         contentType: false
+      })
+            .done(() => {
+               this.loadActualDictionary()
+               M.toast({html: "Configuration was imoported."})
+            })
+            .fail(payload => {
+               M.toast({html: "Could not import configuration."})
+            })
+   }
+
    createDictionary(data){
       return $.ajax({
          url: `${window.API_URL}make.json`,

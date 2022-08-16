@@ -1,79 +1,138 @@
 <dict-config>
    <dict-nav links={[["config", "Configure"]]}/>
-   <h1>Configuration</h1>
+   <div class="topBar">
+      <h1 style="margin-right: auto;">Configuration</h1>
+      <span class="buttons">
+         <button class="btn {!state.export && 'btn-secondary'}"
+               onclick={onToggleExportClick}>Export</button>
+         <button class="btn btn-secondary {!state.import && 'btn-secondary'}"
+               onclick={onToggleImportClick}>Import</button>
+      </span>
+   </div>
+
+   <div if={state.export}
+         class="exportBox">
+      <button class="btn btn-floating btn-flat closeBtn"
+            onclick={onToggleExportClick}>
+         <i class="material-icons black-text">close</i>
+      </button>
+      <div if={!state.selected.length}
+            class="selectNote">
+         Select configurations to export.
+      </div>
+      <div if={state.selected.length}>
+         Export selected ({state.selected.length}) configurations?
+         <form action={`${window.API_URL}${dictData.dictId}/exportconfigs.json`}
+               target="_blank"
+               method="POST"
+               onsubmit={onExportFormSubmit}>
+            <input type="hidden"
+                  name="configs"
+                  value={state.selected.join(",")}>
+            <button class="btn btn-primary"
+                  type="submit">export</button>
+         </form>
+      </div>
+      <br>
+      <div class="buttons">
+         <button class="btn btn-secondary"
+               onclick={onSelectAllClick}>select all</button>
+         <button class="btn btn-secondary"
+               onclick={onDeselectAllClick}>deselect all</button>
+      </div>
+   </div>
+
+   <div if={state.import}
+         class="importBox">
+      <button class="btn btn-floating btn-flat closeBtn"
+            onclick={onToggleImportClick}>
+         <i class="material-icons black-text">close</i>
+      </button>
+      Select previously exported configuration file.
+      <div class="file-field input-field buttons">
+         <div class="btn">
+            <span>Choose file</span>
+            <input type="file"
+                  accept=".json"
+                  onchange={onImportFileChange}
+                  id="file">
+         </div>
+         <div class="file-path-wrapper">
+            <input class="file-path validate"
+                  type="text">
+         </div>
+         <div>
+            <a class="waves-effect waves-light btn btn-primary {!state.isImportFileSelected || state.isImporting ? 'disabled' : ''}"
+                  onclick={ importDictionaryConfiguration }
+                  id="startButton">
+               <i class="material-icons left">file_upload</i>
+               Import configuration
+            </a>
+         </div>
+      </div>
+   </div>
+
    <div class="columnContainer">
       <div>
          <h3 class="header">Manage dictionary</h3>
          <ul>
-            <li>
-               <a href="#/{ dictData.dictId }/config/ident">Description</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/users">Users</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/publico">Publishing</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/url">Change URL</a>
+            <li each={config in state.configs.dictionary}>
+               <label if={state.export && !config[2]}
+                     name={config[0]}
+                     class="checkbox">
+                  <input type="checkbox"
+                        class="exportChb"
+                        onchange={onExportChbChanged}/>
+                  <span>{config[1]}</span>
+               </label>
+               <a if={!state.export}
+                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
             </li>
          </ul>
       </div>
       <div>
          <h3 class="header">Entry settings</h3>
          <ul>
-            <li>
-               <a href="#/{ dictData.dictId }/config/xema">Structure</a>
-            </li>
-            <li if={ !dictData.xemplateOverride }>
-               <a href="#/{ dictData.dictId }/config/xemplate">Formatting</a>
-            </li>
-            <li if={ dictData.xemplateOverride } >
-               <a href="#/{ dictData.dictId }/config/xemplate-override">Formatting</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/titling">Headword list</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/searchability">Searching</a>
+            <li each={config in state.configs.entry}>
+               <label if={state.export}
+                     name={config[0]}
+                     class="checkbox">
+                  <input type="checkbox"
+                        class="exportChb"
+                        onchange={onExportChbChanged}/>
+                  <span>{config[1]}</span>
+               </label>
+               <a if={!state.export}
+                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
             </li>
          </ul>
       </div>
       <div style="margin-right: auto;">
          <h3 class="header">Expert settings</h3>
          <ul>
-            <li>
-               <a href="#/{ dictData.dictId }/config/editing">Entry editor</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/flagging">Flags</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/autonumber">Auto-numbering</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/links">Linking</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/download">Download settings</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/subbing">Subentries</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/ske">Sketch Engine</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/kontext">KonText</a>
-            </li>
-            <li>
-               <a href="#/{ dictData.dictId }/config/gapi">Multimedia API</a>
+            <li each={config in state.configs.expert}>
+               <label if={state.export}
+                     name={config[0]}
+                     class="checkbox">
+                  <input type="checkbox"
+                        class="exportChb"
+                        onchange={onExportChbChanged}/>
+                  <span>{config[1]}</span>
+               </label>
+               <a if={!state.export}
+                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
             </li>
          </ul>
       </div>
    </div>
 
    <style>
+      .topBar{
+         display: flex;
+         flex-wrap: wrap;
+         justify-content: space-between;
+         align-items: center;
+      }
       .columnContainer{
          display: flex;
          gap: 4vw;
@@ -84,11 +143,138 @@
       li{
          padding: 0 0 0.7rem 0.7rem;
       }
+      li .checkbox{
+         color: #000;
+         text-transform: none;
+      }
+      .exportBox,
+      .importBox{
+         position: relative;
+         text-align: center;
+         background-color: whitesmoke;
+         padding: 25px;
+         font-size: 1.2rem;
+      }
+      .exportBox .buttons,
+      .importBox .buttons {
+         justify-content: center;
+      }
+      .selectNote{
+         min-height: 36px;
+         line-height: 36px;
+      }
+      .closeBtn{
+         position: absolute;
+         top: 0.3rem;
+         right: 0.3rem;
+      }
+      form{
+         display: inline-block;
+         margin-left: 20px;
+      }
    </style>
 
    <script>
       export default {
-         bindings: [["store", "dictionaryChanged", "update"]]
+         bindings: [["store", "dictionaryChanged", "update"]],
+
+         state: {
+            configs: {
+               "dictionary": [
+                  ["ident", "Description"],
+                  ["users", "Users"],
+                  ["publico", "Publishing"],
+                  ["url", "Change URL", true]  // true - only a link, do not include in the export checkbox list
+               ],
+               "entry": [
+                  ["xema", "Structure"],
+                  ["xemplate", "Formatting"],
+                  ["titling", "Headword list"],
+                  ["searchability", "Searching"]
+               ],
+               "expert": [
+                  ["editing", "Entry editor"],
+                  ["flagging", "Flags"],
+                  ["autonumber", "Auto-numbering"],
+                  ["links", "Linking"],
+                  ["download", "Download settings"],
+                  ["subbing", "Subentries"],
+                  ["ske", "Sketch Engine"],
+                  ["kontext", "KonText"],
+                  ["gapi", "Multimedia API"]
+               ]
+            },
+            selected: [],
+            export: false,
+            import: false,
+            isImporting: false,
+            isImportFileSelected: false
+         },
+
+         onToggleExportClick(){
+            this.update({
+               export: !this.state.export,
+               import: false,
+               selected: []
+            })
+         },
+
+         onToggleImportClick(){
+            this.update({
+               import: !this.state.import,
+               export: false,
+               isImportFileSelected: false,
+               selected: []
+            })
+         },
+
+         onSelectAllClick(){
+            this.state.selected = []
+            $(".exportChb").each((idx, el) => {
+               $(el).attr("checked", true)
+               this.state.selected.push($(el).parent().attr("name"))
+            })
+            this.update()
+         },
+
+         onDeselectAllClick(){
+            this.state.selected = []
+            $(".exportChb").each((idx, el) => {
+               $(el).attr("checked", false)
+            })
+            this.update()
+         },
+
+         onExportChbChanged(){
+            this.state.selected = []
+            $(".exportChb:checked").each((idx, el) => {
+               this.state.selected.push($(el).parent().attr("name"))
+            })
+            this.update()
+         },
+
+         onExportFormSubmit(){
+            // async call, so component update will not cancel form submitting
+            setTimeout(this.onToggleExportClick.bind(this), 1)
+         },
+
+         onImportFileChange(){
+            this.update({isImportFileSelected: true})
+         },
+
+         importDictionaryConfiguration(){
+            this.update({isImporting: true})
+            let formData = new FormData()
+            formData.append('myfile', $('#file')[0].files[0])
+            this.store.importDictionaryConfiguration(formData)
+                  .always(() => {
+                     this.update({
+                        isImporting: false,
+                        import: false,
+                        isImportFileSelected: false
+                     })
+                  })
+         }
       }
    </script>
 </dict-config>
