@@ -685,7 +685,10 @@ def randomone(dictID, user, dictDB, configs):
 def exportconfigs(dictID, user, dictDB, configs):
     output = {}
     for configid in request.forms.configs.split(','):
-        output[configid] = configs[configid]
+        if configid == 'ske':
+            output['ske'] = {'kex': configs['kex'], 'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
+        else:
+            output[configid] = configs[configid]
     response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
     return output
 
