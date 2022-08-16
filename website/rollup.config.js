@@ -1,9 +1,9 @@
 import riot from 'rollup-plugin-riot'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import { registerPreprocessor } from '@riotjs/compiler'
-import sass from 'node-sass'
+import sass from 'sass'
 import css from "rollup-plugin-import-css"
-import { uglify } from "rollup-plugin-uglify"
+import { terser } from "rollup-plugin-terser"
 
 
 registerPreprocessor('css', 'scss', function(code, { options }) {
@@ -27,7 +27,7 @@ export default [{
   },
   plugins: [
     riot(options),
-    uglify(),
+    terser(),
     nodeResolve()
   ]
 }, {
@@ -38,7 +38,7 @@ export default [{
     format: 'iife',
     strict: false
   },
-  plugins: [uglify()]
+  plugins: [terser()]
 }, {
   input: "app.css.js",
   output: {
