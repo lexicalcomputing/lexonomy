@@ -182,7 +182,7 @@ def entryupdate(dictID, user, dictDB, configs):
         dom = ET.XML(adjustedXml.encode("utf-8"))
         xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
         html = str(ET.XSLT(xslt)(dom))
-    elif configs["xemplate"].get("_css") and configs["xemplate"]["_xsl"] != "":
+    elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
         html = adjustedXml
     else:
         entrydata = re.sub(r"'", "\\'", adjustedXml)
