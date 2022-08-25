@@ -17,6 +17,7 @@
          </div>
       </div>
       <div id="editorStyle"></div>
+      <div id="xemplateStyle"></div>
    </div>
 
    <style>
@@ -122,6 +123,7 @@
                         var doc = (new DOMParser()).parseFromString(entry.content, 'text/xml');
                         entry.contentHtml = Xemplatron.xml2html(doc, xemplate, xema);
                      }
+                     $("#xemplateStyle").html(xemplate._css ? `<style>${xemplate._css}</style>` : '')
                      $(div).addClass("viewer").html(entry.contentHtml);
                      Gmedia.addVoice(entry);
                      $(div).find("a.xref").on("click", function(e){
