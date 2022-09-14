@@ -961,13 +961,19 @@ def readUser(email):
 
 def listDicts(searchtext, howmany):
     conn = getMainDB()
-    c = conn.execute("select * from dicts where id like ? or title like ? order by id limit ?", ("%"+searchtext+"%", "%"+searchtext+"%", howmany))
     dicts = []
-    for r in c.fetchall():
-        dicts.append({"id": r["id"], "title": r["title"]})
-    c = conn.execute("select count(*) as total from dicts where id like ? or title like ?", ("%"+searchtext+"%", "%"+searchtext+"%"))
-    r = c.fetchone()
-    total = r["total"]
+    if searchtext and searchtext != "":
+        c = conn.execute("select * from dicts where id like ? or title like ? order by id limit ?", ("%"+searchtext+"%", "%"+searchtext+"%", howmany))
+        for r in c.fetchall():
+            dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or "")})
+        c = conn.execute("select count(*) as total from dicts where id like ? or title like ?", ("%"+searchtext+"%", "%"+searchtext+"%"))
+        r = c.fetchone()
+        total = r["total"]
+    else:
+        c = conn.execute("select * from dicts order by id")
+        for r in c.fetchall():
+            dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or "")})
+        total = len(dicts)
     return {"entries": dicts, "total": total}
 
 def readDict(dictId):
