@@ -907,13 +907,23 @@ def getLinkList(headword, sourceLang, sourceDict, targetLang):
 
 def listUsers(searchtext, howmany):
     conn = getMainDB()
-    c = conn.execute("select * from users where email like ? order by email limit ?", ("%"+searchtext+"%", howmany))
     users = []
-    for r in c.fetchall():
-        users.append({"id": r["email"], "title": r["email"]})
-    c = conn.execute("select count(*) as total from users where email like ?", ("%"+searchtext+"%", ))
-    r = c.fetchone()
-    total = r["total"]
+    if searchtext and searchtext != "":
+        c = conn.execute("select * from users where email like ? order by email limit ?", ("%"+searchtext+"%", howmany))
+        for r in c.fetchall():
+            users.append({"email": r["email"], "dictionaries": []})
+        c = conn.execute("select count(*) as total from users where email like ?", ("%"+searchtext+"%", ))
+        r = c.fetchone()
+        total = r["total"]
+    else:
+        c = conn.execute("select * from users order by email")
+        for r in c.fetchall():
+            users.append({"email": r["email"], "dictionaries": []})
+        total = len(users)
+    for user in users:
+        c = conn.execute("SELECT * FROM user_dict, dicts WHERE user_dict.dict_id=dicts.id AND user_email=? ORDER BY dicts.id", (user["email"],))
+        for r in c.fetchall():
+            user["dictionaries"].append({"id": r["dict_id"], "title": r["title"]})
     return {"entries":users, "total": total}
 
 def createUser(xml):
