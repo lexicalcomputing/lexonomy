@@ -948,7 +948,17 @@ def updateUser(email, xml):
 
 def deleteUser(email):
     conn = getMainDB()
-    conn.execute("delete from users where email=?", (email.lower(),))
+    conn.execute("DELETE FROM users WHERE email=?", (email.lower(),))
+    c = conn.execute("SELECT * FROM user_dict WHERE user_email=?", (email.lower(),))
+    for r in c.fetchall():
+        dictDB = getDB(r["dict_id"])
+        c2 = dictDB.execute("SELECT * FROM configs WHERE id='users'")
+        for r2 in c2.fetchall():
+            users = json.loads(r2["json"])
+            del users[email.lower()]
+            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(users), 'users'))
+            dictDB.commit()
+    conn.execute("DELETE FROM user_dict WHERE user_email=?", (email.lower(),))
     conn.commit()
     return True
 
