@@ -39,6 +39,13 @@ db = sqlite3.connect(dbname)
 db.row_factory = sqlite3.Row
 historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(filename)}
 
+# Update tables for old dictionaries
+c = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='linkables'")
+if not c.fetchone():
+    db.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
+    db.execute("CREATE INDEX link ON linkables (txt)")
+
+
 if purge:
     if purge_history:
         print("Purging history...")
@@ -148,6 +155,6 @@ for entry in re.findall(re_entry, xmldata):
         if entryInserted % 100 == 0:
             print("\r%.2d%% (%d/%d entries imported)" % ((entryInserted/entryCount*100), entryInserted, entryCount), end='')
 print("\r%.2d%% (%d/%d entries imported)" % ((entryInserted/entryCount*100), entryInserted, entryCount))
-        
-db.commit() 
+
+db.commit()
 
