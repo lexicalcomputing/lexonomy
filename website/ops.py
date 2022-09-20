@@ -552,6 +552,13 @@ def cloneDict(dictID, email):
     newID = suggestDictId()
     shutil.copy(os.path.join(siteconfig["dataDir"], "dicts/" + dictID + ".sqlite"), os.path.join(siteconfig["dataDir"], "dicts/" + newID + ".sqlite"))
     newDB = getDB(newID)
+
+    # Update tables for old dictionaries
+    c = newDB.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='linkables'")
+    if not c.fetchone():
+        newDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
+        newDB.execute("CREATE INDEX link ON linkables (txt)")
+
     res = newDB.execute("select json from configs where id='ident'")
     row = res.fetchone()
     ident = {"title": "?", "blurb": "?"}
