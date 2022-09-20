@@ -2459,3 +2459,103 @@ def elexisNormalisePos(pos):
     else:
         return "other"
 
+def replaceN(some_str, original, replacement, n):
+    all_replaced = some_str.replace(original, replacement)
+    for i in range(n):
+        first_originals_back = all_replaced.replace(replacement, original, i)
+    return first_originals_back
+
+def dql2sqliteToken(token):
+    match token:
+        case _ if '!=' in token:
+            # !=
+            parts = token.split('!=')
+            operator = '!='
+            path = parts[0]
+            value = parts[1]
+        case _ if '~=' in token:
+            #regex
+            parts = token.split('~=')
+            operator = '~='
+            path = parts[0]
+            value = parts[1]
+        case _ if '#=' in token:
+            #count
+            parts = token.split('#=')
+            operator = '#='
+            path = parts[0]
+            value = parts[1]
+        case _ if '#>' in token:
+            #count
+            parts = token.split('#>')
+            operator = '#>'
+            path = parts[0]
+            value = parts[1]
+        case _ if '=' in token:
+            # =
+            parts = token.split('=')
+            operator = '='
+            path = parts[0]
+            value = parts[1]
+        case _:
+            operator = 'exist'
+            path = token.strip()
+            value = ''
+
+    fullpath = replaceN(path, '.', '[%]%', 2)
+    fullpathval = '$.' + fullpath + '[%]."_val"'
+
+    sql = ''
+    match operator:
+        case '=':
+            sql = "(json_tree.key='_val' AND json_tree.value = '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
+        case '!=':
+            sql = "(json_tree.key='_val' AND json_tree.value != '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
+        case 'exist':
+            sql = "(json_tree.fullkey LIKE '$." + fullpath + "[%]')"
+        case '~=':
+            sql = "(json_tree.key='_val' AND json_tree.value REGEXP '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
+        case '#=':
+            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.entry_data) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)=" + value + "))"
+        case '#>':
+            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.entry_data) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)>" + value + "))"
+
+    return sql
+
+def parse_nested(text, left=r'[(]', right=r'[)]', sep=r' '):
+    pat = r'({}|{}|{})'.format(left, right, sep)
+    tokens = re.split(pat, text)
+    stack = [[]]
+    for x in tokens:
+        if not x or re.match(sep, x): continue
+        if re.match(left, x):
+            stack[-1].append([])
+            stack.append(stack[-1][-1])
+        elif re.match(right, x):
+            stack.pop()
+            if not stack:
+                raise ValueError('error: opening bracket is missing')
+        else:
+            stack[-1].append(x)
+    if len(stack) > 1:
+        print(stack)
+        raise ValueError('error: closing bracket is missing')
+    return stack.pop()
+
+def parse_level(query_list):
+    result_list = []
+    for token in query_list:
+        if type(token) == list:
+            result_list.append(parse_level(token))
+        else:
+            if token == 'and' or token == 'or':
+                result_list.append(token)
+            else:
+                result_list.append(dql2sqliteToken(token))
+    return '(' + ' '.join(result_list) + ')'
+
+def dql2sqlite(query):
+    parsed_query = parse_nested(query)
+    sql = "select distinct json_extract(entries.entry_data,'$.hw.lemma') from entries, json_tree(entries.entry_data) where " + parse_level(parsed_query) + " limit 10;"
+    return sql
+
