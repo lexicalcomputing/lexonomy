@@ -2559,3 +2559,20 @@ def dql2sqlite(query):
     sql = "select distinct json_extract(entries.entry_data,'$.hw.lemma') from entries, json_tree(entries.entry_data) where " + parse_level(parsed_query) + " limit 10;"
     return sql
 
+def nvh2json(nvhEntry):
+    if type(nvhEntry) == str:
+        json = nvh2jsonNode(nvh.parse_string(nvhEntry))
+    else:
+        json = nvh2jsonNode(nvh)
+    return json.dumps(json)
+
+def nvh2jsonNode(nvhNode):
+    data_obj = {}
+    if nvhNode.value:
+        data_obj['_value'] = nvhNode.value
+    for c in nvhNode.children:
+        if not data_obj.get(c.name):
+            data_obj[c.name] = []
+        data_obj[c.name].append(nvh2jsonNode(c))
+    return data_obj
+
