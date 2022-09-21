@@ -13,15 +13,15 @@ CREATE TABLE history (
     [action]       TEXT,
     [when]         DATETIME,
     email          TEXT,
-    xml            TEXT,
+    nvh            TEXT,
     historiography TEXT
 );
 CREATE TABLE sub (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, child_id INTEGER REFERENCES entries (id) ON DELETE CASCADE);
-CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, doctype TEXT, xml TEXT, title TEXT, sortkey TEXT, needs_resave BOOLEAN DEFAULT (0), needs_refresh BOOLEAN DEFAULT (0), needs_refac BOOLEAN DEFAULT (0));
+CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, doctype TEXT, nvh TEXT, json JSON, title TEXT, sortkey TEXT, needs_resave BOOLEAN DEFAULT (0), needs_refresh BOOLEAN DEFAULT (0), needs_refac BOOLEAN DEFAULT (0));
 CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT);
 CREATE INDEX search ON searchables (txt, level);
 CREATE INDEX history_by_entry_id ON history (
-    entry_id,
+    entry_id
     "when"
 );
 CREATE INDEX history_by_email ON history (
