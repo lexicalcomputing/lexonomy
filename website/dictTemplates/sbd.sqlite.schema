@@ -17,14 +17,66 @@ CREATE TABLE history (
     [action]       TEXT,
     [when]         DATETIME,
     email          TEXT,
-    xml            TEXT,
+    nvh            TEXT,
     historiography TEXT
 );
 CREATE TABLE sub (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, child_id INTEGER REFERENCES entries (id) ON DELETE CASCADE);
-CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, doctype TEXT, xml TEXT, title TEXT, sortkey TEXT, needs_resave BOOLEAN DEFAULT (0), needs_refresh BOOLEAN DEFAULT (0), needs_refac BOOLEAN DEFAULT (0));
-INSERT INTO entries VALUES(1,'entry','<entry><headword xml:space="preserve">able</headword><partOfSpeech xml:space="preserve">adj</partOfSpeech><sense><translation xml:space="preserve">schopný</translation><translation xml:space="preserve">sto</translation><example><source xml:space="preserve">I''m busy tomorrow, so I won''t be <h xml:space="preserve">able</h> to see you.</source><target xml:space="preserve">Zítra toho mám hodně, takže se s tebou nebudu moci potkat.</target></example></sense><sense><translation xml:space="preserve">šikovný</translation><translation xml:space="preserve">schopný</translation><example><source xml:space="preserve">She is an <h xml:space="preserve">able</h> teacher.</source><target xml:space="preserve">Je to šikovná učitelka.</target></example></sense></entry>','<span class=''headword''>able</span>','able',0,0,0);
-INSERT INTO entries VALUES(2,'entry','<entry><headword xml:space="preserve">ask</headword><partOfSpeech xml:space="preserve">v</partOfSpeech><sense><translation xml:space="preserve">zeptat se</translation><example><source xml:space="preserve">I don''t know, <h xml:space="preserve">ask</h> your mother.</source><target xml:space="preserve">Já nevím, zeptej se mámy.</target></example><example><source xml:space="preserve">I need to <h xml:space="preserve">ask</h> you a question.</source><target xml:space="preserve">Potřebuju se tě na něco zeptat.</target></example></sense><sense><translation xml:space="preserve">požádat</translation><translation xml:space="preserve">poprosit</translation><translation xml:space="preserve">říct si</translation><example><source xml:space="preserve">We will have to <h xml:space="preserve">ask</h> for more money.</source><target xml:space="preserve">Budeme muset požádat o víc peněz.</target></example><example><source xml:space="preserve">She <h xml:space="preserve">asked</h> me to help her.</source><target xml:space="preserve">Požádala mě, abych jí pomohl.</target></example></sense></entry>','<span class=''headword''>ask</span>','ask',0,0,0);
-INSERT INTO entries VALUES(3,'entry','<entry><headword xml:space="preserve">arm</headword><partOfSpeech xml:space="preserve">n</partOfSpeech><sense><translation xml:space="preserve">paže</translation><translation xml:space="preserve">ruka</translation><example><source xml:space="preserve">You have very long <h xml:space="preserve">arms</h>.</source><target xml:space="preserve">Máš velmi dlouhé ruce.</target></example><example><source xml:space="preserve">My left <h xml:space="preserve">arm</h> hurts.</source><target xml:space="preserve">Bolí mě pravá paže.</target></example></sense><sense><translation xml:space="preserve">zbraň</translation><example><source xml:space="preserve">The <h xml:space="preserve">arms</h> dealer was arrested.</source><target xml:space="preserve">Obchodník se zbraněmi byl zatčen.</target></example></sense></entry>','<span class=''headword''>arm</span>','arm',0,0,0);
+CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, doctype TEXT, nvh TEXT, json JSON, title TEXT, sortkey TEXT, needs_resave BOOLEAN DEFAULT (0), needs_refresh BOOLEAN DEFAULT (0), needs_refac BOOLEAN DEFAULT (0));
+INSERT INTO entries VALUES(1,'entry','entry:
+  headword: able
+  partOfSpeech: adj
+  sense:
+    translation: schopný
+    translation: sto
+    example:
+      source: I''m busy tomorrow, so I won''t be able to see you.
+      target: Zítra toho mám hodně, takže se s tebou nebudu moci potkat.
+  sense:
+    translation: šikovný
+    translation: schopný
+    example:
+      source: She is an able teacher.
+      target: Je to šikovná učitelka.','','<span class=''headword''>able</span>','able',0,0,0);
+INSERT INTO entries VALUES(2,'entry','entry:
+  headword: ask
+  partOfSpeech: v
+  sense:
+    translation: zeptat se
+    example:
+      source: I don''t know, ask your mother.
+      target: Já nevím, zeptej se mámy.
+    example:
+      source: I need to ask you a question.
+      target: Potřebuju se tě na něco zeptat.
+    example:
+  sense:
+    translation: požádat
+    translation: poprosit
+    translation: říct si
+    example:
+      source: We will have to ask for more money.
+      target: Budeme muset požádat o víc peněz.
+    example:
+      source: She asked me to help her.
+      target: Požádala mě, abych jí pomohl.','','<span class=''headword''>ask</span>','ask',0,0,0);
+INSERT INTO entries VALUES(3,'entry','entry:
+  headword: arm
+  partOfSpeech: n
+  sense:
+    translation: paže
+    translation: ruka
+    example:
+      source: You have very long arms.
+      target: Máš velmi dlouhé ruce.
+    example:
+      source: My left arm hurts.
+      target: Bolí mě pravá paže.
+    example:
+  sense:
+    translation: zbraň
+    example:
+      source: The arms dealer was arrested.
+      target: Obchodník se zbraněmi byl zatčen.','','<span class=''headword''>arm</span>','arm',0,0,0);
 CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT);
 CREATE INDEX search ON searchables (txt, level);
 CREATE INDEX history_by_entry_id ON history (
