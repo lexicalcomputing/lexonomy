@@ -9,10 +9,10 @@
 # copies of the Software, and to permit persons to whom the
 # Software is furnished to do so, subject to the following
 # conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 # OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -326,6 +326,27 @@ class nvh:
         line_nr = 0
         last_indent = ""
         for line in infile:
+            line_nr += 1
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            indent, name, value = nvh.parse_line (line, line_nr, curr_parent)
+            if indent > last_indent:
+                curr_parent = curr_parent.children[-1]
+            elif indent < last_indent:
+                while indent != curr_parent.indent:
+                    curr_parent = curr_parent.parent
+                curr_parent = curr_parent.parent
+            curr_parent.children.append(nvh(curr_parent, indent, name, value))
+            last_indent = indent
+        return dictionary
+
+    @staticmethod
+    def parse_string (instring):
+        dictionary = nvh(None)
+        curr_parent = dictionary
+        line_nr = 0
+        last_indent = ""
+        for line in instring.splitlines():
             line_nr += 1
             if not line.strip() or line.lstrip().startswith("#"):
                 continue
