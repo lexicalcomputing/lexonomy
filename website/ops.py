@@ -159,12 +159,12 @@ def readEntry(db, configs, entryID):
     row = c.fetchone()
     if not row:
         return 0, "", ""
-    xml = setHousekeepingAttributes(entryID, row["xml"], configs["subbing"])
+    nvh = row["nvh"]
     if configs["subbing"]:
-        xml = addSubentryParentTags(db, entryID, xml)
+        nvh = addSubentryParentTags(db, entryID, nvh)
     if configs["links"]:
-        xml = updateEntryLinkables(db, entryID, xml, configs, False, False)
-    return entryID, xml, row["title"]
+        nvh = updateEntryLinkables(db, entryID, nvh, configs, False, False)
+    return entryID, nvh, row["title"]
 
 def createEntry(dictDB, configs, entryID, xml, email, historiography):
     xml = setHousekeepingAttributes(entryID, xml, configs["subbing"])
@@ -1255,11 +1255,10 @@ def getLastEditedEntry(dictDB, email):
         return ""
 
 def listEntriesById(dictDB, entryID, configs):
-    c = dictDB.execute("select e.id, e.title, e.xml from entries as e where e.id=?", (entryID,))
+    c = dictDB.execute("select e.id, e.title, e.nvh from entries as e where e.id=?", (entryID,))
     entries = []
     for r in c.fetchall():
-        xml = setHousekeepingAttributes(r["id"], r["xml"], configs["subbing"])
-        entries.append({"id": r["id"], "title": r["title"], "xml": xml})
+        entries.append({"id": r["id"], "title": r["title"], "nvh": r["nvh"]})
     return entries
 
 def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start", howmany=10, sortdesc=False, reverse=False, fullXML=False):
@@ -1284,31 +1283,31 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         else:
             sortdesc = False
     if "flag_element" in configs["flagging"] or fullXML:
-        entryXML = ", e.xml "
+        entryNVH = ", e.nvh "
     else:
-        entryXML = ""
+        entryNVH = ""
     if "headwordSortDesc" in configs["titling"]:
         reverse = configs["titling"]["headwordSortDesc"]
     if reverse:
         sortdesc = not sortdesc
 
     if modifier == "start":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryXML + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?) group by e.id order by s.level"
+        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?) group by e.id order by s.level"
         params1 = (doctype, lowertext+"%", searchtext+"%")
         sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?)"
         params2 = (doctype, lowertext+"%", searchtext+"%")
     elif modifier == "wordstart":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryXML + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or LOWER(s.txt) like ? or s.txt like ? or s.txt like ?) group by e.id order by s.level"
+        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or LOWER(s.txt) like ? or s.txt like ? or s.txt like ?) group by e.id order by s.level"
         params1 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
         sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or LOWER(s.txt) like ? or s.txt like ? or s.txt like ?)"
         params2 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
     elif modifier == "substring":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryXML + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?) group by e.id order by s.level"
+        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?) group by e.id order by s.level"
         params1 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
         sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?)"
         params2 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
     elif modifier == "exact":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryXML + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and s.txt=? group by e.id order by s.level"
+        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and s.txt=? group by e.id order by s.level"
         params1 = (doctype, searchtext)
         sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and s.txt=?"
         params2 = (doctype, searchtext)
@@ -1317,9 +1316,9 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
         if "flag_element" in configs["flagging"]:
-            item["flag"] = extractText(r1["xml"], configs["flagging"]["flag_element"])
+            item["flag"] = extractText(r1["nvh"], configs["flagging"]["flag_element"])
         if fullXML:
-            item["xml"] = setHousekeepingAttributes(r1["id"], r1["xml"], configs["subbing"])
+            item["nvh"] = r1["nvh"]
         if r1["level"] > 1:
             item["title"] += " ← <span class='redirector'>" + r1["txt"] + "</span>"
         entries.append(item)
