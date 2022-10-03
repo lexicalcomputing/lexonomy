@@ -923,7 +923,7 @@ def listUsers(searchtext, howmany):
         r = c.fetchone()
         total = r["total"]
     else:
-        c = conn.execute("select * from users order by email")
+        c = conn.execute("select * from users order by email limit ?", (howmany,))
         for r in c.fetchall():
             users.append({"email": r["email"], "dictionaries": []})
         total = len(users)
@@ -997,7 +997,7 @@ def listDicts(searchtext, howmany):
         r = c.fetchone()
         total = r["total"]
     else:
-        c = conn.execute("select * from dicts order by id")
+        c = conn.execute("select * from dicts order by id limit ?", (howmany,))
         for r in c.fetchall():
             dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or "")})
         total = len(dicts)
