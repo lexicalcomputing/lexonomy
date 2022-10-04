@@ -509,6 +509,52 @@ class StoreClass {
                })
    }
 
+   loadAdminDictionaryList(searchtext, howmany){
+      return $.ajax({
+            url: `${window.API_URL}dicts/dictlist.json`,
+            method: "POST",
+            data: {
+               searchtext: searchtext || "",
+               howmany: howmany || 100
+            }
+         })
+            .fail(response => {
+               M.toast({html: "Dictionary list could not be loaded."})
+            })
+   }
+
+   loadAdminUserList(searchtext, howmany){
+      return $.ajax({
+            url: `${window.API_URL}users/userlist.json`,
+            method: "POST",
+            data: {
+               searchtext: searchtext || "",
+               howmany: howmany || 100
+            }
+         })
+            .fail(response => {
+               M.toast({html: "User list could not be loaded."})
+            })
+   }
+
+   deleteUser(email){
+      return $.ajax({
+         url: `${window.API_URL}users/userdelete.json`,
+         method: 'POST',
+         data: {
+            id: email
+         }
+      })
+            .done(response => {
+               M.toast({html: "User was deleted."})
+            })
+            .fail(response => {
+               M.toast({html: "User could not be deleted."})
+            })
+            .always(repsonse => {
+            })
+   }
+
    setDictionaryAttribute(dictId, attrName, attrValue){
       let dictionary = this.getDictionary(dictId)
       if(dictionary){

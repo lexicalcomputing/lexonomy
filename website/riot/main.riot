@@ -162,6 +162,12 @@
             route('/*/upload', (dictId) => {
                this.goTo('dict-upload', '', [dictId])
             })
+            route('/admin/users', (dictId) => {
+               this.goTo('admin-users')
+            })
+            route('/admin/dicts', (dictId) => {
+               this.goTo('admin-dicts')
+            })
             route('/*', (dictId) => {
                this.goTo('dict-public', '', [dictId])
             })

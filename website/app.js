@@ -25,6 +25,8 @@ import './widgets/xemplate-designer.js'
 
 import App from './riot/main.riot'
 import api from './riot/api.riot'
+import admin_dicts from './riot/admin-dicts.riot'
+import admin_users from './riot/admin-users.riot'
 import dict_config_autonumber from './riot/dict-config-autonumber.riot'
 import dict_config_download from './riot/dict-config-download.riot'
 import dict_config_editing from './riot/dict-config-editing.riot'
@@ -78,6 +80,8 @@ import modal_dialog from './riot/modal-dialog.riot'
 import dict_description_dialog from './riot/dict-description-dialog.riot'
 
 riot_register('api', api)
+riot_register('admin-dicts', admin_dicts)
+riot_register('admin-users', admin_users)
 riot_register('dict-config-autonumber', dict_config_autonumber)
 riot_register('dict-config-download', dict_config_download)
 riot_register('dict-config-editing', dict_config_editing)

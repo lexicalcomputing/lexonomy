@@ -1,4 +1,14 @@
 <app-header>
+   <ul if={ authData.authorized && authData.isAdmin}
+         id="dropdown-menu-admin"
+         class="dropdown-content">
+      <li>
+         <a href="#/admin/users">Users</a>
+      </li>
+      <li>
+         <a href="#/admin/dicts">Dictionaries</a>
+      </li>
+   </ul>
    <ul if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }
          id="dropdown-menu-dict"
          class="dropdown-content">
@@ -68,6 +78,14 @@
             <i class="material-icons">menu</i>
          </a>
          <ul class="right hide-on-med-and-down">
+            <li if={ authData.authorized && authData.isAdmin }>
+               <a class="dropdown-trigger"
+                     href="#/"
+                     data-target="dropdown-menu-admin">
+                  Admin
+                  <i class="material-icons right">arrow_drop_down</i>
+               </a>
+            </li>
             <li if={ authData.authorized && dictData.isDictionaryLoaded }>
                <a class="dropdown-trigger"
                      href="#/"
@@ -92,12 +110,32 @@
                   <i class="material-icons right">arrow_drop_down</i>
                </a>
             </li>
+            <li>
+               <a href="javascript:void(0);"
+                     class="iconLink"
+                     onclick={onHelpClick}>
+                  <i class="material-icons">help_outline</i>
+               </a>
+            </li>
          </ul>
       </div>
    </nav>
 
    <ul id="nav-mobile"
          class="sidenav">
+      <template if={ authData.authorized && authData.isAdmin} >
+         <li class="sideNavSection">
+            <span>Admin</span>
+         </li>
+         <li>
+            <a href="#/admin/users"
+                  class="sidenav-close">Users</a>
+         </li>
+         <li>
+            <a href="#/admin/dicts"
+                  class="sidenav-close">Dictionaries</a>
+         </li>
+      </template>
       <template if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess} >
          <li class="sideNavSection">
             <span>Dictionary</span>
@@ -189,6 +227,9 @@
       .sideNavSection span{
          padding-left: 1rem;
       }
+      .iconLink{
+         text-decoration: none;
+      }
       nav{
          border-bottom: 1px solid black;
          box-shadow: none;
@@ -201,6 +242,14 @@
             if(!window.editorNeedsSaving(event)){
                this.auth.logout()
             }
+         },
+
+         onHelpClick(){
+            window.modal.open({
+               tag: "help-dialog",
+               tall: true,
+               fixedFooter: true
+            })
          },
 
          onIncreaseFontSize(){
