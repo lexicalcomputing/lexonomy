@@ -167,30 +167,28 @@ def readEntry(db, configs, entryID):
         nvh = updateEntryLinkables(db, entryID, nvh, configs, False, False)
     return entryID, nvh, row["title"]
 
-def createEntry(dictDB, configs, entryID, xml, email, historiography):
-    xml = setHousekeepingAttributes(entryID, xml, configs["subbing"])
-    xml = removeSubentryParentTags(xml)
-    title = getEntryTitle(xml, configs["titling"])
-    sortkey = getSortTitle(xml, configs["titling"])
-    doctype = getDoctype(xml)
-    needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
-    needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
+def createEntry(dictDB, configs, entryID, nvh, email, historiography):
+    nvhParsed = nvh.parse_string(nvh)
+    title = getEntryTitle(nvhParsed, configs["titling"])
+    sortkey = getSortTitle(nvhParsed, configs["titling"])
+    doctype = getDoctype(nvhParsed)
+    needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
     # entry title already exists?
-    c = dictDB.execute("select id from entries where title = ? and id <> ?", (title, entryID))
+    c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
     r = c.fetchone()
     feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
     if entryID:
-        sql = "insert into entries(id, xml, title, sortkey, needs_refac, needs_resave, doctype) values(?, ?, ?, ?, ?, ?, ?)"
-        params = (entryID, xml, title, sortkey, needs_refac, needs_resave, doctype)
+        sql = "INSERT INTO entries(id, nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        params = (entryID, nvh, title, sortkey, needs_refresh, nvh2json(nvh), doctype)
     else:
-        sql = "insert into entries(xml, title, sortkey, needs_refac, needs_resave, doctype) values(?, ?, ?, ?, ?, ?)"
-        params = (xml, title, sortkey, needs_refac, needs_resave, doctype)
+        sql = "INSERT INTO entries(nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?)"
+        params = (nvh, title, sortkey, needs_refresh, nvh2json(nvh), doctype)
     c = dictDB.execute(sql, params)
     entryID = c.lastrowid
-    dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True), 1))
-    dictDB.execute("insert into history(entry_id, action, [when], email, xml, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, xml, json.dumps(historiography)))
+    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True), 1))
+    dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
     dictDB.commit()
-    return entryID, xml, feedback
+    return entryID, nvh, feedback
 
 def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
     c = dictDB.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
