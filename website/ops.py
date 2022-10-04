@@ -163,8 +163,6 @@ def readEntry(db, configs, entryID):
     nvh = row["nvh"]
     if configs["subbing"]:
         nvh = addSubentryParentTags(db, entryID, nvh)
-    if configs["links"]:
-        nvh = updateEntryLinkables(db, entryID, nvh, configs, False, False)
     return entryID, nvh, row["title"]
 
 def createEntry(dictDB, configs, entryID, nvh, email, historiography):
@@ -188,6 +186,8 @@ def createEntry(dictDB, configs, entryID, nvh, email, historiography):
     dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True), 1))
     dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
     dictDB.commit()
+    if configs["links"]:
+        nvh = updateEntryLinkables(db, entryID, nvhParsed, configs, False, False)
     return entryID, nvh, feedback
 
 def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
@@ -195,8 +195,6 @@ def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
     row = c.fetchone()
     if not row:
         adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, email, historiography)
-        if configs["links"]:
-            nvh = updateEntryLinkables(dictDB, adjustedEntryID, nvh, configs, True, True)
         return adjustedEntryID, nvh, True, feedback
     else:
         if row["nvh"] == nvh:
@@ -217,7 +215,7 @@ def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
             dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
             dictDB.commit()
             if configs["links"]:
-                nvh = updateEntryLinkables(dictDB, entryID, nvh, configs, True, True)
+                nvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
             return entryID, nvh, True, feedback
 
 def getEntryTitle(nvhParsed, titling, plaintext=False):
@@ -1550,7 +1548,7 @@ def resave(dictDB, dictID, configs):
             if searchable != headword:
                 dictDB.execute("insert into searchables(entry_id, txt, level) values(?,?,?)", (entryID, searchable, 2))
         if configs["links"]:
-            updateEntryLinkables(dictDB, entryID, xml, configs, True, True)
+            updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
     dictDB.commit()
     return True
 
@@ -1574,55 +1572,54 @@ def getEntryLinks(dictDB, dictID, entryID):
             ret["in"] = ret["in"] + lin
     return ret
 
-def updateEntryLinkables(dictDB, entryID, xml, configs, save=True, save_xml=True):
-    from xml.dom import minidom, Node
-    doc = minidom.parseString(xml)
-    ret = []
-    # table may not exists for older dictionaries
-    c = dictDB.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='linkables'")
-    if not c.fetchone():
-        dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
-        dictDB.execute("CREATE INDEX link ON linkables (txt)")
-
+def updateEntryLinkables(dictDB, entryID, nvhParsed, configs, save=True, save_xml=True):
+    linkableAr = []
     for linkref in configs["links"].values():
-        for el in doc.getElementsByTagName(linkref["linkElement"]):
-            identifier = linkref["identifier"]
-            for pattern in re.findall(r"%\([^)]+\)", linkref["identifier"]):
-                text = ""
-                if pattern[2] == '@':
-                    text = el.getAttribute(pattern[3:-1])
-                else:
-                    extract = extractText(el.toxml(), pattern[2:-1])
-                    extractfull = extractText(xml, pattern[2:-1])
-                    if len(extract) > 0:
-                        text = extract[0]
-                    elif len(extractfull) > 0:
-                        text = extractfull[0]
-                identifier = identifier.replace(pattern, text)
-            el.setAttribute('lxnm:linkable', identifier)
-            preview = linkref["preview"]
-            for pattern in re.findall(r"%\([^)]+\)", linkref["preview"]):
-                text = ""
-                if pattern[2] == '@':
-                    text = el.getAttribute(pattern[3:-1])
-                else:
-                    extract = extractText(el.toxml(), pattern[2:-1])
-                    extractfull = extractText(xml, pattern[2:-1])
-                    if len(extract) > 0:
-                        text = extract[0]
-                    elif len(extractfull) > 0:
-                        text = extractfull[0]
-                preview = preview.replace(pattern, text)
-            ret.append({'element': linkref["linkElement"], "identifier": identifier, "preview": preview})
-    xml = doc.toxml().replace('<?xml version="1.0" ?>', '').strip()
+        nvhParsed, linkableAr = updateLinkablesLevel(nvhParsed, linkref, nvhParsed, linkableAr)
     if save:
-        dictDB.execute("delete from linkables where entry_id=?", (entryID,))
+        dictDB.execute("DELETE FROM linkables WHERE entry_id=?", (entryID,))
         for linkable in ret:
-            dictDB.execute("insert into linkables(entry_id, txt, element, preview) values(?,?,?,?)", (entryID, linkable["identifier"], linkable["element"], linkable["preview"]))
+            dictDB.execute("INSERT INTO linkables (entry_id, txt, element, preview) VALUES (?,?,?,?)", (entryID, linkable["identifier"], linkable["element"], linkable["preview"]))
     if save_xml and len(ret)>0:
-        dictDB.execute("update entries set xml=? where id=?", (xml, entryID))
+        dictDB.execute("UPDATE entries SET nvh=? WHERE id=?", (nvhParsed.dump_string(), entryID))
     dictDB.commit()
-    return xml
+    return nvhParsed.dump_string()
+
+def updateLinkablesLevel(nvhNode, linkinfo, nvhEntry, linkableAr):
+    if nvhNode.name == linkinfo['linkElement']:
+        # remove existing linkables
+        nvhNode.children = [c for c in nvhNode.children if c.name != "lxnm_linkable"]
+
+        # add new linkable identifier
+        identifier = linkinfo["identifier"]
+        for pattern in re.findall(r"%\([^)]+\)", linkinfo["identifier"]):
+            text = ""
+            extract = extractText(nvhNode, pattern[2:-1])
+            extractfull = extractText(nvhEntry, pattern[2:-1])
+            if len(extract) > 0:
+                text = extract[0]
+            elif len(extractfull) > 0:
+                text = extractfull[0]
+            identifier = identifier.replace(pattern, text)
+        nvhNode.children.append(nvh(nvhNode, nvhNode.children[0].indent, "lxnm_linkable", identifier, []))
+        # add preview
+        preview = linkinfo["preview"]
+        for pattern in re.findall(r"%\([^)]+\)", linkinfo["preview"]):
+            text = ""
+            extract = extractText(nvhNode, pattern[2:-1])
+            extractfull = extractText(nvhEntry, pattern[2:-1])
+            if len(extract) > 0:
+                text = extract[0]
+            elif len(extractfull) > 0:
+                text = extractfull[0]
+            preview = preview.replace(pattern, text)
+        linkableAr.append({'element': linkinfo["linkElement"], "identifier": identifier, "preview": preview})
+
+    for c in nvhNode.children:
+        if c.name != "lxnm_linkable":
+            c, linkableAr = updateLinkablesLevel(c, linkinfo, nvhEntry, linkableAr)
+
+    return nvhNode, linkableAr
 
 def getEntrySearchables(nvh, configs):
     ret = []
