@@ -192,94 +192,80 @@ def createEntry(dictDB, configs, entryID, xml, email, historiography):
     dictDB.commit()
     return entryID, xml, feedback
 
-def updateEntry(dictDB, configs, entryID, xml, email, historiography):
-    c = dictDB.execute("select id, xml from entries where id=?", (entryID, ))
+def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
+    c = dictDB.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
     row = c.fetchone()
-    xml = setHousekeepingAttributes(entryID, xml, configs["subbing"])
-    xml = removeSubentryParentTags(xml)
-    newxml = re.sub(r" xmlns:lxnm=[\"\']http:\/\/www\.lexonomy\.eu\/[\"\']", "", xml)
-    newxml = re.sub(r"(\=)\"([^\"]*)\"", r"\1'\2'", newxml)
-    newxml = re.sub(r" lxnm:(sub)?entryID='[0-9]+'", "", newxml)
-    newxml = re.sub(r" lxnm:linkable='[^']+'", "", newxml)
     if not row:
-        adjustedEntryID, adjustedXml, feedback = createEntry(dictDB, configs, entryID, xml, email, historiography)
+        adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, email, historiography)
         if configs["links"]:
-            adjustedXml = updateEntryLinkables(dictDB, adjustedEntryID, adjustedXml, configs, True, True)
-        return adjustedEntryID, adjustedXml, True, feedback
+            nvh = updateEntryLinkables(dictDB, adjustedEntryID, nvh, configs, True, True)
+        return adjustedEntryID, nvh, True, feedback
     else:
-        oldxml = row["xml"]
-        oldxml = re.sub(r" xmlns:lxnm=[\"\']http:\/\/www\.lexonomy\.eu\/[\"\']", "", oldxml)
-        oldxml = re.sub(r"(\=)\"([^\"]*)\"", r"\1'\2'", oldxml)
-        oldxml = re.sub(r" lxnm:(sub)?entryID='[0-9]+'", "", oldxml)
-        oldxml = re.sub(r" lxnm:linkable='[^']+'", "", oldxml)
-        if oldxml == newxml:
-            return entryID, xml, False, None
+        if row["nvh"] == nvh:
+            return entryID, nvh, False, None
         else:
-            dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
-            title = getEntryTitle(xml, configs["titling"])
-            sortkey = getSortTitle(xml, configs["titling"])
-            doctype = getDoctype(xml)
-            needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
-            needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
+            #dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
+            nvhParsed = nvh.parse_string(nvh)
+            title = getEntryTitle(nvhParsed, configs["titling"])
+            sortkey = getSortTitle(nvhParsed, configs["titling"])
+            doctype = getDoctype(nvhParsed)
+            needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
             # entry title already exists?
-            c = dictDB.execute("select id from entries where title = ? and id <> ?", (title, entryID))
+            c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
             r = c.fetchone()
             feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
-            dictDB.execute("update entries set doctype=?, xml=?, title=?, sortkey=?, needs_refac=?, needs_resave=? where id=?", (doctype, xml, title, sortkey, needs_refac, needs_resave, entryID))
-            dictDB.execute("update searchables set txt=? where entry_id=? and level=1", (getEntryTitle(xml, configs["titling"], True), entryID))
-            dictDB.execute("insert into history(entry_id, action, [when], email, xml, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, xml, json.dumps(historiography)))
+            dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, nvh, title, sortkey, needs_refresh, nvh2json(nvh), entryID))
+            dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvh, configs["titling"], True), entryID))
+            dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
             dictDB.commit()
             if configs["links"]:
-                xml = updateEntryLinkables(dictDB, entryID, xml, configs, True, True)
-            return entryID, xml, True, feedback
+                nvh = updateEntryLinkables(dictDB, entryID, nvh, configs, True, True)
+            return entryID, nvh, True, feedback
 
-def getEntryTitle(xml, titling, plaintext=False):
+def getEntryTitle(nvhParsed, titling, plaintext=False):
     if titling.get("headwordAnnotationsType") == "advanced" and not plaintext:
         ret = titling["headwordAnnotationsAdvanced"]
         advancedUsed = False
         for el in re.findall(r"%\([^)]+\)", titling["headwordAnnotationsAdvanced"]):
             text = ""
-            extract = extractText(xml, el[2:-1])
+            extract = extractText(nvhParsed, el[2:-1])
             if len(extract) > 0:
                 text = extract[0]
                 advancedUsed = True
             ret = ret.replace(el, text)
         if advancedUsed:
             return ret
-    ret = getEntryHeadword(xml, titling.get("headword"))
+    ret = getEntryHeadword(nvhParsed, titling.get("headword"))
     if not plaintext:
         ret = "<span class='headword'>" + ret + "</span>"
     if titling.get("headwordAnnotations"):
         for hw in titling.get("headwordAnnotations"):
             ret += " " if ret != "" else ""
-            ret += " ".join(extractText(xml, hw))
+            ret += " ".join(extractText(nvhParsed, hw))
     return ret
 
 def getEntryTitleID(dictDB, configs, entry_id, plaintext=False):
-    eid, xml, title = readEntry(dictDB, configs, entry_id)
-    return getEntryTitle(xml, configs["titling"], plaintext)
+    eid, nvh, title = readEntry(dictDB, configs, entry_id)
+    return getEntryTitle(nvh2json(nvh), configs["titling"], plaintext)
 
-def getEntryHeadword(xml, headword_elem):
+def getEntryHeadword(nvhParsed, headword_elem):
     ret = "?"
-    arr = extractText(xml, headword_elem)
+    arr = extractText(nvhParsed, headword_elem)
     if len(arr)>0:
         ret = arr[0]
     else:
-        ret = extractFirstText(xml)
+        ret = extractFirstText(nvhParsed)
     if len(ret) > 255:
         ret = ret[0:255]
     return ret
 
-def getDoctype(xml):
-    pat = r"^<([^>\/\s]+)"
-    for match in re.findall(pat, xml):
-        return match
-    return ""
+def getDoctype(nvhParsed):
+    return nvhParsed.children[0].name
 
-def getSortTitle(xml, titling):
+def getSortTitle(nvhParsed, titling):
     if titling.get("headwordSorting"):
-        return getEntryHeadword(xml, titling.get("headwordSorting"))
-    return getEntryHeadword(xml, titling.get("headword"))
+        return getEntryHeadword(nvhParsed, titling.get("headwordSorting"))
+    return getEntryHeadword(nvhParsed, titling.get("headword"))
 
 def generateKey(size=32):
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(size))
@@ -1317,7 +1303,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
         if "flag_element" in configs["flagging"]:
-            item["flag"] = extractText(r1["nvh"], configs["flagging"]["flag_element"])
+            item["flag"] = extractText(nvh2json(r1["nvh"]), configs["flagging"]["flag_element"])
         if fullXML:
             item["nvh"] = r1["nvh"]
         if r1["level"] > 1:
@@ -1354,19 +1340,28 @@ def listEntriesPublic(dictDB, dictID, configs, searchtext):
 
     return entries
 
-def extractText(xml, elName):
-    elName = str(elName)
+def extractText(nvhParsed, elName):
     if elName == "":
         return []
-    pat = r"<" + elName + "[^>]*>([^<]*)</" + elName + ">"
-    return re.findall(pat, xml)
+    return extractElementText(nvhParsed, elName, [])
 
-def extractFirstText(xml):
-    pat = r"<([^\s>]+)[^>]*>([^<>]*?)</([^\s>]+)>"
-    for match in re.findall(pat, xml):
-        if match[0] == match[2] and match[1].strip() != "":
-            return match[1].strip()
-    return ""
+def extractElementText(nvhChild, elName, textAr):
+    if nvhChild.name == elName:
+        textAr.append(nvhChild.value)
+    else:
+        for c in nvhChild.children:
+            textAr = extractElementText(c, elName, textAr)
+    return textAr
+
+def extractFirstText(nvhParsed):
+    return extractFirstElementText(nvhParsed) or ""
+
+def extractFirstElementText(nvhChild):
+    if nvhChild.value != "":
+        return nvhChild.value
+    else:
+        for c in nvhChild.children:
+            return extractFirstElementText(c)
 
 def getDictStats(dictDB):
     res = {"entryCount": 0, "needResave": 0}
@@ -1631,12 +1626,13 @@ def updateEntryLinkables(dictDB, entryID, xml, configs, save=True, save_xml=True
     dictDB.commit()
     return xml
 
-def getEntrySearchables(xml, configs):
+def getEntrySearchables(nvh, configs):
     ret = []
-    ret.append(getEntryHeadword(xml, configs["titling"].get("headword")))
+    nvhParsed = nvh2json(nvh)
+    ret.append(getEntryHeadword(nvhParsed, configs["titling"].get("headword")))
     if configs["searchability"].get("searchableElements"):
         for sel in configs["searchability"].get("searchableElements"):
-            for txt in extractText(xml, sel):
+            for txt in extractText(nvhParsed, sel):
                 if txt != "" and txt not in ret:
                     ret.append(txt)
     return ret
