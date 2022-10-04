@@ -61,6 +61,19 @@ class nvh:
             if not do_projection or project:
                 c.dump (out, project == 1)
 
+    def dump_string (self, outstr=""):
+        if self.name:
+            if self.parent and self.parent.parent and self.parent.parent.name:
+                # force consistent indent
+                ind_step = self.parent.indent[len(self.parent.parent.indent):]
+                self.indent = self.parent.indent + ind_step
+            elif self.parent and self.parent.name:
+                self.indent = self.parent.children[0].indent
+            outstr += self.indent + self.name + ": " + self.value + "\n"
+        for c in self.children:
+            outstr = c.dump_string(outstr)
+        return outstr
+
     def filter_entries (self, selectors, projectors, maxitems=0):
         def prepare_selector(q):
             m = re.match("((?:[a-zA-Z._](?:#[<>=]+\d+)?)+) *(?:(=|!=|~=)(.*))?$", q)
