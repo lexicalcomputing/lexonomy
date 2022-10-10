@@ -537,15 +537,16 @@ def makeDict(dictID, template, title, blurb, email):
 def attachDict(dictDB, dictID):
     configs = readDictConfigs(dictDB)
     conn = getMainDB()
-    conn.execute("delete from dicts where id=?", (dictID,))
-    conn.execute("delete from user_dict where dict_id=?", (dictID,))
+    conn.execute("DELETE FROM dicts WHERE id=?", (dictID,))
+    conn.execute("DELETE FROM user_dict WHERE dict_id=?", (dictID,))
     lang = ''
     title = configs["ident"]["title"]
+    public = True if configs["publico"].get("public") else False
     if configs["ident"].get("lang"):
         lang = configs["ident"]["lang"]
-    conn.execute("insert into dicts (id, title, language) values (?, ?, ?)", (dictID, title, lang))
+    conn.execute("INSERT INTO dicts (id, title, language, public) VALUES (?, ?, ?, ?)", (dictID, title, lang, public))
     for email in configs["users"]:
-        conn.execute("insert into user_dict (dict_id, user_email) values (?, ?)", (dictID, email.lower()))
+        conn.execute("INSERT INTO user_dict (dict_id, user_email) VALUES (?, ?)", (dictID, email.lower()))
     conn.commit()
 
 def cloneDict(dictID, email):
@@ -653,7 +654,7 @@ def getDictsByUser(email):
 
 def getPublicDicts():
     conn = getMainDB()
-    c = conn.execute("select * from dicts order by title")
+    c = conn.execute("SELECT * FROM dicts WHERE public=TRUE ORDER BY title")
     dicts = []
     for r in c.fetchall():
         try:
@@ -662,7 +663,7 @@ def getPublicDicts():
         except:
             continue
         if configs["publico"]["public"]:
-            cc = dictDB.execute("select count(*) as total from entries")
+            cc = dictDB.execute("SELECT count(*) AS total FROM entries")
             size = cc.fetchone()["total"]
             configs = loadHandleMeta(configs)
             dictinfo = {"id": r["id"], "title": r["title"], "author": "", "lang": configs["ident"].get("lang"), "licence": configs["publico"]["licence"], "size": size}
@@ -1407,6 +1408,12 @@ def updateDictConfig(dictDB, dictID, configID, content):
     elif configID == "subbing":
         refacNeeded = flagForRefac(dictDB)
         return content, refacNeeded
+    elif configID == "publico":
+        public = True if content.get("public") else False
+        conn = getMainDB()
+        conn.execute("UPDATE dicts SET public=? WHERE id=?", (public, dictID))
+        conn.commit()
+        return content, False
     else:
         return content, False
 

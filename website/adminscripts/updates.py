@@ -39,7 +39,7 @@ do_query(conn, "CREATE INDEX IF NOT EXISTS fav_user_email on dict_fav (user_emai
 
 upgrades = {
     "users" : [("ske_id", "INTEGER"), ("ske_username", "TEXT"), ("consent", "INTEGER"), ("ske_apiKey", "TEXT")],
-    "dicts" : [("language", "TEXT")]
+    "dicts" : [("language", "TEXT"), ("public", "BOOLEAN DEFAULT false")]
 }
 
 for db, newcols in upgrades.items():
