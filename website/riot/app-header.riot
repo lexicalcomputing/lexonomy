@@ -87,8 +87,9 @@
                </a>
             </li>
             <li if={ authData.authorized && dictData.isDictionaryLoaded }>
-               <a class="dropdown-trigger"
+               <a class="dropdown-trigger tooltipped"
                      href="#/"
+                     data-tooltip={dictData.title}
                      data-target="dropdown-menu-dict">
                   Dictionary
                   <i class="material-icons right">arrow_drop_down</i>
