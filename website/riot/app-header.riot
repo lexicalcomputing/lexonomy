@@ -86,7 +86,7 @@
                   <i class="material-icons right">arrow_drop_down</i>
                </a>
             </li>
-            <li if={ authData.authorized && dictData.isDictionaryLoaded }>
+            <li if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }>
                <a class="dropdown-trigger tooltipped"
                      href="#/"
                      data-tooltip={dictData.title}
