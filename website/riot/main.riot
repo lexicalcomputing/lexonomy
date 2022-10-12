@@ -50,22 +50,45 @@
          goTo(content, subPage, storeParams, updateParams){
             if(!this.authData.authorized && this.needAuthorization(content, subPage)){
                this.update({
-                  subPage: 'login',
-                  content: 'main-page',
+                  content: 'unauthorized',
+                  subPage: '',
                   isShowingDictionary: false
                })
             } else {
-               storeParams && this.store.open(...storeParams)
-               let query = route.query()
-               this.store.changeSearchParams({
-                  searchtext: decodeURIComponent(query.s || ""),
-                  modifier: query.m
-               })
+               if(!storeParams){
+                  this.update(Object.assign({
+                     content: content,
+                     subPage: subPage || '',
+                     isShowingDictionary: false
+                  }, updateParams || {}))
+               } else {
+                  this.store.open(...storeParams)
+                  let query = route.query()
+                  this.store.changeSearchParams({
+                     searchtext: decodeURIComponent(query.s || ""),
+                     modifier: query.m
+                  })
+                  if(this.store.data.isDictionaryLoading){
+                     this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, content, subPage, updateParams))
+                  } else{
+                     this.checkAccessAndOpenPage(content, subPage, updateParams)
+                  }
+               }
+            }
+         },
 
+         checkAccessAndOpenPage(content, subPage, updateParams){
+            if(!this.store.data.userAccess && !this.store.data.public){
+               this.update({
+                  content: "unauthorized",
+                  subPage: '',
+                  isShowingDictionary: false
+               })
+            } else {
                this.update(Object.assign({
                   content: content,
                   subPage: subPage || '',
-                  isShowingDictionary: !!storeParams
+                  isShowingDictionary: true
                }, updateParams || {}))
             }
          },
@@ -110,6 +133,9 @@
             })
             route('/e404', () => {
                this.goTo('e404')
+            })
+            route('unauthorized', () => {
+               this.goTo('unauthorized')
             })
             route('/opendictionaries', () => {
                this.goTo('open-dict-list')
@@ -179,7 +205,7 @@
          onBeforeUpdate(){
             this.state.isLoading = this.authData.isCheckingAuth
                   || this.dictData.isSiteconfigLoading
-                  || (this.state.isShowingDictionary && !this.dictData.isDictionaryLoaded)
+                  || (this.state.isShowingDictionary && this.dictData.isDictionaryLoading)
          }
       }
    </script>
