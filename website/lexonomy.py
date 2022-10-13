@@ -156,21 +156,21 @@ def entrydelete(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entryread.json")
 @authDict([])
 def entryread(dictID, user, dictDB, configs):
-    adjustedEntryID, xml, _title = ops.readEntry(dictDB, configs, request.forms.id)
+    adjustedEntryID, nvh, _title = ops.readEntry(dictDB, configs, request.forms.id)
     adjustedEntryID = int(adjustedEntryID)
-    xml = xml.replace(">\n<", "><")
     html = ""
-    if xml:
-        if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
-            import lxml.etree as ET
-            dom = ET.XML(xml.encode("utf-8"))
-            xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
-            html = str(ET.XSLT(xslt)(dom))
-        elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
-            html = xml
-        else:
-            html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('" + xml.replace("'","\\'").replace("\n","").replace("\r","") + "', " + json.dumps(configs["xemplate"]) + ", " + json.dumps(configs["xema"]) + "));</script>"
-    return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "content": xml, "contentHtml": html}
+    # TODO XSL/format
+    # if nvh:
+    #     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
+    #         import lxml.etree as ET
+    #         dom = ET.XML(xml.encode("utf-8"))
+    #         xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
+    #         html = str(ET.XSLT(xslt)(dom))
+    #     elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
+    #         html = xml
+    #     else:
+    #         html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('" + xml.replace("'","\\'").replace("\n","").replace("\r","") + "', " + json.dumps(configs["xemplate"]) + ", " + json.dumps(configs["xema"]) + "));</script>"
+    return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "content": nvh}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
 @authDict(["canEdit"])

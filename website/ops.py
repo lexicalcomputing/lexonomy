@@ -1275,30 +1275,30 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         sortdesc = not sortdesc
 
     if modifier == "start":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?) group by e.id order by s.level"
-        params1 = (doctype, lowertext+"%", searchtext+"%")
-        sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?)"
-        params2 = (doctype, lowertext+"%", searchtext+"%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?) GROUP BY e.id ORDER BY s.level"
+        params1 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%")
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?)"
+        params2 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%")
     elif modifier == "wordstart":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or LOWER(s.txt) like ? or s.txt like ? or s.txt like ?) group by e.id order by s.level"
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? and (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level"
         params1 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
-        sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or LOWER(s.txt) like ? or s.txt like ? or s.txt like ?)"
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?)"
         params2 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
     elif modifier == "substring":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?) group by e.id order by s.level"
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level"
         params1 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
-        sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and (LOWER(s.txt) like ? or s.txt like ?)"
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?)"
         params2 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
     elif modifier == "exact":
-        sql1 = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title" + entryNVH + " from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and s.txt=? group by e.id order by s.level"
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER BY s.level"
         params1 = (doctype, searchtext)
-        sql2 = "select count(distinct s.entry_id) as total from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and s.txt=?"
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=?"
         params2 = (doctype, searchtext)
     c1 = dictDB.execute(sql1, params1)
     entries = []
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
-        if "flag_element" in configs["flagging"]:
+        if "flag_element" in configs["flagging"] and configs["flagging"]["flag_element"] != "":
             item["flag"] = extractText(nvh2json(r1["nvh"]), configs["flagging"]["flag_element"])
         if fullXML:
             item["nvh"] = r1["nvh"]
