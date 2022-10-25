@@ -36,7 +36,7 @@
    <div if={ dictData.siteconfig && dictData.siteconfig.sketchengineLoginPage }
          class="section" >
       <a class="btn waves-effect waves-light"
-            href={ dictData.siteconfig.sketchengineLoginPage + encodeURIComponent(window.location.href)}>Sign up or log in with &nbsp;
+            href={ state.skeLoginUrl }>Sign up or log in with &nbsp;
          <img class="skelogin"
                alt="Sketch Engine"
                title="Sketch Engine"
@@ -62,6 +62,12 @@
          state: {
             isLoggingIn: false,
             message: ""
+         },
+
+         onBeforeMount(){
+            let lexonomynext = window.url.parseQuery(window.location.href).next
+                  || encodeURIComponent(window.location.href)
+            this.state.skeLoginUrl = `${this.dictData.siteconfig.sketchengineLoginPage}&lexonomynext=${lexonomynext}`
          },
 
          onKeyUp(evt){

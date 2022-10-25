@@ -34,9 +34,17 @@
             token: '',
             isShowingDictionary: false
          },
-         bindings: [["auth", "authChanged", "update"],
+         bindings: [["auth", "authChanged", "onAuthChanged"],
                     ["auth", "checkingAuthChanged", "onCheckingAuthChange"],
                     ["store", "dictionaryChanged", "update"]],
+
+         onAuthChanged(){
+            if(route.query().next){
+               window.location.href = decodeURIComponent(route.query().next)
+            } else {
+               this.update()
+            }
+         },
 
          onCheckingAuthChange(){
             this.update()
@@ -197,7 +205,7 @@
             route('/*', (dictId) => {
                this.goTo('dict-public', '', [dictId])
             })
-            route('/', () => {
+            route('/(\?*){0,1}', () => {
                this.goTo('main-page', 'login')
             })
          },

@@ -2,7 +2,12 @@
    <div class="container">
       <h1>You don't have access to this page</h1>
       <br><br>
-      <a class="btn" href="#/">Go to the home page</a>
+      <a if={window.auth.data.authorized}
+            class="btn"
+            href="#/">Go to the home page</a>
+      <a if={!window.auth.data.authorized}
+            class="btn"
+            href="#?next={encodeURIComponent(window.location.href)}">Log in</a>
    </div>
 
    <style>
