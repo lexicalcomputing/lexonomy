@@ -563,7 +563,11 @@ def skelogin(token):
         if res["success"]:
             response.set_cookie("email", res["email"].lower(), path="/")
             response.set_cookie("sessionkey", res["key"], path="/")
-            return redirect("/")
+            if request.query.lexonomynext and request.query.lexonomynext != "":
+                redirurl = request.query.lexonomynext
+            else:
+                redirurl = "/"
+            return redirect(redirurl)
         else:
             response.set_cookie("jwt_error", str(res["error"]), path="/")
             return redirect("/")
