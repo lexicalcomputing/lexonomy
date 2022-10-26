@@ -556,22 +556,19 @@ def changeoneclickapi(user):
 @get(siteconfig["rootPath"] + "skelogin.json/<token>")
 def skelogin(token):
     secret = siteconfig["sketchengineKey"]
-    try:
-        jwtdata = jwt.decode(token, secret, audience="lexonomy.eu", algorithms="HS256")
-        user = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
-        res = ops.processJWT(user, jwtdata)
-        if res["success"]:
-            response.set_cookie("email", res["email"].lower(), path="/")
-            response.set_cookie("sessionkey", res["key"], path="/")
-            if request.query.lexonomynext and request.query.lexonomynext != "":
-                redirurl = request.query.lexonomynext
-            else:
-                redirurl = "/"
-            return redirect(redirurl)
+    jwtdata = jwt.decode(token, secret, audience="lexonomy.eu", algorithms="HS256")
+    user = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
+    res = ops.processJWT(user, jwtdata)
+    if res["success"]:
+        response.set_cookie("email", res["email"].lower(), path="/")
+        response.set_cookie("sessionkey", res["key"], path="/")
+        if request.query.lexonomynext and request.query.lexonomynext != "":
+            redirurl = request.query.lexonomynext
         else:
-            response.set_cookie("jwt_error", str(res["error"]), path="/")
-            return redirect("/")
-    except Exception as e:
+            redirurl = "/"
+        return redirect(redirurl)
+    else:
+        response.set_cookie("jwt_error", str(res["error"]), path="/")
         return redirect("/")
 
 @post(siteconfig["rootPath"] + "users/userlist.json")
