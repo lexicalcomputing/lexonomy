@@ -156,7 +156,7 @@ def entrydelete(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entryread.json")
 @authDict([])
 def entryread(dictID, user, dictDB, configs):
-    adjustedEntryID, nvh, _title = ops.readEntry(dictDB, configs, request.forms.id)
+    adjustedEntryID, nvh, json, _title = ops.readEntry(dictDB, configs, request.forms.id)
     adjustedEntryID = int(adjustedEntryID)
     html = ""
     # TODO XSL/format
@@ -170,12 +170,12 @@ def entryread(dictID, user, dictDB, configs):
     #         html = xml
     #     else:
     #         html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('" + xml.replace("'","\\'").replace("\n","").replace("\r","") + "', " + json.dumps(configs["xemplate"]) + ", " + json.dumps(configs["xema"]) + "));</script>"
-    return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "content": nvh}
+    return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "nvh": nvh, "json": json}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
 @authDict(["canEdit"])
 def entryupdate(dictID, user, dictDB, configs):
-    adjustedEntryID, adjustedXml, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.content, user["email"], {})
+    adjustedEntryID, adjustedXml, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, request.form.json, user["email"], {})
     html = ""
     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
         import lxml.etree as ET
@@ -198,7 +198,7 @@ def entryupdate(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entrycreate.json")
 @authDict(["canEdit"])
 def entrycreate(dictID, user, dictDB, configs):
-    adjustedEntryID, adjustedXml, feedback = ops.createEntry(dictDB, configs, None, request.forms.content, user["email"], {})
+    adjustedEntryID, adjustedXml, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, request.form.json, user["email"], {})
     html = ""
     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
         import lxml.etree as ET

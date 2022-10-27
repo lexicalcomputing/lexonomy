@@ -161,11 +161,19 @@ def readEntry(db, configs, entryID):
     if not row:
         return 0, "", ""
     nvh = row["nvh"]
+    if row["json"] != "":
+        json = row["json"]
+    else:
+        json = nvh2json(nvh)
     if configs["subbing"]:
         nvh = addSubentryParentTags(db, entryID, nvh)
-    return entryID, nvh, row["title"]
+    return entryID, nvh, json, row["title"]
 
-def createEntry(dictDB, configs, entryID, nvh, email, historiography):
+def createEntry(dictDB, configs, entryID, nvh, json, email, historiography):
+    if (nvh == "" or not nvh) and json != "":
+        nvh = json2nvh(json)
+    if nvh != "" and (json == "" or not json):
+        json = nvh2json(nvh)
     nvhParsed = nvh.parse_string(nvh)
     title = getEntryTitle(nvhParsed, configs["titling"])
     sortkey = getSortTitle(nvhParsed, configs["titling"])
@@ -177,10 +185,10 @@ def createEntry(dictDB, configs, entryID, nvh, email, historiography):
     feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
     if entryID:
         sql = "INSERT INTO entries(id, nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        params = (entryID, nvh, title, sortkey, needs_refresh, nvh2json(nvh), doctype)
+        params = (entryID, nvh, title, sortkey, needs_refresh, json, doctype)
     else:
         sql = "INSERT INTO entries(nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?)"
-        params = (nvh, title, sortkey, needs_refresh, nvh2json(nvh), doctype)
+        params = (nvh, title, sortkey, needs_refresh, json, doctype)
     c = dictDB.execute(sql, params)
     entryID = c.lastrowid
     dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True), 1))
@@ -190,11 +198,15 @@ def createEntry(dictDB, configs, entryID, nvh, email, historiography):
         nvh = updateEntryLinkables(db, entryID, nvhParsed, configs, False, False)
     return entryID, nvh, feedback
 
-def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
+def updateEntry(dictDB, configs, entryID, nvh, json, email, historiography):
+    if (nvh == "" or not nvh) and json != "":
+        nvh = json2nvh(json)
+    if nvh != "" and (json == "" or not json):
+        json = nvh2json(nvh)
     c = dictDB.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
     row = c.fetchone()
     if not row:
-        adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, email, historiography)
+        adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, json, email, historiography)
         return adjustedEntryID, nvh, True, feedback
     else:
         if row["nvh"] == nvh:
@@ -210,7 +222,7 @@ def updateEntry(dictDB, configs, entryID, nvh, email, historiography):
             c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
             r = c.fetchone()
             feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
-            dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, nvh, title, sortkey, needs_refresh, nvh2json(nvh), entryID))
+            dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, nvh, title, sortkey, needs_refresh, json, entryID))
             dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvh, configs["titling"], True), entryID))
             dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
             dictDB.commit()
@@ -241,7 +253,7 @@ def getEntryTitle(nvhParsed, titling, plaintext=False):
     return ret
 
 def getEntryTitleID(dictDB, configs, entry_id, plaintext=False):
-    eid, nvh, title = readEntry(dictDB, configs, entry_id)
+    eid, nvh, json, title = readEntry(dictDB, configs, entry_id)
     return getEntryTitle(nvh2json(nvh), configs["titling"], plaintext)
 
 def getEntryHeadword(nvhParsed, headword_elem):
@@ -2552,10 +2564,10 @@ def dql2sqlite(query):
 
 def nvh2json(nvhEntry):
     if type(nvhEntry) == str:
-        json = nvh2jsonNode(nvh.parse_string(nvhEntry))
+        jsonEntry = nvh2jsonNode(nvh.parse_string(nvhEntry))
     else:
-        json = nvh2jsonNode(nvh)
-    return json.dumps(json)
+        jsonEntry = nvh2jsonNode(nvh)
+    return json.dumps(jsonEntry)
 
 def nvh2jsonNode(nvhNode):
     data_obj = {}
@@ -2567,3 +2579,19 @@ def nvh2jsonNode(nvhNode):
         data_obj[c.name].append(nvh2jsonNode(c))
     return data_obj
 
+def json2nvhLevel(jsonNode, nvhParent):
+    for key,val in jsonNode.items():
+        if key != "_value":
+            for item in val:
+                indent = nvhParent.indent+"    " if nvhParent.parent else ""
+                value = item["_value"] if item.get("_value") else ""
+                newNode = nvh(nvhParent, indent, key, value)
+                newNode = json2nvhLevel(item, newNode)
+                nvhParent.children.append(newNode)
+    return nvhParent
+
+def json2nvh(jsonEntry):
+    if type(jsonEntry) == str:
+        jsonEntry = json.loads(jsonEntry)
+    nvhEntry = json2nvhLevel(jsonEntry,nvh(None))
+    return nvhEntry
