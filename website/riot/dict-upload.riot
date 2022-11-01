@@ -88,7 +88,7 @@
                         this.state.infoMessage = response.progressMessage
                         if (response.finished) {
                            this.state.isImporting = false
-                           this.state.infoMessage += ' Dictionary import finished. <a href="#/' + this.dictData.dictId + '">See dictionary</a>'
+                           this.state.infoMessage += ' <br/>Dictionary import finished. <a href="#/' + this.dictData.dictId + '">See dictionary</a>'
                         } else if (response.errors) {
                            this.state.infoMessage = 'There were some errors during XML parsing'
                            this.store.importXML({

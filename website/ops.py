@@ -31,7 +31,8 @@ defaultDictConfig = {"editing": {"xonomyMode": "nerd", "xonomyTextEditor": "askS
                      "searchability": {"searchableElements": []},
                      "xema": {"elements": {}},
                      "titling": {"headwordAnnotations": []},
-                     "flagging": {"flag_element": "", "flags": []}}
+                     "flagging": {"flag_element": "", "flags": []},
+                     "limits": {"entries": 5000}}
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
@@ -167,6 +168,10 @@ def readEntry(db, configs, entryID):
     return entryID, xml, row["title"]
 
 def createEntry(dictDB, configs, entryID, xml, email, historiography):
+    dictStat = getDictStats(dictDB)
+    limit = configs["limits"]["entries"] if configs.get("limits") and configs["limits"].get("entries") else defaultDictConfig["limits"]["entries"]
+    if dictStat["entryCount"] >= limit:
+        return None, None, "entry limit"
     xml = setHousekeepingAttributes(entryID, xml, configs["subbing"])
     xml = removeSubentryParentTags(xml)
     title = getEntryTitle(xml, configs["titling"])
@@ -1371,10 +1376,10 @@ def extractFirstText(xml):
 
 def getDictStats(dictDB):
     res = {"entryCount": 0, "needResave": 0}
-    c = dictDB.execute("select count(*) as entryCount from entries")
+    c = dictDB.execute("SELECT COUNT(*) AS entryCount FROM entries")
     r = c.fetchone()
     res["entryCount"] = r["entryCount"]
-    c = dictDB.execute("select count(*) as needResave from entries where needs_resave=1 or needs_refresh=1 or needs_refac=1")
+    c = dictDB.execute("SELECT COUNT(*) AS needResave FROM entries WHERE needs_resave=1 OR needs_refresh=1 OR needs_refac=1")
     r = c.fetchone()
     res["needResave"] = r["needResave"]
     return res

@@ -199,6 +199,8 @@ def entryupdate(dictID, user, dictDB, configs):
 @authDict(["canEdit"])
 def entrycreate(dictID, user, dictDB, configs):
     adjustedEntryID, adjustedXml, feedback = ops.createEntry(dictDB, configs, None, request.forms.content, user["email"], {})
+    if not adjustedEntryID:
+        return {"success": False, "error": feedback}
     html = ""
     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
         import lxml.etree as ET
