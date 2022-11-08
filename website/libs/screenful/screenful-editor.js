@@ -387,6 +387,16 @@ Screenful.Editor={
         $("#curtain").hide();
         if(!data.success) {
           Screenful.status(Screenful.Loc.savingFailed, "warn"); //"failed to save entry"
+          if(data.error == "entry limit"){
+              window.modal.open({
+                tag: "raw-html",
+                small: true,
+                title: "Entry limit reached",
+                opts: {
+                  content: `The dictionary size is limited to 5,000 entries. Delete some entries or to remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.`
+                }
+              })
+          }
         } else {
           Screenful.Editor.entryID=data.id;
           $("#idbox").val(data.id);
