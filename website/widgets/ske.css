@@ -26,3 +26,5 @@ div.skebox div.choices div.error {text-align: center; margin-top: 50px;}
 div.skebox input[type="radio"] {position: relative; opacity: 1;}
 div.skebox input {height: unset;}
 div.skebox label {text-transform: none;}
+
+div.skebox .corpusExampleCorp, div.skebox .corpusExampleRef {font-size: x-small;}

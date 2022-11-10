@@ -284,7 +284,7 @@ Ske.searchExamples=function(fromp){
             var txt=left+"<b>"+kwic+"</b>"+right;
             txt=txt.replace("<b> ", " <b>");
             txt=txt.replace(" </b>", "</b> ");
-            $(".skebox .choices").append("<label><input type='checkbox' onchange='Ske.toggleExample(this)'/><span class='inside'>"+txt+"</span></label>");
+            $(".skebox .choices").append("<label><input type='checkbox' onchange='Ske.toggleExample(this)'/><span class='inside'>"+txt+"</span> <span class='corpusExampleCorp'>"+kex.corpus+"</span><span class='corpusExampleRef'>"+line["Refs"].join(",")+"</span></label>");
             $(".skebox .waiter").hide();
             $(".skebox .choices").fadeIn();
             $(".skebox .bottombar").show();
@@ -310,6 +310,8 @@ Ske.insertExamples=function(){
         txt=txt.replace("</b>", "");
       }
       var xml=xampl.template.replace("$text", txt);
+      // add reference info in first element
+      xml = xml.replace(/>/, " corpusName='" + kex.corpus + "' corpusRefs='" + $label.find("span.corpusExampleRef").text() + "'>");
       if(Ske.htmlID) Xonomy.newElementChild(Ske.htmlID, xml); else Xonomy.newElementLayby(xml);
     }
   });
