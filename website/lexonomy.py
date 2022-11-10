@@ -303,9 +303,12 @@ def skeget_xampl(dictID, user, dictDB, configs):
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
-    res = urllib.request.urlopen(req)
-    data = json.loads(res.read())
-    return data
+    try:
+        res = urllib.request.urlopen(req)
+        data = json.loads(res.read())
+        return data
+    except urllib.error.HTTPError:
+        return {"error":"Empty result"}
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/thes")
 @authDict(["canEdit"])
@@ -320,9 +323,12 @@ def skeget_thes(dictID, user, dictDB, configs):
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
-    res = urllib.request.urlopen(req)
-    data = json.loads(res.read())
-    return data
+    try:
+        res = urllib.request.urlopen(req)
+        data = json.loads(res.read())
+        return data
+    except urllib.error.HTTPError:
+        return {"error":"Empty result"}
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/collx")
 @authDict(["canEdit"])
@@ -338,9 +344,12 @@ def skeget_collx(dictID, user, dictDB, configs):
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
-    res = urllib.request.urlopen(req)
-    data = json.loads(res.read())
-    return data
+    try:
+        res = urllib.request.urlopen(req)
+        data = json.loads(res.read())
+        return data
+    except urllib.error.HTTPError:
+        return {"error":"Empty result"}
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/defo")
 @authDict(["canEdit"])
@@ -357,9 +366,12 @@ def skeget_defo(dictID, user, dictDB, configs):
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
-    res = urllib.request.urlopen(req)
-    data = json.loads(res.read())
-    return data
+    try:
+        res = urllib.request.urlopen(req)
+        data = json.loads(res.read())
+        return data
+    except urllib.error.HTTPError:
+        return {"error":"Empty result"}
 
 @get(siteconfig["rootPath"] + "<dictID>/kontext/corpora")
 @authDict([])
