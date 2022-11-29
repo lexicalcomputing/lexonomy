@@ -1,0 +1,100 @@
+<help-dialog>
+   <div>
+      <div class="row">
+         <ul class="tabs">
+            <li class="tab col s4">
+               <a class={state.tab == "intro" ? "active" : ""} onclick={onTabChange.bind(this, "intro")}>Introduction</a>
+            </li>
+            <li class="tab col s4">
+               <a class={state.tab == "hotkeys" ? "active" : ""} onclick={onTabChange.bind(this, "hotkeys")}>Editor hotkeys</a>
+            </li>
+            <li class="tab col s4 ">
+               <a class={state.tab == "bibliography" ? "active" : ""} onclick={onTabChange.bind(this, "bibliography")}>Bibliography</a>
+            </li>
+         </ul>
+      </div>
+
+      <div if={state.tab == "intro"}>
+         <docs-intro/>
+      </div>
+
+      <div if={state.tab == "hotkeys"}>
+         To save time, you can use the following shortcuts in the entry editor. You need to press all keys simultaneously.
+         <br><br>
+         <div each={hotkey in state.hotkeys} class="shortcut">
+            <span class="keys">
+               <raw-html content={getHotkeyShortcut(hotkey[0])}></raw-html>
+            </span>
+            <span class="desc">
+               <raw-html content={hotkey[1]}></raw-html>
+            </span>
+         </div>
+      </div>
+
+      <div if={state.tab == "bibliography"}>
+         <p>
+            If you are referring to Lexonomy from an academic publication, it is recommended that you cite these papers (the first paper is a main general reference).
+         </p>
+         <p>
+            MĚCHURA, Michal. <a href="https://www.lexonomy.eu/docs/elex2017.pdf" target="_blank">Introducing Lexonomy: an open-source dictionary writing and publishing system</a>. In I. Kosem, C. Tiberius, M. Jakubíček, J. Kallas, S. Krek, V. Baisa. Electronic lexicography in the 21st century: Proceedings of eLex 2017 conference. Leiden: Lexical Computing, 2017. p. 662-679. ISSN 2533-5626.
+         </p>
+         <p>
+            RAMBOUSEK, Adam, Miloš JAKUBÍČEK and Iztok KOSEM. <a href="https://elex.link/elex2021/proceedings-download/" target="_blank">New developments in Lexonomy</a>. In Kosem, I., Cukr, M., Jakubíček, M., Kallas, J., Krek, S. & Tiberius, C. Electronic lexicography in the 21st century. Proceedings of the eLex 2021 conference. Brno: Lexical Computing CZ, s.r.o., 2021. p. 455-462. ISSN 2533-5626.
+         </p>
+         <p>
+            MĚCHURA, Michal. <a href="https://e-knjige.ff.uni-lj.si/znanstvena-zalozba/catalog/book/118" target="_blank">Shareable subentries in Lexonomy as a solution to the problem of multiword item placement</a>. In Jaka Čibej, Vojko Gorjanc, Iztok Kosem and Simon Krek. Proceedings of the XVIII EURALEX International Congress: Lexicography in Global Contexts. Lublaň: Ljubljana University Press, 2018. p. 223-232. ISBN 978-961-06-0097-8.
+         </p>
+         <p>
+            JAKUBÍČEK, Miloš, Michal MĚCHURA, Vojtěch KOVÁŘ and Pavel RYCHLÝ. <a href="https://euralex2018.cjvt.si/" target="_blank">Practical Post- Editing Lexicography with Lexonomy and Sketch Engine</a>. In XVIII EURALEX International Congress: Lexicography in Global Contexts. 2018. (edited)
+         </p>
+      </div>
+   </div>
+
+   <style>
+      .shortcut{
+         padding: 5px 0 5px 15px;
+      }
+      .shortcut .keys{
+         min-width: 150px;
+         display: inline-block;
+      }
+      .shortcut .keys small{
+         margin: 0 2px;
+      }
+      .shortcut .desc{
+
+      }
+   </style>
+
+   <script>
+      export default{
+         state: {
+            tab: "intro",
+            hotkeys: [
+               ["Ctrl Alt N", "<b>N</b>ew entry"],
+               ["Ctrl Alt S", "<b>S</b>ave changes"],
+               ["Ctrl Alt E", "<b>E</b>dit current entry"],
+               ["Ctrl Alt F", "<b>F</b>ind – jump to the search form"],
+               ["Ctrl Alt left", "Switch focus to the entry list"],
+               ["Ctrl Alt right", "Switch focus to the entry"],
+               ["Ctrl Alt up", "Go to the previous entry"],
+               ["Ctrl Alt down", "Go to the next entry"]
+            ]
+         },
+
+         getHotkeyShortcut(hotkey){
+            return hotkey.split(" ").map((key) => {
+                return "<b>" + key + "</b>";
+            }).join("<small>+</small>")
+         },
+
+         onTabChange(tab){
+            this.update({tab: tab})
+         },
+
+         onBeforeMount(){
+
+         }
+      }
+   </script>
+</help-dialog>
