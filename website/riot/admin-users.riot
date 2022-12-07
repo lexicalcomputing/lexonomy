@@ -13,21 +13,31 @@
       </span>
    </div>
    <table if={state.users.length}
-         class="highlight">
+         class="userTable">
       <thead>
          <tr>
+            <th class="toggleColumn"></th>
             <th class="titleColumn">Email</th>
             <th class="titleColumn">Comment</th>
+            <th class="dictionaryColumn">Dictionaries</th>
             <th class="actionColumn"></th>
          </tr>
       </thead>
-      <tbody>
-         <tr each={ (user, idx) in state.users }>
+      <tbody each={ (user, idx) in state.users }>
+         <tr class="userRow {user.dictionaries.length && 'pointer'}"
+               onclick={user.dictionaries.length ? onDictionaryToggleClick : null}>
+            <td>
+               <i if={user.dictionaries.length}
+                     class="toggleIcon material-icons clickable">add</i>
+            </td>
             <td class="user">
                { user.email }
             </td>
             <td class="user">
                { user.comment }
+            </td>
+            <td>
+               {user.dictionaries.length}
             </td>
             <td class="user-actions">
                <a class="clickable"
@@ -35,6 +45,17 @@
                      onclick={ doDeleteUser.bind(this, user.email) }>
                   <i class="material-icons">delete</i>
                </a>
+            </td>
+         </tr>
+         <tr class="dictionaryRow">
+            <td colspan="4">
+               <div class="dictionaryList" style="display: none;">
+                  <div each={dictionary in user.dictionaries}>
+                     <a href="#/{dictionary.id}">
+                        {dictionary.title ? dictionary.title : "--no title--"}
+                     </a>
+                  </div>
+               </div>
             </td>
          </tr>
       </tbody>
@@ -111,6 +132,14 @@
             this.search()
          },
 
+         onDictionaryToggleClick(evt){
+            let tbody = $(evt.target).closest("tbody")
+            let dictionaryList = tbody.find(".dictionaryList")
+            let isVisible = dictionaryList.is(":visible")
+            dictionaryList[isVisible ? "slideUp" : "slideDown"]()
+            tbody.find(".toggleIcon").html(isVisible ? "add" : "remove")
+         },
+
          onShowMoreClick(){
             this.state.howmany += 500
             this.search()
@@ -137,10 +166,24 @@
          right: 5px;
          top: 11px;
       }
+      .userTable tbody:hover tr{
+         background-color: rgba(242,242,242,0.5);
+      }
+      .userRow{
+         border: none;
+      }
+      .dictionaryRow td{
+         padding: 0 0.7rem 0 85px;
+      }
       table td{
          padding: 10px 10px;
       }
-      .user-actions{
+      .dictionaryList{
+         padding: 0 0 10px 0;
+      }
+      .toggleColumn,
+      .dictionaryColumn,
+      .actionColumn{
          width: 1px;
       }
       .showMoreBtn{

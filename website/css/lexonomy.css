@@ -489,6 +489,10 @@ span.badge{
    opacity: 1;
 }
 
+.pointer{
+   cursor: pointer;
+}
+
 .message{
    text-align: center;
    font-weight: bold;
