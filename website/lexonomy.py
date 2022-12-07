@@ -685,8 +685,6 @@ def publicrandom(dictID):
         return redirect("/")
     dictDB = ops.getDB(dictID)
     configs = ops.readDictConfigs(dictDB)
-    if not configs["publico"]["public"]:
-        return {"more": False, "entries": []}
     res = ops.readRandoms(dictDB)
     return res
 

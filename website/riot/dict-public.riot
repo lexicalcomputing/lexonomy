@@ -80,7 +80,7 @@
          </template>
       </div>
 
-      <div if={ dictData.public }>
+      <div if={ dictData.public || dictData.userAccess }>
          <div class="divider"></div>
          <a if={dictData.dictionaryExamplesHasMore}
                class="refreshExamplesBtn btn btn-floating waves-effect waves-light right"
