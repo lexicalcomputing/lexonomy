@@ -18,18 +18,28 @@
          <label for="email">Your e-mail</label>
          <span class="helper-text">To get a new account, enter your e-mail address and we will send you instructions.</span>
       </div>
-      <div class="buttons">
-         <a href="#/"
-               class="btn btn-secondary waves-effect waves-light">
-            Back
-         </a>
-         <button class="btn waves-effect waves-light"
-               name="login"
-               id="loginButton"
-               onclick={ doRegister }>Register
-            <i class="material-icons right">send</i>
-         </button>
+      <div class="section">
+         <div class="buttons">
+            <a href="#/"
+                  class="btn btn-secondary waves-effect waves-light">
+               Back
+            </a>
+            <button class="btn waves-effect waves-light"
+                  name="login"
+                  id="loginButton"
+                  onclick={ doRegister }>Register
+               <i class="material-icons right">send</i>
+            </button>
+         </div>
       </div>
+      <a class="btnSkeLogin btn waves-effect waves-light"
+            href={ state.skeLoginUrl }>Sign up with &nbsp;
+         <img class="skelogin"
+               alt="Sketch Engine"
+               title="Sketch Engine"
+               src="img/logo_ske_white.png"/>
+         <i class="material-icons right">send</i>
+      </a>
    </div>
 
    <script>
@@ -60,4 +70,19 @@
          }
       }
    </script>
+
+
+   <style>
+      .buttons .btn{
+         flex: 1;
+      }
+      .btnSkeLogin{
+         display: block;
+      }
+      .btnSkeLogin img {
+         width: 80px;
+         height: 30px;
+         vertical-align: middle;
+      }
+   </style>
 </register>

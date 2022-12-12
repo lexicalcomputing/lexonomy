@@ -177,7 +177,7 @@ class StoreClass {
       return $.ajax({url: `${window.API_URL}siteconfigread.json`})
             .done(response => {
                this.data.siteconfig = response
-               //this.trigger("siteconfigChanged")
+               this.trigger("siteconfigChanged")
             })
             .fail(response => {
                M.toast({html: "Could not load app configuration."})

@@ -7,14 +7,10 @@
    </div>
    <div class="section">
       <div class="input-field">
-         <input id="username"
+         <input id="email"
                type="email"
                class="validate"/>
-         <label for="username">Username</label>
-         <small>
-            No account?
-            <a href="#register" tabindex="-1">Sign up</a>
-         </small>
+         <label for="email">Email</label>
       </div>
       <div class="input-field">
          <input id="password"
@@ -25,17 +21,28 @@
             <a href="#forgot" tabindex="-1">Forgot password?</a>
          </small>
       </div>
-      <button class="btn btn-primary waves-effect waves-light"
-            name="login"
-            id="loginButton"
-            onclick={ doLogin }>
-         Log in
-         <i class="material-icons right">send</i>
-      </button>
+      <div class="buttons">
+         <button class="btn btn-primary waves-effect waves-light"
+               name="login"
+               id="loginButton"
+               onclick={ doLogin }>
+            Log in
+            <i class="material-icons right">send</i>
+         </button>
+         <span class="buttonsOr">
+            or
+         </span>
+         <a href="#register"
+               class="btn"
+               tabindex="-1">
+            Sign up
+            <i class="material-icons right">person_add</i>
+         </a>
+      </div>
    </div>
    <div if={ dictData.siteconfig && dictData.siteconfig.sketchengineLoginPage }
-         class="section" >
-      <a class="btn waves-effect waves-light"
+         class="section">
+      <a class="btnSkeLogin btn waves-effect waves-light"
             href={ state.skeLoginUrl }>Sign up or log in with &nbsp;
          <img class="skelogin"
                alt="Sketch Engine"
@@ -45,17 +52,6 @@
       </a>
    </div>
 
-   <style>
-      .skelogin {
-         width: 80px;
-         height: 30px;
-         vertical-align: middle;
-      }
-      small{
-         position: relative;
-         top: -10px;
-      }
-   </style>
 
    <script>
       export default {
@@ -75,19 +71,44 @@
          },
 
          doLogin() {
-            let username = $('#username').val()
+            let email = $('#email').val()
             let password = $('#password').val()
-            if(username && password){
+            if(email && password){
                this.update({isLoggingIn: true})
-               this.auth.login(username, password)
+               this.auth.login(email, password)
                      .always(response =>{
                         this.update({
                            isLoggingIn: false,
-                           message: response.success ? "" : "Incorrect username or password."
+                           message: response.success ? "" : "Incorrect email or password."
                         })
                      })
             }
          }
       }
    </script>
+
+
+   <style>
+      .skelogin {
+         width: 80px;
+         height: 30px;
+         vertical-align: middle;
+      }
+      .buttonsOr{
+         opacity: 0.7;
+         font-size: 1.2rem;
+         line-height: 35px;
+         margin: 0 10px;
+      }
+      small{
+         position: relative;
+         top: -10px;
+      }
+      .buttons .btn{
+         flex: 1;
+      }
+      .btnSkeLogin{
+         display: block;
+      }
+   </style>
 </login>

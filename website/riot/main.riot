@@ -102,7 +102,7 @@
          },
 
          needAuthorization(content, subPage){
-            if(['e404', 'open-dict-list', 'dict-public', 'dict-public-entry', 'docs-intro'].includes(content)
+            if(['e404', 'open-dict-list', 'dict-public', 'dict-public-entry'].includes(content)
                   || content == 'main-page' && !['new', 'userprofile'].includes(subPage)){
                return false
             }
@@ -147,9 +147,6 @@
             })
             route('/opendictionaries', () => {
                this.goTo('open-dict-list')
-            })
-            route('/docs/intro', () => {
-               this.goTo('docs-intro')
             })
             route('/createaccount/*', (token) => {
                this.goTo('main-page', 'registerPassword', '', {token: token})

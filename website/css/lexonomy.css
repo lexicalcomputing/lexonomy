@@ -474,6 +474,15 @@ span.badge{
    height: 1.3rem;
 }
 
+ul{
+   padding-inline-start: 20px;
+}
+li {
+   list-style: square;
+}
+table.striped thead tr{
+   border-bottom: 2px solid #000;
+}
 /*  UTILITY  */
 
 .inlineBlock{

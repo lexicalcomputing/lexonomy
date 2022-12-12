@@ -26,7 +26,30 @@
             target="_blank">
          <img src="img/github.png"/>
       </a>
+
+      <a if={ dictData.siteconfig && dictData.siteconfig.consent.terms}
+            href="javascript:void(0);"
+            class="termsOfUse right"
+            onclick={onTermsOfUseClick}>
+         Terms of use
+      </a>
    </div>
+
+   <script>
+      export default{
+         bindings: [["store", "siteconfigChanged", "update"]],
+
+         onTermsOfUseClick(){
+            window.modal.open({
+               title: "Terms of use",
+               tag: "raw-html",
+               opts: {
+                  content: this.dictData.siteconfig.consent.terms
+               }
+            })
+         }
+      }
+   </script>
 
    <style>
       .footer-logos{
@@ -57,14 +80,11 @@
       .logolint a:hover img{
          filter: none;
       }
+      .termsOfUse{
+         margin-right: 30px;
+      }
       .version{
          font-weight: 100;
       }
    </style>
-
-   <script>
-      export default {
-
-      }
-   </script>
 </app-footer>
