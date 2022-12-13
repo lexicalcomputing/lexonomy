@@ -1,7 +1,10 @@
 <open-dict-list>
    <a if={authData.authorized}
-         href="/"
-         class="btn right">my dictionaries</a>
+         href="#"
+         class="btn right">
+      <i class="material-icons left">vpn_lock</i>
+      my dictionaries
+   </a>
    <h1>Open dictionaries</h1>
    <loading-overlay if={dictData.isPublicDictionaryListLoading}></loading-overlay>
    <div if={!dictData.isPublicDictionaryListLoading}>

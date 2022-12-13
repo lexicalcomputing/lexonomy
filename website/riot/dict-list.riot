@@ -1,6 +1,19 @@
 <dict-list>
    <loading-overlay if={state.isLoading || dictData.isDictionaryListLoading}/>
    <template if={!dictData.isDictionaryListLoading}>
+      <span class="buttons right">
+         <a if={authData.authorized}
+               href="#opendictionaries"
+               class="btn">
+            <i class="material-icons left">public</i>
+            public dictionaries
+         </a>
+         <a href="#/make"
+               class="btn waves-effect waves-light">
+            <i class="material-icons left">add</i>
+            create new dictionary
+         </a>
+      </span>
       <div if={dictData.dictionaryList.length}>
          <h1>Your dictionaries</h1>
          <div class="topBar">
@@ -16,7 +29,7 @@
             <label id="favoriteToggleWrapper"
                   class="onlyFavoritesChbWrapper"
                   class="checkbox"
-                  style="display: none;"}>
+                  style="display: none;">
                <input id="onlyFavoritesChb"
                      type="checkbox"
                      checked={state.showOnlyFavorites}
@@ -24,13 +37,6 @@
                <span>Only favorites</span>
             </label>
 
-            <span class="newDictionaryButton">
-               <a href="#/make"
-                     class="btn waves-effect waves-light">
-                  <i class="material-icons left">add</i>
-                  create new dictionary
-               </a>
-            </span>
          </div>
          <table if={state.visibleDictionaries.length}
                class="highlight">
@@ -148,9 +154,6 @@
          display: flex;
          align-items: center;
          flex-wrap: wrap;
-      }
-      .newDictionaryButton{
-         margin-left: auto;
       }
       .searchBox{
          max-width: 200px;

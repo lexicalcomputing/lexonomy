@@ -12,10 +12,10 @@
    </div>
    <div if={ !authData.authorized }
          class="row">
-      <div class="col m7 s12">
+      <div class="col l8 m7 s12">
          <welcome/>
       </div>
-      <div class="col m5 s12">
+      <div class="col l4 m5 s12">
          <login if={props.mainSubPage == 'login'}></login>
          <register if={props.mainSubPage == 'register'}></register>
          <register-password if={props.mainSubPage == 'registerPassword'}
@@ -26,27 +26,6 @@
       </div>
    </div>
 
-   <div class="divider"
-         style="margin-top: 50px;"></div>
-   <div if={ authData.authorized }
-         class="section"
-         style="opacity: 0.6;">
-      <h3>Resources</h3>
-      <ul class="resource-list-inline">
-         <li><a href="#/docs/intro">Gentle introduction to Lexonomy</a></li>
-         <li><a href="#/opendictionaries">Public dictionaries</a></li>
-      </ul>
-   </div>
-   <div class="section"
-         style="opacity: 0.6;">
-      <h3>Reference</h3>
-      <ul class="referenceList">
-         <li>Jakubíček, M. Kovář, V., Měchura, M.,Rambousek, A. (2022) '<a href="docs/raslan2022.pdf">Using NVH as a Backbone Format in the Lexonomy Dictionary Editor</a>' in <i>Proceedings of the Sixteenth Workshop on Recent Advances in Slavonic Natural Languages Processing, RASLAN 2022.</i> Brno: Tribun EU.</li>
-         <li>Rambousek, A., Jakubíček, M., Kosem, I. (2021) ‘<a href="docs/elex2021.pdf">New developments in Lexonomy</a>’ in <i>Electronic lexicography in the 21st century. Proceedings of the eLex 2021 conference.</i> 5–7 July 2021, virtual. Brno: Lexical Computing CZ, s.r.o.</li>
-         <li>Měchura, M. B. (2017) ‘<a href="docs/elex2017.pdf">Introducing Lexonomy: an open-source dictionary writing and publishing system</a>’ in <i>Electronic Lexicography in the 21st Century: Lexicography from Scratch. Proceedings of the eLex 2017 conference, 19-21 September 2017, Leiden, The Netherlands.</i></li>
-         <li>If you are referring to Lexonomy from an academic publication, it is recommended that you cite the 2021 paper.</li>
-      </ul>
-   </div>
 
    <style>
       :host{
