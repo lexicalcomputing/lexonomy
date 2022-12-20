@@ -2048,6 +2048,15 @@ def changeFavDict(userEmail, dictID, status):
         conn.commit()
     return True
 
+def sendFeedback(email_from, body_text):
+    subject = "Lexonomy feedback from " + email_from
+    mail_to = "support@sketchengine.eu"
+    mail_text = body_text + "\n\nMAIL " + email_from
+    sendmail(mail_to, subject, mail_text)
+    mail_text_user = "Thank you for your feedback regarding Lexonomy. We will get back in touch as soon as possible. Here is the copy of your question:\n\n" + body_text
+    sendmail(email_from, subject, mail_text_user)
+    return True
+
 def get_iso639_1():
     codes = []
     for line in open("libs/iso-639-3.tab").readlines():

@@ -863,6 +863,14 @@ def resavejson(dictID, user, dictDB, configs):
         count += 1
     return {"todo": stats["needResave"]}
 
+@post(siteconfig["rootPath"]+"feedback.json")
+def sendfeedback():
+    if request.forms.email != "" and request.forms.text != "":
+        ops.sendFeedback(request.forms.email, request.forms.text)
+        return {"success": True}
+    else:
+        return {"success": False, "error": "missing parameters"}
+
 @post(siteconfig["rootPath"] + "<dictID>/<doctype>/ontolex.api")
 def ontolex(dictID, doctype):
     data = json.loads(request.body.getvalue().decode('utf-8'))
