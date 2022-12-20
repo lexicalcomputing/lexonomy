@@ -188,6 +188,7 @@ Xematron.xema2docspec=function(xema, stringAsker){
 				del.menu.push({
 					caption: "Child elements",
 					menu: submenu,
+					expanded: true
 				});
 			}
 			//del.collapsible=function(jsMe){ return (jsMe.internalParent ? true : false); };
