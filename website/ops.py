@@ -924,14 +924,14 @@ def listUsers(searchtext, howmany):
     if searchtext and searchtext != "":
         c = conn.execute("select * from users where email like ? order by email limit ?", ("%"+searchtext+"%", howmany))
         for r in c.fetchall():
-            users.append({"email": r["email"], "dictionaries": []})
+            users.append({"email": r["email"], "comment": r["comment"], "dictionaries": []})
         c = conn.execute("select count(*) as total from users where email like ?", ("%"+searchtext+"%", ))
         r = c.fetchone()
         total = r["total"]
     else:
         c = conn.execute("select * from users order by email limit ?", (howmany,))
         for r in c.fetchall():
-            users.append({"email": r["email"], "dictionaries": []})
+            users.append({"email": r["email"], "comment": r["comment"], "dictionaries": []})
         total = len(users)
     for user in users:
         c = conn.execute("SELECT * FROM user_dict, dicts WHERE user_dict.dict_id=dicts.id AND user_email=? ORDER BY dicts.id", (user["email"],))

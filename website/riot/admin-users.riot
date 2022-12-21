@@ -17,6 +17,7 @@
       <thead>
          <tr>
             <th class="titleColumn">Email</th>
+            <th class="titleColumn">Comment</th>
             <th class="actionColumn"></th>
          </tr>
       </thead>
@@ -24,6 +25,9 @@
          <tr each={ (user, idx) in state.users }>
             <td class="user">
                { user.email }
+            </td>
+            <td class="user">
+               { user.comment }
             </td>
             <td class="user-actions">
                <a class="clickable"
