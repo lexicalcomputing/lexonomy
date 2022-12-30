@@ -102,7 +102,7 @@
          },
 
          needAuthorization(content, subPage){
-            if(['e404', 'open-dict-list', 'dict-public', 'dict-public-entry'].includes(content)
+            if(['e404', 'open-dict-list', 'dict-public', 'dict-public-entry', 'api'].includes(content)
                   || content == 'main-page' && !['new', 'userprofile'].includes(subPage)){
                return false
             }
@@ -137,7 +137,7 @@
             })
 
             route('/api', () => {
-               this.goTo.bind(this, 'api')
+               this.goTo('api')
             })
             route('/e404', () => {
                this.goTo('e404')
