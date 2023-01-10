@@ -464,31 +464,31 @@ def prepareApiKeyForSke(email):
 
 def processJWT(user, jwtdata):
     conn = getMainDB()
-    c = conn.execute("select * from users where ske_id=?", (jwtdata["user"]["id"],))
+    c = conn.execute("SELECT * FROM users WHERE ske_id=?", (jwtdata["user"]["id"],))
     row = c.fetchone()
     key = generateKey()
     now = datetime.datetime.utcnow()
     if row:
-        #if SkE ID in database = log in user
-        conn.execute("update users set sessionKey=?, sessionLast=? where email=?", (key, now, row["email"]))
+        #if SkE ID in database = log in user (update username and API key)
+        conn.execute("UPDATE users SET ske_username=?, ske_apiKey=?, sessionKey=?, sessionLast=? WHERE email=?", (jwtdata["user"]["username"], jwtdata["user"]["api_key"], key, now, row["email"]))
         conn.commit()
         prepareApiKeyForSke(row["email"])
         return {"success": True, "email": row["email"], "key": key}
     else:
         if user["loggedin"]:
             #user logged in = save SkE ID in database
-            conn.execute("update users set ske_id=?, ske_username=?, ske_apiKey=?, sessionKey=?, sessionLast=? where email=?", (jwtdata["user"]["id"], jwtdata["user"]["username"], jwtdata["user"]["api_key"], key, now, user["email"]))
+            conn.execute("UPDATE users SET ske_id=?, ske_username=?, ske_apiKey=?, sessionKey=?, sessionLast=? WHERE email=?", (jwtdata["user"]["id"], jwtdata["user"]["username"], jwtdata["user"]["api_key"], key, now, user["email"]))
             conn.commit()
             prepareApiKeyForSke(user["email"])
             return {"success": True, "email": user["email"], "key": key}
         else:
             #user not logged in = register and log in
             email = jwtdata["user"]["email"].lower()
-            c2 = conn.execute("select * from users where email=?", (email,))
+            c2 = conn.execute("SELECT * from users where email=?", (email,))
             row2 = c2.fetchone()
             if not row2:
                 lexapi = generateKey()
-                conn.execute("insert into users (email, passwordHash, ske_id, ske_username, ske_apiKey, sessionKey, sessionLast, apiKey) values (?, null, ?, ?, ?, ?, ?, ?)", (email, jwtdata["user"]["id"], jwtdata["user"]["username"], jwtdata["user"]["api_key"], key, now, lexapi))
+                conn.execute("INSERT INTO users (email, passwordHash, ske_id, ske_username, ske_apiKey, sessionKey, sessionLast, apiKey) VALUES (?, null, ?, ?, ?, ?, ?, ?)", (email, jwtdata["user"]["id"], jwtdata["user"]["username"], jwtdata["user"]["api_key"], key, now, lexapi))
                 conn.commit()
                 prepareApiKeyForSke(email)
                 return {"success": True, "email": email, "key": key}
