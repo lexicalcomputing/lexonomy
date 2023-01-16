@@ -118,7 +118,8 @@
          },
 
          setIsPublicEnabled(){
-            this.state.isPublicEnabled = this.store.getDictionary(this.dictData.dictId).size >= 100
+            let dict = this.store.getDictionary(this.dictData.dictId)
+            this.state.isPublicEnabled = dict && dict.size >= 100
          },
 
          onBeforeMount(){
