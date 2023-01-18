@@ -208,6 +208,9 @@
          },
 
          onBeforeUpdate(){
+            if(this.state.content == "unauthorized"){
+               this.store.resetDictionary()
+            }
             this.state.isLoading = this.authData.isCheckingAuth
                   || this.dictData.isSiteconfigLoading
                   || (this.state.isShowingDictionary && this.dictData.isDictionaryLoading)
