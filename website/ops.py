@@ -64,7 +64,7 @@ def sendmail(mailTo, mailSubject, mailText):
             server = smtplib.SMTP_SSL(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"], context=context)
         else:
             server = smtplib.SMTP(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"])
-        message = "Subject: " + mailSubject + "\n\n" + mailText
+        message = "From: Lexonomy <" + siteconfig["mailconfig"]["from"] + ">\n" + "Subject: " + mailSubject + "\n\n" + mailText
         server.sendmail(siteconfig["mailconfig"]["from"], mailTo, message)
         server.quit()
 
