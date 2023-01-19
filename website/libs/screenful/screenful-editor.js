@@ -372,6 +372,9 @@ Screenful.Editor={
     return message;
   },
   save: function(event){
+    if(!Screenful.Editor.isValid()){
+      return false
+    }
     Screenful.Editor.hideHistory();
     var id=Screenful.Editor.entryID;
     var content=Screenful.Editor.harvester(document.getElementById("editor"));
@@ -497,6 +500,11 @@ Screenful.Editor={
         Screenful.Editor.onListChange()
     	});
     }
+  },
+  isValid: function(){  // to be overriden in custom editor
+    // returns true/false
+    // if entry is not valid, isValid() should display message describing the issue
+    return true
   },
   needsSaving: false,
   changed: function(){
