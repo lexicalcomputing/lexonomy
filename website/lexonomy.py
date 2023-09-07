@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.10
 
 import os
 import sys
@@ -175,7 +175,8 @@ def entryread(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
 @authDict(["canEdit"])
 def entryupdate(dictID, user, dictDB, configs):
-    adjustedEntryID, adjustedXml, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, request.form.json, user["email"], {})
+    adjustedEntryID, adjustedNvh, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, request.forms.json, user["email"], {})
+    """
     html = ""
     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
         import lxml.etree as ET
@@ -188,9 +189,13 @@ def entryupdate(dictID, user, dictDB, configs):
         entrydata = re.sub(r"'", "\\'", adjustedXml)
         entrydata = re.sub(r"[\n\r]", "", entrydata)
         html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('"+entrydata+"', "+json.dumps(configs["xemplate"])+", "+json.dumps(configs["xema"])+"));</script>"
-    result = {"success": True, "id": adjustedEntryID, "content": adjustedXml, "contentHtml": html}
+    result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh, "contentHtml": html}
+    """
+    result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
+    """
     if len(configs['subbing']) > 0:
         ops.refresh(dictDB, dictID, configs)
+    """
     if feedback:
         result["feedback"] = feedback
     return result
@@ -198,7 +203,8 @@ def entryupdate(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entrycreate.json")
 @authDict(["canEdit"])
 def entrycreate(dictID, user, dictDB, configs):
-    adjustedEntryID, adjustedXml, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, request.form.json, user["email"], {})
+    adjustedEntryID, adjustedNvh, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, request.forms.json, user["email"], {})
+    """
     html = ""
     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
         import lxml.etree as ET
@@ -212,6 +218,8 @@ def entrycreate(dictID, user, dictDB, configs):
         entrydata = re.sub(r"[\n\r]", "", entrydata)
         html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('"+entrydata+"', "+json.dumps(configs["xemplate"])+", "+json.dumps(configs["xema"])+"));</script>"
     result = {"success": True, "id": adjustedEntryID, "content": adjustedXml, "contentHtml": html}
+    """
+    result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
     if feedback:
         result["feedback"] = feedback
     return result
@@ -239,6 +247,7 @@ def history(dictID):
     history = ops.readDictHistory(ops.getDB(dictID), dictID, configs, request.forms.id)
     res_history = []
     for item in history:
+        """
         xml = item["content"]
         html = ""
         if xml:
@@ -254,6 +263,7 @@ def history(dictID):
                 entrydata = re.sub(r"[\n\r]", "", entrydata)
                 html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('"+entrydata+"', "+json.dumps(configs["xemplate"])+", "+json.dumps(configs["xema"])+"));</script>"
         item["contentHtml"] = html
+        """
         res_history.append(item)
     return {"history":res_history}
 
@@ -628,9 +638,11 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        doctypes = [configs["xema"]["root"]] + list(configs["subbing"].keys())
+        #doctypes = [configs["structure"]["root"]] + list(configs["subbing"].keys())
+        doctypes = [configs["structure"]["root"]]
         doctypes = list(set(doctypes))
-        res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]}, "userAccess": user["dictAccess"], "configs": {"xema": configs["xema"], "xemplate": configs["xemplate"], "kex": configs["kex"], "kontext": configs["kontext"], "subbing": configs["subbing"], "xampl": configs["xampl"], "thes": configs["thes"], "collx": configs["collx"], "defo": configs["defo"], "titling": configs["titling"], "flagging": configs["flagging"], "linking": configs["links"], "editing": configs["editing"], "metadata": configs["metadata"], "gapi": configs["gapi"]}, "doctype": configs["xema"]["root"], "doctypes": doctypes}
+        #res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]}, "userAccess": user["dictAccess"], "configs": {"structure": configs["structure"] if "structure" in configs else configs["structure"], "xemplate": configs["xemplate"], "kex": configs["kex"], "kontext": configs["kontext"], "subbing": configs["subbing"], "xampl": configs["xampl"], "thes": configs["thes"], "collx": configs["collx"], "defo": configs["defo"], "titling": configs["titling"], "flagging": configs["flagging"], "linking": configs["links"], "editing": configs["editing"], "metadata": configs["metadata"], "gapi": configs["gapi"]}, "doctype": configs["structure"]["root"], "doctypes": doctypes}
+        res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]}, "userAccess": user["dictAccess"], "configs": {"structure": configs["structure"] if "structure" in configs else configs["structure"], "xemplate": configs["xemplate"], "kex": configs["kex"], "kontext": configs["kontext"], "xampl": configs["xampl"], "thes": configs["thes"], "collx": configs["collx"], "defo": configs["defo"], "titling": configs["titling"], "flagging": configs["flagging"], "linking": configs["links"], "editing": configs["editing"], "metadata": configs["metadata"], "gapi": configs["gapi"]}, "doctype": configs["structure"]["root"], "doctypes": doctypes}
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
 
@@ -640,9 +652,10 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        doctypes = [configs["xema"]["root"]] + list(configs["subbing"].keys())
+        #doctypes = [configs["structure"]["root"]] + list(configs["subbing"].keys())
+        doctypes = [configs["structure"]["root"]]
         doctypes = list(set(doctypes))
-        res = {"success": True, "doctype": configs["xema"]["root"], "doctypes": doctypes, "userAccess": user["dictAccess"]}
+        res = {"success": True, "doctype": configs["structure"]["root"], "doctypes": doctypes, "userAccess": user["dictAccess"]}
         return res
 
 @get(siteconfig["rootPath"]+"<dictID>/<entryID:re:\d+>/nabes.json")
@@ -783,7 +796,7 @@ def publicsearch(dictID):
     if not configs["publico"]["public"]:
         return {"success": False}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, configs['xema']['root'], request.forms.searchtext, modifier, howmany)
+        total, entries, first = ops.listEntries(dictDB, dictID, configs, configs['structure']['root'], request.forms.searchtext, modifier, howmany)
         return {"success": True, "entries": entries, "total": total}
 
 @post(siteconfig["rootPath"]+"<dictID>/configread.json")
@@ -792,7 +805,10 @@ def configread(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
         config_data = {'kex': configs['kex'], 'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
     else:
-        config_data = configs[request.forms.id]
+        if request.forms.id == 'structure' and 'structure' not in configs:
+            config_data = configs['structure']
+        else:
+            config_data = configs[request.forms.id]
     if request.forms.id == 'ident':
         config_data['langs'] = ops.get_iso639_1()
     if request.forms.id == 'titling':
@@ -846,9 +862,11 @@ def resavejson(dictID, user, dictDB, configs):
     count = 0
     stats = ops.getDictStats(dictDB)
     while stats["needResave"] and count <= 127:
+        """
         if len(configs['subbing']) > 0:
             ops.refac(dictDB, dictID, configs)
             ops.refresh(dictDB, dictID, configs)
+        """
         ops.resave(dictDB, dictID, configs)
         stats = ops.getDictStats(dictDB)
         count += 1
@@ -951,16 +969,16 @@ def pushapi():
                 if dictFormat == "push":
                     dictDB = ops.getDB(dictID)
                     configs = ops.readDictConfigs(dictDB)
-                    if configs["xema"]["elements"].get("partOfSpeech"):
+                    if configs["structure"]["elements"].get("partOfSpeech"):
                         for pos in poses:
-                            configs["xema"]["elements"]["partOfSpeech"]["values"].append({"value": pos, "caption": ""})
-                    if configs["xema"]["elements"].get("collocatePartOfSpeech"):
+                            configs["structure"]["elements"]["partOfSpeech"]["values"].append({"value": pos, "caption": ""})
+                    if configs["structure"]["elements"].get("collocatePartOfSpeech"):
                         for pos in poses:
-                            configs["xema"]["elements"]["collocatePartOfSpeech"]["values"].append({"value": pos, "caption":""})
-                    if configs["xema"]["elements"].get("label"):
+                            configs["structure"]["elements"]["collocatePartOfSpeech"]["values"].append({"value": pos, "caption":""})
+                    if configs["structure"]["elements"].get("label"):
                         for label in labels:
-                            configs["xema"]["elements"]["label"]["values"].append({"value":label, "caption": ""})
-                    ops.updateDictConfig(dictDB, dictID, "xema", configs["xema"])
+                            configs["structure"]["elements"]["label"]["values"].append({"value":label, "caption": ""})
+                    ops.updateDictConfig(dictDB, dictID, "structure", configs["structure"])
                 return {"success": True, "dictID": dictID}
         elif data["command"] == "listDicts":
             dicts = ops.getDictsByUser(user["email"])
@@ -1198,7 +1216,7 @@ def error404(error):
         return redirect("/#/e404")
 
 # deployment
-debug=False
+debug=True
 if "DEBUG" in os.environ:
     debug=True
 if ":" in my_url:

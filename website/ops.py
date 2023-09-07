@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.10
 
 import datetime
 import json
@@ -28,9 +28,9 @@ for datadir in ["dicts", "uploads", "sqlite_tmp"]:
     pathlib.Path(os.path.join(siteconfig["dataDir"], datadir)).mkdir(parents=True, exist_ok=True)
 os.environ["SQLITE_TMPDIR"] = os.path.join(siteconfig["dataDir"], "sqlite_tmp")
 
-defaultDictConfig = {"editing": {"xonomyMode": "nerd", "xonomyTextEditor": "askString" },
+defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
-                     "xema": {"elements": {}},
+                     "structure": {"elements": {}},
                      "titling": {"headwordAnnotations": []},
                      "flagging": {"flag_element": "", "flags": []}}
 
@@ -76,8 +76,8 @@ def readDictConfigs(dictDB):
     for r in c.fetchall():
         configs[r["id"]] = json.loads(r["json"])
     for conf in ["ident", "publico", "users", "kex", "kontext", "titling", "flagging",
-                 "searchability", "xampl", "thes", "collx", "defo", "xema",
-                 "xemplate", "editing", "subbing", "download", "links", "autonumber", "gapi", "metadata"]:
+                 "searchability", "xampl", "thes", "collx", "defo", "structure",
+                 "xemplate", "editing", "download", "links", "autonumber", "gapi", "metadata"]:
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
 
@@ -92,6 +92,7 @@ def readDictConfigs(dictDB):
 
     return configs
 
+"""
 def addSubentryParentTags(db, entryID, xml):
     from xml.dom import minidom, Node
     doc = minidom.parseString(xml)
@@ -115,6 +116,7 @@ def addSubentryParentTags(db, entryID, xml):
 
 def removeSubentryParentTags(xml):
     return re.sub(r"<lxnm:subentryParent[^>]*>", "", xml)
+"""
 
 # auth
 def verifyLogin(email, sessionkey):
@@ -151,7 +153,7 @@ def deleteEntry(db, entryID, email):
     # delete me:
     db.execute ("delete from entries where id=?", (entryID,))
     # tell history that I have been deleted:
-    db.execute ("insert into history(entry_id, action, [when], email, xml) values(?,?,?,?,?)",
+    db.execute ("insert into history(entry_id, action, [when], email, nvh) values(?,?,?,?,?)",
                 (entryID, "delete", datetime.datetime.utcnow(), email, None))
     db.commit()
 
@@ -165,16 +167,18 @@ def readEntry(db, configs, entryID):
         json = row["json"]
     else:
         json = nvh2json(nvh)
+    """
     if configs["subbing"]:
         nvh = addSubentryParentTags(db, entryID, nvh)
+    """
     return entryID, nvh, json, row["title"]
 
-def createEntry(dictDB, configs, entryID, nvh, json, email, historiography):
-    if (nvh == "" or not nvh) and json != "":
-        nvh = json2nvh(json)
-    if nvh != "" and (json == "" or not json):
-        json = nvh2json(nvh)
-    nvhParsed = nvh.parse_string(nvh)
+def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiography):
+    if (entryNvh == "" or not entryNvh) and entryJson != "":
+        entryNvh = json2nvh(entryJson)
+    if entryNvh != "" and (entryJson == "" or not entryJson):
+        entryJson = nvh2json(entryNvh)
+    nvhParsed = nvh.parse_string(entryNvh)
     title = getEntryTitle(nvhParsed, configs["titling"])
     sortkey = getSortTitle(nvhParsed, configs["titling"])
     doctype = getDoctype(nvhParsed)
@@ -185,35 +189,35 @@ def createEntry(dictDB, configs, entryID, nvh, json, email, historiography):
     feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
     if entryID:
         sql = "INSERT INTO entries(id, nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        params = (entryID, nvh, title, sortkey, needs_refresh, json, doctype)
+        params = (entryID, entryNvh, title, sortkey, needs_refresh, entryJson, doctype)
     else:
         sql = "INSERT INTO entries(nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?)"
-        params = (nvh, title, sortkey, needs_refresh, json, doctype)
+        params = (entryNvh, title, sortkey, needs_refresh, entryJson, doctype)
     c = dictDB.execute(sql, params)
     entryID = c.lastrowid
-    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True), 1))
-    dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
+    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, getEntryTitle(nvhParsed, configs["titling"], True), 1))
+    dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
     dictDB.commit()
     if configs["links"]:
-        nvh = updateEntryLinkables(db, entryID, nvhParsed, configs, False, False)
-    return entryID, nvh, feedback
+        entryNvh = updateEntryLinkables(db, entryID, nvhParsed, configs, False, False)
+    return entryID, entryNvh, feedback
 
-def updateEntry(dictDB, configs, entryID, nvh, json, email, historiography):
-    if (nvh == "" or not nvh) and json != "":
-        nvh = json2nvh(json)
-    if nvh != "" and (json == "" or not json):
-        json = nvh2json(nvh)
+def updateEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiography):
+    if (entryNvh == "" or not entryNvh) and entryJson != "":
+        entryNvh = json2nvh(entryJson).dump_string()
+    if entryNvh != "" and (entryJson == "" or not entryJson):
+        entryJson = nvh2json(entryNvh)
     c = dictDB.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
     row = c.fetchone()
     if not row:
-        adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, json, email, historiography)
-        return adjustedEntryID, nvh, True, feedback
+        adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, entryJson, email, historiography)
+        return adjustedEntryID, entryNvh, True, feedback
     else:
-        if row["nvh"] == nvh:
-            return entryID, nvh, False, None
+        if row["nvh"] == entryNvh:
+            return entryID, entryNvh, False, None
         else:
             #dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
-            nvhParsed = nvh.parse_string(nvh)
+            nvhParsed = nvh.parse_string(entryNvh)
             title = getEntryTitle(nvhParsed, configs["titling"])
             sortkey = getSortTitle(nvhParsed, configs["titling"])
             doctype = getDoctype(nvhParsed)
@@ -222,13 +226,14 @@ def updateEntry(dictDB, configs, entryID, nvh, json, email, historiography):
             c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
             r = c.fetchone()
             feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
-            dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, nvh, title, sortkey, needs_refresh, json, entryID))
-            dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvh, configs["titling"], True), entryID))
-            dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvh, json.dumps(historiography)))
+            #return entryID, nvh, False, "UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, nvh, title, sortkey, needs_refresh, json, entryID)
+            dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, entryNvh, title, sortkey, needs_refresh, entryJson, entryID))
+            dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvhParsed, configs["titling"], True), entryID))
+            dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
             dictDB.commit()
             if configs["links"]:
-                nvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
-            return entryID, nvh, True, feedback
+                entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
+            return entryID, entryNvh, True, feedback
 
 def getEntryTitle(nvhParsed, titling, plaintext=False):
     if titling.get("headwordAnnotationsType") == "advanced" and not plaintext:
@@ -1066,7 +1071,7 @@ def readNabesByEntryID(dictDB, dictID, entryID, configs):
     nabes_before = []
     nabes_after = []
     nabes = []
-    c = dictDB.execute("select e1.id, e1.title, e1.sortkey, e1.xml from entries as e1 where e1.doctype=? ", (configs["xema"]["root"],))
+    c = dictDB.execute("select e1.id, e1.title, e1.sortkey, e1.xml from entries as e1 where e1.doctype=? ", (configs["structure"]["root"],))
     for r in c.fetchall():
         nabes.append({"id": str(r["id"]), "title": r["title"], "sortkey": r["sortkey"], "titlePlain": getEntryTitle(r['xml'], configs["titling"], True)})
 
@@ -1089,7 +1094,7 @@ def readNabesByText(dictDB, dictID, configs, text):
     nabes_before = []
     nabes_after = []
     nabes = []
-    c = dictDB.execute("select e1.id, e1.title, e1.sortkey from entries as e1 where e1.doctype=? ", (configs["xema"]["root"],))
+    c = dictDB.execute("select e1.id, e1.title, e1.sortkey from entries as e1 where e1.doctype=? ", (configs["structure"]["root"],))
     for r in c.fetchall():
         nabes.append({"id": str(r["id"]), "title": r["title"], "sortkey": r["sortkey"]})
 
@@ -1110,7 +1115,7 @@ def readRandoms(dictDB):
     limit = 75
     more = False
     randoms = []
-    c = dictDB.execute("select id, title, sortkey, xml from entries where doctype=? and id in (select id from entries order by random() limit ?)", (configs["xema"]["root"], limit))
+    c = dictDB.execute("select id, title, sortkey, xml from entries where doctype=? and id in (select id from entries order by random() limit ?)", (configs["structure"]["root"], limit))
     for r in c.fetchall():
         randoms.append({"id": r["id"], "title": r["title"], "sortkey": r["sortkey"], "titlePlain": getEntryTitle(r["xml"], configs["titling"], True)})
 
@@ -1125,7 +1130,7 @@ def readRandoms(dictDB):
     return {"entries": randoms, "more": more}
 
 def readRandomOne(dictDB, dictID, configs):
-    c = dictDB.execute("select id, title, xml from entries where id in (select id from entries where doctype=? order by random() limit 1)", (configs["xema"]["root"], ))
+    c = dictDB.execute("select id, title, xml from entries where id in (select id from entries where doctype=? order by random() limit 1)", (configs["structure"]["root"], ))
     r = c.fetchone()
     if r:
         xml = setHousekeepingAttributes(r["id"], r["xml"], configs["subbing"])
@@ -1332,7 +1337,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
 def listEntriesPublic(dictDB, dictID, configs, searchtext):
     howmany = 100
     sql_list = "select s.txt, min(s.level) as level, e.id, e.title, e.sortkey, case when s.txt=? then 1 else 2 end as priority from searchables as s inner join entries as e on e.id=s.entry_id where s.txt like ? and e.doctype=? group by e.id order by priority, level, s.level"
-    c1 = dictDB.execute(sql_list, ("%"+searchtext+"%", "%"+searchtext+"%", configs["xema"].get("root")))
+    c1 = dictDB.execute(sql_list, ("%"+searchtext+"%", "%"+searchtext+"%", configs["structure"].get("root")))
     entries = []
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"], "exactMatch": (r1["level"] == 1 and r1["priority"] == 1)}
@@ -1407,9 +1412,11 @@ def updateDictConfig(dictDB, dictID, configID, content):
             dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
         return content, resaveNeeded
+    """
     elif configID == "subbing":
         refacNeeded = flagForRefac(dictDB)
         return content, refacNeeded
+    """
     else:
         return content, False
 
@@ -1418,10 +1425,12 @@ def flagForResave(dictDB):
     dictDB.commit()
     return (c.rowcount > 0)
 
+"""
 def flagForRefac(dictDB):
     c = dictDB.execute("update entries set needs_refac=1")
     dictDB.commit()
     return (c.rowcount > 0)
+"""
 
 def makeQuery(lemma):
     words = []
@@ -1436,6 +1445,7 @@ def clearRefac(dictDB):
     dictDB.commit()
 
 
+"""
 def refac(dictDB, dictID, configs):
     from xml.dom import minidom, Node
     if len(configs['subbing']) == 0:
@@ -1488,7 +1498,9 @@ def refac(dictDB, dictID, configs):
     xml = doc.toxml().replace('<?xml version="1.0" ?>', '').strip()
     dictDB.execute("update entries set xml=?, needs_refac=0 where id=?", (xml, entryID))
     dictDB.commit()
+"""
 
+"""
 def refresh(dictDB, dictID, configs):
     from xml.dom import minidom, Node
     if len(configs['subbing']) == 0:
@@ -1542,6 +1554,7 @@ def refresh(dictDB, dictID, configs):
             # save the parent's xml (into which all subentries have been injected by now) and tell it that it needs a resave:
             dictDB.execute("update entries set xml=?, needs_refresh=0, needs_resave=1 where id=?", (parentXml, parentID))
             return True
+"""
 
 def resave(dictDB, dictID, configs):
     from xml.dom import minidom, Node
@@ -1597,7 +1610,7 @@ def updateEntryLinkables(dictDB, entryID, nvhParsed, configs, save=True, save_xm
     dictDB.commit()
     return nvhParsed.dump_string()
 
-def updateLinkablesLevel(nvhNode, linkinfo, nvhEntry, linkableAr):
+def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
     if nvhNode.name == linkinfo['linkElement']:
         # remove existing linkables
         nvhNode.children = [c for c in nvhNode.children if c.name != "lxnm_linkable"]
@@ -1607,7 +1620,7 @@ def updateLinkablesLevel(nvhNode, linkinfo, nvhEntry, linkableAr):
         for pattern in re.findall(r"%\([^)]+\)", linkinfo["identifier"]):
             text = ""
             extract = extractText(nvhNode, pattern[2:-1])
-            extractfull = extractText(nvhEntry, pattern[2:-1])
+            extractfull = extractText(entryNvh, pattern[2:-1])
             if len(extract) > 0:
                 text = extract[0]
             elif len(extractfull) > 0:
@@ -1619,7 +1632,7 @@ def updateLinkablesLevel(nvhNode, linkinfo, nvhEntry, linkableAr):
         for pattern in re.findall(r"%\([^)]+\)", linkinfo["preview"]):
             text = ""
             extract = extractText(nvhNode, pattern[2:-1])
-            extractfull = extractText(nvhEntry, pattern[2:-1])
+            extractfull = extractText(entryNvh, pattern[2:-1])
             if len(extract) > 0:
                 text = extract[0]
             elif len(extractfull) > 0:
@@ -1629,7 +1642,7 @@ def updateLinkablesLevel(nvhNode, linkinfo, nvhEntry, linkableAr):
 
     for c in nvhNode.children:
         if c.name != "lxnm_linkable":
-            c, linkableAr = updateLinkablesLevel(c, linkinfo, nvhEntry, linkableAr)
+            c, linkableAr = updateLinkablesLevel(c, linkinfo, entryNvh, linkableAr)
 
     return nvhNode, linkableAr
 
@@ -1645,7 +1658,7 @@ def getEntrySearchables(nvh, configs):
     return ret
 
 def flagEntry(dictDB, dictID, configs, entryID, flag, email, historiography):
-    if configs["flagging"]["flag_element"] == configs["xema"]["root"]:
+    if configs["flagging"]["flag_element"] == configs["structure"]["root"]:
         return False
     c = dictDB.execute("select id, xml from entries where id=?", (entryID,))
     row = c.fetchone()
@@ -1653,12 +1666,12 @@ def flagEntry(dictDB, dictID, configs, entryID, flag, email, historiography):
     xml = re.sub(r" xmlns:lxnm=[\"\']http:\/\/www\.lexonomy\.eu\/[\"\']", "", xml)
     xml = re.sub(r"\=\"([^\"]*)\"", r"='\1'", xml)
     xml = re.sub(r" lxnm:(sub)?entryID='[0-9]+'", "", xml)
-    xml = addFlag(xml, flag, configs["flagging"], configs["xema"])
+    xml = addFlag(xml, flag, configs["flagging"], configs["structure"])
 
     # tell my parents that they need a refresh:
     dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID, ))
     # update me
-    needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
+    #needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
     needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
     dictDB.execute("update entries set doctype=?, xml=?, title=?, sortkey=$sortkey, needs_refac=?, needs_resave=? where id=?", (getDoctype(xml), xml, getEntryTitle(xml, configs["titling"]), getSortTitle(xml, configs["titling"]), needs_refac, needs_resave, entryID))
     dictDB.execute("insert into history(entry_id, action, [when], email, xml, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, xml, json.dumps(historiography)))
@@ -1666,26 +1679,26 @@ def flagEntry(dictDB, dictID, configs, entryID, flag, email, historiography):
     return entryID
 
 
-def addFlag(xml, flag, flagconfig, xemaconfig):
+def addFlag(xml, flag, flagconfig, structureconfig):
     flag_element = flagconfig["flag_element"]
 
-    path = getFlagElementPath(xemaconfig, flag_element)
+    path = getFlagElementPath(structureconfig, flag_element)
     loc1, loc2 = getFlagElementInString(path, xml)
 
     return "{0}<{1}>{2}</{1}>{3}".format(
             xml[:loc1], flag_element, flag, xml[loc2:])
 
 
-def getFlagElementPath(xema, flag_element):
-    result = getFlagElementPath_recursive(xema, flag_element, xema["root"])
+def getFlagElementPath(structureconfig, flag_element):
+    result = getFlagElementPath_recursive(structure, flag_element, structureconfig["root"])
     if result is not None:
-        result.insert(0, xema["root"])
+        result.insert(0, structureconfig["root"])
     return result
 
 
-def getFlagElementPath_recursive(xema, flag_element, current_element):
+def getFlagElementPath_recursive(structureconfig, flag_element, current_element):
     # try all children
-    for child_props in xema["elements"][current_element]["children"]:
+    for child_props in structureconfig["elements"][current_element]["children"]:
         next_el = child_props["name"]
 
         # if we get to the flag element, return!
@@ -1693,7 +1706,7 @@ def getFlagElementPath_recursive(xema, flag_element, current_element):
             return [flag_element]
 
         # else, recursive search, depth first
-        path = getFlagElementPath_recursive(xema, flag_element, next_el)
+        path = getFlagElementPath_recursive(structureconfig, flag_element, next_el)
 
         # if returned is not None, then we found what we need, just prepend to the returned path
         if path is not None:
@@ -1729,10 +1742,12 @@ def readDictHistory(dictDB, dictID, configs, entryID):
     history = []
     c = dictDB.execute("select * from history where entry_id=? order by [when] desc", (entryID,))
     for row in c.fetchall():
+        """
         xml = row["xml"]
         if row["xml"]:
             xml = setHousekeepingAttributes(entryID, row["xml"], configs["subbing"])
-        history.append({"entry_id": row["entry_id"], "revision_id": row["id"], "content": xml, "action": row["action"], "when": row["when"], "email": row["email"] or "", "historiography": json.loads(row["historiography"])})
+        """
+        history.append({"entry_id": row["entry_id"], "revision_id": row["id"], "content": row["nvh"], "action": row["action"], "when": row["when"], "email": row["email"] or "", "historiography": json.loads(row["historiography"])})
     return history
 
 def verifyUserApiKey(email, apikey):
@@ -2292,7 +2307,7 @@ def elexisGetLemma(dictID, headword, limit=None, offset=0):
                 info["release"] = "PRIVATE"
         lemmas = []
         query = "SELECT e.id, e.xml FROM searchables AS s INNER JOIN entries AS e on e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER by s.level"
-        params = (configs["xema"]["root"], headword)
+        params = (configs["structure"]["root"], headword)
         if limit != None and limit != "":
             query += " LIMIT "+str(int(limit))
         if offset != "" and int(offset) > 0:
@@ -2562,9 +2577,9 @@ def dql2sqlite(query):
     sql = "select distinct json_extract(entries.entry_data,'$.hw.lemma') from entries, json_tree(entries.entry_data) where " + parse_level(parsed_query) + " limit 10;"
     return sql
 
-def nvh2json(nvhEntry):
-    if type(nvhEntry) == str:
-        jsonEntry = nvh2jsonNode(nvh.parse_string(nvhEntry))
+def nvh2json(entryNvh):
+    if type(entryNvh) == str:
+        jsonEntry = nvh2jsonNode(nvh.parse_string(entryNvh))
     else:
         jsonEntry = nvh2jsonNode(nvh)
     return json.dumps(jsonEntry)
@@ -2583,7 +2598,7 @@ def json2nvhLevel(jsonNode, nvhParent):
     for key,val in jsonNode.items():
         if key != "_value":
             for item in val:
-                indent = nvhParent.indent+"    " if nvhParent.parent else ""
+                indent = nvhParent.indent+"  " if nvhParent.parent else ""
                 value = item["_value"] if item.get("_value") else ""
                 newNode = nvh(nvhParent, indent, key, value)
                 newNode = json2nvhLevel(item, newNode)
@@ -2593,5 +2608,5 @@ def json2nvhLevel(jsonNode, nvhParent):
 def json2nvh(jsonEntry):
     if type(jsonEntry) == str:
         jsonEntry = json.loads(jsonEntry)
-    nvhEntry = json2nvhLevel(jsonEntry,nvh(None))
-    return nvhEntry
+    entryNvh = json2nvhLevel(jsonEntry,nvh(None))
+    return entryNvh
