@@ -1412,11 +1412,9 @@ def updateDictConfig(dictDB, dictID, configID, content):
             dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
         return content, resaveNeeded
-    """
-    elif configID == "subbing":
-        refacNeeded = flagForRefac(dictDB)
-        return content, refacNeeded
-    """
+    #elif configID == "subbing":
+    #    refacNeeded = flagForRefac(dictDB)
+    #    return content, refacNeeded
     else:
         return content, False
 
