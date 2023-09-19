@@ -147,6 +147,22 @@ def verifyLoginAndDictAccess(email, sessionkey, dictDB):
         ret["dictAccess"][r] = ret[r]
     return ret, configs
 
+def getSchemaItems():
+    items = {}
+    for file in os.listdir(os.path.join(currdir, "nvh_schema_items")):
+        if file.endswith('.nvh'):
+            with open(os.path.join(currdir, "nvh_schema_items", file)) as f:
+                content = f.read()
+                items[file[:-4]] = content
+    return items
+
+def mergeSchemaItems(items):
+    result_nvh = nvh.parse_string("")
+    for key in sorted(items.keys()):
+        result_nvh.merge(nvh.parse_string(items[key]), [])
+    
+    return result_nvh.dump_string()
+
 def deleteEntry(db, entryID, email):
     # tell my parents that they need a refresh:
     db.execute ("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
