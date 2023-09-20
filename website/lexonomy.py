@@ -150,6 +150,7 @@ def schemafinal():
     return {"schemafinal": ops.mergeSchemaItems(json.loads(request.forms.schema_items))}
 
 @get(siteconfig["rootPath"] + "userdicts.json")
+@auth
 def listuserdicts(user):
     dicts = ops.getDictsByUser(user["email"])
     return {"dicts": dicts}
