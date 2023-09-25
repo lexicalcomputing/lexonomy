@@ -32,7 +32,8 @@ defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
                      "structure": {"elements": {}},
                      "titling": {"headwordAnnotations": []},
-                     "flagging": {"flag_element": "", "flags": []}}
+                     "flagging": {"flag_element": "", "flags": []},
+                     "limits": {"entries": 5000}}
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
@@ -76,7 +77,7 @@ def readDictConfigs(dictDB):
     for r in c.fetchall():
         configs[r["id"]] = json.loads(r["json"])
     for conf in ["ident", "publico", "users", "kex", "kontext", "titling", "flagging",
-                 "searchability", "xampl", "thes", "collx", "defo", "structure",
+                 "searchability", "xampl", "thes", "collx", "defo", "structure", "limits",
                  "xemplate", "editing", "download", "links", "autonumber", "gapi", "metadata"]:
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
