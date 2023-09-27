@@ -149,19 +149,18 @@ def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     return ret, configs
 
 def getSchemaItems():
-    items = {}
-    for file in os.listdir(os.path.join(currdir, "nvh_schema_items")):
-        if file.endswith('.nvh'):
-            with open(os.path.join(currdir, "nvh_schema_items", file)) as f:
-                content = f.read()
-                items[file[:-4]] = content
-    return items
+    schema = []
+    with open(os.path.join(currdir, "dictTemplates", "schema.json")) as f:
+        content = f.read()
+        schema = json.loads(content)
+    return schema
 
-def mergeSchemaItems(items):
-    result_nvh = nvh.parse_string("")
-    for key in sorted(items.keys()):
-        result_nvh.merge(nvh.parse_string(items[key]), [])
-    
+def mergeSchemaItems(keys):
+    all_schemas = getSchemaItems()
+    result_nvh = nvh(None)
+    for schema_item in all_schemas:
+        if schema_item["key"] in keys:
+            result_nvh.merge(nvh.parse_string(schema_item["nvh"]), [])
     return result_nvh.dump_string()
 
 def deleteEntry(db, entryID, email):
@@ -517,36 +516,71 @@ def suggestDictId():
         dictid = generateDictId()
     return dictid
 
-def makeDict(dictID, template, title, blurb, email):
+def makeDict(dictID, schema_keys, title, blurb, email):
+    final_schema = mergeSchemaItems(schema_keys)
+    schema_elements = []
+    schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
+    schema_elements = list(filter(None, schema_elements))  #filter out empty strings
     if title == "":
         title = "?"
     if blurb == "":
         blurb = "Yet another Lexonomy dictionary."
     if dictID in prohibitedDictIDs or dictExists(dictID):
         return False
-    if not template.startswith("/"):
-        template = "dictTemplates/" + template + ".sqlite.schema"
     #init db schema
-    schema = open(template, 'r').read()
+    sql_schema = open("dictTemplates/general.sqlite.schema", 'r').read()
     conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], "dicts/" + dictID + ".sqlite?modeof=."), uri=True)
-    conn.executescript(schema)
+    conn.executescript(sql_schema)
     conn.commit()
     #update dictionary info
-    users = {email: {"canEdit": True, "canConfig": True, "canDownload": True, "canUpload": True}}
     dictDB = getDB(dictID)
-    c = dictDB.execute("SELECT count(*) AS total FROM configs WHERE id='users'")
-    r = c.fetchone()
-    if r['total'] == 0:
-        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("users", json.dumps(users)))
-    else:
-        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(users), "users"))
+
+    users = {email: {"canEdit": True, "canConfig": True, "canDownload": True, "canUpload": True}}
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("users", json.dumps(users)))
+
     ident = {"title": title, "blurb": blurb}
-    c = dictDB.execute("SELECT count(*) AS total FROM configs WHERE id='ident'")
-    r = c.fetchone()
-    if r['total'] == 0:
-        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("ident", json.dumps(ident)))
-    else:
-        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
+    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
+
+    xemplate = {}
+    with open("dictTemplates/styles.json", 'r') as f:
+        styles = json.loads(f.read())
+        xemplate = {key: styles[key] for key in schema_elements}
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("xemplate", json.dumps(xemplate)))
+
+    def addElementAndItsChildrenToStructureDict(nvh_node):
+        # TODO: add ranges, types, values... to schema
+        children = []
+        for child in nvh_node.children:
+            children.append({
+                "name": child.name,
+                "min": 0,
+                "max": 0
+            })
+        elements[nvh_node.name] = {
+            "type": "chd" if len(children) else "txt",
+            "values": [],
+            "children": children
+        }
+        for child in nvh_node.children:
+            addElementAndItsChildrenToStructureDict(child)
+    elements = {}
+    nvh_structure = nvh.parse_string(final_schema).children[0]
+    addElementAndItsChildrenToStructureDict(nvh_structure)
+    structure = {"root": nvh_structure.name, "elements": elements}
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
+
+    # add examples
+    examples = []
+    with open("dictTemplates/examples.json", 'r') as f:
+        for example in json.loads(f.read()):
+            rows = example["nvh"].splitlines()
+            rows = filter(lambda row: row.split(":")[0].strip() in schema_elements, rows)  #only example elements included in schema
+            example["nvh"] = "\n".join(rows)
+            examples.append(example)
+    for idx, example in enumerate(examples):
+        dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], "", example["title"], example["sortkey"], 0, 0, 0))
+        dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
+
     dictDB.commit()
     attachDict(dictDB, dictID)
     return True

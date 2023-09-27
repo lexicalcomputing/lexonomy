@@ -1,0 +1,20 @@
+[
+  {
+    "doctype": "entry",
+    "nvh": "entry: \n  headword: able\n  partOfSpeech: adjective\n  flag: ok\n  sense: \n    definition: If someone is able to do something, they can do it.\n    example:\n      text:I'm busy tomorrow, so I won't be able to see you.\n      example_translations: \n        example_lang: German\n        example_translation:Ich habe morgen viel zu tun, deshalb kann ich dich nicht sehen.\n    translations: \n      lang: German\n      translation: fähig",
+    "title": "<span class=''headword''>able</span>",
+    "sortkey": "able"
+  },
+  {
+    "doctype": "entry",
+    "nvh": "entry: \n  headword: arm\n  partOfSpeech: noun\n  flag: to_check\n  sense: \n    definition: One of the upper limbs, from shoulder to wrist.\n    example:\n      text:You have very long arms.\n      example_translations: \n        example_lang: German\n        example_translation: Sie haben sehr lange Arme.\n    translations: \n      lang: German\n      translation: Arm\n  sense: \n    definition: A weapon\n    example:\n      text:The arms dealer was arrested.\n      example_translations:\n        example_lang: German\n        example_translation: Der Waffenhändler wurde verhaftet.\n    translations: \n      lang: German\n      translation: Waffen",
+    "title": "<span class=''headword''>arm</span>",
+    "sortkey": "arm"
+  },
+  {
+    "doctype": "entry",
+    "nvh": "entry: \n  headword: ask\n  partOfSpeech: verb\n  flag: ok\n  sense: \n    definition: To look for an answer to a question.\n    example:\n      text:I need to ask you a question.\n      example_translations: \n        example_lang: German\n        example_translation: Ich muss Ihnen eine Frage stellen.\n    example:\n      text:I don't know, ask your mother.\n      example_translations: \n        example_lang: German\n        example_translation:Ich weiß es nicht, frag deine Mutter.\n    translations: \n      lang: German\n      translation: fragen\n  sense: \n    definition: To talk to someone to see if they will do something.\n    example:\n      text:She asked me to help her.\n      example_translations: \n        example_lang: German\n        example_translation: Sie bat mich, ihr zu helfen.\n    example:\n      text:We will have to ask for more money.\n      example_translations: \n        example_lang: German\n        example_translation: Wir werden mehr Geld beantragen müssen.\n    translations: \n      lang: German\n      translation: bitten",
+    "title": "<span class=''headword''>ask</span>",
+    "sortkey": "ask"
+  }
+]

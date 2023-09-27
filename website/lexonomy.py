@@ -525,7 +525,7 @@ def makedict(user):
 @post(siteconfig["rootPath"] + "make.json")
 @auth
 def makedictjson(user):
-    res = ops.makeDict(request.forms.url, request.forms.template, request.forms.title, "", user["email"])
+    res = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, "", user["email"])
     return {"success": res, "url": request.forms.url}
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")

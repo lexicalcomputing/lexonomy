@@ -1,0 +1,50 @@
+[
+   {
+      "key": "entry",
+      "name": "Entry",
+      "nvh": "entry:\n  headword:\n  partOfSpeech:",
+      "description": "",
+      "checked": true,
+      "required": true
+   },
+   {
+      "key": "entry.flag",
+      "name": "Flag",
+      "nvh": "entry:\n  flag:",
+      "description": "",
+      "checked": false,
+      "required": false
+   },
+   {
+      "key": "entry.sense",
+      "name": "Sense",
+      "nvh": "entry:\n  sense:\n    definition:",
+      "description": "",
+      "checked": true,
+      "required": false
+   },
+   {
+      "key": "entry.sense.example",
+      "name": "Sense example",
+      "nvh": "entry:\n  sense:\n    example:\n       text:",
+      "description": "",
+      "checked": false,
+      "required": false
+   },
+   {
+      "key": "entry.sense.example.translations",
+      "name": "Example translations",
+      "nvh": "entry:\n  sense:\n    example:\n      example_translations:\n        example_lang:\n        example_translation:",
+      "description": "",
+      "checked": false,
+      "required": false
+   },
+   {
+      "key": "entry.sense.translations",
+      "name": "Translations",
+      "nvh": "entry:\n  sense:\n    translations:\n      lang:\n      translation:",
+      "description": "Sense translations into one or more languages",
+      "checked": false,
+      "required": false
+   }
+]
