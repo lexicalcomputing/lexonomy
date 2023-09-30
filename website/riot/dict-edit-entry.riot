@@ -84,7 +84,7 @@
                Screenful.Editor.deleteUrl = `${window.API_URL}${this.dictData.dictId}/entrydelete.json`
 
                // global variables used by xonomy/screenfull
-               var xema = this.dictData.config.xema;
+               var xema = this.dictData.config.structure;
                var xemplate = this.dictData.config.xemplate;
                kontext = this.dictData.config.kontext;
                kex = this.dictData.config.kex;
@@ -171,6 +171,7 @@
                   Ske.extendDocspec(docSpec, xema);
                   Kontext.extendDocspec(docSpec, xema);
                   Sub.extendDocspec(docSpec, xema);
+                  Gmedia.extendDocspec(docSpec, xema)
                   docSpec.onchange = Screenful.Editor.changed;
                   if (uneditable) {
                      for (elName in docSpec.elements) docSpec.elements[elName].isReadOnly = true;
@@ -201,6 +202,9 @@
                      return customizeEditor.harvester(div);
                   }
                };
+               if(usingOwnEditor && typeof customizeEditor.isValid == "function"){
+                  Screenful.Editor.isValid = customizeEditor.isValid.bind(customizeEditor)
+               }
                Screenful.Editor.allowSourceCode = true;
                Screenful.Editor.formatSourceCode = Screenful.formatXml
                Screenful.Editor.validateSourceCode = Screenful.isWellFormedXml

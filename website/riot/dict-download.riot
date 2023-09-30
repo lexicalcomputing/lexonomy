@@ -1,5 +1,4 @@
 <dict-download>
-   <dict-nav links={[["download", "download"]]}/>
    <h1>Download</h1>
    <div class="input-field">
       <a class="waves-effect waves-light btn btn-primary download-link"
@@ -9,32 +8,4 @@
          Download { dictData.dictId }.xml
       </a>
    </div>
-   <div>
-      <label>
-         <input type="checkbox"
-               class="noAttributes"
-               name="noAttributes" />
-         <span>XML without Lexonomy attributes</span>
-      </label>
-   </div>
-   <small class="helper-text">
-      If you want to import the XML file back to Lexonomy, you need Lexonomy attributes.
-   </small>
-
-   <script>
-      export default {
-         onMounted() {
-            $(document).ready(function() {
-               $('.noAttributes').change(function() {
-                  var href = $('.download-link').attr('href')
-                  if (this.checked) {
-                     $('.download-link').attr('href', href + '?clean=true')
-                  } else {
-                     $('.download-link').attr('href', href.replace('?clean=true', ''))
-                  }
-               })
-            })
-         }
-      }
-   </script>
 </dict-download>

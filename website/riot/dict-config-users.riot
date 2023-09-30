@@ -1,6 +1,5 @@
 <dict-config-users>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["users", "Users"]]}/>
    <h1>Users</h1>
    <template if={!state.isLoading}>
       <div if={!state.data.users.length}
@@ -26,10 +25,11 @@
                <tr style="border-bottom: none;">
                   <th>
                   </th>
-                  <th colspan="5">Privileges</th>
+                  <th colspan="6">Privileges</th>
                </tr>
                <tr>
                   <th>User email</th>
+                  <th>View</th>
                   <th>Edit</th>
                   <th>Configure</th>
                   <th>Download</th>
@@ -52,6 +52,15 @@
                      <span if={!user.isEditable}>
                         { user.email }
                      </span>
+                  </td>
+                  <td>
+                     <label>
+                        <input type="checkbox"
+                              name="canView"
+                              checked={ user.canView }
+                              onchange={onPermissionChange.bind(this, idx)}/>
+                        <span></span>
+                     </label>
                   </td>
                   <td>
                      <label>
@@ -146,6 +155,7 @@
             this.state.data.users.push({
                id: this.state.data.users.length,
                email: "",
+               canView: false,
                canEdit: false,
                canConfig: false,
                canDownload: false,
@@ -179,12 +189,13 @@
                this.update({errorMessage: 'At least one user must have <i>Configure</i> permission.'})
             } else if(Object.values(this.state.data.users).find(row => row.email == "")) {
                this.update({errorMessage: 'Email must not be empty.'})
-            } else if (Object.values(this.state.data.users).find(row => !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
+            } else if (Object.values(this.state.data.users).find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
                this.update({errorMessage: 'User should have assigned at least one privilege.'})
             } else {
                let data = {}
                this.state.data.users.forEach(u => {
                   data[u.email] = {
+                     canView: u.canView,
                      canEdit: u.canEdit,
                      canConfig: u.canConfig,
                      canDownload: u.canDownload,

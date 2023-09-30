@@ -1,0 +1,250 @@
+<new-dictionary>
+   <loading-overlay if={state.isLoading}/>
+   <h1>
+      New dictionary
+   </h1>
+   <div class="row">
+      <div class="input-field">
+         <input id="title"
+               type="text"
+               class="validate inlineBlock"
+               required
+               oninput={onTitleInput}
+               style="max-width: 300px;"/>
+         <label for="title">Title</label>
+         <span class="helper-text">Enter a human-readable title such as "My Esperanto Dictionary". You will be able to change this later.</span>
+      </div>
+   </div>
+   <div>
+      <label for="url">URL</label>
+   </div>
+
+   <div class="row mb-8">
+      <div style="display: inline-flex; align-items: baseline; border: 1px solid black; position: relative; padding-left: 10px; height: 48px;"
+            onclick={onUrlWrapperClick}>
+         <span class="grey-text">{state.baseUrl}</span>
+         <span class="input-field"
+               style="margin-top: 0; margin-bottom: 0;">
+            <input id="url"
+                  type="text"
+                  class="validate inlineBlock"
+                  value={state.url}
+                  required
+                  minlength="5"
+                  pattern="[a-zA-Z0-9\-_]*"
+                  oninput={onUrlInput}
+                  style="max-width: 300px;border: none;outline: none; padding-left: 5px;"/>
+         </span>
+      </div>
+      <div style="color: rgba(0,0,0,0.54);font-size: 0.7rem;">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
+   </div>
+
+   <div class="row mb-4">
+      <h4>Entry structure</h4>
+      <p class="grey-text">Chose modules you want to use in your dictionary. You can change this later.</p>
+      <div class="" style="background-color: whitesmoke;padding: 20px; display: inline-flex;">
+         <div>
+            <h6>Available modules</h6>
+            <div if={state.schemas}
+                  class="availableModules displayFlex">
+               <div class="pl-4"
+                     style="min-width: 250px;">
+                  <div each={item in state.schemas}
+                        class="mt-2">
+                     <span style="padding-left: {(item.key.split('.').length - 1) * 30}px">
+                        <label class="checkbox">
+                           <input type="checkbox"
+                                 checked={item.checked}
+                                 name={item.key}
+                                 onchange={onSchemaCheckboxChange}>
+                           <span>
+                              {item.name}
+                              <i if={item.description}
+                                    class="itemHelpIcon ml-2 material-icons tooltipped"
+                                    data-tooltip={item.description}>help_outline</i>
+                           </span>
+                        </label>
+                     </span>
+                  </div>
+               </div>
+               <div class="modulesArrow">
+                  <i class="material-icons">chevron_right</i>
+               </div>
+            </div>
+         </div>
+         <div class="finalStructure positionRelative pl-8">
+            <h6>Final entry structure</h6>
+            <loading-overlay if={state.isSchemaLoading}/>
+            <div class="pl-4"
+                  style="min-width: 250px;">
+               <pre if={state.finalSchema}><!--
+               --><div each={(row, idx) in state.finalSchema.trim().split("\n")}
+                           style="color: {window.nvhStore.getColorByIndex(idx)};">
+                     {row}
+                  </div>
+               </pre>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <div if={ state.errorMessage != ""}
+         class="section">
+      <div class="message messageError">
+         { state.errorMessage }
+      </div>
+   </div>
+   <div class="buttons">
+      <button class="btn waves-effect waves-light"
+            name="makeDict"
+            id="makeButton"
+            onclick={onCreateDictionaryClick}>Create dictionary
+         <i class="material-icons left">add</i>
+      </button>
+      <a href="#"
+            class="btn btn-flat">cancel</a>
+   </div>
+   <br><br>
+   <div>
+      <label>Size limitation</label>
+      <div style="color: rgba(0,0,0,0.54)">
+         Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
+      </div>
+   </div>
+
+   <script>
+      export default {
+         state: {
+            title: "",
+            url: "",
+            isLoading: true,
+            isSchemaLoading: false,
+            errorMessage: "",
+            baseUrl: "https://www.lexonomy.eu/",
+            schemas: null,
+            finalSchema: null
+         },
+
+         onMounted() {
+            promises = [
+               this.store.suggestUrl()
+                     .done(response => {
+                        this.state.url = response.suggested
+                        this.state.baseUrl = response.baseUrl
+                     }),
+               this.store.loadSchemas()
+                     .done(response => {
+                        this.state.schemas = Object.values(response.items).sort((a, b) => {
+                              return a.key.localeCompare(b.key)
+                           })
+                     })
+            ]
+
+            Promise.all(promises)
+                  .then(results => {
+                     this.update({isLoading: false})
+                     M.updateTextFields()
+                     $("select").formSelect()
+                     this.state.schemas && this.loadFinalSchema()
+                  })
+
+            this.refreshMakeButtonDisabled()
+         },
+
+         onTitleInput(evt){
+            this.state.title = evt.target.value
+            this.refreshMakeButtonDisabled()
+         },
+
+         onUrlInput(evt){
+            this.state.url = evt.target.value
+            this.refreshMakeButtonDisabled()
+         },
+
+         onUrlWrapperClick(){
+            $("#id").focus()
+         },
+
+         onSchemaCheckboxChange(evt){
+            let key = evt.target.name
+            let checked = evt.target.checked
+            if(checked && key.indexOf(".") != -1){
+               do{
+                  // check item -> check all its parents
+                  this.state.schemas.find(s => s.key == key).checked = checked
+                  key = key.substring(0, key.lastIndexOf("."))
+               } while(key && key.indexOf(".") != 0)
+            } else if(!checked){
+               // uncheck item -> unchek all its children
+               this.state.schemas.filter(s => s.key.startsWith(key)).forEach(s => s.checked = false)
+            }
+            this.loadFinalSchema()
+         },
+
+         onCreateDictionaryClick(event) {
+            let title = $("#title").val()
+            if(title){
+               this.update({isLoading: true})
+               this.store.createDictionary({
+                  url: $("#url").val(),
+                  schemaKeys: JSON.stringify(this.state.schemas.filter(s => s.checked).map(s => s.key)),
+                  title: title
+               })
+                     .done(response => {
+                        if (response.success) {
+                           route("/" + response.url)
+                        } else {
+                           this.state.errorMessage = "Selected URL is already taken."
+                        }
+                     })
+                     //.always(this.update.bind(this, {isLoading: false}))
+            }
+         },
+
+         loadFinalSchema(){
+            let schemas = this.state.schemas.filter(s => s.checked).map(s => s.key)
+            this.update({isSchemaLoading: true})
+            this.store.loadFinalSchema(schemas)
+                  .done(response => {
+                     this.state.finalSchema = response.schemafinal
+                  })
+                  .always(() => {
+                     this.update({isSchemaLoading: false})
+                     this.refreshMakeButtonDisabled()
+                  })
+            this.refreshMakeButtonDisabled()
+         },
+
+         refreshMakeButtonDisabled(){
+            $("#makeButton", this.root).toggleClass("disabled", this.state.title == "" || this.state.url == "" || this.state.isSchemaLoading)
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .availableModules{
+         gap: 40px;
+      }
+      .modulesArrow{
+         display: flex;
+         align-items: center;
+         gap: 20px;
+         i{
+            font-size: 100px;
+            opacity: 0.1
+         }
+      }
+      .finalStructure{
+         .overlay{
+            background-color: rgba(0, 0, 0, 0)
+         }
+      }
+      .itemHelpIcon{
+         opacity: 0.5;
+         line-height: 25px;
+         height: 25px;
+         font-size: 17px;
+         vertical-align: bottom;
+      }
+   </style>
+</new-dictionary>

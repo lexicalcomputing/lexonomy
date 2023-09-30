@@ -19,27 +19,6 @@ app-footer{
    gap: 10px;
 }
 
-.nav-breadcrumbs{
-   box-shadow: none;
-   background-color: unset;
-   min-height: 50px;
-   line-height: 1.3rem;
-   height: 50px;
-   padding-top: 15px;
-}
-.nav-breadcrumbs .nav-wrapper{
-   position: absolute;
-   left: 40px;
-   height: 50px;
-}
-.nav-breadcrumbs .breadcrumb{
-   font-size: 0.9rem;
-}
-.nav-breadcrumbs .breadcrumb:last-child{
-   text-decoration: none;
-   pointer-events: none;
-   cursor: default;
-}
 .loadingAnimation{
    display: inline-block;
    width: 1.5em;
@@ -160,7 +139,7 @@ h6{
 .btn-large:hover,
 .btn-small:hover,
 .btn-floating:hover{
-   background-color: #4f4f50;
+   /*background-color: #4f4f50;*/
    box-shadow: none;
 }
 .btn.btn-primary{
@@ -474,20 +453,20 @@ span.badge{
    height: 1.3rem;
 }
 
-/*  UTILITY  */
-
-.inlineBlock{
-   display: inline-block;
+ul{
+   padding-inline-start: 20px;
+}
+li {
+   list-style: square;
+}
+table.striped thead tr{
+   border-bottom: 2px solid #000;
 }
 
-.clickable{
-   opacity: 0.7;
-   cursor: pointer;
+.autocomplete-content .highlight{
+   color: #F44336 !important;
 }
 
-.clickable:hover{
-   opacity: 1;
-}
 
 .message{
    text-align: center;
@@ -506,6 +485,10 @@ span.badge{
 
 .message.messageError{
    background-color: #D32F2F;
+}
+
+.overflowVisible .modal{
+   overflow: visible;
 }
 
 /* flag in entry list  */
@@ -537,15 +520,6 @@ span.badge{
 @media screen and (max-width: 1200px) {
    .container{
       max-width: 98vw;
-   }
-}
-
-@media screen and (max-width: 1000px){
-   .nav-breadcrumbs .nav-wrapper{
-      left: 15px;
-   }
-   .nav-wrapper .breadcrumb:before{
-      margin: 0;
    }
 }
 

@@ -1,0 +1,237 @@
+<nvh-ske-dialog>
+   <h4>{state.title}</h4>
+   <div class="nvh-ske-search-form">
+      <div if={!state.useCQL}
+               class="input-field displayFlex">
+         <input type="text"
+               name="query"
+               oninput={onInput}
+               onkeyup={onKeyUp}
+               value={props.searchWord}/>
+         <label>{props.method == "xampl" ? "Simple search" : "Search"}</label>
+         <button class="btn"
+               onclick={search}>
+            <i class="material-icons">search</i>
+         </button>
+      </div>
+      <div if={state.useCQL}
+               class="input-field displayFlex">
+         <input type="text"
+               name="cql"
+               oninput={onInput}
+               onkeyup={onKeyUp}
+               value={'[lemma="' + props.searchWord + '"]'}/>
+         <label for="kex_concsampling">CQL</label>
+         <button class="btn"
+               onclick={search}>
+            <i class="material-icons">search</i>
+         </button>
+      </div>
+      <div if={props.method == "xampl"}
+            class="nvh-ske-cql-checkbox">
+         <label class="checkbox">
+           <input type="checkbox"
+                  checked={state.useCQL}
+                  onchange={onUseCQLChange}/>
+            <span>Use CQL</span>
+        </label>
+      </div>
+   </div>
+   <div class="nvh-ske-dialog-results">
+      <loading-overlay if={state.isLoading}/>
+      <div class="nvh-ske-dialog-result-wrapper">
+         <div if={state.error}
+               class="nvh-ske-dialog-error center">
+            <h1 class="red-text lighten-2">{state.error}</h1>
+         </div>
+         <div if={!state.error && state.data}>
+            <div if={!state.data.length}
+                  class="nvh-ske-dialog-empty center">
+               <h1 class="grey-text lighten-2">Nothing found</h1>
+            </div>
+            <table if={state.data.length}
+                  class="nvh-ske-result-table highlight">
+               <tbody>
+                  <tr each={(row, idx) in state.data}
+                     onclick={onRowClick.bind(this, row)}>
+                     <td>
+                        <small class="grey-text">
+                           {idx + 1}.
+                        </small>
+                     </td>
+                     <td>{row}</td>
+                  </tr>
+               </tbody>
+            </table>
+         </div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            isLoading: false,
+            query: "",
+            cql: "",
+            useCQL: false,
+            data: null,
+            error: "",
+            wasRowClick: false
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.state.query = this.props.searchWord
+            this.state.cql = `[lemma="${this.props.searchWord}"]`
+            let methodName = {
+               xampl: "examples",
+               thes: "thesaurus",
+               collx: "collocations",
+               defo: "definitions"
+            }[this.props.method]
+            this.state.title = `Sketch Engine ${methodName}`
+         },
+
+         onMounted(){
+            this.search()
+            $(this.root).parent().css("height", "100%")
+         },
+
+         onBeforeUnmount(){
+            if(this.state.wasRowClick){
+               let element = $("nvh-side-dnd-panel nvh-editor-edit-item").first()
+               let tooltip = window.showTooltip(element, "Drag the new items to the desired place.", 200, {position: "left"})
+               tooltip.open()
+               setTimeout(() => {
+                  tooltip.close()
+                  setTimeout(tooltip.destroy.bind(tooltip), 200)
+               }, 4000)
+            }
+         },
+
+         onInput(evt){
+            this.state[evt.target.name] = evt.target.value
+         },
+
+         onKeyUp(evt){
+            if(evt.keyCode == 13){
+               this.search()
+            }
+         },
+
+         onUseCQLChange(){
+            this.update({useCQL: !this.state.useCQL})
+         },
+
+         onRowClick(row, evt){
+            let elementName = this.dictData.config[this.props.method].container
+            let element = this.nvhStore._addChildElement(this.nvhData.detachedEntry, elementName)
+            element.value = $(evt.target).text()
+            this.state.data = this.state.data.filter(r => r != row)
+            this.update()
+            this.nvhStore.validateElement(element)
+            this.nvhStore.trigger("updateElements", [this.nvhData.detachedEntry])
+            this.nvhStore.trigger("openSideDndPanel")
+            this.nvhStore.trigger("toggleSideDndPanelPin", true)
+            this.state.wasRowClick = true
+         },
+
+         search(){
+            this.update({
+               isLoading: true,
+               error: ""
+            })
+            let config = this.dictData.config
+            let data = {
+               url: config.kex.apiurl,
+               corpus: config.kex.corpus,
+               username: this.authData.ske_username,
+               apikey: this.authData.ske_apiKey
+            }
+            if(this.props.method == "xampl"){
+               data.query = this.state.query
+               data.querytype = this.state.useCQL ? "skecql" : "skesimple"
+            } else {
+               data.lemma = this.state.query
+            }
+            this.store.skeLoadData(this.props.method, data)
+                  .done(response => {
+                     if(response.error){
+                        this.state.error = response.error
+                     } else {
+                        if(this.props.method == "xampl" || this.props.method == "defo"){
+                           this.state.data = response.Lines.map(line => {
+                              return line.Left.reduce((all, part) => {return all + part.str}, "")
+                                    + line.Kwic.reduce((all, part) => {return all + part.str}, "")
+                                    + line.Right.reduce((all, part) => {return all + part.str}, "")
+                           })
+                        } else if(this.props.method == "collx"){
+                           this.state.data = response.Items.map(item => item.word)
+                        } else if(this.props.method == "thes"){
+                           this.state.data = response.Words.map(item => item.word)
+                        }
+                     }
+                  })
+                  .always(response => {
+                     this.update({isLoading: false})
+                     $(".nvh-ske-dialog-result-wrapper")[0].scrollTop = 0
+                  })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: flex;
+         height: 100%;
+         flex-direction: column;
+      }
+      .nvh-ske-search-form{
+         input{
+            margin-bottom: 0;
+            padding-right: 40px;
+         }
+         button{
+            height: 3rem;
+            position: absolute;
+            right: 0;
+            i{
+               vertical-align: middle;
+            }
+         }
+      }
+      .nvh-ske-cql-checkbox{
+         position: relative;
+         left: 12px;
+         top: -10px;
+      }
+      .nvh-ske-dialog-results{
+         flex: 1;
+         position: relative;
+      }
+      .nvh-ske-dialog-result-wrapper{
+         position: absolute;
+         top: 0;
+         bottom: 0;
+         overflow: auto;
+         right: 0;
+         left: 0;
+      }
+      .nvh-sked-dialog-error,
+      .nvh-sked-dialog-empty{
+         margin: 10vh auto;
+      }
+      .nvh-ske-result-table{
+         td{
+            padding: 5px;
+         }
+         td:first-child{
+            width: 1px;
+         }
+         td:nth-child(2){
+            cursor: pointer;
+         }
+      }
+   </style>
+</nvh-ske-dialog>

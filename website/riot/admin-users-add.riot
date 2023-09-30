@@ -1,0 +1,57 @@
+<admin-users-add>
+   <h1>Add user</h1>
+   <loading-overlay if={state.isSaving}/>
+   <div class="input-field">
+      <input class="userEmail"
+            type="email"
+            oninput={onEmailInput}/>
+      <label>User email</label>
+      <span class="invalidEmailWarning helper-text red-text"
+            style="visibility: hidden;">
+         Email address is not valid
+      </span>
+   </div>
+   <div class="buttons">
+      <button class="btnCreateUser btn btn-primary disabled"
+            onclick={onCreateUserClick}>
+         Create user
+      </button>
+      <a href="#/admin/users"
+            class="btn">
+         Cancel
+      </a>
+   </div>
+
+
+   <script>
+      export default{
+         state: {
+            isSaving: false
+         },
+
+         onEmailInput(evt){
+            let isEmpty = !evt.target.value
+            let isValid = !isEmpty && window.isEmail(evt.target.value)
+            $(".btnCreateUser").toggleClass("disabled", !isValid)
+            $(".invalidEmailWarning").css("visibility", isValid ? "hidden" : "")
+         },
+
+         onCreateUserClick(){
+            this.update({isSaving: true})
+            this.store.createUser($(".userEmail").val())
+                  .done(() => {
+                     route("#/admin/users")
+                  })
+                  .fail(() => {
+                     this.update({isSaving: false})
+                  })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .userEmail{
+         max-width: 400px;
+      }
+   </style>
+</admin-users-add>

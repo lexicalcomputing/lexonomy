@@ -1,6 +1,5 @@
 <dict-config-titling>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["titling", "Headword list"]]}/>
    <h1>Headword</h1>
    <div class="row">
       <div class="input-field col s6">
@@ -152,19 +151,19 @@
          },
 
          onUpdated() {
-            if (this.dictData.dictConfigs.xema && this.dictData.dictConfigs.xema.elements) {
+            if (this.dictData.dictConfigs.structure && this.dictData.dictConfigs.structure.elements) {
                if ($('#headword option').length == 1) {
-                  Object.entries(this.dictData.dictConfigs.xema.elements).forEach(([key, info]) => {
+                  Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
                      $('#headword').append('<option value="' + key + '">' + key + '</option>')
                   })
                }
                if ($('#headwordSorting option').length == 1) {
-                  Object.entries(this.dictData.dictConfigs.xema.elements).forEach(([key, info]) => {
+                  Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
                      $('#headwordSorting').append('<option value="' + key + '">' + key + '</option>')
                   })
                }
                if ($('#headwordAnnotations option').length == 0) {
-                  Object.entries(this.dictData.dictConfigs.xema.elements).forEach(([key, info]) => {
+                  Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
                      if (key != this.state.data.headword) {
                         $('#headwordAnnotations').append('<option value="' + key + '">' + key + '</option>')
                      }

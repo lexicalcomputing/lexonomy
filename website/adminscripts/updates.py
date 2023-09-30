@@ -38,8 +38,8 @@ do_query(conn, "CREATE INDEX IF NOT EXISTS fav_user_email on dict_fav (user_emai
 #### ADDING COLUMNS TO EXISTING TABLES ####
 
 upgrades = {
-    "users" : [("ske_id", "INTEGER"), ("ske_username", "TEXT"), ("consent", "INTEGER"), ("ske_apiKey", "TEXT")],
-    "dicts" : [("language", "TEXT")]
+    "users" : [("ske_id", "INTEGER"), ("ske_username", "TEXT"), ("consent", "INTEGER"), ("ske_apiKey", "TEXT"), ("comment", "TEXT")],
+    "dicts" : [("language", "TEXT"), ("public", "BOOLEAN DEFAULT false")]
 }
 
 for db, newcols in upgrades.items():

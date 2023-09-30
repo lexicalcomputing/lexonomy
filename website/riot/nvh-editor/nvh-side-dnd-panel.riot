@@ -1,0 +1,357 @@
+<nvh-side-dnd-panel class="z-depth-2 grey lighten-4">
+   <div class="nvh-panel"
+         onmouseenter={onMouseEnterDelayed}
+         onmouseleave={onMouseLeave}
+         ondragenter={onMouseEnter}
+         ondragleave={onMouseLeave}>
+      <span if={state.elementCount}
+            class="nvh-element-count white-text">
+         {state.elementCount}
+      </span>
+      <div class="nvh-top-bar">
+         <button class="nvh-pin-button btn btn-floating"
+               onclick={onTogglePin}>
+            <svg height="40px" width="40px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="-170 -150 800 800" xml:space="preserve" fill="#ffffff">
+            <path d="M485.322,117.705c12.204-12.238-3.274-47.577-34.636-78.93c-30.99-30.99-65.76-46.396-78.401-34.941l-0.246-0.236
+               l-173.715,156.02c-32.117-27.993-80.684-27.038-111.278,3.534c-5.149,5.157-8.051,12.146-8.051,19.437
+               c0,7.292,2.901,14.283,8.051,19.431l78.808,78.801L3.902,463.627c-5.148,5.799-5.262,14.655,0.015,20.601
+               c5.689,6.403,15.497,6.992,21.916,1.294l182.575-162.137l7.84,7.829l40.601,40.603l0,0l30.336,30.329
+               c5.15,5.147,12.139,8.039,19.424,8.039c7.278,0,14.272-2.898,19.419-8.056c30.561-30.573,31.524-79.158,3.539-111.27L484.771,118.03
+               C484.927,117.892,485.177,117.861,485.322,117.705z"/>
+            </svg>
+         </button>
+         <div class="nvh-delete-zone ml-auto grey-text"
+               ondragenter={onDeleteZoneDragEnter}
+               ondragleave={onDeleteZoneDragLeave}
+               ondragover={onDragOver}
+               ondrop={onDeleteZoneDrop}>
+            <i class="material-icons">delete</i>
+            <span class="nvh-delete-zone-text">
+               drag here to delete
+            </span>
+         </div>
+         <button class="nvh-delete-all-btn btn btn-floating ml-4 tooltipped {state.elementCount ? '' : 'disabled'}"
+               data-tooltip="Delete all elements in this list."
+               onclick={onDeleteAllClick}>
+            <i class="material-icons">delete_sweep</i>
+         </button>
+      </div>
+      <div class="nvh-detached-elements">
+         <div class="nvh-top-level-dnd-zone">
+            <nvh-dnd-zone if={nvhData.detachedEntry.children.length}
+                  element={nvhData.detachedEntry}
+                  position=0/>
+         </div>
+         <template each={(element, idx) in nvhData.detachedEntry.children}
+               key={element.id}>
+            <nvh-editor-edit-item element={element}
+                  read-only={true}
+                  allow-dnd={true}/>
+            <div class="nvh-top-level-dnd-zone">
+               <nvh-dnd-zone element={nvhData.detachedEntry}
+                     position={idx + 1}/>
+            </div>
+         </template>
+      </div>
+      <div class="nvh-drop-zone"
+            ondragenter={onDropZoneDragEnter}
+            ondragleave={onDropZoneDragLeave}
+            ondragover={onDragOver}
+            ondrop={onDropZoneDrop}>
+         <div class="nvh-drop-zone-inner">
+            Drop your elements here
+         </div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "onDndStart", "onDndStart"],
+                    ["nvhStore", "onDndStop", "onDndStop"],
+                    ["nvhStore", "updateElements", "onUpdateElements"],
+                    ["nvhStore", "isRevisionsOpenChanged", "onIsRevisionOpenChanged"],
+                    ["nvhStore", "openSideDndPanel", "open"],
+                    ["nvhStore", "toggleSideDndPanelPin", "onTogglePin"],
+                    ["nvhStore", "editorModeChanged", "update"]],
+
+         state: {
+            pinned: false,
+            resizeHandle: null,
+            onLeaveHandle: null,
+            onEnterHandle: null
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onMounted(){
+            window.addEventListener("resize", this.onResizeDebounced)
+         },
+
+         onBeforeUpdate(){
+            this.state.elementCount = 0
+            this.nvhStore.forEachElement(() => this.state.elementCount++, this.nvhData.detachedEntry)
+            this.state.elementCount-- // do not count detachedEntry itself
+         },
+
+         onBeforeUnmount(){
+            this.state.pinned && $("body").animate({"margin-right": "0px"}, 300)
+            window.removeEventListener("resize", this.onResizeDebounced)
+         },
+
+         onUpdateElements(elements){
+            elements.includes(this.nvhData.detachedEntry) && this.update()
+         },
+
+         onDndStart(){
+            $(this.root).addClass("nvh-pop")
+         },
+
+         onDndStop(){
+            $(this.root).removeClass("nvh-pop")
+         },
+
+         onIsRevisionOpenChanged(){
+            if(this.nvhData.isRevisionsOpen){
+               $(this.root).removeClass("nvh-open")
+            } else if(this.state.pinned){
+               $(this.root).addClass("nvh-open")
+               $("body").animate({"margin-right": $(this.root).width()}, 200)
+            }
+         },
+
+         onTogglePin(pinned){
+            pinned = typeof pinned == "boolean" ? pinned : !this.state.pinned
+            if(pinned != this.state.pinned){
+               this.state.pinned = pinned
+               !this.state.pinned && this.close()
+               $(this.root).toggleClass("nvh-pinned")
+               $("body").animate({
+                  "margin-right": this.state.pinned ? $(this.root).width() : "0px"
+               }, 200)
+            }
+         },
+
+         onMouseEnter(){
+            clearTimeout(this.state.onLeaveHandle)
+            this.open()
+         },
+
+         onMouseEnterDelayed(evt){
+            clearTimeout(this.state.onEnterHandle)
+            this.state.onEnterHandle = setTimeout(this.open.bind(this), 500)
+         },
+
+         onMouseLeave(evt){
+            clearTimeout(this.state.onEnterHandle)
+            clearTimeout(this.state.onLeaveHandle)
+            this.state.onLeaveHandle = setTimeout(() => {
+               if(!this.root.contains(document.elementFromPoint(evt.clientX, evt.clientY))){
+                  this.close()
+               }
+            }, 300)
+         },
+
+         onDragOver(evt){
+            evt.preventDefault()
+         },
+
+         onDropZoneDragEnter(evt){
+            $(".nvh-drop-zone", this.root).addClass("nvh-zone-dragging")
+         },
+
+         onDropZoneDragLeave(evt){
+            $(".nvh-drop-zone", this.root).removeClass("nvh-zone-dragging")
+         },
+
+         onDropZoneDrop(evt){
+            this.nvhStore.moveChildToAnotherParent(this.nvhData.draggedElement, this.nvhData.detachedEntry, this.nvhData.detachedEntry.children.length)
+            this.nvhStore.trigger("updateElements", [this.nvhData.draggedElement.parent])
+            this.nvhStore.stopElementDragging()
+            this.update()
+            $(".nvh-drop-zone", this.root).removeClass("nvh-zone-dragging")
+         },
+
+         onDeleteZoneDragEnter(){
+            $(".nvh-delete-zone", this.root).addClass("nvh-delete-zone-hover")
+         },
+
+         onDeleteZoneDragLeave(){
+            $(".nvh-delete-zone", this.root).removeClass("nvh-delete-zone-hover")
+         },
+
+         onDeleteZoneDrop(){
+            $(".nvh-delete-zone", this.root).removeClass("nvh-delete-zone-hover")
+            this.nvhStore.removeElement(this.nvhData.draggedElement)
+            this.nvhStore.stopElementDragging()
+         },
+
+         open(){
+            $(this.root).addClass("nvh-open")
+         },
+
+         close(){
+            !this.state.pinned && $(this.root).removeClass("nvh-open")
+         },
+
+         onDeleteAllClick(){
+            this.nvhStore.removeAllChildren(this.nvhData.detachedEntry)
+         },
+
+         onResizeDebounced(){
+            if(this.state.pinned){
+               clearTimeout(this.state.resizeHandle)
+               this.state.resizeHandle = setTimeout(() => {
+                  clearTimeout(this.state.resizeHandle)
+                  $("body").animate({"margin-right": $(this.root).width()}, 200)
+               }, 100)
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: fixed;
+         right: 0;
+         top: 0;
+         bottom: 0;
+         z-index: 999;
+         transform: translateX(100%) translateX(-10px);
+         transition: 0.2s;
+         &.nvh-pop{
+            transform: translateX(100%) translateX(-40px);
+         }
+         &.nvh-pinned{
+            .nvh-pin-button.btn{
+               background-color: #c62132!important;
+               box-shadow: 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12), 0 2px 4px -1px rgba(0,0,0,0.3);
+            }
+         }
+         &.nvh-open{
+            transform: translateX(0);
+            .nvh-pin-button.btn{
+               opacity: 1;
+            }
+            .nvh-element-count{
+               opacity: 0;
+            }
+         }
+         &.nvh-pop,
+         &.nvh-open{
+            .nvh-drop-zone{
+               opacity: 0.5
+            }
+         }
+         &:not(.nvh-open):hover{
+            -webkit-box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14),0 3px 14px 2px rgba(0,0,0,0.12),0 5px 5px -3px rgba(0,0,0,0.2)!important;
+            box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14),0 3px 14px 2px rgba(0,0,0,0.12),0 5px 5px -3px rgba(0,0,0,0.2)!important;
+         }
+      }
+      .nvh-pin-button.btn{
+         background-color: #d3d3d3;
+         opacity: 0;
+         &:hover{
+            background-color: #4f4f50;
+         }
+      }
+      .nvh-panel{
+         display: flex;
+         flex-direction: column;
+         max-width: max(400px, 30vw);
+         min-width: max(300px, 20vw);
+         height: 100%;
+         max-height: 100vh;
+         overflow-x: hidden;
+         overflow-y: auto;
+      }
+      .nvh-element-count{
+         position: absolute;
+         top: 5px;
+         font-size: 12px;
+         left: -10px;
+         height: 17px;
+         width: 17px;
+         border-radius: 50%;
+         line-height: 17px;
+         text-align: center;
+         letter-spacing: -1px;
+         background-color: #c62132;
+         transition: 0.2s;
+         opacity: 1;
+      }
+      .nvh-delete-all-btn.btn{
+         background-color: #d3d3d3;
+         &:hover{
+            background-color: #4f4f50;
+         }
+      }
+      .nvh-top-bar{
+         display: flex;
+         padding: 10px 20px;
+         border-bottom: 1px solid #d9d9d8;
+      }
+      .nvh-delete-zone{
+         display: flex;
+         align-items: center;
+         border: 3px dashed #c9c9c9;
+         padding: 4px 10px;
+         opacity: 0.5;
+         &>*{
+            pointer-events: none; // so ondragleave is not fired on children
+         }
+         &.nvh-delete-zone-hover{
+            opacity: 1;
+         }
+         .nvh-delete-zone-text{
+            margin-left: 5px;
+         }
+      }
+      .nvh-detached-elements{
+         position: relative;
+         padding: 10px 0px 0px 30px;
+         &::after{
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(270deg, rgba(245,245,245,1) 0%, rgba(245,245,245,1) 10%, rgba(245,245,245,0) 100%);
+         }
+      }
+      .nvh-top-level-dnd-zone{
+         nvh-dnd-zone{
+            margin: 3px 0;
+            .nvh-zone{
+               left: 0;
+            }
+         }
+      }
+      .nvh-drop-zone{
+         opacity: 0;
+         flex: 1;
+         padding: 20px;
+         transition: opacity 0.2s;
+         &.nvh-zone-dragging{
+            opacity: 1;
+         }
+      }
+      .nvh-drop-zone-inner{
+         display: flex;
+         height: 100%;
+         border: 4px dashed #c9c9c9;
+         padding: 40px;
+         color: lightgrey;
+         font-size: 40px;
+         line-height: 1em;
+         justify-content: center;
+         align-items: center;
+         text-align: center;
+         pointer-events: none; // so ondragleave is not fired on children
+      }
+   </style>
+</nvh-side-dnd-panel>

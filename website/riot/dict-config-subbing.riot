@@ -1,6 +1,5 @@
 <dict-config-subbing>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["subbing", "Subentries"]]}/>
    <h1>Subentries</h1>
    <template if={!state.isLoading}>
       <div>
@@ -72,13 +71,13 @@
          },
 
          onBeforeUpdate(){
-            this.selectOptions = Object.keys(this.dictData.config.xema.elements).filter(key => {
+            this.selectOptions = Object.keys(this.dictData.config.structure.elements).filter(key => {
                return !this.state.data.elements.includes(key)
             })
          },
 
          onUpdated() {
-            if (this.dictData.config.xema && this.dictData.config.xema.elements) {
+            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
                var $select = $('select')
                if(this.selectOptions.length && $select.length){
                   var instance = M.FormSelect.getInstance($select)

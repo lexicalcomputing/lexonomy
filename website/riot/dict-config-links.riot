@@ -1,11 +1,11 @@
 <dict-config-links>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["links", "Linking"]]}/>
    <h1>Manual linking between entries</h1>
    <div>
       <p>Elements listed here can be used as target of cross-reference link. For each element, specify unique identifier in the form of placeholders <tt>'%(element)'</tt>. Eg. element <tt>entry</tt> can have identifier <tt>%(lemma)-%(pos)</tt>, element <tt>sense</tt> can have identifier <tt>%(lemma)-%(number)</tt>. Optionally, specify element you want to show as preview when selecting links.</p>
       <template if={!state.isLoading}>
-         <table if={state.data.elements.length}>
+         <table if={state.data.elements.length}
+               class="linkTable">
             <thead>
                <tr>
                   <th>Linking element</th>
@@ -15,8 +15,8 @@
                </tr>
             </thead>
             <tbody>
-               <tr each={ (element, idx) in state.data.elements }
-                     idx={ idx }>
+               <tr each={(element, idx) in state.data.elements}
+                     idx={idx}>
                   <td>
                      <div class="input-field">
                         <select linkelement={element.linkElement}></select>
@@ -25,7 +25,7 @@
                   <td>
                      <div class="input-field">
                         <input type="text"
-                              value={ element.identifier }
+                              value={element.identifier}
                               name="identifier"
                               onchange={onItemChange} />
                      </div>
@@ -33,15 +33,15 @@
                   <td>
                      <div class="input-field">
                         <input type="text"
-                              value={ element.preview }
+                              value={element.preview}
                               name="preview"
                               onchange={onItemChange}/>
                      </div>
                   </td>
                   <td>
                      <a class="btn btn-floating right"
-                           data-element={ element.linkElement }
-                           onclick={ doDeleteEl.bind(this, element.linkElement) }>
+                           data-element={element.linkElement}
+                           onclick={onDeleteLinkClick.bind(this, element.linkElement)}>
                         <i class="material-icons">delete</i>
                      </a>
                   </td>
@@ -50,11 +50,11 @@
          </table>
          <div class="buttons">
             <button class="btn {state.unusedElements.length ? '' : 'disabled'}"
-                  onclick={ doAddEl }>
+                  onclick={onAddLinkClick}>
                add element
                <i class="material-icons right">add</i>
             </button>
-            <button class="btn waves-effect waves-light"
+            <button class="btn btn-primary waves-effect waves-light"
                   onclick={saveData}
                   id="submit_button">
                Save
@@ -66,19 +66,23 @@
       <div>
          <h2>Automatic linking using NAISC</h2>
       </div>
-      <div>
+      <div class="displayFlex">
          <div>
-            <label for="otherdict">Other dictionary code</label>
-         </div>
-         <div class="input-field inlineBlock"
-               style="max-width: 400px;">
-            <input type="text"
-                  id="otherdict"/>
+            <div class="input-field inlineBlock">
+               <select id="dictSelect"
+                     onchange={onDictionaryChange}>
+                  <option each={dict in state.dictList}
+                        value={dict.id}
+                        selected={dict.id == dictData.dictId}>{dict.title}</option>
+               </select>
+               <label>Dictionary</label>
+               <span class="helper-text">Select dictionary to link element to.</span>
+            </div>
          </div>
          <div class="input-field inlineBlock">
             <button id="naisc_link"
-                  class="btn waves-effect waves-light {state.isLinking || state.isChecking ? 'disabled' : ''}"
-                  onclick={ startLinking }
+                  class="btn mt-2 waves-effect waves-light {state.isLinking || state.isChecking ? 'disabled' : ''}"
+                  onclick={startLinking}
                   style="margin-left: 10px;">Start linking</button>
          </div>
       </div>
@@ -93,23 +97,10 @@
    <a href="#{dictData.dictId}/config"
          class="btn btn-secondary btn-flat">Back</a>
 
-   <style>
-      tbody tr{
-         border-bottom: none;
-      }
-      th, td{
-         padding: 10px 10px 0 0;
-      }
-      td{
-         vertical-align: top;
-      }
-      td .input-field{
-         margin: 0;
-      }
-   </style>
-
    <script>
       export default {
+         bindings: [["store", "dictionaryListChanged", "update"]],
+
          state: {
             isLoading: true,
             isSaving: false,
@@ -118,20 +109,8 @@
             unusedElements: [],
             data: {elements: []},
             info: "",
-            checkDelay: 1000
-         },
-
-         doDeleteEl(element) {
-            this.state.data.elements = this.state.data.elements.filter(val => val.linkElement != element)
-            this.update()
-         },
-
-         doAddEl(event) {
-            this.state.data.elements.push({
-               linkElement: this.state.unusedElements[0],
-               identifier: "", preview: ""
-            })
-            this.update()
+            checkDelay: 1000,
+            dictList: []
          },
 
          onMounted() {
@@ -154,15 +133,17 @@
                   .always(() => {
                      this.update({isChecking: false})
                   })
+            $('#dictSelect').formSelect()
          },
 
          onBeforeUpdate(){
+            this.state.dictList = this.dictData.dictionaryList.filter(dict => dict.id != this.dictData.dictId)
             this.refreshUnusedElements()
          },
 
          onUpdated() {
-            if (this.dictData.config.xema && this.dictData.config.xema.elements) {
-               $("select").each(function(idx, el){
+            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
+               $(".linkTable select").each(function(idx, el){
                   var $select = $(el)
                   var instance = M.FormSelect.getInstance(el)
                   $select.off("change", this.onElementChange)
@@ -173,10 +154,24 @@
                   this.state.unusedElements.forEach(key => {
                      $select.append(`<option value="${key}">${key}</option>`)
                   })
-                  $('select').formSelect()
+                  $('.linkTable select').formSelect()
                      .on("change", this.onElementChange)
                }.bind(this))
             }
+            $('#dictSelect').formSelect()
+         },
+
+         onDeleteLinkClick(element) {
+            this.state.data.elements = this.state.data.elements.filter(val => val.linkElement != element)
+            this.update()
+         },
+
+         onAddLinkClick(event) {
+            this.state.data.elements.push({
+               linkElement: this.state.unusedElements[0],
+               identifier: "", preview: ""
+            })
+            this.update()
          },
 
          onElementChange(evt){
@@ -192,19 +187,19 @@
 
          refreshUnusedElements(){
             var savedElements = this.state.data.elements.map(e => e.linkElement)
-            this.state.unusedElements = Object.keys(this.dictData.config.xema.elements).filter(el => {
+            this.state.unusedElements = Object.keys(this.dictData.config.structure.elements).filter(el => {
                return !savedElements.includes(el)
             })
          },
 
          startLinking() {
-            var otherdictID = $("#otherdict").val()
+            var otherdictID = $("#dictSelect").val()
             if(otherdictID){
                this.update({
                   isLinking: true,
                   info: "Initiating linking..."
                })
-               this.store.startLinking($("#otherdict").val())
+               this.store.startLinking(otherdictID)
                      .done(response => {
                         this.update({
                            info: "Linking in progress, please wait...",
@@ -259,4 +254,18 @@
       }
    </script>
 
+   <style>
+      tbody tr{
+         border-bottom: none;
+      }
+      th, td{
+         padding: 10px 10px 0 0;
+      }
+      td{
+         vertical-align: top;
+      }
+      td .input-field{
+         margin: 0;
+      }
+   </style>
 </dict-config-links>

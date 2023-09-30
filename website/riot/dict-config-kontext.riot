@@ -1,6 +1,5 @@
 <dict-config-kontext>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["kontext", "KonText connection"]]}/>
    <h1>KonText connection</h1>
    <div class="row">
       <div class="input-field">
@@ -154,23 +153,23 @@
          },
 
          onUpdated() {
-            if (this.dictData.config.xema && this.dictData.config.xema.elements) {
+            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
                if ($('#searchElements option').length == 0) {
-                  Object.entries(this.dictData.config.xema.elements).forEach(([key, info]) => {
-                     if (info.filling == 'txt' || info.filling == 'lst') {
+                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
+                     if (info.type == 'txt' || info.type == 'lst') {
                         var selected = this.state.data.searchElements.includes(key)? 'selected':''
                         $('#searchElements').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
                      }
                   })
                }
                if ($('#container option').length == 1) {
-                  Object.entries(this.dictData.config.xema.elements).forEach(([key, info]) => {
+                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
                         var selected = (this.state.data.container == key)? 'selected':''
                         $('#container').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
                   })
                }
                if ($('#markup option').length == 1) {
-                  Object.entries(this.dictData.config.xema.elements).forEach(([key, info]) => {
+                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
                         var selected = (this.state.data.markup == key)? 'selected':''
                         $('#markup').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
                   })

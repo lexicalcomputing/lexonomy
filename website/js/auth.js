@@ -59,6 +59,8 @@ class AuthClass {
                      Object.assign(this.data, response, {username: response.email})
                      this.data.authorized = true;
                      this.trigger("authChanged")
+                  } else {
+                     M.toast({html: "You have entered an invalid username or password."})
                   }
                })
                .fail(response => {})

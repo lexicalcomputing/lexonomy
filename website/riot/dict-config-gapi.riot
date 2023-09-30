@@ -1,6 +1,5 @@
 <dict-config-gapi>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["gapi", "MultimediaApi"]]}/>
    <h1>Multimedia API</h1>
    <div class="row">
       <div class="input-field">
@@ -123,7 +122,7 @@
          <label>VoiceRSS language</label>
       </div>
    </div>
-   <button class="btn waves-effect waves-light"
+   <button class="btn btn-primary waves-effect waves-light"
         onclick={saveData}
         id="submit_button">
       Save
@@ -159,7 +158,9 @@
    </div>
 
    <div if={state.info}
-         class="message messageInfo">{state.info}</div>
+         class="message messageInfo">
+         <raw-html content={state.info}></raw-html>
+   </div>
    <br>
    <a href="#{dictData.dictId}/config"
          class="btn btn-secondary btn-flat">Back</a>
@@ -183,7 +184,7 @@
             var addElem = $("#add_element").val()
             var addNumber = $("#add_number").val()
             if (addElem != "" && parseInt(addNumber) > 0) {
-               this.update({info: "Adding images to dictionary, please wait..."})
+               this.update({info: "Adding images to dictionary, it may take some time. Please wait..."})
                this.store.autoAddImages(addElem, addNumber)
                      .done(response => {
                         this.waitImages(response.bgjob)
@@ -218,11 +219,11 @@
          },
 
          onUpdated() {
-            if (this.dictData.config.xema && this.dictData.config.xema.elements) {
+            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
                // TODO: handle empty option list
                if ($('#add_element option').length == 0) {
-                  Object.entries(this.dictData.config.xema.elements).forEach(([key, info]) => {
-                     if (info.filling == "med") {
+                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
+                     if (info.type == "med") {
                         $('#add_element').append('<option value="' + key + '">' + key + '</option>')
                      }
                   })

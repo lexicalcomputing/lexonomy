@@ -1,0 +1,334 @@
+<nvh-editor-view-item id="nvh-item-{props.element.id}"
+      class="nvh-editor-view-item {state.style.layout == 'inline' ? 'inlineBlock' : 'block'} {props.readOnly ? 'nvh-read-only' : ''}">
+   <div if={state.style.shown}
+         class="nvh-item {props.element.focused ? 'nvh-focused' : ''}">
+      <span if={state.beforeElementContent}
+            class="nvh-gutter">{state.beforeElementContent}</span>
+      <span class="nvh-outer-wrapper {getOuterWrapperStyleClasses()}">
+         <span if={state.config.type != "chd"}
+               class="nvh-inner-wrapper {getInnerWrapperStyleClasses()}">
+            <span if={!props.element.edit}
+                  class="nvh-readonly-value-wrapper"
+                  onmouseenter={!props.readOnly && onMouseEnter}>
+               <span if={state.style.label}]
+                     class="nvh-user-label">{state.style.label}</span>
+               <span if={state.outerPunc && state.outerPunc[0]}
+                     class="nvh-outer-punc">{state.outerPunc[0]}</span>
+               <nvh-item-media if={state.config.type == "med"}
+                     url={props.element.value}/>
+               <span if={state.config.type != "med"}
+                     class="nvh-readonly-value pointer"
+                     onclick={!props.readOnly && onEditClick}>
+                  <raw-html content={getReadOnlyValue()}/>
+                  <i if={!props.readOnly}
+                        class="nvh-edit-icon material-icons tiny">edit</i>
+               </span>
+
+               <span if={state.outerPunc && state.outerPunc[1]}
+                     class="nvh-outer-punc">{state.outerPunc[1]}</span>
+            </span>
+            <nvh-item-value-editor if={props.element.edit}
+                  element={props.element}/>
+         </span>
+         <nvh-dnd-zone if={state.style.shown}
+               element={props.element}
+               position=0/>
+         <div if={props.element.children.length}
+               class="nvh-children">
+            <template each={(child, idx) in props.element.children}
+                  key={child.id}>
+               <nvh-editor-view-item element={child}
+                     read-only={props.readOnly}/>
+               <nvh-dnd-zone if={nvhStore.getElementStyle(child.name).shown}
+                     element={props.element}
+                     position={idx + 1}/>
+            </template>
+         </div>
+      </span>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "updateElements", "onUpdateElements"]],
+
+         state: {
+            style: {},
+            config: {}
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.name)
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.name)
+            this.state.innerPunc = this.getPuncChars(this.state.style.innerPunc)
+            this.state.outerPunc = this.getPuncChars(this.state.style.outerPunc)
+            this.state.beforeElementContent = this.getBeforeElementContent()
+         },
+
+         onBeforeUpdate(){
+            this.state.innerPunc = this.getPuncChars(this.state.style.innerPunc)
+            this.state.outerPunc = this.getPuncChars(this.state.style.outerPunc)
+            this.state.beforeElementContent = this.getBeforeElementContent()
+         },
+
+         onUpdateElements(elementList){
+            elementList.includes(this.props.element) && this.update()
+         },
+
+         onMouseEnter(evt){
+            if(!this.nvhStore.findElement(e => e.edit)){
+               this.nvhStore.openElementToolbar(this.props.element)
+            }
+         },
+
+         onEditClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.startElementEditing(this.props.element)
+         },
+
+         getReadOnlyValue(){
+            let value = this.props.element.value
+            if(this.state.config.type == "lst"){
+               let option = this.state.config.values.find(v => v.value == this.props.element.value)
+               value = option ? option.caption : value
+            } else if (this.state.config.type == "inl"){
+               value = this.nvhStore.parseMarkDown(value)
+            }
+            if(this.state.innerPunc){
+               value = `${this.state.innerPunc[0]}${value}${this.state.innerPunc[1]}`
+            }
+            return value
+         },
+
+         getPuncChars(punc){
+            if(punc){
+               return {
+                  "roundBrackets":  ["(", ")"],
+                  "squareBrackets": ["[", "]"],
+                  "curlyBrackets":  ["{", "}"],
+                  "comma":          ["", ","],
+                  "semicolon":      ["", ";"],
+                  "colon":          ["", ":"]
+               }[punc]
+            }
+            return null
+         },
+
+         getBeforeElementContent(){
+            let map = {
+               disk: '•',
+               square: '■',
+               diamond: '◆',
+               arrow: '→'
+            }
+            let gutter = this.state.style.gutter
+            if(gutter){
+               let idx = this.props.element.parent ? this.props.element.parent.children.filter(c => c.name == this.props.element.name).indexOf(this.props.element) + 1 : 1
+               if(map[gutter]){
+                  return map[gutter]
+               } else if(gutter == 'sensenum0'){
+                  return window.numToRomanNum(idx) + "."
+               } else if(gutter == 'sensenum1'){
+                  return idx + "."
+               } else if(gutter == 'sensenum2'){
+                  return window.numToAlphabet(idx) + "."
+               } else if(gutter == 'sensenum3'){
+                  return window.numToRomanNum(idx).toLowerCase() + "."
+              }
+            }
+         },
+
+         getOuterWrapperStyleClasses(){
+            let classes = this.getStyleClasses(["border", "background"])
+            if(this.state.style.gutter == "indent"){
+               classes += " nvh_s_gutter_indent"
+            }
+            if(this.state.style.gutter == "hanging"){
+               classes += " nvh_s_gutter_hanging"
+            }
+            return classes
+         },
+
+         getInnerWrapperStyleClasses(){
+            return this.getStyleClasses(["colour", "slant", "textsize", "weight"])
+         },
+
+         getStyleClasses(keys){
+            return keys.filter(k => {
+                     return !!this.state.style[k]
+                  })
+                  .map(k => {
+                     return `nvh_s_${k}_${this.state.style[k]}`
+                  })
+                  .join(" ")
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      :host{
+         display: block;
+      }
+      .nvh-read-only{
+         .pointer {
+            cursor: default;
+         }
+      }
+      .nvh-editor-view-item{
+         margin-left: 0;
+         .nvh-children{
+            padding: 0;
+         }
+      }
+      .nvh-item {
+         display: flex;
+         position: relative;
+         margin-bottom: 2px;
+      }
+      .nvh-focused > .nvh-outer-wrapper > .nvh-inner-wrapper .nvh-readonly-value-wrapper{
+         background-color: #f5ec3ea1;
+         .nvh-readonly-value{
+            color: black!important;
+         }
+      }
+      .nvh-outer-wrapper{
+         flex: 1;
+      }
+      .nvh-inner-wrapper{
+         display: flex;
+         border-radius: 10px;
+         padding: 2px 10px;
+         &:hover{
+            .nvh-edit-icon{
+               opacity: 0.3;
+               &:hover{
+                  opacity: 1
+               }
+            }
+         }
+      }
+      .nvh-gutter{
+         color: grey;
+         font-size: 1em;
+         font-weight: normal;
+         font-style: normal;
+         padding-right: 5px;
+         min-width: 30px;
+         text-align: right;
+      }
+      .nvh-readonly-value-wrapper{
+         display: inline-flex;
+         align-items: center;
+         padding: 2px;
+         p{
+            margin: 0;
+         }
+      }
+      .nvh-readonly-value{
+         display: flex;
+      }
+      .nvh-item-value-editor{
+         margin: 8px 0px;
+      }
+      .nvh-inner-wrapper:hover{
+         .nvh-collapse-toggle{
+            opacity: 0.6;
+            &:hover{
+               opacity: 1;
+            }
+         }
+         position: relative;
+      }
+      .nvh-user-label{
+         border-radius: 5px;
+         font-size: 14px;
+         font-style: normal;
+         font-weight: normal;
+         background-color: #e0e0e0;
+         padding: 2px 5px;
+         color: grey;
+         margin-right: 4px;
+      }
+      .nvh-edit-icon{
+         opacity: 0;
+      }
+      .nvh-children{
+         padding-left: 15px;
+      }
+
+      nvh-dnd-zone{
+         &:not(.nvh-active):not(.nvh-hover){
+            &.nvh-vertical{
+               min-width: 0;
+            }
+            &.nvh-horizontal{
+               min-height: 0;
+            }
+         }
+         &.nvh-active{
+            &.nvh-vertical{
+               margin: 0 10px;
+            }
+            &.nvh-horizontal{
+               margin: 4px 0;
+            }
+         }
+      }
+
+      .nvh_s_background_yellow {
+         background-color: #fffde7;
+      }
+      .nvh_s_background_blue{
+         background-color: #E3F2FD;
+      }
+      .nvh_s_background_grey{
+         background-color: #eee;
+      }
+      .nvh_s_border_solid{
+         border: 1px solid grey;
+      }
+      .nvh_s_border_thick{
+         border: 2px solid grey;
+      }
+      .nvh_s_border_dotted{
+         border: 1px dotted grey;
+      }
+      .nvh_s_colour_red .nvh-readonly-value{
+         color: #c62132;
+      }
+      .nvh_s_colour_blue .nvh-readonly-value{
+         color: #0277bd;
+      }
+      .nvh_s_colour_green .nvh-readonly-value{
+         color: #388e3c;
+      }
+      .nvh_s_colour_grey .nvh-readonly-value{
+         color: #757575;
+      }
+      .nvh_s_gutter_indent{
+         margin-left: 20px;
+      }
+      .nvh_s_gutter_hanging .nvh-readonly-value{
+         margin-left: 40px;
+         text-indent: -20px;
+      }
+      .nvh_s_layout{
+      }
+      .nvh_s_separation{
+      }
+      .nvh_s_slant_italic{
+         font-style: italic;
+      }
+      .nvh_s_textsize_smaller{
+         font-size: 0.8em;
+      }
+      .nvh_s_textsize_bigger{
+         font-size: 1.2em;
+      }
+      .nvh_s_weight_bold{
+         font-weight: bold;
+      }
+   </style>
+</nvh-editor-view-item>

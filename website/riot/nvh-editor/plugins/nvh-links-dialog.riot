@@ -1,0 +1,156 @@
+<nvh-links-dialog>
+   <h4>Links</h4>
+   <loading-overlay if={state.isLoading}/>
+   <div if={!state.isLoading}>
+      <div>
+         link list
+         {JSON.stringify(state.links)}
+
+         <button if={!state.showNewLinkForm}
+               class="btn"
+               onclick={onNewLinkClick}>
+            new link
+         </button>
+      </div>
+
+      <div if={state.showNewLinkForm}>
+         <div class="input-field">
+            <select id="dictSelect"
+                  onchange={onDictionaryChange}>
+               <option each={dict in dictData.dictionaryList}
+                     value={dict.id}
+                     selected={dict.id == dictData.dictId}>{dict.title}</option>
+            </select>
+            <label>Dictionary</label>
+            <span class="helper-text">Select dictionary to link element to.</span>
+         </div>
+         <div class="positionRelative">
+            <loading-overlay if={state.isLoadingTargets}
+                  small=1/>
+            <div class="input-field">
+               <input type="text"
+                     class="autocomplete"
+                     name="target">
+                   <i class="searchIcon material-icons grey-text">search</i>
+               <label>target</label>
+            </div>
+         </div>
+
+         <div class="buttons">
+            <span class="mr-auto"></span>
+            <a class="btn"
+                  onclick={onCloseClick}>close</a>
+            <a if={state.links && state.links.length && state.showNewLinkForm}
+                  class="btn"
+                  onclick={onCancelClick}>cancel</a>
+            <a if={state.showNewLinkForm}
+                  class="btnSaveLink btn btn-primary disabled"
+                  onclick={onSaveClick}>save</a>
+         </div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+
+         state: {
+            isLoading: true,
+            isLoadingTargets: false,
+            links: null,
+            showNewLinkForm: false
+         },
+
+         onBeforeMount(){
+            this.state.targetDictId = this.dictData.dictId
+         },
+
+         onMounted(){
+            this.store.loadEntryLinks()
+                  .done(response => {
+                     this.state.links = response.links ? response.links : []
+                     this.state.showNewLinkForm = !this.state.links.length
+                  })
+                  .fail(() => {
+                     this.state.showNewLinkForm = true
+                  })
+                  .always(() => {
+                     this.update({isLoading: false})
+                     this.loadLinkables()
+                  })
+            $("select", this.root).formSelect()
+         },
+
+         onUpdated(){
+            $("select", this.root).formSelect()
+         },
+
+         onNewLinkClick(){
+            this.update({showNewLinkForm: true})
+         },
+
+         onSaveClick(){
+            this.createLink()
+         },
+
+         onCloseClick(){
+            window.modal.close()
+         },
+
+         onCancelClick(){
+            this.update({showNewLinkForm: false})
+         },
+
+         onDictionaryChange(evt){
+            this.state.targetDictId = evt.target.value
+            this.loadLinkables()
+         },
+
+         createLink(){
+            let source_el = this.props.element.name
+            let target_dict = $("#dictSelect", this.root).val()
+            let target_id = this.state.target.link
+            let target_el = this.state.target.element
+            this.update({isLoading: true})
+            this.store.createEntryLink(source_el, target_dict, target_id, target_el)
+                  .done(() => {
+                     window.modal.close()
+                  })
+                  .fail(() => {
+                     this.update({isLoading: false})
+                  })
+         },
+
+         loadLinkables(){
+            this.update({isLoadingTargets: true})
+            this.store.loadLinkables(this.state.targetDictId)
+                  .always((response) => {
+                     this.update({isLoadingTargets: false})
+                     $("input.autocomplete", this.root).autocomplete({
+                        data: response.links.map(target => {
+                           target.label = target.link
+                           target.info = target.element
+                           target.value = target.link
+                           return target
+                        }),
+                        onAutocomplete: (target) => {
+                           this.state.target = target
+                           $(".btnSaveLink").removeClass("disabled")
+                        }
+                     })
+                  })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         min-height: 250px;
+      }
+      .searchIcon{
+         position: absolute;
+         right: 10px;
+         top: 50%;
+         margin-top: -15px;
+      }
+   </style>
+</nvh-links-dialog>

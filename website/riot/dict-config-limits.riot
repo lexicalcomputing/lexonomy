@@ -1,0 +1,46 @@
+<dict-config-limits>
+   <loading-overlay if={state.isLoading || state.isSaving}/>
+   <h1>Limits</h1>
+   <template if={!state.isLoading}>
+      <div class="row">
+         <div class="input-field col s4">
+            <input id="entriesLimit"
+                  value={state.data.entries}/>
+            <label for="elements">Maximum number of entries</label>
+         </div>
+      </div>
+
+      <dict-config-buttons save-data={saveData}></dict-config-buttons>
+   </template>
+
+
+
+   <script>
+      export default {
+         state: {
+            isLoading: true,
+            isSaving: false
+         },
+
+         onMounted() {
+            this.store.loadDictionaryConfig("limits")
+                  .done(response => {
+                     this.state.data = response.content
+                  })
+                  .always(() => {
+                     this.update({isLoading: false})
+                  })
+         },
+
+         saveData(){
+            this.update({isSaving: true})
+            this.store.updateDictionaryConfig("limits", {
+               entries: $("#entriesLimit").val()
+            })
+                  .always(() => this.update({isSaving: false}))
+         }
+      }
+
+   </script>
+
+</dict-config-limits>

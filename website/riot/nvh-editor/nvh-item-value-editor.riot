@@ -1,0 +1,235 @@
+<nvh-item-value-editor class="nvh-item-value-editor {state.style.layout == 'block' ? 'nvh-full-width' : ''}">
+   <div if={state.showEditor}
+         class="nvh-text-value">
+      <div class="nvh-toolbar">
+      </div>
+      <div class="nvh-editable-div"
+            onkeyup={onKeyUp}>
+      </div>
+      <small class="nvh-save-note grey-text">
+         Ctrl + Enter to confirm
+      </small>
+   </div>
+   <input if={state.config.type == "med"}
+         class="nvh-input"
+         value={props.element.value}
+         onkeyup={onKeyUp}/>
+   <select if={state.config.type == "lst"}
+         class="nvh-select"
+         onchange={onSelectChange}>
+      <option each={option in state.config.values}
+            selected={option.value == props.element.value}
+            value={option.value}>{option.caption}</option>
+   </select>
+
+   <script>
+      export default{
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.name)
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.name)
+            this.state.showEditor = this.state.config.type == "inl" || this.state.config.type == "txt"
+         },
+
+         onMounted(){
+            if(this.state.showEditor){
+               let actionList = ["undo", "redo", "bold", "italic", /*"underline", "createlink", "inserthorizontalrule",*/ "close"]
+               if(this.state.config.type == "txt"){
+                  actionList = ["undo", "redo", "close"]
+               }
+               $(".nvh-editable-div", this.root).html(this.nvhStore.parseMarkDown(this.props.element.value))
+               this.state.editor = new Pen({
+                  editor: $(".nvh-editable-div", this.root)[0],
+                  toolbarNode: $(".nvh-toolbar", this.root)[0],
+                  linksInNewWindow: true,
+                  list: actionList,
+                  tooltip: {
+                     undo: "Undo (Ctrl + Z)",
+                     redo: "Redo (Ctrl + Y)",
+                     bold: "Bold (Ctrl + B)",
+                     italic: "Italic  (Ctrl + I)",
+                     underline: "Underline (Ctrl + U)",
+                     createlink: "Create link",
+                     inserthorizontalrule: "Insert line",
+                     close: "Close without saving (ESC)"
+                  },
+                  icons: {
+                     undo: "undo",
+                     redo: "redo",
+                     bold: "format_bold",
+                     italic: "format_italic",
+                     underline: "format_underline",
+                     createlink: "link",
+                     inserthorizontalrule: "remove",
+                     close: "close",
+                  },
+                  stay: false,
+                  customCommands: {
+                     //save: this.saveEditorValue.bind(this),
+                     close: this.nvhStore.stopElementEditing.bind(this.nvhStore)
+                  }
+               });
+            } else {
+               this.initFormSelect()
+            }
+            this.focusInput()
+            document.addEventListener('click', this.handleClickOutside)
+         },
+
+         onBeforeUnmount(){
+            this.state.showEditor && this.state.editor.destroy()
+            document.removeEventListener('click', this.handleClickOutside)
+         },
+
+         onKeyUp(evt){
+            evt.stopPropagation()
+            if(evt.keyCode == 13 && (evt.ctrlKey || evt.metaKey)){
+               this.changeValue()
+            } else if(evt.keyCode == 27){
+               this.nvhStore.stopElementEditing()
+            }
+         },
+
+         onSelectChange(evt){
+            this.nvhStore.changeElementValue(this.props.element, evt.target.value)
+            this.nvhStore.stopElementEditing()
+         },
+
+         changeValue(){
+            if(this.state.showEditor){
+               this.saveEditorValue()
+            } else{
+               this.nvhStore.changeElementValue(this.props.element, $(".nvh-select, .nvh-input").first().val().trim())
+               this.nvhStore.stopElementEditing()
+            }
+         },
+
+         saveEditorValue(){
+            let div = document.createElement("div")
+            div.innerHTML = this.state.editor.toMd().replaceAll("<br>", "\n")
+            let value = div.textContent || div.innerText || ""
+            this.state.editor.destroy()
+            this.nvhStore.changeElementValue(this.props.element, value.trim())
+            this.nvhStore.stopElementEditing()
+         },
+
+         handleClickOutside(evt){
+            if (!this.root.contains(evt.target)){
+               evt.stopPropagation()
+               this.changeValue()
+            }
+         },
+
+         initFormSelect(){
+            if(this.state.config.type == "lst"){
+               $("select", this.root).formSelect({
+                  dropdownOptions: {
+                     coverTrigger: false,
+                     constrainWidth: false
+                  }
+               })
+            }
+         },
+
+         focusInput(){
+            if(this.props.element.edit){
+               let el = $(this.state.showEditor ? ".nvh-editable-div" : "input, textarea", this.root).first().focus()
+               window.scrollToTheEndOfInput(el)
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: block;
+         min-width: 200px;
+         &.nvh-full-width{
+            width: 100%;
+         }
+         &.nvh-item-value-editor{
+            .select-wrapper input{
+               width: auto;
+               display: inline-block;
+               background-color: white;
+               padding: 4px 8px;
+               height: auto;
+               height: 22px;
+               line-height: 22px;
+               margin: 0;
+            }
+            .select-wrapper{
+               display: inline-block;
+            }
+            .select-wrapper .caret{
+               z-index: 1;
+               pointer-events: none;
+            }
+         }
+      }
+      .nvh-text-value{
+         border: 1px solid grey;
+         display: block;
+         background-color: #fff;
+         position: relative;
+         .nvh-editable-div{
+            padding: 5px 8px 25px;
+            min-height: 50px;
+         }
+         .nvh-save-note{
+            position: absolute;
+            left: 8px;
+            bottom: 0px;
+         }
+         .nvh-toolbar{
+            background-color: whitesmoke;
+            border-bottom: #d9d9d8;
+            position: sticky;
+            width: 100%;
+            top: 0;
+            z-index: 999;
+            .pen-menu{
+               display: flex!important;
+               position: static;
+               border-radius: 0;
+               background-color: unset;
+               background: none;
+               border: none;
+               box-shadow: none;
+               height: 30px;
+               opacity: 1;
+            }
+            i{
+               color: grey;
+               cursor: pointer;
+               display: inline-block;
+               width: 35px;
+               height: 30px;
+               line-height: 30px;
+               text-align: center;
+               font-size: 22px;
+               padding: 0;
+               &:hover{
+                  background-color: #cccccc;
+               }
+               &.active{
+                  color: black;
+                  box-shadow: none;
+               }
+               &.disabled{
+                  pointer-events: none;
+                  opacity: 0.3
+               }
+               &.icon-save{
+                  border-right: 1px solid #d9d9d8;
+               }
+               &.icon-close{
+                  margin-left: auto;
+                  border-left: 1px solid #d9d9d8;
+               }
+            }
+         }
+      }
+   </style>
+</nvh-item-value-editor>

@@ -1,0 +1,166 @@
+<nvh-revisions class="z-depth-2 grey lighten-4">
+   <div class="nvh-revisions-toolbar grey lighten-3 borderBottom">
+      <span>
+         Revisions
+      </span>
+      <button class="btn btn-flat ml-auto"
+            onclick={onCloseRevisionsClick}>
+         <i class="material-icons">close</i>
+      </button>
+   </div>
+   <loading-overlay if={dictData.isEntryRevisionsLoading}/>
+   <div if={dictData.isEntryRevisionsLoaded}
+         class="nvh-revisions-wrapper">
+      <div each={(revision, idx) in dictData.entryRevisions}
+            class="nvh-revision {nvhData.revision == revision ? 'yellow lighten-3' : ''}"
+            onclick={onRevisionClick.bind(this, revision)}>
+         <div class="nvh-time">
+            <b>
+               {window.dateToTimeAgo(new Date(revision.when))}
+            </b>
+            &nbsp;
+            <small class="grey-text">
+               {revision.when.substr(0, 19)}
+            </small>
+         </div>
+         <div if={revision.email}
+               class="grey-text">
+            {revision.email}
+         </div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "isRevisionsOpenChanged", "onToggle"],
+                    ["store", "isEntryRevisionsLoadingChanged", "update"],
+                    ["nvhStore", "entryChanged", "onEntryChanged"]],
+
+         state: {
+            resizeHandle: null,
+            updateHandle: null,
+            open: false
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onMounted(){
+            window.addEventListener("resize", this.onResizeDebounced)
+         },
+
+         onBeforeUnmount(){
+            this.nvhData.isRevisionsOpen && $("body").animate({"margin-right": "0px"}, 300)
+            window.removeEventListener("resize", this.onResizeDebounced)
+            clearInterval(this.state.updateHandle)
+         },
+
+         onToggle(){
+            this.state.open = !this.state.open
+            !this.dictData.isEntryRevisionsLoaded && this.store.loadEntryRevisions()
+            $(this.root).toggleClass("nvh-open")
+            $("body").animate({
+               "margin-right": this.nvhData.isRevisionsOpen ? $(this.root).width() : "0px"
+            }, 300)
+            if(this.nvhData.isRevisionsOpen){
+               // update time in revison "xxx seconds/minutes... ago"
+               this.state.updateHandle = setInterval(this.update.bind(this), 10 * 1000)
+            } else {
+               clearInterval(this.state.updateHandle)
+            }
+         },
+
+         onEntryChanged(){
+            this.state.open && this.store.loadEntryRevisions()
+         },
+
+         onCloseRevisionsClick(){
+            this.nvhStore.closeRevisions()
+         },
+
+         onRevisionClick(revision){
+            this.nvhStore.showRevision(revision)
+         },
+
+         onResizeDebounced(){
+            if(this.state.open){
+               clearTimeout(this.state.resizeHandle)
+               this.state.resizeHandle = setTimeout(() => {
+                  clearTimeout(this.state.resizeHandle)
+                  $("body").animate({"margin-right": $(this.root).width()}, 300)
+               }, 100)
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: fixed;
+         right: 0;
+         top: 0;
+         bottom: 0;
+         z-index: 1100;
+         transform: translateX(105%); // so the shadow is also hidden
+         transition: 0.3s;
+         min-width: 300px;
+         overflow-y: auto;
+         &.nvh-open{
+            transform: translateX(0);
+         }
+      }
+      .nvh-revisions-wrapper{
+         padding-left: 20px;
+      }
+      .nvh-revisions-toolbar{
+         display: flex;
+         align-items: center;
+         padding-left: 15px;
+         font-size: 1.3rem;
+         position: sticky;
+         top: 0;
+         z-index: 100;
+      }
+      .nvh-revision{
+         position: relative;
+         padding : 10px 10px;
+         border-left: 2px solid #b9b9b9;
+         cursor: pointer;
+         &:hover{
+            background-color: #eceff1;
+         }
+         &::after{
+            content: ' ';
+            position: absolute;
+            left: -4px;
+            top: 18px;
+            height: 7px;
+            width: 7px;
+            border-radius: 10px;
+            display: inline-block;
+            background-color: #b9b9b9;
+         }
+         &:last-child{
+            &::before{
+               content: ' ';
+               position: absolute;
+               left: -2px;
+               top: 20px;
+               height: 100%;
+               width: 2px;
+               display: inline-block;
+               background-color: #f5f5f5;
+            }
+         }
+      }
+      .nvh-time{
+         margin-left: -10px;
+         padding-left: 10px;
+         display: inline-block;
+         color: #000;
+      }
+
+   </style>
+</nvh-revisions>

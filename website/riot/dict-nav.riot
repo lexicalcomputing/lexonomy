@@ -1,30 +1,120 @@
-<dict-nav>
-	<nav class="nav-breadcrumbs">
-      <div class="nav-wrapper">
-         <a href="{authData.authorized ? '#/' : '#/opendictionaries'}"
-               class="breadcrumb">Dictionaries</a>
-         <a if={dictData.dictId}
-               href="#/{dictData.dictId}"
-               class="breadcrumb">{dictData.title}</a>
-         <a if={props.links && props.links.length}
-               each={(link, idx) in props.links}
-               href="{getLink(idx)}"
-               class="breadcrumb">{link[1]}</a>
-      </div>
-	</nav>
+<dict-nav class={state.links.length ? '' : 'hide'}>
+	<div class="nav-breadcrumbs">
+      <a href="#home"
+            class="breadcrumb">
+         <i class="material-icons homeIcon">home</i>
+      </a>
+      <a each={link in state.links}
+            href="#/{link[0]}"
+            class="breadcrumb">{link[1]}</a>
+	</div>
 
    <script>
       export default {
-         getLink(idx){
-            var link = "#"
-            if(this.dictData.dictId){
-               link += "/" + this.dictData.dictId
+         state: {
+            links: []
+         },
+
+         onBeforeMount(){
+            this.refreshLinks()
+         },
+
+         onBeforeUpdate(){
+            this.refreshLinks()
+         },
+
+         refreshLinks(){
+            let dictId = this.dictData.dictId
+            let doctype = this.dictData.doctype
+            this.state.links = []
+            if(this.props.page.startsWith("dict-") || ["new-dictionary"].includes(this.props.page)){
+               this.state.links.push([this.authData.authorized ? "" : "opendictionaries", "Dictionaries"])
             }
-            for(var i = 0; i <= idx; i++){
-               link += "/" + this.props.links[i][0]
+            if(this.props.page.startsWith("dict-")){
+               this.state.links.push([`${dictId}`, this.dictData.title])
             }
-            return link
+            if(this.props.page.startsWith("admin-users-")){
+               this.state.links.push(["admin/users", "Users"])
+            }
+            if(this.props.page.indexOf("-config-") != - 1){
+               this.state.links.push([`${dictId}/config`, "Configure"])
+            }
+            let link = {
+               "api": ["api", "API"],
+               "e404": ["e404", "Page not found"],
+               "unauthorized": ["unauthorized", "Unauthorized"],
+               "dictionaries": ["", "Dictionaries"],
+               "opendictionaries": ["open-dictionaries", "Public dictionaries"],
+               "registerPassword": ["createaccount", "Set your password"],
+               "forgotPassword": ["recoverpwd", "Recover password"],
+               "register": ["register", "Sign up"],
+               "forgot": ["forgot", "Recover password"],
+               "user-profiel": ["user-profile", "Your profile"],
+               "new-dictionary": ["make", "New dictionary"],
+
+               "dict-edit": [`${dictId}/${doctype}/${this.dictData.entryId}/${this.dictData.mode}`, "Edit"],
+               "dict-public-entry": [`${dictId}/${this.dictData.entryId}`, "View"],
+               "dict-links": [`${dictId}/links`, "Links"],
+               "dict-download": [`${dictId}/download`, "Download"],
+               "dict-upload": [`${dictId}/upload`, "Upload"],
+
+               "dict-config": [`${dictId}/config`, "Configure"],
+               "dict-config-autonumber": [`${dictId}/config/autonumber`, "Auto-numbering"],
+               "dict-config-editing": [`${dictId}/config/editing`, "Custom entry editor"],
+               "dict-config-flagging": [`${dictId}/config/flagging`, "Entry flags"],
+               "dict-config-gapi": [`${dictId}/config/gapi`, "Multimedia API"],
+               "dict-config-ident": [`${dictId}/config/ident`, "Description"],
+               "dict-config-kontext": [`${dictId}/config/kontext`, "KonText connection"],
+               "dict-config-links": [`${dictId}/config/links`, "Linking"],
+               "dict-config-publico": [`${dictId}/config/publico`, "Publishing"],
+               "dict-config-searchability": [`${dictId}/config/searchability`, "Searching"],
+               "dict-config-ske": [`${dictId}/config/ske`, "Sketch Engine connection"],
+               "dict-config-structure": [`${dictId}/config/structure`, "Entry structure"],
+               "dict-config-titling": [`${dictId}/config/titling`, "Headword list"],
+               "dict-config-url": [`${dictId}/config/url`, "Change URL"],
+               "dict-config-users": [`${dictId}/config/users`, "Users"],
+
+               "admin-users": ["admin/users", "Administered users"],
+               "admin-users-add": ["admin/users/add", "Add user"],
+               "admin-dicts": ["admin/dicts", "Administered dictionaries"]
+            }[this.props.page]
+            if(link){
+               this.state.links.push(link)
+            }
          }
       }
    </script>
+
+   <style>
+      :host{
+         display: inline-block;
+      }
+      .nav-breadcrumbs{
+         padding-left: 20px;
+         padding-top: 5px;
+         display: inline-flex;
+         align-items: center;
+         line-height: 24px;
+      }
+      .nav-breadcrumbs .breadcrumb{
+         font-size: 0.8rem;
+      }
+      .nav-breadcrumbs .breadcrumb:last-child{
+         text-decoration: none;
+         pointer-events: none;
+         cursor: default;
+      }
+      .breadcrumb:before{
+         color: #d1d1d1;
+         margin: 0;
+      }
+      .homeIcon{
+         font-size: 20px;
+      }
+      @media screen and (max-width: 1000px){
+         .nav-wrapper .breadcrumb:before{
+            margin: 0;
+         }
+      }
+   </style>
 </dict-nav>

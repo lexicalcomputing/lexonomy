@@ -1,5 +1,4 @@
 <dict-public>
-   <dict-nav/>
    <loading-overlay if={state.isLoading || dictData.isDictionaryLoading || state.isEntryListLoading}/>
    <template if={!dictData.isDictionaryLoading}>
       <h1 class="header">
@@ -19,7 +18,8 @@
             <a if={dictData.userAccess.canDownload}
                   href="#/{dictData.dictId}/download"
                   class="btn">download</a>
-            <a if={authData.authorized} href="#/{dictData.dictId}/links"
+            <a if={dictData.userAccess.canEdit}
+                  href="#/{dictData.dictId}/links"
                   class="btn">links</a>
             <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit}
                   class="dropdown-trigger btn btn-floating btn-flat"
@@ -54,50 +54,54 @@
          </div>
          <template if={dictData.public || dictData.userAccess}>
             <div class="sectionDivider"></div>
-            <div class="firstRowCol search">
-               <h3>Search</h3>
-               <dict-entry-filter search-func={search}/>
-               <div if={!state.isEntryListLoading && state.showFoundEntries && dictData.entryList}
-                     class="searchResult">
-                  <ul if={dictData.entryList.length}
-                        class="entry-list found-entries">
-                     <li each={entry in dictData.entryList}>
-                        <a href={getEntryUrl(entry)}>
-                           <raw-html content={entry.title}></raw-html>
-                        </a>
+            <div class="firstRowCol">
+               <div class="search">
+                  <h3>Search</h3>
+                  <dict-entry-filter search-func={search}/>
+                  <div if={!state.isEntryListLoading && state.showFoundEntries && dictData.entryList}
+                        class="searchResult">
+                     <ul if={dictData.entryList.length}
+                           class="entry-list found-entries">
+                        <li each={entry in dictData.entryList}>
+                           <a href={getEntryUrl(entry)}>
+                              <raw-html content={entry.title}></raw-html>
+                           </a>
+                        </li>
+                     </ul>
+                     <div if={dictData.entryCount > 20}
+                           class="serchResultNote grey-text">
+                           Showing first 20 entries of {dictData.entryCount}.
+                     </div>
+                     <div if={!dictData.entryList.length}
+                           class="noEntries">
+                         <h2 class="grey-text center-align">No entries</h2>
+                     </div>
+                  </div>
+               </div>
+               <div class="divider"></div>
+               <div class="randomEntries">
+                  <a if={dictData.dictionaryExamplesHasMore}
+                        class="refreshExamplesBtn btn btn-floating waves-effect waves-light right"
+                        onclick={ onReloadExamplesClick }>
+                     <i class="material-icons">refresh</i>
+                  </a>
+                  <h3>Random entries</h3>
+                  <div if={dictData.isDictionaryExamplesLoading}
+                        class="loadingExamples grey-text">
+                     Loading...
+                  </div>
+                  <ul if={ !dictData.isDictionaryExamplesLoading && dictData.dictionaryExamples }
+                        class="entry-list random-entries">
+                     <li each={ entry in dictData.dictionaryExamples }>
+                        <a href={getEntryUrl(entry)}>{ entry.titlePlain }</a>
                      </li>
                   </ul>
-                  <div if={dictData.entryCount > 20}
-                        class="serchResultNote grey-text">
-                        Showing first 20 entries of {dictData.entryCount}.
-                  </div>
-                  <div if={!dictData.entryList.length}
-                        class="noEntries">
-                      <h2 class="grey-text center-align">No entries</h2>
-                  </div>
                </div>
             </div>
          </template>
       </div>
 
-      <div if={ dictData.public }>
-         <div class="divider"></div>
-         <a if={dictData.dictionaryExamplesHasMore}
-               class="refreshExamplesBtn btn btn-floating waves-effect waves-light right"
-               onclick={ onReloadExamplesClick }>
-            <i class="material-icons">refresh</i>
-         </a>
-         <h3>Random entries</h3>
-         <div if={dictData.isDictionaryExamplesLoading}
-               class="loadingExamples grey-text">
-            Loading...
-         </div>
-         <ul if={ !dictData.isDictionaryExamplesLoading && dictData.dictionaryExamples }
-               class="entry-list random-entries">
-            <li each={ entry in dictData.dictionaryExamples }>
-               <a href="#/{ dictData.dictId }/{ entry.id }">{ entry.titlePlain }</a>
-            </li>
-         </ul>
+      <div if={ dictData.public || dictData.userAccess }>
          <div class="divider"></div>
          <div class="licence section right">
             { dictData.licence }
@@ -119,18 +123,24 @@
       .sectionDivider{
          width: 1px;
          border-left: 1px solid #e0e0e0;
-         padding-left: 30px;
          margin-left: 30px;
       }
       .firstRowCol{
          flex: 1;
          padding-bottom: 30px;
       }
+      .firstRowCol .divider{
+         margin-top: 30px;
+      }
       .description{
          word-break: break-word;
       }
       dict-entry-filter{
          max-width: 500px;
+      }
+      .search,
+      .randomEntries{
+         padding-left: 30px;
       }
       .searchResult{
          min-height: max(15vh, 200px);
@@ -140,7 +150,7 @@
          margin-left: 10px;
       }
       .noEntries{
-         padding-top: 30px;
+         padding-top: 50px;
       }
       .entry-list li {
          display: inline-block;
@@ -181,7 +191,8 @@
             if (confirm("Are you sure you want to delete dictionary " + dictTitle + "? You will not be able to undo this.")) {
                this.update({isLoading: true})
                this.store.deleteDictionary(this.dictData.dictId)
-                     .always(() => {this.update({isLoading: false})})
+                     .done(() => {route("#/")})
+                     .fail(() => {this.update({isLoading: false})})
             }
          },
 
@@ -193,8 +204,8 @@
 
          search(){
             this.update({isEntryListLoading: true})
-            this.store.loadEntryList(20)
-                  .done(() =>{
+            let request = this.store.loadEntryList(20)
+            request && request.done(() => {
                      this.state.showFoundEntries = true
                   })
                   .always(() => {
