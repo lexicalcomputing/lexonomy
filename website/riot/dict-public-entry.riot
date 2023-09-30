@@ -1,11 +1,10 @@
 <dict-public-entry>
    <loading-overlay if={dictData.isDictionaryLoading || (dictData.isEntryListLoading && !dictData.isEntryListLoaded)}/>
-   <dict-nav links={[[dictData.entryId, "View"]]}/>
    <h1 if={dictData.title}
          class="header">
       { dictData.title }
    </h1>
-   <template if={ dictData.public && dictData.isEntryListLoaded}>
+   <template if={ (dictData.public || dictData.userAccess) && dictData.isEntryListLoaded}>
       <div class="row">
          <div class="col s4 leftCol">
             <loading-overlay if={dictData.isEntryListLoading && dictData.isEntryListLoaded}/>

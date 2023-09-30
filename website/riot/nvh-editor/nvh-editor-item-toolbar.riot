@@ -1,0 +1,199 @@
+<nvh-editor-item-toolbar class="noSelect">
+   <span if={state.show}
+         class="nvh-value-icons">
+      <i class="nvh-icon-drag material-icons tooltipped {state.isDragDisabled ? 'disabled' : ''}"
+            draggable="true"
+            ondragstart={onDragStart}
+            ondragend={onDragEnd}
+            data-tooltip="Drag element to new position">drag_handle</i>
+      <i class="nvh-icon-edit material-icons tiny tooltipped"
+            onclick={onEditClick}
+            data-tooltip="Change element value">edit</i>
+      <i class="nvh-icon-add material-icons tiny tooltipped {state.isAddDisabled ? 'disabled' : ''}"
+            onclick={onAddClick}
+            data-tooltip="Add new element">add</i>
+      <i class="nvh-icon-copy material-icons tiny tooltipped {state.isDuplicationDisabled ? 'disabled' : ''}"
+            onclick={onDuplicateClick}
+            data-tooltip="Copy element">content_copy</i>
+      <i class="nvh-icon-remove material-icons tiny tooltipped {state.isRemovalDisabled ? 'disabled' : ''}"
+            onclick={onRemoveClick}
+            data-tooltip="Remove">delete</i>
+      <i class="nvh-icon-move-up material-icons tiny tooltipped {state.isMoveUpDisabled ? 'disabled' : ''}"
+            onclick={onMoveUpClick}
+            data-tooltip="Move up">keyboard_arrow_up</i>
+      <i class="nvh-icon-move-down material-icons tiny tooltipped {state.isMoveDownDisabled ? 'disabled' : ''}"
+         onclick={onMoveDownClick}
+            data-tooltip="Move down">keyboard_arrow_down</i>
+      <i if={dictData.userAccess.canConfig}
+            class="nvh-icon-style material-icons tiny tooltipped"
+            onclick={onEditStyleClick}
+            data-tooltip="Change appearance of '{state.element.name}'">palette</i>
+   </span>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "openItemToolbar", "openToolbar"],
+                    ["nvhStore", "closeItemToolbar", "close"]],
+
+         state:{
+            show: false,
+            element: null
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onBeforeUpdate(){
+            if(this.state.element){
+               let children = this.state.element.parent.children
+               this.state.isDragDisabled = this.state.element.name == this.nvhData.rootElement
+               this.state.isAddDisabled = !this.nvhStore.getAvailableChildElements(this.state.element).length && (!this.state.element.parent || !this.nvhStore.getAvailableChildElements(this.state.element.parent).length)
+               this.state.isDuplicationDisabled = !this.nvhStore.isElementDuplicationAllowed(this.state.element),
+               this.state.isRemovalDisabled = !this.nvhStore.isElementRemovalAllowed(this.state.element),
+               this.state.isMoveUpDisabled = children.indexOf(this.state.element) == 0
+                     && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, -1),
+               this.state.isMoveDownDisabled = children.indexOf(this.state.element) == children.length -1
+                     && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, 1)
+            }
+         },
+
+         openToolbar(element){
+            if(this.state.element != element){
+               setTimeout(() => { // timeout to let update of other
+                  this.update({
+                     element: element,
+                     elementNode: this.nvhStore.getElementHTMLTag(element).find(".nvh-readonly-value-wrapper").first()
+                  })
+                  if(!this.state.show){
+                     this.open()
+                  } else {
+                     this.updatePosition()
+                  }
+               }, 0)
+            }
+         },
+
+         open(){
+            if(!this.state.show){
+               this.update({show: true})
+               document.addEventListener('mousemove', this.onMouseMove)
+               this.updatePosition()
+            }
+         },
+
+         close(){
+            if(this.state.show){
+               this.destroyTooltips()
+               this.update({
+                  show: false,
+                  element: null
+               })
+               document.removeEventListener('mousemove', this.onMouseMove)
+            }
+         },
+
+         onDragStart(evt){
+            evt.stopPropagation()
+            evt.dataTransfer.setDragImage(this.state.elementNode.closest(".nvh-item")[0], 0, 0);
+            this.nvhStore.startElementDragging(this.state.element)
+         },
+
+         onDragEnd(evt){
+            this.nvhStore.stopElementDragging()
+         },
+
+         onEditClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.startElementEditing(this.state.element)
+         },
+
+         onAddClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.trigger("openContextMenu", "add")
+            this.close()
+         },
+
+         onDuplicateClick(evt){
+            this.nvhStore.duplicateElement(this.state.element)
+            this.close()
+         },
+
+         onRemoveClick(evt){
+            this.nvhStore.removeElement(this.state.element)
+            this.close()
+         },
+
+         onMoveUpClick(evt){
+            this.nvhStore.moveElementUp(this.state.element)
+            this.update()
+         },
+
+         onMoveDownClick(evt){
+            this.nvhStore.moveElementDown(this.state.element)
+            this.update()
+         },
+
+         onEditStyleClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.trigger("openElementStyleEditor", this.state.element.name, this.state.elementNode)
+            this.close()
+         },
+
+         onMouseMove(evt){
+            if(!this.root.contains(evt.target)){
+               let wrapperNode = this.nvhStore.getElementHTMLTag(this.state.element).find(".nvh-outer-wrapper").first()
+               if(wrapperNode[0] && !wrapperNode[0].contains(evt.target)){
+                  this.nvhStore.closeElementToolbar(this.state.element)
+               }
+            }
+         },
+
+         updatePosition(){
+            if(this.state.elementNode.length){  // in some cases (riot redrawing) elementNode might not exist
+               let editorOffset = $("nvh-editor").offset()
+               let wrapperOffset = this.state.elementNode.offset()
+               let top = wrapperOffset.top - editorOffset.top + this.state.elementNode.height()
+               $(this.root).css({
+                  left: (wrapperOffset.left - editorOffset.left) + "px",
+                  top: top + "px"
+               })
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: absolute;
+         z-index: 999;
+      }
+      .nvh-value-icons{
+         display: flex;
+         background-color: whitesmoke;
+         box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+         i{
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            line-height: 24px;
+            display: inline-block;
+            color: #919191;
+            font-size: 20px;
+            padding: 2px;
+            text-align: center;
+            &.disabled{
+               opacity: 0.3;
+               pointer-events: none;
+            }
+            &:hover{
+               background-color: #e2e2e2;
+            }
+            &.nvh-icon-drag {
+               cursor: move;
+            }
+         }
+      }
+   </style>
+</nvh-editor-item-toolbar>

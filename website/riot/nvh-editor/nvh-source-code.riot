@@ -1,0 +1,435 @@
+<nvh-source-code>
+   <div class="nvh-code-editor-wrapper">
+      <div class="nvh-line-numbers"></div>
+      <div class="nvh-code-editor"
+            onkeydown={editorOnKeyDown}
+            onkeyup={editorOnKeyUp}>{this.nvhStore.jsonToNvh(this.nvhData.entry)}</div>
+   </div>
+
+   <div if={!Object.keys(state.warnings).length}
+         class="nvh-validity lighten-4 green-text green">
+      <span class="mr-4">●</span> valid
+   </div>
+   <div if={Object.keys(state.warnings).length}
+         class="nvh-validity lighten-4 red-text red">
+      <div each={lineObj in Object.entries(state.warnings)}
+            class="nvh-validation-row">
+         <span class="mr-4">●</span>
+         <span class="nvh-validation-line-number"
+               onclick={onScrollToLineClick.bind(this, lineObj[0])}>line {lineObj[0]}:</span>
+         <raw-html content={lineObj[1]}/>
+      </div>
+   </div>
+
+   <div class="nvh-autocomplete"></div>
+   <div class="nvh-suggestions z-depth-1"></div>
+
+   <script>
+      export default {
+         bindings: [["nvhStore", "updateEditor", "updateSourceCode"],
+                    ["nvhStore", "entryChanged", "updateSourceCode"]],
+
+         state:{
+            debounceHandle: null,
+            oldSourceCode: null,
+            warnings: {},
+            autocompleteText: "",
+            suggestions: [],
+            suggestionCursor: 0
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.state.oldSourceCode = this.nvhStore.jsonToNvh(this.nvhData.entry)
+            this.nvhData.entry && this.validate(this.nvhData.entry)
+         },
+
+         onMounted(){
+            let highlight = (editor) => {
+               let code = editor.textContent || ""
+               editor.innerHTML = code.replaceAll(/(.*?:)(.*\n)/g, (match, element, value) => {
+                  let color = this.nvhStore.getElementColor(element.split(":")[0].trim())
+                  return `<span style="color: ${color};">${element}</span>${value}`
+               })
+            }
+            this.editor = CodeJar(document.querySelector(".nvh-code-editor", this.root), highlight, {
+               readOnly: this.props.readOnly,
+               tab: "  ",
+               catchTab: false
+            })
+            this.editor.onUpdate(this.onEditorUpdateDebounced.bind(this))
+            this.updateLineNumbers()
+         },
+
+         onBeforeUnmount(){
+            if(this.nvhData.entry && this.state.oldSourceCode != this.nvhStore.jsonToNvh(this.nvhData.entry)){
+               this.nvhStore.history.addState()
+            }
+         },
+
+         updateSourceCode(){
+            this.validate(this.nvhData.entry)
+            this.editor.updateCode(this.nvhStore.jsonToNvh(this.nvhData.entry))
+            this.update()
+            this.updateLineNumbers()
+         },
+
+         editorOnKeyDown(evt){
+            if(evt.keyCode == 9){  // tab
+               if(this.state.autocompleteText){
+                  evt.preventDefault()
+               } else {
+                  this.editor.handleTabCharacters(evt)
+               }
+            } else if(evt.keyCode == 8){
+               this.handleBackspaceCharacter(evt)
+            } else if(this.state.suggestions.length && [13, 32, 38, 40].includes(evt.keyCode)){
+               evt.preventDefault()
+            }
+         },
+
+         editorOnKeyUp(evt){
+            let lines = this.editor.beforeCursor().split("\n")
+            let lastLine = lines[lines.length - 1]
+            if(Object.entries(this.state.warnings).filter(obj => {
+               // do not try to autocomplete if there is an syntax error on some line, other then active line
+               return obj[0] != lines.length && obj[1].indexOf("Syntax error") != -1
+            }).length){
+               this.hideAutocomplete()
+               this.hideSuggestions()
+               return
+            }
+            if((evt.keyCode == 13 && this.state.suggestions.length)  //enter
+                  || (evt.keyCode == 9 && this.state.autocompleteText)){ //tab
+               this.doAutocomplete()
+            } else if(evt.keyCode == 38 && this.state.suggestions.length){  //up
+               this.moveSuggestionsCursorUp()
+            } else if(evt.keyCode == 40 && this.state.suggestions.length){  // down
+               this.moveSuggestionsCursorDown()
+            } else if((evt.keyCode >= 33 && evt.keyCode <= 40)  // arrows, pgUp, pgDown, home, end
+                     || evt.keyCode == 27  // esc
+                     || evt.keyCode == 46  // delete
+                     || (evt.keyCode == 32 && !evt.ctrlKey && !evt.metaKey) // space
+                     || (evt.keyCode == 8 && !lastLine.trim())){ // backspace removed last character
+               this.hideAutocomplete()
+               this.hideSuggestions()
+            } else if((evt.keyCode == 8 && this.state.autocompleteQuery && !lastLine.endsWith(" ")) // backspace
+                     || (evt.keyCode > 47 && evt.keyCode < 58) // number keys
+                     || (evt.keyCode > 64 && evt.keyCode < 91) // letter keys
+                     || (evt.keyCode > 95 && evt.keyCode < 112) // numpad keys
+                     || (evt.keyCode == 32 && (evt.ctrlKey || evt.metaKey))){  //ctrl+space to show suggestions
+               if(lastLine.indexOf(":") == -1){
+                  let cursorPos = this.editor.save()
+                  let text = this.editor.toString()
+                  if(!text.substring(cursorPos.start).split("\n", 1)[0].trim().length){
+                     //show autocomplete only if there is no other text after cursor
+                     this.state.autocompleteQuery = lastLine.trim().toLowerCase()
+                     let nonEmptyLines = lines.slice(0, -1).filter(l => l.trim() != "")  // remove last line and empty lines
+                     let indent = Math.ceil(this.editor.findPadding(lastLine)[2] / 2)
+                     let childElements = []
+                     if(!indent && (!text.trim() || this.nvhStore.data.rootElement.startsWith(text.trim()))){
+                        childElements = [this.nvhStore.data.rootElement]
+                     } else{
+                        let parentElement = this.nvhStore.getElementList()
+                              .slice(0, nonEmptyLines.length)
+                              .reverse()
+                              .find(element => {
+                           return element.indent < indent
+                        })
+                        if(parentElement){
+                           childElements = this.nvhStore.getAvailableChildElements(parentElement)
+                                 .filter(child => {
+                                    return child.startsWith(this.state.autocompleteQuery)
+                                 })
+                        }
+                     }
+                     if(childElements.length == 1){
+                        this.showAutocomplete(childElements[0], lines.length, lastLine.length)
+                        this.hideSuggestions()
+                        return
+                     } else if(childElements.length > 1){
+                        this.showSuggestions(childElements, lines.length, lastLine.length)
+                        this.showAutocomplete(childElements[0], lines.length, lastLine.length)
+                        return
+                     }
+                  }
+               }
+               this.hideAutocomplete()
+               this.hideSuggestions()
+            }
+         },
+
+         handleBackspaceCharacter(evt){
+            // delete one or two spaces so the cursor match the indent pattern
+            let text = this.editor.beforeCursor()
+            let line = text.substring(text.lastIndexOf("\n") + 1, text.length - 1)
+            if(line.trim() === "" && line.length % 2 == 1){
+               evt.preventDefault()
+               const pos = this.editor.save()
+               this.editor.restore({ start: pos.start - 2, end: pos.start})
+               document.execCommand("delete")
+               pos.start -= 2
+               pos.end -= 2
+               this.editor.restore(pos)
+               this.hideAutocomplete()
+               this.hideSuggestions()
+            }
+         },
+
+         showSuggestions(suggestions, row, col){
+            this.state.suggestions = suggestions
+            this.state.suggestionCursor = 0
+            $(".nvh-suggestions").html(this.state.suggestions.map(s => `<div>${s}</div>`))
+                  .show()
+                  .css({
+                     top: `${(21 * (row + 2)) + 3}px`,
+                     left: `calc(42px + ${col}ch)`
+                  })
+            this.refreshSuggestionCursor()
+         },
+
+         hideSuggestions(){
+            if(this.state.suggestions.length){
+               this.state.suggestions = []
+               $(".nvh-suggestions").empty().hide()
+            }
+         },
+
+         moveSuggestionsCursorDown(){
+            if(this.state.suggestionCursor < this.state.suggestions.length - 1){
+               this.state.suggestionCursor += 1
+            } else {
+               this.state.suggestionCursor = 0
+            }
+            this.updateAutocomplete(this.state.suggestions[this.state.suggestionCursor])
+            this.refreshSuggestionCursor()
+         },
+
+         moveSuggestionsCursorUp(){
+            if(this.state.suggestionCursor > 0){
+               this.state.suggestionCursor -= 1
+            } else {
+               this.state.suggestionCursor = this.state.suggestions.length - 1
+            }
+            this.updateAutocomplete(this.state.suggestions[this.state.suggestionCursor])
+            this.refreshSuggestionCursor()
+         },
+
+         refreshSuggestionCursor(){
+            $(".nvh-suggestions div").removeClass("nvh-highlight")
+            $(".nvh-suggestions div").eq(this.state.suggestionCursor).addClass("nvh-highlight")
+         },
+
+         showAutocomplete(elementName, row, col){
+            $(".nvh-autocomplete").show()
+                  .css({
+                     top: `${(21 * (row + 1)) + 2}px`,
+                     left: `calc(45px + ${col}ch)`
+                  })
+            this.updateAutocomplete(elementName)
+         },
+
+         updateAutocomplete(elementName){
+            this.state.autocompleteText = elementName.substring(this.state.autocompleteQuery.trim().length) + ": "
+            $(".nvh-autocomplete").html(this.state.autocompleteText)
+         },
+
+         hideAutocomplete(){
+            if(this.state.autocompleteText){
+               this.state.autocompleteText = ""
+               $(".nvh-autocomplete").empty().hide()
+            }
+         },
+
+         doAutocomplete(){
+            let text = this.editor.toString()
+            let pos = this.editor.save()
+            this.editor.updateCode(`${text.slice(0, pos.start)}${this.state.autocompleteText}${text.slice(pos.start)}`)
+            pos.start += this.state.autocompleteText.length
+            pos.end += this.state.autocompleteText.length
+            this.hideAutocomplete()
+            this.hideSuggestions()
+            this.onEditorUpdateDebounced()
+            this.editor.restore(pos)
+         },
+
+         onEditorUpdateDebounced(){
+            clearTimeout(this.state.debounceHandle)
+            this.state.debounceHandle = setTimeout(() => {
+               clearTimeout(this.state.debounceHandle)
+               let oldWarnings = JSON.stringify(this.state.warnings)
+               if(this.editor.toString().trim()){
+                  this.validate()
+               } else {
+                  this.state.warnings = {}
+               }
+               this.updateLineNumbers()
+               if(oldWarnings != JSON.stringify(this.state.warnings)){
+                  this.update()
+               }
+            }, 30)
+         },
+
+         onScrollToLineClick(lineNumber){
+            let node = $(`.nvh-line-numbers div:nth-child(${lineNumber})`, this.root)
+            $("html, body").animate({
+                 scrollTop: node.offset().top - 100
+            }, 500)
+            node.find(".nvh-error-highlight-bar").addClass("pulse")
+            setTimeout(() => {
+               node.find(".nvh-error-highlight-bar").removeClass("pulse")
+            }, 2500)
+         },
+
+         updateLineNumbers(){
+            let lines = this.editor.toString().split("\n")
+            let linesCount = Math.max(15, lines.length + 3) // at least 15 lines and 3 lines more than code length
+            let lastNonEmptyLineIdx = lines.findLastIndex(l => l.trim() != "")
+            let editorWidth = $(".nvh-code-editor", this.root)[0].clientWidth
+            let html = ""
+            let nonEmptyCounter = 0
+            for (let i = 0; i <= linesCount - 1; i++) {
+               if(lines[i] && lines[i].trim()){
+                  nonEmptyCounter++
+               }
+               if(i <= lastNonEmptyLineIdx && this.state.warnings[nonEmptyCounter]){
+                  html += `<div class="nvh-code-error">${i +1}<div class="nvh-error-highlight-bar" style="width: ${editorWidth + 42 + 5}px"></div></div>`
+               } else {
+                  html += `<div>${i + 1}</div>`
+               }
+            }
+            $(".nvh-line-numbers").html(html)
+         },
+
+         validate(entry){
+            this.state.warnings = {}
+            try{
+               this.nvhData.entry = entry || this.nvhStore.nvhToJson(this.editor.toString())
+               this.nvhStore.validateAllElements()
+               let allElements = this.nvhStore.getElementList()
+               this.nvhStore.forEachElement((element, idx) => {
+                  if(!element.isValid){
+                     this.state.warnings[allElements.indexOf(element) + 1] = (element.warnings.join("<br>"))
+                  }
+               })
+            } catch (e){
+               this.nvhData.entry.warnings = ["Syntax error"]
+               this.nvhData.isValid = false
+               this.nvhStore.trigger("isValidChanged")
+               let lineNum = e.match(/on line (\d+):/)[1]
+               this.state.warnings[lineNum] = e.replace(/ on line (\d+)/, "")
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .nvh-validity{
+         border: 1px solid black;
+         border-top: none;
+         position: sticky;
+         display: block;
+         width: 100%;
+         bottom: 0;
+         left: 0;
+         right: 0;
+         padding-left: 10px;
+         max-height: 15vh;
+         overflow-y: auto;
+         .nvh-validation-row{
+            display: flex;
+            .nvh-validation-line-number{
+               min-width: 55px;
+               text-decoration: underline;
+            }
+            &:hover .nvh-validation-line-number{
+               cursor: pointer;
+            }
+         }
+      }
+      .nvh-code-editor-wrapper{
+         position: relative;
+         display: flex;
+         overflow: hidden;
+         overflow-wrap: break-word;
+         line-height: 21px;
+         white-space: pre-wrap;
+         border: 1px solid grey;
+         background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.025) 50%, rgba(0, 0, 0, 0.025));
+         background-size: 100% 42px;
+         .nvh-line-numbers{
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid lightgray;
+            background-color: #fff;
+            width: 40px;
+            &::before{
+               content: ' ';
+               width: 42px;
+               position: absolute;
+               top: 0;
+               left: 0;
+               bottom: 0;
+               background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.025) 50%, rgba(0, 0, 0, 0.025));
+               background-size: 100% 42px;
+            }
+            &>div{
+               position: relative;
+               color: #fff;
+               color: grey;
+               font-size: 12px;
+               padding-right: 5px;
+               text-align: right;
+            }
+         }
+         .nvh-code-editor{
+            font-family: monospace;
+            flex: 1;
+            outline: none;
+            padding-right: 20px;
+            white-space: pre;
+            overflow: auto;
+            margin-left: 5px;
+            min-height: 315px; // 15 rows
+         }
+         .nvh-code-error{
+            position: relative;
+            height: 21px;
+            &::before{
+               content: '●';
+               position: absolute;
+               left: 3px;
+               top: 0px;
+               color: #F44336;
+            }
+            .nvh-error-highlight-bar{
+               position: absolute;
+               left: 0px;
+               top: 0px;
+               bottom: 0;
+               background-color: #c621321c;
+               pointer-events: none
+            }
+         }
+      }
+      .nvh-autocomplete{
+         position: absolute;
+         color: grey;
+         pointer-events: none;
+         font-family: monospace;
+         height: 21px;
+         line-height: 21px;
+      }
+      .nvh-suggestions{
+         position: absolute;
+         background-color: whitesmoke;
+         & > div{
+            padding: 5px 15px;
+            &.nvh-highlight{
+               background-color: lightgray;
+            }
+         }
+      }
+   </style>
+</nvh-source-code>

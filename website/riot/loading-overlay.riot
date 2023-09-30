@@ -1,12 +1,12 @@
 <loading-overlay>
    <div class="overlay {props.fullscreen ? 'fullscreen' : ''}">
       <div id="loading-bar-spinner"
-            class="spinner">
+            class="spinner {props.small ? 'small' : ''}">
          <div class="spinner-icon"></div>
       </div>
    </div>
 
-   <style>
+   <style type="scss">
       .overlay{
          position: absolute;
          top: 0;
@@ -22,20 +22,31 @@
 
       #loading-bar-spinner.spinner {
          left: 50%;
-         margin-left: -30px;
          top: 40%;
+         margin-left: -30px;
+         margin-top: -30px;
          position: absolute;
          z-index: 999999999 !important;
          animation: loading-bar-spinner 400ms linear infinite;
+         &.small{
+            margin-left: -15px;
+            margin-top: -15px;
+         }
       }
 
-      #loading-bar-spinner.spinner .spinner-icon {
-         width: 60px;
-         height: 60px;
-         border: solid 1px transparent;
-         border-top-color: #000000 !important;
-         border-left-color: #000000 !important;
-         border-radius: 50%;
+      #loading-bar-spinner.spinner{
+         .spinner-icon {
+            width: 60px;
+            height: 60px;
+            border: solid 1px transparent;
+            border-top-color: #000000 !important;
+            border-left-color: #000000 !important;
+            border-radius: 50%;
+         }
+         &.small .spinner-icon {
+            width: 30px;
+            height: 30px;
+         }
       }
 
       @keyframes loading-bar-spinner {

@@ -1,0 +1,475 @@
+<nvh-element-style-editor>
+   <div if={state.show}
+         class="nvh-wrapper z-depth-2 grey lighten-4">
+      <div class="nvh-header grey lighten-3">
+         <select onchange={onElementChange}>
+            <option each={elementName in Object.keys(nvhData.structure.elements)}
+                  selected={state.elementName == elementName}
+                  value={elementName}>{elementName}</option>
+         </select>
+         <i class="material-icons ml-auto clickable"
+               onclick={onCloseStyleEditor}>close</i>
+      </div>
+      <div class="nvh-options p-2">
+         <div if={state.availableOptions.includes("shown")}
+               class="nvh-option">
+            <span class="nvh-label">
+               Hide
+            </span>
+            <span class="nvh-values">
+                  <label>
+                     <input type="checkbox"
+                           checked={!state.style.shown}
+                           onchange={onHideChange}/>
+                     <span></span>
+                  </label>
+            </span>
+         </div>
+         <template if={state.style.shown}>
+            <div if={state.availableOptions.includes("textsize")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Text size
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={state.style.textsize == 'smaller' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "textsize", "smaller")}
+                        style="font-size: 0.8em;">a</span>
+                  <span class={!state.style.textsize ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "textsize", "")}>a</span>
+                  <span class={state.style.textsize == 'bigger' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "textsize", "bigger")}
+                        style="font-size: 1.2em;">a</span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("weight")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Text weight
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={!state.style.weight ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "weight", "")}>a</span>
+                  <span class={state.style.weight == 'bold' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "weight", "bold")}
+                        style="font-weight: bold;">a</span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("slant")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Text slant
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={!state.style.slant ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "slant", "")}>a</span>
+                  <span class={state.style.slant == 'italic' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "slant", "italic")}
+                        style="font-style: italic;">a</span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("colour")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Text color
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={!state.style.colour ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "colour", "")}>
+                        <i class="material-icons tiny grey-text">block</i>
+
+                  </span>
+                  <span class={state.style.colour == 'red' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "colour", "red")}
+                        style="background-color: #c62132;"></span>
+                  <span class={state.style.colour == 'blue' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "colour", "blue")}
+                        style="background-color: #0277bd;"></span>
+                  <span class={state.style.colour == 'green' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "colour", "green")}
+                        style="background-color: #388e3c;"></span>
+                  <span class={state.style.colour == 'grey' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "colour", "grey")}
+                        style="background-color: #757575;"></span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("border")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Border
+               </span>
+               <span class="nvh-values  nvh-value-boxes nvh-border">
+                  <span class="{!state.style.border ? 'selected' : ''}"
+                        onclick={onOptionChangeClick.bind(this, "border", "")}>
+                     <i class="material-icons tiny grey-text">block</i>
+                  </span>
+                  <span class="nvh-border-solid {state.style.border == 'solid' ? 'selected' : ''}"
+                        onclick={onOptionChangeClick.bind(this, "border", "solid")}></span>
+                  <span class="nvh-border-thick {state.style.border == 'thick' ? 'selected' : ''}"
+                        onclick={onOptionChangeClick.bind(this, "border", "thick")}></span>
+                  <span class="nvh-border-dotted {state.style.border == 'dotted' ? 'selected' : ''}"
+                        onclick={onOptionChangeClick.bind(this, "border", "dotted")}></span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("background")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Background
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={!state.style.background ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "background", "")}>
+                     <i class="material-icons tiny grey-text">block</i>
+                  </span>
+                  <span class={state.style.background == 'yellow' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "background", "yellow")}
+                        style="background-color: #fff59d;"></span>
+                  <span class={state.style.background == 'blue' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "background", "blue")}
+                        style="background-color: #90CAF9;"></span>
+                  <span class={state.style.background == 'grey' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "background", "grey")}
+                        style="background-color: #bdbdbd;"></span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("innerPunc")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Inner punctuation
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={!state.style.innerPunc ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "")}>
+                     <i class="material-icons tiny grey-text">block</i>
+                  </span>
+                  <span class={state.style.innerPunc == 'roundBrackets' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "roundBrackets")}>(</span>
+                  <span class={state.style.innerPunc == 'squareBrackets' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "squareBrackets")}>[</span>
+                  <span class={state.style.innerPunc == 'curlyBrackets' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "curlyBrackets")}>\{</span>
+                  <span class={state.style.innerPunc == 'colon' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "colon")}>:</span>
+                  <span class={state.style.innerPunc == 'comma' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "comma")}>,</span>
+                  <span class={state.style.innerPunc == 'semicolon' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "semicolon")}>;</span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("outerPunc")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Outer punctuation
+               </span>
+               <span class="nvh-values nvh-value-boxes">
+                  <span class={!state.style.outerPunc ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "")}>
+                     <i class="material-icons tiny grey-text">block</i>
+                  </span>
+                  <span class={state.style.outerPunc == 'roundBrackets' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "roundBrackets")}>(</span>
+                  <span class={state.style.outerPunc == 'squareBrackets' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "squareBrackets")}>[</span>
+                  <span class={state.style.outerPunc == 'curlyBrackets' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "curlyBrackets")}>\{</span>
+                  <span class={state.style.outerPunc == 'colon' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "colon")}>:</span>
+                  <span class={state.style.outerPunc == 'comma' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "comma")}>,</span>
+                  <span class={state.style.outerPunc == 'semicolon' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "semicolon")}>;</span>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("gutter")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Indentation and bulleting
+               </span>
+               <span class="nvh-values">
+                  <select onchange={onSelectOptionChangeClick.bind(this, "gutter")}>
+                     <option each={option in gutterOptions}
+                           value="{option[0]}"
+                           selected={option[0] == state.style.gutter}>{option[1]}</option>
+                  </select>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("label")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Label
+               </span>
+               <span class="nvh-values">
+                  <input type="text"
+                        class="input-field"
+                        value={state.style.label}
+                        oninput={onLabelInput}/>
+               </span>
+            </div>
+            <div if={state.availableOptions.includes("layout")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Line break
+               </span>
+               <span class="nvh-values">
+                  <select onchange={onSelectOptionChangeClick.bind(this, "layout")}>
+                     <option value="block"
+                           selected={state.style.layout == "block"}>Before and after</option>
+                     <option value="inline"
+                           selected={state.style.layout == "inline"}>None</option>
+                  </select>
+               </span>
+            </div>
+         </template>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            show: false,
+            availableOptions: []
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.bindings = [["nvhStore", "openElementStyleEditor", "onOpenStyleEditor"],
+                             ["nvhStore", "closeElementStyleEditor", "onCloseStyleEditor"],
+                             ["nvhStore", "startElementEditing", "onCloseStyleEditor"]]
+
+            this.gutterOptions = [
+               ["", "None"],
+               ["disk", "Round bullet"],
+               ["square", "Square bullet"],
+               ["diamond", "Diamond bullet"],
+               ["arrow", "Arrow bullet"],
+               ["indent", "Indent"],
+               ["hanging", "Hanging indent"],
+               ["sensenum1", "Sense number 1, 2, 3..."],
+               ["sensenum2", "Sense number a, b, c..."],
+               ["sensenum3", "Sense number i, ii, iii..."],
+               ["sensenum0", "Sense number I, II, III..."]
+            ]
+         },
+
+         onBeforeUnmount(){
+            document.removeEventListener('click', this.handleClickOutside)
+         },
+
+         onUpdated(){
+            if(this.state.show){
+               $("select", this.root).formSelect()
+               let input = $(".nvh-header input")
+               let width = window.getInputValueWidth(input[0])
+               input.css("width", Math.min(width + 30, 300) + "px")
+            }
+         },
+
+         onOpenStyleEditor(elementName, elementNode){
+            this.update({
+               elementName: elementName,
+               style: this.nvhStore.getElementStyle(elementName),
+               elementNode: elementNode,
+               availableOptions: this.getAvailableOptions(elementName)
+            })
+           if(!this.state.show){
+               this.open()
+            }
+         },
+
+         onCloseStyleEditor(params){
+            this.close()
+         },
+
+         onElementChange(evt){
+            this.update({
+               elementName: evt.target.value,
+               style: this.nvhStore.getElementStyle(evt.target.value),
+               availableOptions: this.getAvailableOptions(evt.target.value)
+            })
+         },
+
+         onOptionChangeClick(option, value, evt){
+            this.nvhStore.changeElementStyleOption(this.state.elementName, option, value)
+            this.update()
+         },
+
+         onSelectOptionChangeClick(option, evt){
+            this.nvhStore.changeElementStyleOption(this.state.elementName, option, evt.target.value)
+         },
+
+         onHideChange(evt){
+            this.nvhStore.changeElementStyleOption(this.state.elementName, "shown", !evt.target.checked)
+            this.update()
+         },
+
+         onLabelInput(evt){
+            this.nvhStore.changeElementStyleOption(this.state.elementName, "label", evt.target.value)
+         },
+
+         open(){
+           if(!this.state.show){
+               this.update({ show: true})
+               $(".highlight").removeClass("highlight")
+               $(".nvh-focusable-option", this.root).first().addClass("highlight")
+               this.updatePosition()
+               window.makeElementDraggable(this.root, $(".nvh-header", this.root)[0])
+               document.addEventListener('click', this.handleClickOutside) // it has to be after dragElement()
+            }
+         },
+
+         close(){
+           if(this.state.show){
+               this.update({show: false})
+               document.removeEventListener('click', this.handleClickOutside)
+            }
+         },
+
+         handleClickOutside(evt){
+           if (!this.root.contains(evt.target)
+                  && evt.clientY >= 0
+                  && evt.clientX >= 0
+                  && evt.clientX <= window.innerWidth
+                  && evt.clientY <= window.innerHeight){
+               this.close()
+            }
+         },
+
+         updatePosition(){
+            let windowHeight = $(window).height()
+            let menuHeight = $(this.root).first().height()
+            let editorOffset = $("nvh-editor").offset()
+            let wrapperOffset = this.state.elementNode.offset()
+            let wrapperBR = this.state.elementNode[0].getBoundingClientRect()
+            let top = (wrapperOffset.top - editorOffset.top)
+            if(wrapperBR.top  < windowHeight / 2){
+               top += this.state.elementNode.height() + 8
+            } else {
+               top -= menuHeight + 8
+            }
+            $(this.root).css({
+               left: (wrapperOffset.left - editorOffset.left) + "px",
+               top: top + "px"
+            })
+         },
+
+         getAvailableOptions(elementName){
+            let options = ["shown", "layout", "separation", "gutter", "border", "background", "outerPunc", "label"]
+           if(["txt", "inl", "lst"].includes(this.nvhStore.getElementConfig(elementName).type)){
+               options = options.concat(["colour", "slant", "weight", "textsize", "innerPunc"])
+            }
+            return options
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: absolute;
+         z-index: 9999;
+      }
+      .nvh-header{
+         display: flex;
+         border-bottom: 1px solid grey;
+         padding: 10px 10px 5px;
+         cursor: move;
+         .select-wrapper{
+            input{
+               font-size: 1.1em;
+               border: none;
+               height: 1.5rem;
+               padding: 2px 20px 2px 5px;
+            }
+         }
+      }
+      .nvh-options{
+         display: table;
+         max-width: 300px;
+         .nvh-option{
+            .nvh-values{
+               min-width: 160px;
+               input{
+                  height: 1.5rem;
+                  padding: 2px 5px;
+                  background-color: #fff;
+                  margin-bottom: 0;
+                  &[type="checkbox"]{
+                     height: 20px;
+                  }
+               }
+               .select-wrapper{
+                  input{
+                     padding-right: 20px;
+                  }
+                  svg{
+                     z-index: 100
+                  }
+               }
+            }
+         }
+      }
+      .nvh-option{
+         display: table-row;
+      }
+      .nvh-label,
+      .nvh-values{
+         white-space: nowrap;
+         display: table-cell;
+         padding: 5px;
+      }
+      .nvh-label{
+         color: grey;
+         min-width: 170px;
+      }
+      .nvh-value-boxes{
+         display: flex;
+         gap: 3px;
+         &:hover{
+            span{
+               opacity: 1;
+            }
+         }
+         span{
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            cursor: pointer;
+            text-align: center;
+            opacity: 0.5;
+            background-color: white;
+            &:hover{
+               outline: 1px solid #484848;
+            }
+            &.selected{
+               opacity: 1;
+               -webkit-box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);
+               box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);
+               outline: 1px solid #484848;
+            }
+            i{
+               line-height: 20px;
+            }
+         }
+      }
+      .nvh-border{
+         & >span:not(:first-child){
+            &::after{
+               content: ' ';
+               display: inline-block;
+               width: 1px;
+               height: 20px;
+            }
+            &.nvh-border-solid::after{
+               border: 1px solid black;
+            }
+            &.nvh-border-thick::after{
+               border: 2px solid black;
+            }
+            &.nvh-border-dotted::after{
+               border: 1px dotted black;
+            }
+         }
+      }
+   </style>
+</nvh-element-style-editor>

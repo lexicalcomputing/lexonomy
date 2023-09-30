@@ -1,0 +1,98 @@
+<nvh-custom-editor>
+   <div id="editor"></div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "updateEditor", "updateEditor"]],
+
+         state: {
+            error: ""
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onMounted(){
+            this.editorNode = $("#editor", this.root)  // should be "#editor" - older custom editors may use this ID in css selectors
+
+
+
+
+            // TODO
+            this.readOnly = false
+            this.initCustomEditor()
+         },
+
+         onBefreUnmount(){
+            document.getElementById("customEditorStyle").remove()
+         },
+
+         updateEditor(){
+            if(this.nvhData.legacyCustomEditor){
+               this.editorNode.empty()
+               this.nvhData.customEditor.editor(this.editorNode, {
+                  content: this.nvhStore.jsonToXML(this.nvhData.entry),
+                  id: window.store.data.entryId
+               }, this.readOnly)
+            } else{
+               this.nvhData.customEditor.update(this.nvhData.entry)
+            }
+         },
+
+         initCustomEditor(){
+            try{
+               if(this.nvhData.legacyCustomEditor){
+                  // global variables might be used by custom editor
+                  window.xema = this.dictData.config.structure
+                  window.xemplate = this.dictData.config.xemplate
+                  window.kontext = this.dictData.config.kontext
+                  window.kex = this.dictData.config.kex
+                  window.subbing = this.dictData.config.subbing
+                  window.xampl = this.dictData.config.xampl
+                  window.thes = this.dictData.config.thes
+                  window.collx = this.dictData.config.collx
+                  window.defo = this.dictData.config.defo
+                  window.titling = this.dictData.config.titling
+                  window.flagging = this.dictData.config.flagging
+                  window.linking = this.dictData.config.linking
+                  window.editing = this.dictData.config.editing
+                  window.gapi = this.dictData.config.gapi
+                  window.dictId = this.dictData.dictId
+                  window.userDicts = this.dictData.dictionaryList
+                  window.ske_username = this.authData.ske_username
+                  window.ske_apiKey = this.authData.ske_apiKey
+                  window.Screenful = {
+                     Editor: {
+                        changed: function() {
+                           this.nvhData.entry = this.nvhStore.XMLToJson(this.nvhData.customEditor.harvester())
+                           this.nvhStore.history.addState()
+                        }.bind(this)
+                     }
+                  }
+               }
+               if(this.nvhData.editing._css){
+                  document.head.insertAdjacentHTML("beforeend", `<style id="customEditorStyle">${this.nvhData.editing._css}</style>`)
+               }
+               if(this.nvhData.legacyCustomEditor){
+                  this.nvhData.customEditor.editor(this.editorNode, {
+                     content: this.nvhStore.jsonToXML(this.nvhData.entry),
+                     id: window.store.data.entryId
+                  }, this.readOnly)
+               } else{
+                  this.nvhData.customEditor.editor(this.editorNode, this.nvhData.entry, this.readOnly)
+               }
+            } catch(e){
+               M.toast({html: "Custom editor initialization failed."})
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+
+      }
+   </style>
+</nvh-custom-editor>

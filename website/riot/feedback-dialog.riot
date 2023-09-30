@@ -1,0 +1,151 @@
+<feedback-dialog>
+   <div if={state.sent}
+         class="message messageSuccess">
+      Your message has been sent. Our support team will reply by email.<br>
+   </div>
+   <div if={!state.sent}
+      class="">
+      Please explain what you are trying to do and what is happening or not happening on the screen. The following information will be added automatically: your username, browser name and a link to the screen where you opened this message pop-up.
+      <br><br>
+      <div>
+         <div if={authData.authorized}
+               class="row">
+            <label class="col m3 s12">
+               From
+            </label>
+            <span class="col m9 s12">
+               {authData.email}
+            </span>
+         </div>
+         <div if={!authData.authorized}
+               class="row">
+            <label class="col m3 s12">Name</label>
+            <div class="input-field col m9 s12">
+               <input id="feedbackName"
+                     type="text"
+                     class="validate"
+                     size=20
+                     oninput={onNameInput}>
+            </div>
+         </div>
+         <div if={!authData.authorized}
+               class="row">
+            <label class="col m3 s12">Email</label>
+            <div class="col m9 s12">
+               <input id="feedbackEmail"
+                     disabled={state.isSending}
+                     type="text"
+                     class="validate"
+                     required=1
+                     size=20
+                     placeholder="@"
+                     oninput={onEmailInput}>
+               <span id="emailInvalidWarning"
+                     class="red-text"
+                     style="display: none;">
+                  Invalid email
+               </span>
+            </div>
+         </div>
+         <div class="row">
+            <label class="col m3 s12">Message</label>
+            <span class="col m9 s12">
+               <textarea id="feedbackMessage"
+                     disabled={state.isSending}
+                     required=1
+                     oninput={refreshIsValid}
+                     rows=4></textarea>
+               <div class="grey-text" style="font-size: 13px;">
+                  Our support team will get back to you by email.
+               </div>
+            </span>
+         </div>
+      </div>
+   </div>
+   <div class="buttons">
+      <button class="btnClose btn"
+            onclick={onCloseClick}>
+         close
+      </button>
+      <button id="sendFeedbackBtn"
+            disabled={state.isSending}
+            class="btn btn-primary disabled"
+            onclick={onSendClick}>
+         send
+      </button>
+   </div>
+
+
+   <script>
+      export default{
+         state: {
+            isSending: false,
+            isEmailValid: false,
+            isNameValid: false,
+            sent: false
+         },
+
+         onMounted(){
+            $("textarea, input", this.root).first().focus()
+         },
+
+         onCloseClick(){
+            window.modal.close()
+         },
+
+         onSendClick(url){
+            let email
+            let text = `Message: ${$("#feedbackMessage").val()}\n\n`
+            if(this.authData.authorized){
+               email = this.authData.email
+               text += `Authorized user ${this.authData.email}\n`
+            } else {
+               email = $("#feedbackEmail").val()
+            text += `Anonymous user: ${$("#feedbackName").val()} (${email})\n`
+            }
+            text += `URL: ${window.location.href}\n`
+            text += `Navigator: ${navigator.userAgent}\n`
+
+            this.update({isSending: true})
+            this.store.sendFeedback(email, text)
+                  .done(response => {
+                     if(response.success){
+                        this.state.sent = true
+                        jQuery(".modal-dialog .feedback-dialog").parent().find("h4").html("Successs")
+                        $("#sendFeedbackBtn").hide()
+                     }
+                  })
+                  .always(() => {
+                     this.update({isSending: false})
+                  })
+         },
+
+         onNameInput(evt){
+            this.state.isNameValid = evt.target.value !== ""
+            this.refreshIsValid()
+         },
+
+         onEmailInput(evt){
+            this.state.isEmailValid = window.isEmail(evt.target.value)
+            $("#emailInvalidWarning", this.root).toggle(!this.state.isEmailValid)
+            this.refreshIsValid()
+         },
+
+
+         refreshIsValid(){
+            let isValid = $("#feedbackMessage", this.root).val() !== ""
+                  && (this.authData.authorized || (this.state.isEmailValid && this.state.isNameValid))
+            $("#sendFeedbackBtn").toggleClass("disabled", !isValid)
+         }
+      }
+   </script>
+
+   <style>
+      .messageSuccess{
+         margin:  50px 0;
+      }
+      .btnClose{
+         margin-left: auto
+      }
+   </style>
+</feedback-dialog>

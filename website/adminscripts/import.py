@@ -107,14 +107,24 @@ import re
 
 entryCount = len(re.findall('<'+entryTag+'[ >]', xmldata))
 entryInserted = 0
-print("Detected %d entries in '%s' element" % (entryCount, entryTag))
-
 configs = ops.readDictConfigs(db)
+dictStats = ops.getDictStats(db)
+limit = configs["limits"]["entries"] if configs.get("limits") and configs["limits"].get("entries") else 5000
+maxImport = limit - dictStats["entryCount"]
+if maxImport < entryCount:
+    print("Detected %d entries in '%s' element, only %d will be imported" % (entryCount, entryTag, maxImport))
+else:
+    print("Detected %d entries in '%s' element" % (entryCount, entryTag))
+
 needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
 needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
 
 re_entry = re.compile(r'<'+entryTag+'[^>]*>.*?</'+entryTag+'>', re.MULTILINE|re.DOTALL|re.UNICODE)
+limitReached = False
 for entry in re.findall(re_entry, xmldata):
+    if entryInserted >= maxImport:
+        limitReached = True
+        break
     skip = False
     try:
         xml.sax.parseString(entry, xml.sax.handler.ContentHandler())
@@ -155,6 +165,8 @@ for entry in re.findall(re_entry, xmldata):
         if entryInserted % 100 == 0:
             print("\r%.2d%% (%d/%d entries imported)" % ((entryInserted/entryCount*100), entryInserted, entryCount), end='')
 print("\r%.2d%% (%d/%d entries imported)" % ((entryInserted/entryCount*100), entryInserted, entryCount))
+if limitReached:
+    print("\r100%% (%d/%d entries imported). Entry limit was reached. To remove the limit, email inquiries@sketchengine.eu and give details of your dictionary project." % (entryInserted, entryCount))
 
 db.commit()
 

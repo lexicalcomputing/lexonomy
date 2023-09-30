@@ -1,12 +1,6 @@
-<app-footer class="Xpage-footer">
-   <div class="footer-logos">
+<app-footer>
+   <div class="footer-logos displayFlex">
       <div class="logolint">
-         <a target="_blank"
-               href="https://www.muni.cz/"
-               title="Masaryk University">
-            <img class="mulogo"
-                  src="img/logo_muni_small.png"/>
-         </a>
          <a target="_blank"
                href="https://www.sketchengine.eu/"
                title="Sketch Engine">
@@ -14,41 +8,52 @@
                   src="img/logo_ske_small.png"/>
          </a>
       </div>
-      <div class="version right white-text">
+      <div class="version ml-auto white-text">
          Version: { window.LEXONOMY_VERSION }
       </div>
    </div>
    <div class="footer-copyright">
-      Lexonomy is developed by <a href="https://www.lexicalcomputing.com/" target="_blank">Lexical Computing</a> and received support during <a href="https://elex.is/" target="_blank">ELEXIS</a> project.
+      Lexonomy is developed by <a href="https://www.lexicalcomputing.com/" target="_blank">Lexical Computing</a>
       <a class="right"
             href="https://github.com/lexicalcomputing/lexonomy"
             title="GitHub"
             target="_blank">
          <img src="img/github.png"/>
       </a>
+
+      <a if={ dictData.siteconfig && dictData.siteconfig.consent.terms}
+            href="javascript:void(0);"
+            class="termsOfUse right"
+            onclick={onTermsOfUseClick}>
+         Terms of use
+      </a>
    </div>
+
+   <script>
+      export default{
+         bindings: [["store", "siteconfigChanged", "update"]],
+
+         onTermsOfUseClick(){
+            window.modal.open({
+               title: "Terms of use",
+               tag: "raw-html",
+               opts: {
+                  content: this.dictData.siteconfig.consent.terms
+               }
+            })
+         }
+      }
+   </script>
 
    <style>
       .footer-logos{
-         padding: 15px 20px 50px 50px;
+         padding: 15px 20px 15px 50px;
          background: #d9d9d8;
       }
       .footer-copyright{
          font-weight: 300;
-         padding: 15px 15px 30px 50px;
+         padding: 15px 15px 15px 50px;
          background: #b8b8b8;
-      }
-      .logolint a {
-         height: 30px;
-         display: inline-block;
-         vertical-align: middle;
-      }
-      .logolint a::after{
-          height: 30px;
-         display: inline-block;
-         content: " ";
-         border-right: 1px solid #fff;
-         margin: 0 10px;
       }
       .logolint a img{
          height: 30px;
@@ -57,14 +62,11 @@
       .logolint a:hover img{
          filter: none;
       }
+      .termsOfUse{
+         margin-right: 30px;
+      }
       .version{
          font-weight: 100;
       }
    </style>
-
-   <script>
-      export default {
-
-      }
-   </script>
 </app-footer>

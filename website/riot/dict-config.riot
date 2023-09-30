@@ -1,5 +1,4 @@
 <dict-config>
-   <dict-nav links={[["config", "Configure"]]}/>
    <div class="topBar">
       <h1 style="margin-right: auto;">Configuration</h1>
       <span class="buttons">
@@ -107,7 +106,7 @@
             </li>
          </ul>
       </div>
-      <div style="margin-right: auto;">
+      <div>
          <h3 class="header">Expert settings</h3>
          <ul>
             <li each={config in state.configs.expert}>
@@ -124,55 +123,43 @@
             </li>
          </ul>
       </div>
+      <div>
+         <h3 class="header">Editor plugins</h3>
+         <ul>
+            <li each={config in state.configs.plugins}>
+               <label if={state.export}
+                     name={config[0]}
+                     class="checkbox">
+                  <input type="checkbox"
+                        class="exportChb"
+                        onchange={onExportChbChanged}/>
+                  <span>{config[1]}</span>
+               </label>
+               <a if={!state.export}
+                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
+            </li>
+         </ul>
+      </div>
+      <div>
+         <h3 class="header">Admin settings</h3>
+         <ul>
+            <li each={config in state.configs.admin}>
+               <label if={state.export}
+                     name={config[0]}
+                     class="checkbox">
+                  <input type="checkbox"
+                        class="exportChb"
+                        onchange={onExportChbChanged}/>
+                  <span>{config[1]}</span>
+               </label>
+               <a if={!state.export}
+                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
+            </li>
+         </ul>
+      </div>
+      <div class="mr-a">
+      </div>
    </div>
-
-   <style>
-      .topBar{
-         display: flex;
-         flex-wrap: wrap;
-         justify-content: space-between;
-         align-items: center;
-      }
-      .columnContainer{
-         display: flex;
-         gap: 4vw;
-         justify-content: space-between;
-         margin: auto;
-         margin-left: 20px;
-      }
-      li{
-         padding: 0 0 0.7rem 0.7rem;
-      }
-      li .checkbox{
-         color: #000;
-         text-transform: none;
-      }
-      .exportBox,
-      .importBox{
-         position: relative;
-         text-align: center;
-         background-color: whitesmoke;
-         padding: 25px;
-         font-size: 1.2rem;
-      }
-      .exportBox .buttons,
-      .importBox .buttons {
-         justify-content: center;
-      }
-      .selectNote{
-         min-height: 36px;
-         line-height: 36px;
-      }
-      .closeBtn{
-         position: absolute;
-         top: 0.3rem;
-         right: 0.3rem;
-      }
-      form{
-         display: inline-block;
-         margin-left: 20px;
-      }
-   </style>
 
    <script>
       export default {
@@ -187,21 +174,24 @@
                   ["url", "Change URL", true]  // true - only a link, do not include in the export checkbox list
                ],
                "entry": [
-                  ["xema", "Structure"],
-                  ["xemplate", "Formatting"],
+                  ["structure", "Structure"],
                   ["titling", "Headword list"],
                   ["searchability", "Searching"]
                ],
                "expert": [
-                  ["editing", "Entry editor"],
+                  ["editing", "Custom entry editor"],
+                  ["xemplate", "Custom entry editor styles"],
                   ["flagging", "Flags"],
-                  ["autonumber", "Auto-numbering"],
+                  ["autonumber", "Auto-numbering"]
+               ],
+               "plugins": [
                   ["links", "Linking"],
-                  ["download", "Download settings"],
-                  ["subbing", "Subentries"],
                   ["ske", "Sketch Engine"],
                   ["kontext", "KonText"],
                   ["gapi", "Multimedia API"]
+               ],
+               "admin": [
+                  ["limits", "Limits"]
                ]
             },
             selected: [],
@@ -277,4 +267,52 @@
          }
       }
    </script>
+
+   <style>
+      .topBar{
+         display: flex;
+         flex-wrap: wrap;
+         justify-content: space-between;
+         align-items: center;
+      }
+      .columnContainer{
+         display: flex;
+         gap: 4vw;
+         justify-content: space-between;
+         margin: auto;
+         margin-left: 20px;
+      }
+      li{
+         padding: 0 0 0.7rem 0.7rem;
+      }
+      li .checkbox{
+         color: #000;
+         text-transform: none;
+      }
+      .exportBox,
+      .importBox{
+         position: relative;
+         text-align: center;
+         background-color: whitesmoke;
+         padding: 25px;
+         font-size: 1.2rem;
+      }
+      .exportBox .buttons,
+      .importBox .buttons {
+         justify-content: center;
+      }
+      .selectNote{
+         min-height: 36px;
+         line-height: 36px;
+      }
+      .closeBtn{
+         position: absolute;
+         top: 0.3rem;
+         right: 0.3rem;
+      }
+      form{
+         display: inline-block;
+         margin-left: 20px;
+      }
+   </style>
 </dict-config>

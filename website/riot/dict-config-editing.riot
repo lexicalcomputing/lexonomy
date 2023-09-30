@@ -1,302 +1,158 @@
 <dict-config-editing>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["editing", "Entry editor"]]}/>
-   <h1>Entry editor</h1>
-   <div if={ (!state.data._js || state.data._js == "") && !state.override }>
+   <h1>Custom entry editor</h1>
+   <p>
+      The built-in entry editor can be replaced by a custom one by defining javascript functions.
+   </p>
+   <label class="checkbox">
+      <input type="checkbox"
+            checked={state.data._useOwnEditor}
+            onclick={onCheckboxClick}/>
+      <span>Use own editor</span>
+   </label>
+   <br><br>
+   <div id="editors"
+         class="row"
+         style="display: none;">
+      <div class="input-field mb-16">
+         <label>JavaScript</label>
+         <pre id="editor_js"
+               class="codeEditor language-javascript"
+               oninput={onJSInput}></pre>
+         <div id="codeStatus"></div>
+         <span class="helper-text">
+            You can customize the editor by defining two functions in JavaScript: one that will render the HTML editor from the XML entry and one that will harvest the (edited) HTML back into XML. If you would like to see an example,
+            <a class="pointer" onclick={ exampleJS }>click here to load a sample JavaScript code</a>.
+         </span>
+      </div>
       <div class="input-field">
-         <p>
-            <label>
-               <input name="xonomyMode"
-                     id="xonomyMode_nerd"
-                     type="radio"
-                     class="with-gap"
-                     checked={ state.data.xonomyMode == "nerd" }
-                     onchange={ changeInfo } />
-               <span>Nerd mode</span>
-            </label>
-            <label style="margin-left: 30px;">
-               <input name="xonomyMode"
-                     id="xonomyMode_laic"
-                     type="radio"
-                     class="with-gap"
-                     checked={ state.data.xonomyMode == "laic" }
-                     onchange={ changeInfo }/>
-               <span>Laic mode</span>
-            </label>
-         </p>
-         <span class="helper-text">Choose what the entry editor will look like.</span>
+         <label for="editor_css">CSS</label>
+         <pre id="editor_css"
+               oninput={onCSSInput}
+               class="codeEditor language-css"></pre>
+         <span class="helper-text">
+            You can customize the editor look and feel by writing your own CSS styles. If you would like to see an example,
+            <a class="pointer" onclick={ exampleCSS }>click here to load a sample CSS style</a>.
+         </span>
       </div>
-      <div id="info_nerd">
-         <p>When editing an entry in <b>nerd mode</b> the user sees the XML source code, angle brackets and all.
-            <div class='instro'>
-               <img src='docs/mode-nerd.png' alt='Illustration'/>
-            </div>
-            <br/>
-            Individual users can overide this setting by clicking an icon in the bottom-left corner of their screen.
-         </p>
-      </div>
-      <div id="info_laic">
-         <p>When editing an entry in <b>laic mode</b> the XML source code is hidden and the entry looks more like a bulleted list.
-            <div class='instro'>
-               <img src='docs/mode-laic.png' alt='Illustration'/>
-            </div>
-            <br/>
-            Individual users can overide this setting by clicking an icon in the bottom-left corner of their screen.
-         </p>
-      </div>
-      <br>
-      <div class="input-field">
-         <p>
-            <label>
-               <input name="xonomyTextEditor"
-                     id="xonomyTextEditor_string"
-                     type="radio"
-                     class="with-gap"
-                     checked={ state.data.xonomyTextEditor == "askString" }
-                     onchange={ changeInfo }/>
-               <span>Single line</span>
-            </label>
-            <label style="margin-left: 30px;">
-               <input name="xonomyTextEditor"
-                     id="xonomyTextEditor_longstring"
-                     type="radio"
-                     class="with-gap"
-                     checked={ state.data.xonomyTextEditor == "askLongString" }
-                     onchange={ changeInfo }/>
-               <span>Multi line</span>
-            </label>
-            </p>
-         <span class="helper-text">Choose the default text editor for node values.</span>
-      </div>
-      <div id="info_string"
-            style="margin-left: 30px;">
-         <p>When editing text in <b>single line mode</b> the user sees a smaller editor.
-            <div class='instro'>
-               <img src='docs/text-editor-askstring.png' alt='Illustration'/>
-            </div>
-         </p>
-      </div>
-      <div id="info_longstring"
-            style="margin-left: 30px;">
-         <p>When editing text in <b>multi line mode</b> the user sees a full-fledged text editor.
-            <div class='instro'>
-               <img src='docs/text-editor-asklongstring.png' alt='Illustration'/>
-            </div>
-         </p>
-      </div>
-      <div>
-         <br>
-         <button class="btn waves-effect waves-light"
-               onclick={ startOverride } >
-            Customize entry editor
-            <i class="material-icons right">edit</i>
-         </button>
-      </div>
-      <br><br>
-      <dict-config-buttons save-data={saveData}></dict-config-buttons>
    </div>
-   <div if={ (state.data._js && state.data._js != "") || state.override }>
-      <div class="row">
-         <div class="input-field">
-            <div id="codeStatus"></div>
-            <textarea id="editor_js"
-                  class="materialize-textarea"
-                  oninput={checkJSCode}>{ state.data._js }</textarea>
-            <label>JavaScript</label>
-            <span class="helper-text">
-               You can customize the editor by defining two functions in JavaScript: one that will render the HTML editor from the XML entry and one that will harvest the (edited) HTML back into XML. If you would like to see an example,
-               <a onclick={ exampleJS }>click here to load a sample JavaScript code</a>.
-            </span>
-         </div>
-      </div>
-      <div class="row">
-         <div class="input-field">
-            <textarea id="editor_css"
-                  class="materialize-textarea">{ state.data._css }</textarea>
-            <label for="editor_css">CSS</label>
-            <span class="helper-text">
-               You can customize the editor look and feel by writing your own CSS styles. If you would like to see an example,
-               <a onclick={ exampleCSS }>click here to load a sample CSS style</a>.
-            </span>
-         </div>
-      </div>
-      <div class="buttons">
-         <a class="btn btn-secondary waves-effect waves-light"
-               onclick={backFromOverride} >back</a>
-         <button class="btn waves-effect waves-light"
-               onclick={ stopOverride } >
-            Disable entry editor customizations
-            <i class="material-icons right">edit</i>
-         </button>
-         <button class="btn waves-effect waves-light"
-               onclick={saveData}
-               id="submit_button">
-            Save
-            <i class="material-icons right">save</i>
-         </button>
-      </div>
-      <br><br>
-   </div>
-
-   <style>
-      textarea{
-         min-height: 30vh;
-      }
-      #editor_js{
-         padding-top: 25px;
-      }
-      #codeStatus{
-         top: 1px;
-         position: absolute;
-         right: 1px;
-         left: 1px;
-         background-color: whitesmoke;
-         padding: 3px 8px;
-      }
-      #info_nerd, #info_laic{
-         padding-left: 50px;
-      }
-   </style>
+   <dict-config-buttons save-data={saveData}></dict-config-buttons>
 
    <script>
       export default {
          state: {
             isLoading: true,
             isSaving: false,
-            override: false,
             data: {
-               xonomyMode: "nerd",
-               xonomyTextEditor: "askString",
+               _useOwnEditor: undefined,
                _js: "",
                _css: ""
             }
          },
 
-         changeInfo() {
-            if ($("#xonomyMode_laic").is(":checked")) {
-               $('#info_nerd').hide();
-               $('#info_laic').show();
-            } else {
-               $('#info_nerd').show();
-               $('#info_laic').hide();
-            }
-            if ($("#xonomyTextEditor_longstring").is(":checked")) {
-               $('#info_string').hide();
-               $('#info_longstring').show();
-            } else {
-               $('#info_string').show();
-               $('#info_longstring').hide();
-            }
-         },
-
-         startOverride() {
-            this.update({override: true});
-         },
-
-         stopOverride() {
-            this.state.data._js = '';
-            this.state.data._css = '';
-            this.update({override: false});
-         },
-
-         backFromOverride(){
-            this.update({override: false});
+         onCheckboxClick(evt){
+            this.state.data._useOwnEditor = evt.target.checked
+            $("#editors").toggle(evt.target.checked)
          },
 
          exampleJS() {
-            $('#editor_js').val(
+            this.state.data._js =
 `{
-  editor: function(div, entry, uneditable){
-    //div = the div into which you should render the editor
-    //entry.id = the entry ID (a number, eg. 123), or zero if new entry
-    //entry.content = the entry's XML source code, eg. "<entry></headword>hello</headword></entry>"
-    //uneditable = true if we want the entry to be uneditable (read-only)
-    $(div).html("<div class='myEditor'>HEADWORD: <input class='headword' "+(uneditable?"disabled":"")+"/></div>");
-    $(div).find("input.headword").val($($.parseXML(entry.content)).find("headword").html());
-  },
-  harvester: function(div){
-    //div = the div from which you should harvest the contents of the editor
-    var headword=$(div).find("input.headword").val();
-    return "<entry><headword>"+headword+"</headword></entry>";
-  },
-  adjustDocSpec: function (docSpec) {
-    // NOTE: you normally want to use this method if you don't have a custom editor,
-    // but just want to change certain aspects of how Xonomy presents the document.
-    $.each(docSpec.elements, function (elementName, elementSpec) {
-      // Expand <sense> elements by default.
-      if (elementName === 'sense') {
-        elementSpec.collapsed = function (jsElement) { return false; }
-      }
-      // Make <example> read-only
-      if (elementName === 'example') {
-        elementSpec.isReadOnly = true;
-      }
-      // Hide <partOfSpeech>.
-      if (elementName === 'partOfSpeech') {
-        elementSpec.isInvisible = true;
-      }
-    });
-  }
-}`);
-            M.textareaAutoResize($('#editor_js'));
+   editor: function(div, entry, uneditable){
+      //div = the div into which you should render the editor
+      //entry.id = the entry ID (a number, eg. 123), or zero if new entry
+      //entry.content = the entry's XML source code, eg. "<entry></headword>hello</headword></entry>"
+      //uneditable = true if we want the entry to be uneditable (read-only)
+      $(div).html("<div class='myEditor'>HEADWORD: <input class='headword' "+(uneditable?"disabled":"")+"/></div>");
+      $(div).find("input.headword").val($($.parseXML(entry.content)).find("headword").html());
+   },
+   harvester: function(div){
+      //div = the div from which you should harvest the contents of the editor
+      var headword=$(div).find("input.headword").val();
+      return "<entry><headword>"+headword+"</headword></entry>";
+   },
+   adjustDocSpec: function (docSpec) {
+      // NOTE: you normally want to use this method if you don't have a custom editor,
+      // but just want to change certain aspects of how Xonomy presents the document.
+      $.each(docSpec.elements, function (elementName, elementSpec) {
+         // Expand <sense> elements by default.
+         if (elementName === 'sense') {
+            elementSpec.collapsed = function (jsElement) { return false; }
+         }
+         // Make <example> read-only
+         if (elementName === 'example') {
+            elementSpec.isReadOnly = true;
+         }
+         // Hide <partOfSpeech>.
+         if (elementName === 'partOfSpeech') {
+            elementSpec.isInvisible = true;
+         }
+      });
+   }
+}`
+            this.codeEditorJS.updateCode(this.state.data._js)
+            this.checkJSCode()
          },
 
          exampleCSS() {
-            $('#editor_css').val(
+            this.state.data._css =
 `div.myEditor {padding: 20px; font-size: 1.25em}
 div.myEditor input {font-weight: bold}`
-            );
-            M.textareaAutoResize($('#editor_css'));
+            this.codeEditorCSS.updateCode(this.state.data._css)
          },
 
          onMounted() {
+            let options = {
+              tab: '   ',
+              indentOn: /[{(\[]$/
+            }
+            this.codeEditorJS = CodeJar($('#editor_js')[0], Prism.highlightElement.bind(this, $('#editor_js')[0], false, null), options)
+            this.codeEditorCSS = CodeJar($('#editor_css')[0], Prism.highlightElement.bind(this, $('#editor_css')[0], false, null), options)
+            this.codeEditorJS.onUpdate(this.onJSCodeUpdate.bind(this))
+            this.codeEditorCSS.onUpdate(this.onCSSCodeUpdate.bind(this))
+
             this.store.loadDictionaryConfig("editing")
                   .done(response => {
                      this.state.data = response.content
-                     this.state.override = !!response.content._js
                   })
-                  .always(() => {
+                  .always(response => {
                      this.update({isLoading: false})
-                     this.changeInfo()
-                     M.updateTextFields()
-                     if (this.state.override) {
-                        M.textareaAutoResize($('#editor_css'))
-                        M.textareaAutoResize($('#editor_js'))
-                        this.checkJSCode()
+                     if(this.state.data._useOwnEditor || (typeof this.state.data._useOwnEditor == "undefined" && this.state.data._js)){
+                        this.codeEditorJS.updateCode(this.state.data._js)
+                        this.codeEditorCSS.updateCode(this.state.data._css)
+                        $("#editors").show()
                      }
+                     response.content._js && this.checkJSCode()
                   })
+         },
+
+         onJSCodeUpdate(){
+            this.state.data._js = this.codeEditorJS.toString()
+            this.checkJSCode()
+         },
+
+         onCSSCodeUpdate(){
+            this.state.data._css = this.codeEditorCSS.toString()
          },
 
          getConfigData() {
-            var newData = {
-               xonomyMode: "nerd",
-               xonomyTextEditor: "askString",
-               _js: "",
-               _css: ""
-            };
-            if ($("#xonomyMode_laic").is(":checked")) {
-               newData.xonomyMode = "laic";
-            }
-            if ($("#xonomyTextEditor_longstring").is(":checked")) {
-               newData.xonomyTextEditor = "askLongString";
-            }
-            if (this.state.override) {
-               newData._js = $('#editor_js').val();
-               newData._css = $('#editor_css').val();
-            }
-            return newData;
+            return Object.assign({
+               _version: window.LEXONOMY_VERSION
+            }, this.state.data)
          },
 
-         checkJSCode(evt){
-            let isOk = false
-            let err = ""
-            try{
-               new Function("return " + $("#editor_js").val())()
-               isOk = true
-            } catch(e){
-               err = e.toString().split('\n')[0]
+         checkJSCode(){
+            if(this.state.data._js){
+               let isOk = false
+               let err = ""
+               try{
+                  new Function("return " + this.state.data._js)()
+                  isOk = true
+               } catch(e){
+                  err = e.toString().split('\n')[0]
+               }
+               $("#codeStatus").html(isOk ? `<b class="green-text">valid</b>` : `<b class="red-text">${err}</b>`)
             }
-            $("#codeStatus").html(isOk ? `<b class="green-text">valid</b>` : `<b class="red-text">invalid</b><span class="grey-text right">${err}</span>`)
          },
 
          saveData() {
@@ -307,4 +163,25 @@ div.myEditor input {font-weight: bold}`
       }
    </script>
 
+   <style>
+      textarea{
+         min-height: 30vh;
+      }
+      #editor_js{
+         padding-top: 25px;
+      }
+      #codeStatus{
+         bottom: 0px;
+         position: sticky;
+         right: 1px;
+         left: 1px;
+         background-color: #dfdfdf;
+         padding: 3px 8px;
+         margin-bottom: 5px;
+      }
+      .codeEditor{
+         margin: 0;
+         min-height: 150px;
+      }
+   </style>
 </dict-config-editing>

@@ -1,0 +1,326 @@
+<nvh-editor-edit-item id="nvh-{props.element.id}"
+      class="nvh-editor-item {state.style.layout == 'inline' ? 'nvh-inline' : 'nvh-block'} {props.readOnly ? 'nvh-read-only' : ''} {!props.readOnly || props.allowDnd ? 'nvh-allow-dnd' : ''}"
+      draggable="true"
+      ondragstart={onDragStart}
+      ondragend={onDragEnd}
+      onmousedown={onMouseDown}>
+   <div class="nvh-item {props.element.focused ? 'nvh-focused' : ''} {props.element.collapsed ? 'nvh-collapsed' : 'nvh-expanded'} ">
+      <span class="nvh-wrapper">
+         <i if={props.element.name != nvhData.rootElement}
+               class="nvh-drag-handle material-icons grey-text">drag_handle</i>
+         <span class="nvh-label pointer"
+               onclick={!props.readOnly && onLabelClick}
+               style="color: {state.labelColor};">
+            <span if={props.element.isValid}
+                  class="nvh-bullet"
+                  style="color: {state.labelColor};"></span>
+            <span if={!props.element.isValid}
+                  class="nvh-warning pulse tooltipped"
+                  data-tooltip={props.element.warnings.join("\n")}
+                  style="background-color: {state.labelColor};">!</span>
+            {props.element.name}{props.element.value ? ": " : ""}
+            <nvh-plugin-buttons if={!props.readOnly}
+                  element={props.element}/>
+            <i if={props.element.children.length && !props.readOnly}
+                  class="nvh-collapse-toggle material-icons clickable noSelect"
+                  onclick={onCollapseToggleClick}>chevron_right</i>
+         </span>
+
+         <span class="nvh-collapsed-value grey-text pointer"
+               onclick={onCollapseToggleClick}
+               style={props.element.collapsed ? '' : 'display: none;'}>{getCollapsedValue()}</span>
+
+         <span if={state.config.type != "chd"}
+               class="nvh-value"
+               style={props.element.collapsed ? 'display: none;' : ''}>
+            <span if={!props.element.edit}
+                  class="nvh-readonly-value-wrapper"
+                  onclick={!props.readOnly && onEditClick}>
+               <span class="nvh-readonly-value pointer">
+                  <raw-html content={getReadOnlyValue()}/>
+               </span>
+               <i if={!props.readOnly}
+                     class="nvh-edit-icon pointer material-icons tiny">edit</i>
+            </span>
+            <nvh-item-value-editor if={props.element.edit}
+                  element={props.element}/>
+         </span>
+      </span>
+      <nvh-dnd-zone element={props.element}
+            position=0/>
+      <div if={props.element.children.length}
+            class="nvh-children"
+            style={props.element.collapsed ? 'display: none;' : ''}>
+         <template each={(child, idx) in props.element.children}
+               if={nvhStore.isElementViewable(child)}
+               key={child.id}>
+            <nvh-editor-edit-item element={child}
+                  read-only={props.readOnly}
+                  allow-dnd={props.allowDnd}/>
+            <nvh-dnd-zone element={props.element}
+                  position={idx + 1}/>
+         </template>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "elementCollapsedChanged", "onElementCollapsedChanged"],
+                    ["nvhStore", "updateElements", "onUpdateElements"]],
+
+         state: {
+            style: {},
+            config: {}
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.name)
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.name)
+            this.state.labelColor = this.nvhStore.getElementColor(this.props.element.name)
+         },
+
+         onUpdateElements(elementList){
+            elementList.includes(this.props.element) && this.update()
+         },
+
+         onMouseDown(evt){
+            this.state.target = evt.target
+         },
+
+         onElementCollapsedChanged(element){
+            if(element == this.props.element){
+               $(".nvh-collapse-toggle", this.root).first().css("transform", element.collapsed ? 'rotate(0deg)' : 'rotate(90deg)')
+               $(".nvh-children", this.root).first().slideToggle(150)
+               $(".nvh-collapsed-value", this.root).first().fadeToggle(element.collapsed ? 150 : 0)
+               $(".nvh-value", this.root).first().fadeToggle(element.collapsed ? 0 : 150)
+            }
+         },
+
+         onDragStart(evt){
+            if ($(".nvh-drag-handle", this.root).first()[0].contains(this.state.target)) {
+               setTimeout(() => {
+                  // prevent DOM manipulation to fire ondragend event immediately after ondragstart
+                  $(this.root).addClass("nvh-dragged-element")
+                  this.nvhStore.startElementDragging(this.props.element)
+
+               }, 0)
+            } else {
+               evt.preventDefault()
+            }
+            evt.stopPropagation()
+         },
+
+         onDragEnd(){
+            $(this.root).removeClass("nvh-dragged-element")
+            this.nvhStore.stopElementDragging()
+         },
+
+         onLabelClick(evt){
+            evt.stopPropagation()
+            if(!this.props.element.edit){
+               if(this.props.element.focused){
+                  this.nvhStore.trigger("openContextMenu")
+               } else {
+                  this.nvhStore.focusElement(this.props.element)
+               }
+            }
+         },
+
+         onCollapseToggleClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.toggleElementCollapsed(this.props.element)
+         },
+
+         onEditClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.startElementEditing(this.props.element)
+         },
+
+         getReadOnlyValue(){
+            let value = this.props.element.value
+            if(this.state.config.type == "lst"){
+               let option = this.state.config.values.find(v => v.value == this.props.element.value)
+               value = option ? option.caption : value
+            } else if(this.state.config.type == "inl"){
+               value = this.nvhStore.parseMarkDown(value)
+            }
+            return value
+         },
+
+         getCollapsedValue(){
+            return shortenText(this.nvhStore.getElementList(this.props.element)
+                  .slice(0, 10)
+                  .map(child => child.value)
+                  .filter(v => !!v)
+                  .map(v => {return window.shortenText(v, 20)})
+                  .join(" "), 100)
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      :host{
+         display: block;
+         &.nvh-dragged-element{
+            opacity: 0.3
+         }
+         &.nvh-block{
+            display: block;
+         }
+         &.nvh-inline{
+            display: inline-block;
+            .nvh-wrapper{
+               padding-right: 10px;
+            }
+         }
+         &.nvh-read-only{
+            .pointer {
+               cursor: default;
+            }
+         }
+         &.nvh-allow-dnd{
+            .nvh-wrapper:hover{
+               background-color: whitesmoke;
+               .nvh-drag-handle{
+                  cursor: move;
+                  opacity: 0.3;
+                  &:hover{
+                     opacity: 1;
+                  }
+               }
+               .nvh-collapse-toggle{
+                  opacity: 0.6;
+                  &:hover{
+                     opacity: 1;
+                  }
+               }
+            }
+         }
+      }
+      .nvh-item {
+         position: relative;
+         .nvh-editor-item{
+            margin-left: 15px;
+            margin-right: 5px;
+         }
+      }
+      .nvh-focused > .nvh-wrapper{
+         background-color: #fff59d;
+         &:hover{
+            background-color: #f8ed86;
+         }
+         .nvh-label{
+            text-shadow: 0 0 2px #fff, 0 0 4px #fff;
+         }
+      }
+      .nvh-wrapper{
+         display: flex;
+         border-radius: 10px;
+         transition: 0.2s;
+         white-space: nowrap;
+      }
+      .nvh-item-value-editor{
+         padding: 5px;
+      }
+      .nvh-drag-handle{
+         opacity: 0;
+         vertical-align: middle;
+         position: absolute;
+         left: -24px;
+         top: 0px;
+      }
+      .nvh-bullet{
+         display: inline-block;
+         border: 4px solid;
+         margin-left: 2px;
+         margin-right: 5px;
+         border-radius: 2px;
+      }
+      .nvh-warning{
+         display: inline-block;
+         font-weight: bold;
+         color: #fff;
+         width: 18px;
+         height: 18px;
+         line-height: 18px;
+         margin-right: 4px;
+         border-radius: 50%;
+         text-align: center;
+         z-index: 100;
+      }
+      .nvh-label{
+         font-size: 14px;
+         margin-right: 5px;
+      }
+      nvh-plugin-buttons{
+         vertical-align: middle;
+         height: 20px;
+         display: inline-block;
+      }
+      .nvh-readonly-value-wrapper{
+         display: inline-flex;
+         align-items: flex-start;
+         .nvh-edit-icon{
+            opacity: 0.3;
+            margin-left: 5px;
+            margin-top: 2px;
+            text-decoration: none;
+         }
+         &:hover{
+            i{
+               opacity: 0.5;
+               &:hover{
+                  opacity: 1;
+               }
+            }
+         }
+      }
+      .nvh-collapse-toggle{
+         line-height: 20px;
+         height: 20px;
+         vertical-align: middle;
+         transition: transform 0.15s;
+         opacity: 0.3;
+         color: grey;
+      }
+      .nvh-collapsed{
+         & > .nvh-wrapper & > .nvh-value{
+            display: none;
+         }
+         & > .nvh-children{
+            display: none;
+         }
+      }
+      .nvh-expanded > .nvh-wrapper{
+         & > .nvh-collapsed-value{
+            display: none;
+         }
+         & > .nvh-collapse-toggle{
+            transform: rotate(90deg);
+         }
+      }
+      .nvh-collapsed-value{
+         font-size: 14px;
+      }
+      .nvh-value {
+         position: relative;
+         flex: 1;
+         .nvh-readonly-value:hover{
+            text-decoration: underline;
+         }
+      }
+      .nvh-children{
+         padding-left: 15px;
+      }
+      .raw-html {
+         display: inline-block;
+         p{
+            /* TODO*/
+            margin: 0;
+         }
+      }
+   </style>
+</nvh-editor-edit-item>

@@ -32,7 +32,7 @@ class UrlClass {
       return str ? ("?" + str) : ""
    }
 
-   /*parseQuery(str){
+   parseQuery(str){
         let query = {}
         if(str && str.indexOf("=") != -1){
             str.split('&').forEach(part => {
@@ -41,7 +41,7 @@ class UrlClass {
             })
         }
         return query
-    }*/
+    }
 
 }
 

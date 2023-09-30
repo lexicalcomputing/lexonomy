@@ -1,0 +1,117 @@
+<nvh-widget-panel class="z-depth-2 grey lighten-4">
+   <div class="nvh-widgets-toolbar grey lighten-3 borderBottom">
+      <span class="nvh-title"></span>
+      <button class="btn btn-flat ml-auto"
+            onclick={onToggleOpen.bind(this, false)}>
+         <i class="material-icons">close</i>
+      </button>
+   </div>
+   <div class="nvh-content-wrapper positionRelative">
+      <loading-overlay class="nvh-loading"/>
+      <div class="nvh-loading-message"></div>
+      <div class="nvh-content"></div>
+   </div>
+
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "toggleWidgetPanelOpen", "onToggleOpen"],
+                    ["nvhStore", "toggleWidgetPanelLoading", "onToggleLoading"],
+                    ["nvhStore", "updateWidgetPanelContent", "updateContent"]],
+
+         state: {
+            resizeHandle: null,
+            open: false
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onMounted(){
+            window.addEventListener("resize", this.onResizeDebounced)
+            document.addEventListener("click", this.handleClickOutside)
+         },
+
+         onBeforeUnmount(){
+            this.state.open && $("body").animate({"margin-right": "0px"}, 300)
+            window.removeEventListener("resize", this.onResizeDebounced)
+            document.removeEventListener("click", this.handleClickOutside)
+         },
+
+         onToggleOpen(open, title){
+            this.state.open = open
+            $(".nvh-title", this.root).html(title || "")
+            $(this.root).toggleClass("nvh-open", open)
+            $("body").animate({
+               "margin-right": open ? $(this.root).width() : "0px"
+            }, 300)
+         },
+
+         onToggleLoading(loading, message){
+            $(".nvh-loading", this.root).toggle(loading)
+            $(".nvh-loading-message", this.root).html(loading && message ? message : "")
+            $(".nvh-content", this.root).toggle(!loading)
+         },
+
+         updateContent(content){
+            $(".nvh-content", this.root).html($(content))
+         },
+
+         handleClickOutside(evt){
+            if(this.state.open && !this.root.contains(evt.target)){
+               this.onToggleOpen(false)
+            }
+         },
+
+         onResizeDebounced(){
+            if(this.state.open){
+               clearTimeout(this.state.resizeHandle)
+               this.state.resizeHandle = setTimeout(() => {
+                  clearTimeout(this.state.resizeHandle)
+                  $("body").animate({"margin-right": $(this.root).width()}, 300)
+               }, 100)
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: fixed;
+         display: flex;
+         flex-direction: column;
+         right: 0;
+         top: 0;
+         bottom: 0;
+         z-index: 1100;
+         transform: translateX(105%); // so the shadow is also hidden
+         transition: 0.3s;
+         min-width: 300px;
+         overflow-y: auto;
+         &.nvh-open{
+            transform: translateX(0);
+         }
+      }
+      .nvh-widgets-toolbar{
+         display: flex;
+         align-items: center;
+         padding-left: 15px;
+         font-size: 1.3rem;
+         position: sticky;
+         top: 0;
+         z-index: 100;
+      }
+      .nvh-content-wrapper{
+         flex:1
+      }
+      .nvh-loading-message{
+         position: absolute;
+         top: calc(40% + 80px);
+         left: 0;
+         right: 0;
+         text-align: center;
+      }
+   </style>
+</nvh-widget-panel>

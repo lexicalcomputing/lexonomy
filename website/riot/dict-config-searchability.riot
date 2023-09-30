@@ -1,6 +1,5 @@
 <dict-config-searchability>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["searchability", "Searching"]]}/>
    <h1>Searching</h1>
    <div if={!state.isLoading && !state.hasElements}
          class="center-align grey-text">
@@ -12,7 +11,7 @@
          The contents of elements you select here will be searchable (in addition to each entry's headword).
       </div>
       <br>
-      <div each={element in Object.keys(dictData.config.xema.elements)}>
+      <div each={element in Object.keys(dictData.config.structure.elements)}>
          <label>
             <input type="checkbox"
                   value={element}
@@ -36,9 +35,9 @@
          },
 
          onBeforeMount() {
-            this.state.hasElements = this.dictData.config.xema
-                  && this.dictData.config.xema.elements
-                  && Object.keys(this.dictData.config.xema.elements).length
+            this.state.hasElements = this.dictData.config.structure
+                  && this.dictData.config.structure.elements
+                  && Object.keys(this.dictData.config.structure.elements).length
          },
 
          onMounted() {

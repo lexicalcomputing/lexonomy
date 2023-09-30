@@ -1,0 +1,78 @@
+<nvh-item-media>
+   <template if={state.fileType}>
+      <img if={state.fileType == "image"}
+            src="{props.url}"
+            class="nvh-image"/>
+      <video if={state.fileType == "video"}
+            controls
+            class="nvh-video">
+         <source src="{props.url}"/>
+      </video>
+      <audio if={state.fileType == "video"}
+            controls
+            class="nvh-audio"
+            src="{props.url}"/>
+      <template if={state.fileType == "other"}>
+         {props.url}
+      </template>
+      <a href="{props.url}"
+            class="nvh-link tooltipped clickable"
+            data-tooltip="Open in new tab"
+            target="_blank">
+         <i class="material-icons">open_in_new</i>
+      </a>
+   </template>
+
+   <script>
+      export default{
+         state: {
+            fileType: null
+         },
+
+         onBeforeMount(){
+            this.refreshFileType()
+         },
+
+         onBeforeUpdate(){
+            this.refreshFileType()
+         },
+
+         refreshFileType(){
+            if(this.props.url){
+               let extension = this.props.url.split(".")
+                     .pop()
+                     .split(/\#|\?/)[0]
+                     .toLowerCase()
+
+               if (["apng", "avif", "gif", "jpeg", "jpg", "png", "svg" , "webp"].includes(extension)){
+                  this.state.fileType = "image"
+               } else if (["avi", "mov", "mp4", "mpeg", "mpg", "webm", "wmv",].includes(extension)){
+                  this.state.fileType = "video"
+               } else if (["acc", "mid", "midi", "mp3", "ogg", "wav", "wav", "weba", "wma",].includes(extension)){
+                  this.state.fileType = "audio"
+               } else {
+                  this.state.fileType = "other"
+               }
+            }
+         }
+      }
+   </script>
+
+   <style>
+      :host{
+         display: flex;
+         gap: 10px;
+         text-indent: 0;
+         position: relative;
+         padding: 5px;
+      }
+      .nvh-image{
+         max-width: 400px;
+         max-height: 300px;
+      }
+      .nvh-link{
+         position: absolute;
+         right: -30px;
+      }
+   </style>
+</nvh-item-media>

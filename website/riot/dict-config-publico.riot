@@ -1,6 +1,5 @@
 <dict-config-publico>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["publico", "Publishing"]]}/>
    <h1>Publishing</h1>
    <template if={!isLoading}>
       <div class="row">
@@ -31,7 +30,8 @@
                </label>
             </p>
             <span class="helper-text">
-               <i>Private</i> means that the dictionary is not publicly viewable. <i>Public</i> means that the dictionary is publicly viewable.
+               <i>Private</i> means that the dictionary is not publicly viewable. <i>Public</i> means that the dictionary
+               is publicly viewable, you may still edit the dictionary and changes are automatically published.
             </span>
          </div>
       </div>
@@ -117,7 +117,8 @@
          },
 
          setIsPublicEnabled(){
-            this.state.isPublicEnabled = this.store.getDictionary(this.dictData.dictId).size >= 100
+            let dict = this.store.getDictionary(this.dictData.dictId)
+            this.state.isPublicEnabled = dict && dict.size >= 100
          },
 
          onBeforeMount(){

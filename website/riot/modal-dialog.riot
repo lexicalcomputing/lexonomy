@@ -24,14 +24,14 @@
                </div>
             </div>
 
-            <div class="modal-footer primaryButtons"
+            <div class="modal-footer buttons"
                   if={!dialog.fullScreen && (dialog.showCloseButton || dialog.buttons.length)}>
                <a if={dialog.showCloseButton}
-                     class="btn modal-action modal-close btn-flat">Close</a>
+                     class="btn modal-action modal-close">Close</a>
                <a each={button in dialog.buttons}
                      id={button.id}
                      href={button.href}
-                     class="btn modal-action btn-flat {button.class}"
+                     class="btn modal-action {button.class}"
                      onclick={onButtonClick.bind(this, dialog, button)}>{button.label}</a>
             </div>
          </div>
@@ -69,6 +69,9 @@
             .modal{
                max-width: 500px;
             }
+         }
+         .modal-footer.buttons{
+            justify-content: flex-end;
          }
 
          &.big{

@@ -1,0 +1,176 @@
+<nvh-editor class="positionRelative">
+   <loading-overlay if={dictData.isEntryLoading}/>
+   <nvh-editor-toolbar/>
+   <template if={nvhData.entry}>
+      <nvh-editor-context-menu/>
+      <nvh-revisions/>
+      <template if={nvhData.editorMode == "view"}>
+         <nvh-element-style-editor if={dictData.userAccess.canEdit}/>
+         <nvh-editor-item-toolbar if={dictData.userAccess.canEdit}/>
+         <nvh-custom-editor if={nvhData.customEditor}/>
+         <div if={!nvhData.customEditor}
+               class="nvh-editor-view-items {nvhData.revision ? 'pointerEventsNone' : ''}">
+            <nvh-editor-view-item element={nvhData.entry}
+                  read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
+         </div>
+      </template>
+      <template if={nvhData.editorMode == "edit"}>
+         <nvh-side-dnd-panel if={dictData.userAccess.canEdit}/>
+         <nvh-widget-panel/>
+         <div class="nvh-editor-edit-items {nvhData.revision ? 'pointerEventsNone' : ''}">
+            <nvh-editor-edit-item element={nvhData.entry}
+                  read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
+         </div>
+      </template>
+      <nvh-source-code if={nvhData.editorMode == "code"}
+            read-only={!dictData.userAccess.canEdit}/>
+   </template>
+   <template if={!dictData.isEntryLoading && !nvhData.entry}>
+      <div class="nvh-no-entry grey-text">
+         <div class="nvh-no-entry-title mb-2">
+            No entry selected.
+         </div>
+         <div class="nvh-no-entry-desc">
+            Select an entry from side menu or create a <a href="javascript:void(0);" onclick={onCreateNewEntryClick}>new one</a>.
+         </div>
+      </div>
+   </template>
+
+
+   <script>
+      export default{
+         bindings: [["store", "isEntryLoadingChanged", "onIsEntryLoadingChanged"],
+                    ["nvhStore", "updateEditor", "update"],
+                    ["nvhStore", "entryChanged", "update"],
+                    ["nvhStore", "editorModeChanged", "onEditorModeChanged"]],
+
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onMounted(){
+            this.refreshListeners()
+         },
+
+         onBeforeUnmount(){
+            this.removeEventListeners()
+         },
+
+         onIsEntryLoadingChanged(){
+            this.update()
+            this.refreshListeners()
+         },
+
+         onEditorModeChanged(){
+            this.update()
+            this.refreshListeners()
+         },
+
+         onCreateNewEntryClick(){
+            this.nvhStore.createNewEntry()
+         },
+
+         handleClickOutside(evt){
+            if (!this.root.contains(evt.target)){
+               this.nvhStore.blurElement()
+               this.nvhStore.trigger("closeContextMenu")
+            }
+         },
+
+         onKeyDown(evt){
+            if((evt.keyCode == 38 || evt.keyCode == 40)
+               && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)
+               && evt.target.contentEditable != 'true'){
+               // prvent screen from scrolling
+               evt.preventDefault()
+            }
+         },
+
+         onKeyUp(evt){
+            let focused = this.nvhStore.getFocusedElement()
+            if(focused
+                  && !this.nvhData.isContextMenuOpen
+                  && !focused.edit
+                  && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
+               if(evt.keyCode == 38){ // arrow up
+                  if(evt.ctrlKey || evt.metaKey){
+                     if(evt.shiftKey){
+                        this.nvhStore.moveElementToPreviousParent(focused)
+                     } else {
+                        this.nvhStore.moveElementUp(focused)
+                     }
+                  } else {
+                     this.nvhStore.goToPrevElement()
+                  }
+               } else if(evt.keyCode == 40){ // arrow down
+                  if(evt.ctrlKey || evt.metaKey){
+                     if(evt.shiftKey){
+                        this.nvhStore.moveElementToNextParent(focused)
+                     } else {
+                        this.nvhStore.moveElementDown(focused)
+                     }
+                  } else {
+                     this.nvhStore.goToNextElement()
+                  }
+               } else if(evt.keyCode == 39){ // arrow right
+                  if(focused.children.length && focused.collapsed){
+                     this.nvhStore.expandElement()
+                  } else {
+                     this.nvhStore.goToNextElement()
+                  }
+               } else if(evt.keyCode == 37){ // arrow left
+                  if((focused.collapsed || !focused.children.length) && focused.parent){
+                     this.nvhStore.focusElement(focused.parent)
+                  } else {
+                     this.nvhStore.collapseElement()
+                  }
+               } else if (evt.keyCode == 13){
+                  if(evt.ctrlKey || evt.metaKey){
+                     this.nvhStore.startElementEditing(focused)
+                  } else {
+                     this.nvhStore.trigger("openContextMenu")
+                  }
+               } else if (evt.keyCode == 45 && (evt.ctrlKey || evt.metaKey)){  // insert
+                  this.nvhStore.isElementDuplicationAllowed(focused) && this.nvhStore.duplicateElement(focused)
+               } else if (evt.keyCode == 46 && (evt.ctrlKey || evt.metaKey)){  //delete
+                  this.nvhStore.isElementRemovalAllowed(focused) && this.nvhStore.removeElement(focused)
+               }
+            }
+         },
+
+         refreshListeners(){
+            if(this.nvhData.entry && this.nvhData.editorMode == "edit"){
+               this.addEventListeners()
+            } else {
+               this.removeEventListeners()
+            }
+         },
+
+         addEventListeners(){
+            document.addEventListener('click', this.handleClickOutside)
+            document.addEventListener('keydown', this.onKeyDown)
+            document.addEventListener('keyup', this.onKeyUp)
+         },
+
+         removeEventListeners(){
+            document.removeEventListener('click', this.handleClickOutside)
+            document.removeEventListener('keydown', this.onKeyDown)
+            document.removeEventListener('keyup', this.onKeyUp)
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .nvh-no-entry{
+         min-height: 50vh;
+         text-align: center;
+         padding-top: 20vh;
+      }
+      .nvh-no-entry-title{
+         margin-top: -30px;
+         font-size: 30px;
+      }
+   </style>
+</nvh-editor>

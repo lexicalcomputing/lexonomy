@@ -1,0 +1,283 @@
+   <nvh-editor-toolbar>
+   <div if={nvhData.revision}
+         class="nvh-revision-toolbar yellow noSelect">
+      <button class="btn btn-flat tooltipped mr-auto {nvhData.revision.idx == 0 ? 'nvh-hidden' : ''}"
+            data-tooltip="Show previous revision"
+            onclick={onShowPreviousRevisionClick}>
+         <i class="material-icons">chevron_left</i>
+      </button>
+      <div>
+         Revision from {nvhData.revision.when.substr(0, 19)}
+      </div>
+      <button if={dictData.userAccess.canEdit}
+            class="btn btn-flat ml-2 tooltipped"
+            data-tooltip="Restore this revision"
+            onclick={onRestoreRevisionClick}>
+         <i class="material-icons">refresh</i>
+      </button>
+      <button class="btn btn-flat tooltipped"
+            data-tooltip="Close revision and go back to actual "
+            onclick={onCloseRevisionClick}>
+         <i class="material-icons">close</i>
+      </button>
+      <button class="btn btn-flat ml-auto tooltipped {nvhData.revision.idx == dictData.entryRevisions.length - 1 ? 'nvh-hidden' : ''}"
+            data-tooltip="Show next revision"
+            onclick={onShowNextRevisionClick}>
+         <i class="material-icons">chevron_right</i>
+      </button>
+   </div>
+
+   <div class="nvh-buttons noSelect">
+      <template if={dictData.userAccess.canEdit}>
+
+         <button class="btnSave btn-flat tooltipped {!state.actions.save ? 'disabled' : ''}"
+               onclick={onSaveClick}
+               data-tooltip="Save entry">
+            <i class="material-icons">save</i>
+         </button>
+
+         <button class="btn-flat tooltipped {!state.actions.undo ? 'disabled' : ''}"
+               onclick={onUndoClick}
+               data-tooltip="Undo last action">
+            <i class="material-icons">undo</i>
+         </button>
+         <button class="btn-flat tooltipped {!state.actions.redo ? 'disabled' : ''}"
+               onclick={onRedoClick}
+               data-tooltip="Redo last action">
+            <i class="material-icons">redo</i>
+         </button>
+         <button class="btn-flat tooltipped {!state.actions.add ? 'disabled' : ''} {!dictData.entryList || !dictData.entryList.length ? 'redBtn' : ''}"
+               onclick={onNewEntryClick}
+               data-tooltip="Create new entry">
+            <i class="material-icons">add</i>
+         </button>
+         <button class="btn-flat tooltipped {!state.actions.duplicate ? 'disabled' : ''}"
+               onclick={onDuplicateClick}
+               data-tooltip="Duplicate entry">
+            <i class="material-icons">content_copy</i>
+         </button>
+         <button class="btn-flat tooltipped {!state.actions.delete ? 'disabled' : ''}"
+               onclick={onDeleteClick}
+               data-tooltip="Delete entry">
+            <i class="material-icons">delete</i>
+         </button>
+
+         <div class="nvh-separator"></div>
+      </template>
+
+      <button class="btn-flat tooltipped {!state.actions.prevEntry ? 'disabled' : ''}"
+            data-tooltip="Go to previous entry"
+            onclick={onOpenPreviousEntryClick}>
+         <i class="material-icons">navigate_before</i>
+      </button>
+      <button class="btn-flat tooltipped {!state.actions.nextEntry ? 'disabled' : ''}"
+            data-tooltip="Go to next entry"
+            onclick={onOpenNextEntryClick}>
+         <i class="material-icons">navigate_next</i>
+      </button>
+
+      <span class="ml-auto"></span>
+      <button class="btn btn-flat tooltipped {nvhData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
+            data-tooltip="Preview entry"
+            onclick={onModeChangeClick.bind(this, "view")}>
+         <i class="material-icons">visibility</i>
+      </button>
+      <button class="btn btn-flat tooltipped {nvhData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
+            data-tooltip="Edit entry"
+            onclick={onModeChangeClick.bind(this, "edit")}>
+         <i class="material-icons">edit</i>
+      </button>
+      <button class="btn btn-flat tooltipped {nvhData.editorMode == "code" ? 'btn-primary white-text' : ''} {!state.actions.code ? 'disabled' : ''}"
+            data-tooltip="View source code"
+            onclick={onModeChangeClick.bind(this, "code")}>
+         <i class="material-icons">code</i>
+      </button>
+
+      <div class="nvh-separator"></div>
+
+      <button class="btn btn-flat tooltipped {!state.actions.history ? 'disabled' : ''} {nvhData.isRevisionsOpen ? 'btn-primary white-text' : ''}"
+            data-tooltip="Version history"
+            onclick={onRevisionsToggleClick}>
+         <i class="material-icons">history</i>
+      </button>
+   </div>
+
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "historyChanged", "update"],
+                    ["nvhStore", "isSavingChanged", "update"],
+                    ["nvhStore", "isRevisionsOpenChanged", "update"],
+                    ["nvhStore", "isValidChanged", "update"]],
+
+         state: {
+            disabled: {}
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.refreshPrevNextEntryId()
+            this.refreshAvailableActions()
+         },
+
+         onBeforeUpdate(){
+            this.refreshPrevNextEntryId()
+            this.refreshAvailableActions()
+         },
+
+         onSaveClick(){
+            this.nvhStore.saveEntry()
+         },
+
+         onUndoClick(){
+            this.nvhStore.history.undo()
+         },
+
+         onRedoClick(){
+            this.nvhStore.history.redo()
+         },
+
+         onNewEntryClick(){
+            this.nvhStore.createNewEntry()
+         },
+
+         onDuplicateClick(){
+            this.nvhStore.duplicateEntry()
+         },
+
+         onDeleteClick(){
+            window.modal.open({
+               title: "Delete entry",
+               content: "Are you sure you want to delete this entry?",
+               small: true,
+               buttons: [{
+                  label: "delete",
+                  class: "btn-primary",
+                  onClick: (dialog, modal) => {
+                     this.nvhStore.deleteEntry()
+                     modal.close()
+                  }
+               }]
+            })
+         },
+
+         onOpenPreviousEntryClick(){
+            this.store.changeEntryId(this.state.prevEntryId)
+         },
+
+         onOpenNextEntryClick(){
+            this.store.changeEntryId(this.state.nextEntryId)
+         },
+
+         onModeChangeClick(mode){
+            this.nvhStore.changeEditorMode(mode)
+         },
+
+         onRevisionsToggleClick(){
+            this.nvhData.isRevisionsOpen ? this.nvhStore.closeRevisions() : this.nvhStore.openRevisions()
+         },
+
+         onRestoreRevisionClick(){
+            this.nvhStore.restoreRevision()
+         },
+
+         onShowPreviousRevisionClick(){
+            this.nvhStore.showRevision(this.dictData.entryRevisions[this.nvhData.revision.idx - 1])
+         },
+
+         onShowNextRevisionClick(){
+            this.nvhStore.showRevision(this.dictData.entryRevisions[this.nvhData.revision.idx + 1])
+         },
+
+         onCloseRevisionClick(){
+            this.nvhStore.showRevision(null)
+            this.nvhStore.closeRevisions()
+         },
+
+         refreshPrevNextEntryId(){
+            this.state.prevEntryId = null
+            this.state.nextEntryId = null
+            if(this.nvhData.entry && this.dictData.entryId != "new" && this.dictData.isEntryListLoaded){
+               let list = this.dictData.entryList
+               let actualIdx = list.findIndex(entry => entry.id == this.dictData.entryId)
+               this.state.prevEntryId = list[actualIdx - 1] ? list[actualIdx - 1].id : null
+               this.state.nextEntryId = list[actualIdx + 1] ? list[actualIdx + 1].id : null
+            }
+         },
+
+         refreshAvailableActions(){
+            let revisions = !!this.nvhData.revision
+            this.state.actions = {
+               save: this.nvhData.entry
+                     && !this.nvhData.isSaving
+                     && this.nvhData.isValid
+                     && (this.nvhStore.history.actualIdx != 0 || this.dictData.entryId == "new" || this.nvhData.editorMode == "code")
+                     && !revisions,
+               undo: this.nvhStore.history.actualIdx > 0
+                     && !revisions,
+               redo: (this.nvhStore.history.actualIdx < this.nvhStore.history.records.length - 1)
+                     && !revisions,
+               add: true,
+               duplicate: this.nvhData.entry && this.dictData.entryId != "new"
+                     && !revisions,
+               delete: this.nvhData.entry && this.dictData.entryId != "new"
+                     && !revisions,
+               prevEntry: !!this.state.prevEntryId,
+               nextEntry: !!this.state.nextEntryId,
+               view: this.nvhData.entry,
+               edit: this.nvhData.entry,
+               code: this.nvhData.entry,
+               history: this.nvhData.entry && this.dictData.entryId != "new"
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: block;
+         margin-bottom: 7px;
+         border-bottom: 1px solid #d9d9d8;
+         position: sticky;
+         top: 0;
+         z-index: 900;
+         background-color: whitesmoke;
+         min-width: 550px;
+      }
+      .nvh-buttons{
+         display: flex;
+      }
+      .btnSave:not(.disabled),
+      .redBtn{
+         color: #c62132;
+      }
+      .btn-flat{
+         padding: 0 10px;
+         background-color: unset;
+         opacity: 1;
+         border-radius: 0;
+         &:hover{
+            background-color: lightgray;
+            &.btn-primary{
+               background-color: #E53935;
+            }
+         }
+      }
+      .nvh-separator{
+         width: 1px;
+         height: 36px;
+         background-color: #d9d9d8;
+      }
+      .nvh-revision-toolbar{
+         display: flex;
+         align-items: center;
+         .btn:hover{
+            background-color: #fdd835;
+         }
+      }
+      .nvh-hidden{
+         visibility: hidden;
+      }
+   </style>
+</nvh-editor-toolbar>

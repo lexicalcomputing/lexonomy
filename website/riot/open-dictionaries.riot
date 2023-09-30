@@ -1,0 +1,367 @@
+<open-dictionaries>
+   <a if={authData.authorized}
+         href="#"
+         class="btn right">
+      <i class="material-icons left">vpn_lock</i>
+      my dictionaries
+   </a>
+   <h1>Open dictionaries</h1>
+   <loading-overlay if={dictData.isPublicDictionaryListLoading}></loading-overlay>
+   <div if={!dictData.isPublicDictionaryListLoading}>
+      <div>
+         <div class="input-field"
+               style="display: inline-block; margin-right: 40px;">
+           <i class="material-icons prefix grey-text">search</i>
+           <input id="search"
+               type="text"
+               oninput={onSearchInput}
+               style="width: 200px;">
+           <label for="search">Find</label>
+         </div>
+         <div class="input-field"
+               style="display: inline-block;">
+            <i class="material-icons prefix grey-text">translate</i>
+            <select id="languageSelect"
+                  style="width: 200px;">
+               <option value="">All languages</option>
+               <option each={language in dictData.publicDictionaryLanguageList}
+                     value={language}>{language}</option>
+            </select>
+            <label>Language</label>
+         </div>
+         <label if={authData.authorized}
+               id="favoriteToggleWrapper"
+               class="onlyFavoritesChbWrapper"
+               class="checkbox"
+               style="display: none;"}>
+            <input id="onlyFavoritesChb"
+                  type="checkbox"
+                  checked={state.showOnlyFavorites}
+                  onclick={onOnlyFavoritesClick}/>
+            <span>Only favorites</span>
+         </label>
+      </div>
+      <div if={!state.visibleDictionaries.length}
+            class="center"
+            style="margin: 20vh auto;">
+         <h1 class="grey-text lighten-2">Nothing found</h1>
+      </div>
+      <table if={state.visibleDictionaries.length}
+            class="striped highlight"
+            style="margin: 0 15px;">
+         <thead class="activeOrder_{state.orderBy}">
+            <th>
+               <span onclick={onSortClick.bind(this, "title")}>
+                  Title<i class="material-icons order_title">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "language")}>
+                  Language<i class="material-icons order_language">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "size")}>
+                  Size <i class="material-icons order_size">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "author")}>
+                  Author<i class="material-icons order_author">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th>
+               <span onclick={onSortClick.bind(this, "licence")}>
+                  Licence<i class="material-icons order_licence">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
+               </span>
+            </th>
+            <th></th>
+         </thead>
+         <tbody>
+            <tr each={(row, idx) in state.visibleDictionaries}
+                  key={row.id}
+                  id="r_{idx}">
+               <td>
+                  <a href="#/{row.id}">
+                     <span id="t_{idx}">
+                        {row.title}
+                     </span>
+                  </a>
+               </td>
+               <td>
+                  <span id="l_{idx}">
+                     {row.lang}
+                  </span>
+               </td>
+               <td>
+                  <span>
+                     {row.size}
+                  </span>
+               </td>
+               <td>
+                  <span id="a_{idx}">
+                     {row.author}
+                  </span>
+               </td>
+               <td>
+                  <span id="i_{idx}">
+                     {row.licence}
+                  </span>
+               </td>
+               <td class="btns">
+                  <a href="javascript:void(0);"
+                        title="show dictionary description"
+                        onclick={onShowDescriptionClick.bind(this, row)}>
+                     <i class="material-icons">description</i>
+                  </a>
+                  <a if={ row.isAdmin }
+                        href="#/{ row.id }/edit"
+                        title="edit dictionary">
+                     <i class="material-icons">edit</i>
+                  </a>
+                  <dict-favorite-toggle if={authData.authorized}
+                        dict-id={row.id}></dict-favorite-toggle>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+
+   <style>
+      .onlyFavoritesChbWrapper{
+         margin-left: 2.5rem;
+      }
+      table td:nth-child(5){
+         white-space: nowrap;
+      }
+      th{
+         white-space: nowrap;
+         cursor: pointer;
+      }
+      th span{
+         line-height: 24px;
+      }
+      th span:hover{
+         text-decoration: underline;
+      }
+      th span i{
+         opacity: 0;
+         margin-left: 0.5rem;
+         vertical-align: middle;
+      }
+      th span:hover i{
+         opacity: 0.5;
+      }
+      th span i:hover{
+         opacity: 1;
+      }
+      .activeOrder_title .order_title,
+      .activeOrder_language .order_language,
+      .activeOrder_size .order_size,
+      .activeOrder_author .order_author,
+      .activeOrder_licence .order_licenc{
+         opacity: 1;
+      }
+      .btns{
+         white-space: nowrap;
+         vertical-align: middle;
+      }
+      .btns > a{
+         vertical-align: middle;
+      }
+      .btns > *:not(:first-child){
+         margin-left: 0.4rem;
+      }
+   </style>
+
+   <script>
+      export default {
+         bindings: [["store", "favoriteChanged", "onFavoriteChanged"]],
+
+         state: {
+            visibleDictionaries: [],
+            language: "",
+            query: "",
+            orderBy: "title",
+            asc: true,
+            showOnlyFavorites: false
+         },
+
+         onFavoriteChanged(){
+            this.dictData.isDictionaryListLoaded = false  // force to reload dictionary list
+            this.refreshShowFavoriteToggle()
+         },
+
+         onShowDescriptionClick(dict){
+            let dialog = window.modal.open({
+               title: dict.title.length > 150 ? (dict.title.substr(0, 150) + "…") : dict.title,
+               tag: "dict-description-dialog",
+               opts: {
+                  dictId: dict.id
+               }
+            })
+         },
+
+         refreshShowFavoriteToggle(){
+            if(this.authData.authorized){
+               let hasFavorite = this.dictData.publicDictionaryList.findIndex(d => d.favorite) != -1
+               $("#favoriteToggleWrapper").toggle(hasFavorite || this.state.showOnlyFavorites)
+               !hasFavorite && localStorage.setItem("showOnlyFavorites_open", 0)
+            }
+         },
+
+         loadData(){
+            this.store.loadPublicDictionaryList()
+                  .always(() => {
+                     this.state.visibleDictionaries = this.dictData.publicDictionaryList
+                     this.state.isLoading = false
+                     this.filter()
+                     this.initializeLanguageSelect()
+                     $("#search").focus()
+                  })
+         },
+
+         onSearchInput(evt){
+            this.state.orderBy = null
+            this.state.asc = true
+            this.state.query = evt.target.value
+            this.filter()
+         },
+
+         onLanguageChange(evt){
+            this.state.language = evt.target.value
+            this.filter()
+         },
+
+         onSortClick(orderBy){
+            if(this.state.orderBy == orderBy){
+               this.state.asc = !this.state.asc
+            } else {
+               this.state.orderBy = orderBy
+            }
+            this.sort()
+            this.update()
+         },
+
+         onOnlyFavoritesClick(evt){
+            this.state.showOnlyFavorites = $("#onlyFavoritesChb").is(":checked")
+            localStorage.setItem("showOnlyFavorites_open", this.state.showOnlyFavorites ? 1 : 0)
+            this.filter()
+         },
+
+         filter(){
+            this.dictData.publicDictionaryList.forEach(c => {
+               delete c.h_title
+               delete c.h_lang
+               delete c.h_author
+               delete c.h_licence
+            })
+            this.state.visibleDictionaries = this.dictData.publicDictionaryList
+            if(this.state.language){
+               this.state.visibleDictionaries = this.state.visibleDictionaries.filter(d => d.lang == this.state.language)
+            }
+            if(this.state.showOnlyFavorites){
+               this.state.visibleDictionaries = this.state.visibleDictionaries.filter(d => d.favorite)
+            }
+            if(this.state.query !== ""){
+               let sortResult = FuzzySort.go(this.state.query, this.state.visibleDictionaries, {
+                  key: "id",
+                  keys: ["title", "lang", "author", "licence"]
+               })
+               this.state.visibleDictionaries = sortResult.map(fs => {
+                  fs.obj.h_title = FuzzySort.highlight(fs[0], '<b class="red-text">', "</b>")
+                  fs.obj.h_lang = FuzzySort.highlight(fs[1], '<b class="red-text">', "</b>")
+                  fs.obj.h_author = FuzzySort.highlight(fs[2], '<b class="red-text">', "</b>")
+                  fs.obj.h_licence = FuzzySort.highlight(fs[3], '<b class="red-text">', "</b>")
+                  fs.obj.score = fs.score
+                  return fs.obj
+               }).sort((a, b) => {
+                  return a.score == b.score ? a.title.localeCompare(b.title, undefined, {numeric: true}) : Math.sign(b.score - a.score)
+               })
+               this.sort()
+            }
+            this.update()
+            this.highlightOccurrences()
+         },
+
+         sort(){
+            this.state.visibleDictionaries.sort((a, b) => {
+               if(this.state.orderBy == "lang"){
+                  if(a.lang != b.lang){
+                     return a.lang.localeCompare(b.lang)
+                  }
+               } else if(this.state.orderBy == "size"){
+                  if(a.size != b.size){
+                     return Math.sign(a.size - b.size)
+                  }
+               } else if(this.state.orderBy == "author"){
+                  if(a.author != b.author){
+                     return a.author.localeCompare(b.author)
+                  }
+               } else if(this.state.orderBy == "licence"){
+                  if(a.licence != b.licence){
+                     return a.licence.localeCompare(b.licence)
+                  }
+               } else if(this.state.query !== ""){
+                  if(a.score != b.score){
+                     return Math.sign(b.score - a.score)
+                  }
+               }
+               return a.title.localeCompare(b.title, undefined, {numeric: true})
+            })
+            if(!this.state.asc){
+               this.state.visibleDictionaries.reverse()
+            }
+         },
+
+         highlightOccurrences(){
+            let el, row
+            this.state.visibleDictionaries.forEach((c, idx) => {
+               row = this.$(`#r_${idx}`)
+               if(row){
+                  el = this.$(`#t_${idx}`)
+                  el.innerHTML = c.h_title ? c.h_title : el.innerHTML.replace(/<b class="red-text">|<\/b>/g, '')
+                  el = this.$(`#l_${idx}`)
+                  el.innerHTML = c.h_lang ? c.h_lang : el.innerHTML.replace(/<b class="red-text">|<\/b>/g, '')
+                  el = this.$(`#a_${idx}`)
+                  el.innerHTML = c.h_author ? c.h_author : el.innerHTML.replace(/<b class="red-text">|<\/b>/g, '')
+                  el = this.$(`#i_${idx}`)
+                  el.innerHTML = c.h_licence ? c.h_licence : el.innerHTML.replace(/<b class="red-text">|<\/b>/g, '')
+               }
+            }, this)
+         },
+
+         initializeLanguageSelect(){
+             $("#languageSelect").formSelect({
+                  dropdownOptions: {
+                     constrainWidth: false
+                  }
+               })
+               .on("change", this.onLanguageChange)
+         },
+
+         onUpdated(){
+            this.refreshShowFavoriteToggle()
+         },
+
+         onBeforeMount(){
+            this.state.showOnlyFavorites = this.authData.authorized && localStorage.getItem("showOnlyFavorites_open") == 1
+            if(this.dictData.isPublicDictionaryListLoaded){
+               this.state.visibleDictionaries = this.dictData.publicDictionaryList
+               this.state.hasFavorite = this.dictData.publicDictionaryList.findIndex(d => d.favorite) != -1
+            } else {
+               this.loadData()
+            }
+         },
+
+         onMounted(){
+            if(this.dictData.isPublicDictionaryListLoaded){
+               this.initializeLanguageSelect()
+               this.state.showOnlyFavorites && this.filter()
+               this.refreshShowFavoriteToggle()
+            }
+         }
+      }
+   </script>
+</open-dictionaries>
+

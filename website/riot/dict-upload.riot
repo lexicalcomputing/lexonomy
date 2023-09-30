@@ -1,6 +1,5 @@
 <dict-upload>
    <loading-overlay if={state.isUploading}/>
-   <dict-nav links={[["upload", "Upload"]]}/>
    <h1>Upload</h1>
    <div class="file-field input-field buttons"
          style="max-width: 700px;">
@@ -88,7 +87,7 @@
                         this.state.infoMessage = response.progressMessage
                         if (response.finished) {
                            this.state.isImporting = false
-                           this.state.infoMessage += ' Dictionary import finished. <a href="#/' + this.dictData.dictId + '">See dictionary</a>'
+                           this.state.infoMessage += ' <br/>Dictionary import finished. <a href="#/' + this.dictData.dictId + '">See dictionary</a>'
                         } else if (response.errors) {
                            this.state.infoMessage = 'There were some errors during XML parsing'
                            this.store.importXML({

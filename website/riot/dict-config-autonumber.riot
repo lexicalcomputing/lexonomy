@@ -1,6 +1,5 @@
 <dict-config-autonumber>
    <loading-overlay if={state.isSaving}/>
-   <dict-nav links={[["config", "Configure"], ["autonumber", "Auto-numbering"]]}/>
    <h1>Auto-numbering of elements</h1>
    <div class="row">
       <p>If you need to number some of entry elements automatically, Lexonomy can do that for you. First, go to Entry structure and add element/attribute where you want to store the number. Eg. in element <tt>sense</tt> add attribute <tt>number</tt>. When you're ready, select element to number (eg. <tt>sense</tt>) and element/attribute to store numbering (eg. <tt>@number</tt>). Lexonomy will fill the numbers where missing.</p>
@@ -44,9 +43,9 @@
          },
 
          onUpdated() {
-            if (this.dictData.config.xema && this.dictData.config.xema.elements) {
+            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
                if ($('#elements option').length == 0) {
-                  Object.entries(this.dictData.config.xema.elements).forEach(([key, info]) => {
+                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
                      $('#elements').append('<option value="' + key + '">' + key + '</option>')
                   })
                   this.changeElem()
@@ -60,13 +59,13 @@
          changeElem() {
             $("#children").find('option').remove()
             var elem = $("#elements").val()
-            for(var atName in this.dictData.config.xema.elements[elem]['attributes']){
+            for(var atName in this.dictData.config.structure.elements[elem]['attributes']){
                $("#children").append("<option value='@"+atName+"'>@"+atName+"</option>")
             }
-            for(var child in this.dictData.config.xema.elements[elem]['children']){
-               $("#children").append("<option value='"+this.dictData.config.xema.elements[elem]['children'][child].name+"'>"+this.dictData.config.xema.elements[elem]['children'][child].name+"</option>")
+            for(var child in this.dictData.config.structure.elements[elem]['children']){
+               $("#children").append("<option value='"+this.dictData.config.structure.elements[elem]['children'][child].name+"'>"+this.dictData.config.structure.elements[elem]['children'][child].name+"</option>")
             }
-            var hasChildren = !!this.dictData.config.xema.elements[elem]['children'].length
+            var hasChildren = !!this.dictData.config.structure.elements[elem]['children'].length
             $("#submit_button").toggleClass("disabled", !hasChildren)
             $("#hasChildren").toggle(hasChildren)
             $("#hasNoChildren").toggle(!hasChildren)

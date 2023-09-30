@@ -1,0 +1,434 @@
+<nvh-editor-context-menu>
+   <div if={state.show}>
+      <ul class="dropdown-content">
+         <li class="nvh-header grey lighten-2">
+            <div>
+               <div>
+                  {state.element.name}
+               </div>
+               <div if={state.actualOptions[0].parentItem}
+                     class="nvh-breadcrumbs">
+                  {getOptionPath()}
+               </div>
+            </div>
+            <!--div class="ml-auto">
+               <i class="material-icons clickable tiny">settings</i>
+            </div-->
+         </li>
+         <li class="divider"></li>
+         <template each={(option, idx) in state.actualOptions}>
+            <li if={!option.submenu}
+                  class="nvh-focusable-option"
+                  onclick={onOptionClick.bind(this, option.action)}>
+               {option.label}
+               <small if={option.hotkey}
+                     class="nvh-hotkey">
+                  ({option.hotkey})
+               </small>
+            </li>
+            <li if={option.submenu}
+                  class="nvh-focusable-option"
+                  onclick={onSubmenuClick.bind(this, option.submenu)}>
+               {option.label}
+               <i class="ml-auto material-icons">chevron_right</i>
+            </li>
+         </template>
+         <template if={state.actualOptions[0].parentItem}>
+            <li class="divider"></li>
+            <li class="nvh-back nvh-focusable-option"
+                  onclick={onBackClick}>
+               <i class="ml-auto material-icons tiny" style="margin-left: 0;">chevron_left</i>
+               <div class="ml-auto">
+                  back&nbsp;<small>(esc)</small>
+               </div>
+            </li>
+         </template>
+      </ul>
+   </div>
+
+   <script>
+      export default {
+         state: {
+            show: false,
+            actualOptions: null
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.bindings = [["nvhStore", "openContextMenu", "onOpenContextMenu"],
+                             ["nvhStore", "closeContextMenu", "close"],
+                             ["nvhStore", "updateEditor", "onRefreshOptions"],
+                             ["nvhStore", "startElementEditing", "close"]]
+         },
+
+         onBeforeUnmount(){
+            document.removeEventListener('click', this.handleClickOutside)
+            document.removeEventListener('keyup', this.onKeyUp)
+         },
+
+         onOpenContextMenu(submenu){
+            let element = this.nvhStore.getFocusedElement()
+            if(element){
+               let elementNode = $(".nvh-focused").find(".nvh-wrapper, .nvh-inner-wrapper").first()
+               let optionsList = this.getElementContextMenuOptions()
+               if(submenu){
+                  optionsList = optionsList.find(o => o.id == submenu).options
+               }
+               let options = this.createOptionsObject(optionsList)
+               this.update({
+                  element: element,
+                  elementNode: elementNode,
+                  options: options,
+                  actualOptions: [...options]
+               })
+               if(this.state.show){
+                  this.updatePosition()
+               } else {
+                  this.open()
+               }
+            }
+         },
+
+         onRefreshOptions(){
+            if(this.state.show){
+               setTimeout(() => {
+                  let element = this.nvhStore.getFocusedElement()
+                  if(!element){
+                     return
+                  }
+                  let item = this.state.actualOptions[0].parentItem
+                  let path = []
+                  let oldOptionText = $(".nvh-highlight", this.root).html()
+                  while (item){
+                     path.unshift(item.label)
+                     item = item.parentItem
+                  }
+                  let actualOptions = null
+                  let optionsList = this.getElementContextMenuOptions()
+                  let options = this.createOptionsObject(optionsList)
+                  actualOptions = [...options]
+                  // options changed, lets try to find same submenu in new options, so user does not have to try to find it by himself
+                  while(path.length && actualOptions){
+                     let nextLabel = path.pop()
+                     let child = actualOptions.find(x => x.label == nextLabel)
+                     actualOptions = child ? child.submenu : null
+                  }
+                  $(".nvh-highlight", this.root).removeClass("nvh-highlight")
+                  if(path.length){
+                     // old submenu was not found in new option list
+                     actualOptions = [...options]
+                  }
+
+                  this.update({
+                     element: element,
+                     elementNode: $(".nvh-focused").find(".nvh-wrapper").first(),
+                     options: options,
+                     actualOptions: actualOptions
+                  })
+                  this.updatePosition()
+                  let optionToFocus = $(".nvh-focusable-option:contains(\"" + oldOptionText + "\")", this.root)
+                  optionToFocus.length ? optionToFocus.addClass("nvh-highlight") : $(".nvh-focusable-option", this.root).first().addClass("nvh-highlight")
+               }, 1)
+            }
+         },
+
+         onOptionClick(action, evt){
+            evt.stopPropagation()
+            action()
+         },
+         onSubmenuClick(submenu, evt){
+            evt.stopPropagation()
+            this.changeActualOptions(submenu)
+         },
+
+         onBackClick(evt){
+            evt.stopPropagation()
+            this.changeActualOptions(this.state.actualOptions[0].parentMenu)
+         },
+
+         onKeyUp(evt){
+            if(evt.keyCode == 38){
+                this.moveCursorUp()
+            } else if(evt.keyCode == 40){
+                this.moveCursorDown()
+            } else if(evt.keyCode == 27){ //esc
+               let parentMenu = this.state.actualOptions[0].parentMenu
+               if(parentMenu){
+                  this.changeActualOptions(parentMenu)
+               } else {
+                  this.close()
+               }
+            } else if(evt.keyCode == 13){ // enter
+               $(".nvh-highlight", this.root).click()
+            }
+         },
+
+         handleClickOutside(evt){
+            if (!this.root.contains(evt.target)){
+               this.close()
+            }
+         },
+
+         changeActualOptions(options){
+            this.update({actualOptions: options})
+            $(".nvh-highlight").removeClass("nvh-highlight")
+            $(".nvh-focusable-option", this.root).first().addClass("nvh-highlight")
+         },
+
+         open(){
+            if(!this.state.show){
+               this.nvhData.isContextMenuOpen = true
+               this.update({ show: true})
+               $(".nvh-highlight", this.root).removeClass("nvh-highlight")
+               $(".nvh-focusable-option", this.root).first().addClass("nvh-highlight")
+               document.addEventListener('click', this.handleClickOutside)
+               document.addEventListener('keyup', this.onKeyUp)
+               this.updatePosition()
+            }
+         },
+
+         close(){
+            if(this.state.show){
+               this.nvhData.isContextMenuOpen = false
+               this.update({show: false})
+               document.removeEventListener('click', this.handleClickOutside)
+               document.removeEventListener('keyup', this.onKeyUp)
+            }
+         },
+
+         moveCursorUp(){
+            if(this.state.show){
+               let highlighted = $(".nvh-highlight", this.root)
+               if(highlighted.length){
+                  let prev = highlighted.prevAll(".nvh-focusable-option").first()
+                  if(prev.length){
+                     highlighted.removeClass("nvh-highlight")
+                     prev.addClass("nvh-highlight")
+                  }
+
+               } else {
+                  $(".nvh-focusable-option", this.root).last().addClass("nvh-highlight")
+               }
+            }
+         },
+
+         moveCursorDown(){
+            if(this.state.show){
+               let highlighted = $(".nvh-highlight", this.root)
+               if(highlighted.length){
+                  let next = highlighted.nextAll(".nvh-focusable-option").first()
+                  if(next.length){
+                     highlighted.removeClass("nvh-highlight")
+                     next.addClass("nvh-highlight")
+                  }
+
+               } else {
+                  $(".nvh-focusable-option", this.root).first().addClass("nvh-highlight")
+               }
+            }
+         },
+
+         updatePosition(){
+            let windowHeight = $(window).height()
+            let menuHeight = $("ul", this.root).first().height()
+            let editorOffset = $("nvh-editor").offset()
+            let wrapperOffset = this.state.elementNode.offset()
+            let wrapperBR = this.state.elementNode[0].getBoundingClientRect()
+            let top = (wrapperOffset.top - editorOffset.top)
+            // TODO do not allow to show menu above window top
+            if(wrapperBR.top  < windowHeight / 2){
+               top += this.state.elementNode.height() + 8
+            } else {
+               top -= menuHeight + 8
+            }
+            $(this.root).css({
+               left: (wrapperOffset.left - editorOffset.left) + "px",
+               top: top + "px"
+            })
+         },
+
+         getElementContextMenuOptions(){
+            let element = this.nvhStore.getFocusedElement()
+            let options = []
+            let availAbleChildElements = this.nvhStore.getAvailableChildElements(element)
+            let availSiblingsElements = element.parent ? this.nvhStore.getAvailableChildElements(element.parent) : []
+            if(availAbleChildElements.length || availSiblingsElements.length){
+               let o = {
+                  id: "add",
+                  label: "Add",
+                  options: []
+               }
+               if(availAbleChildElements.length){
+                  o.options.push({
+                     id: "addChild",
+                     label: "Child",
+                     options: availAbleChildElements.map(c => ({
+                        label: c,
+                        action: this.nvhStore.addChildElement.bind(this.nvhStore, element, c)
+                     }))
+                  })
+               }
+               if(availSiblingsElements.length){
+                  o.options.push({
+                     id: "addSiblingBefore",
+                     label: "Sibling before",
+                     options: availSiblingsElements.map(c => ({
+                        label: c,
+                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, c, 'before')
+                     }))
+                  }, {
+                     id: "addSiblingAfter",
+                     label: "Sibling after",
+                     options: availSiblingsElements.map(c => ({
+                        label: c,
+                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, c, 'after')
+                     }))
+                  })
+               }
+
+               options.push(o)
+            }
+
+            this.nvhStore.isElementDuplicationAllowed(element) && options.push({
+               id: "duplicate",
+               label: "Duplicate",
+               hotkey: "ctrl + ins",
+               action: this.nvhStore.duplicateElement.bind(this.nvhStore, element)
+
+            })
+            this.nvhStore.isElementRemovalAllowed(element) && options.push({
+               id: "remove",
+               label: "Remove",
+               hotkey: "ctrl + del",
+               action: this.nvhStore.removeElement.bind(this.nvhStore, element)
+            })
+            if(element.parent){
+               let moveOptions = []
+               let childIdx = element.parent.children.indexOf(element)
+               let availableParents = this.nvhStore.getAvailableParentElements(element)
+               let parentIdx = availableParents.indexOf(element.parent)
+               if(childIdx > 0 || parentIdx > 0){
+                  moveOptions.push({
+                     id: "moveUp",
+                     label: "Up",
+                     hotkey: "ctrl + ↑",
+                     action: this.nvhStore.moveElementUp.bind(this.nvhStore, element)
+                  })
+               }
+               if(childIdx < element.parent.children.length - 1 || parentIdx < availableParents.length - 1){
+                  moveOptions.push({
+                     id: "moveDown",
+                     label: "Down",
+                     hotkey: "ctrl + ↓",
+                     action: this.nvhStore.moveElementDown.bind(this.nvhStore, element)
+                  })
+               }
+               if(parentIdx > 0){
+                  moveOptions.push({
+                     id: "movePreviousParent",
+                     label: "Previous parent element",
+                     hotkey: "ctrl + shift + ↓",
+                     action: this.nvhStore.moveElementToPreviousParent.bind(this.nvhStore, element)
+                  })
+               }
+               if(parentIdx < availableParents.length - 1){
+                  moveOptions.push({
+                     id: "moveNextParent",
+                     label: "Next parent element",
+                     hotkey: "ctrl + shift + ↑",
+                     action: this.nvhStore.moveElementToNextParent.bind(this.nvhStore, element)
+                  })
+               }
+               moveOptions.length && options.push({
+                  id: "move",
+                  label: "Move",
+                  options: moveOptions
+
+               })
+            }
+            return options
+         },
+
+
+         createOptionsObject(options){
+            const addBackOption = (options) => {
+               return options.map(o => {
+                  if(o.options){
+                     o.submenu = [
+                        ...addBackOption(o.options)
+                     ]
+                  }
+                  return o
+               })
+            }
+            const addReferencesToOptions = (menu) => {
+               menu.forEach(o => {
+                  if(o.submenu){
+                     o.submenu.forEach( o2 => {
+                        o2.parentItem = o
+                        o2.parentMenu = menu
+
+                     })
+                     addReferencesToOptions(o.submenu)
+                  }
+               })
+            }
+            let ret = addBackOption(options)
+            addReferencesToOptions(ret)
+
+            return ret
+         },
+
+         getOptionPath(){
+            path = []
+            let item = this.state.actualOptions[0].parentItem
+            while (item){
+               path.push(item.label)
+               item = item.parentItem
+            }
+            return path.reverse().join("->")
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: absolute;
+      }
+      .nvh-highlight{
+         background-color: #fff59d !important;
+      }
+      .nvh-header{
+         line-height: 15px;
+         cursor: default;
+      }
+      .nvh-breadcrumbs{
+         font-size: 12px;
+         color: grey;
+      }
+      .dropdown-content{
+         display: block;
+         opacity: 1;
+         min-width: 250px;
+         background-color: whitesmoke;
+         li{
+            white-space: nowrap;
+            min-height: 30px;
+            display: flex;
+            gap: 5px;
+            &:not(.divider){
+               padding: 5px 10px;
+            }
+         }
+         .nvh-back{
+            justify-content: flex-end;
+            line-height: 25px;
+            color: #969696;
+         }
+      }
+      .nvh-hotkey{
+         color: grey;
+      }
+   </style>
+</nvh-editor-context-menu>

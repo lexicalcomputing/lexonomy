@@ -1,0 +1,156 @@
+<nvh-dnd-zone class="{state.vertical ? 'nvh-vertical' : 'nvh-horizontal'} {state.active ? 'nvh-active' : ''}">
+   <div class="nvh-zone"
+         ondragenter={onDragEnter}
+         ondragleave={onDragLeave}
+         ondragover={onDragOver}
+         ondrop={onDrop}
+         style="display: none;">
+      <div class="nvh-bar"></div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "onDndStart", "onDndStart"],
+                    ["nvhStore", "onDndStop", "onDndStop"]],
+
+         state: {
+            active: false,
+            vertical: false
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+            this.state.vertical = this.isChildInline(this.props.position) && this.isChildInline(this.props.position + 1)
+         },
+
+         onDndStart(){
+            if(!this.state.active
+                  && (this.props.element == this.nvhData.detachedEntry
+                     || (this.nvhData.draggedElement != this.props.element
+                        && this.nvhStore.getAvailableParentElementNames(this.nvhData.draggedElement).includes(this.props.element.name)
+                        && (this.props.element == this.nvhData.draggedElement.parent || this.nvhStore.canHaveAnotherChild(this.props.element, this.nvhData.draggedElement.name))
+                     )
+                  )
+               ){
+               this.update({active: true})
+               $(".nvh-zone", this.root).show()
+            }
+         },
+
+         onDndStop(){
+            if(this.state.active){
+               this.state.active = false
+               $(".nvh-zone", this.root).hide()
+            }
+         },
+
+         onDragEnter(){
+            $(this.root).addClass("nvh-hover")
+         },
+
+         onDragOver(evt){
+            evt.preventDefault()
+         },
+
+         onDragLeave(){
+            $(this.root).removeClass("nvh-hover")
+         },
+
+         onDrop(evt){
+            this.nvhStore.moveChildToAnotherParent(this.nvhData.draggedElement, this.props.element, this.props.position)
+            this.nvhStore.trigger("updateElements", [this.nvhData.draggedElement.parent])
+            this.nvhStore.stopElementDragging()
+            $(this.root).removeClass("nvh-hover")
+         },
+
+         isChildInline(position){
+            let child = this.props.element.children[position - 1]
+            return child && this.nvhStore.getElementStyle(child.name).layout == "inline"
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         position: relative;
+         transition: 0.2s;
+         .nvh-zone{
+            transition: 0.2s;
+            position: absolute;
+         }
+         .nvh-bar{
+            background-color: #d9d9d8;
+            transition: 0.2s;
+            position: relative;
+            pointer-events: none;
+         }
+         &.nvh-horizontal{
+            display: block;
+            min-height: 2px;
+            .nvh-zone{
+               z-index: 998;
+               min-height: 30px;
+               top: -10px;
+               bottom: -10px;
+               left: 30px;
+               right: 20px;
+            }
+            .nvh-bar{
+               min-height: 3px;
+               top: 10px;
+               border-radius: 20px;
+            }
+            &.nvh-hover{
+               min-height: 30px;
+               .nvh-bar{
+                  min-height: 30px;
+               }
+            }
+         }
+         &.nvh-vertical{
+            min-width: 4px;
+            display: inline-block;
+            vertical-align: top;
+            z-index: 999;
+            .nvh-zone{
+               display: inline-block;
+               min-width: 20px;
+               min-height: 34px;
+               vertical-align: top;
+               z-index: 999;
+               min-height: 24px;
+               top: 2px;
+               bottom: -5px;
+               left: -10px;
+               right: -10px;
+            }
+            .nvh-bar{
+               display: inline-block;
+               min-width: 3px;
+               min-height: 24px;
+               border-radius: 5px;
+               left: 10px;
+            }
+            &.nvh-hover{
+               min-width: 60px;
+               display: inline-block;
+               vertical-align: top;
+               .nvh-zone{
+               }
+               .nvh-bar{
+                  min-width: 60px;
+                  left: 10px;
+                  right: 10px;
+               }
+            }
+         }
+
+         &.nvh-hover{
+            .nvh-bar{
+               background-color: #eaeaea;
+            }
+         }
+      }
+   </style>
+</nvh-dnd-zone>

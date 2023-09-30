@@ -10,10 +10,22 @@ class StoreClass {
          dictionaryList: [],
          isPublicDictionaryListLoaded: false,
          isPublicDictionaryListLoading: false,
-         publicDictionaryList: []
+         publicDictionaryList: [],
+         entryRevisions: [],
+         isEntryRevisionsLoading: false,
+         isEntryRevisionsLoaded: false
       }
 
       this.resetDictionary()
+   }
+
+   migrateConfigStructure(structure){
+      Object.values(structure.elements).forEach(el => {
+         if(el.filling && !el.type){
+            el.type = el.filling
+            delete el.filling
+         }
+      })
    }
 
    getDictionary(dictId){
@@ -33,7 +45,7 @@ class StoreClass {
       if(dictId != this.data.dictId){
          this.resetDictionary()
          this.data.dictId = dictId
-         window.dictId = dictId  // global variable xema is used by some custom editors
+         window.dictId = dictId  // global variable dictId is used by some custom editors
          if(dictId){
             this.loadActualDictionary()
          } else {
@@ -49,7 +61,7 @@ class StoreClass {
          doctype = doctype || this.data.doctypes[0]
          if(doctype != this.data.doctype){
             this.data.doctype = doctype
-            this.data.config.xema.root = doctype
+            this.data.config.structure.root = doctype
             this.trigger("doctypeChanged")
          }
       }
@@ -75,6 +87,7 @@ class StoreClass {
       } else {
          if(entryId != this.data.entryId){
             this.data.entryId = entryId
+            this.loadEntry()
             this.trigger("entryIdChanged")
          }
       }
@@ -162,6 +175,7 @@ class StoreClass {
          modifier: 'start',
          mode: 'view',
          userAccess: {
+            canView: false,
             canEdit: false,
             canConfig: false,
             canUpload: false,
@@ -177,7 +191,7 @@ class StoreClass {
       return $.ajax({url: `${window.API_URL}siteconfigread.json`})
             .done(response => {
                this.data.siteconfig = response
-               //this.trigger("siteconfigChanged")
+               this.trigger("siteconfigChanged")
             })
             .fail(response => {
                M.toast({html: "Could not load app configuration."})
@@ -250,19 +264,27 @@ class StoreClass {
       this.loadDictionary(this.data.dictId)
             .done(response => {
                if(response.success){
+                  // TODO: backward compatibility, may be removed in future
+                  //response.configs.structure = response.configs.structure || response.configs.xema
+                  for(let elementName in response.configs.structure.elements){
+                     response.configs.structure.elements[elementName].children.forEach(c => {
+                        c.min = c.min * 1
+                        c.max = c.max * 1
+                     })
+                  }
                   Object.assign(this.data, {
                         config: response.configs,
                         userAccess: response.userAccess,
-                        xemaOverride: false,
-                        xemplateOverride: false,
-                        editingOverride: false,
                         dictConfigs: response.configs,
                         doctype: response.doctype,
                         doctypes: response.doctypes
                      },
                      response.publicInfo
                   )
-                  window.xema = this.data.config.xema  // global variable xema is used by some custom editors
+
+                  // TODO just temporary, remove after data migration
+                  this.migrateConfigStructure(this.data.config.structure)
+                  window.xema = this.data.config.structure  // global variable xema is used by some custom editors
                   this.data.isDictionaryLoaded = true
                   this.data.isDictionaryLoading = false
                   this.trigger("dictionaryChanged")
@@ -304,7 +326,7 @@ class StoreClass {
          modifier: this.data.modifier,
          howmany: howmany ? howmany : (this.data.dictConfigs.titling.numberEntries || 1000)
       }
-      if(authorized && this.data.userAccess.canEdit){
+      if(authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
          url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
       } else {
          url = `${window.API_URL}${this.data.dictId}/search.json`
@@ -315,8 +337,13 @@ class StoreClass {
          data: data
       })
             .done(response => {
-               this.data.entryList = response.entries
-               this.data.entryCount = response.total
+               if(response.entries){
+                  this.data.entryList = response.entries
+                  this.data.entryCount = response.total
+               } else {
+                  this.data.entryList = []
+                  this.data.entryCount = 0
+               }
                this.data.isEntryListLoaded = true
                this.trigger("entryListChanged")
             })
@@ -330,7 +357,7 @@ class StoreClass {
    }
 
    loadEntry(){
-      if(!this.data.entryId){
+      if(!this.data.entryId || this.data.entryId == "new"){
          return
       }
       this.data.isEntryLoading = true
@@ -344,6 +371,11 @@ class StoreClass {
       })
             .done(response => {
                this.data.entry = response
+               if(this.data.entry.json){
+                  this.data.entry.json = JSON.parse(this.data.entry.json)
+               }
+               this.data.entryRevisions = []
+               this.data.isEntryRevisionsLoaded = false
                this.data.isEntryLoaded = true
                this.trigger("entryChanged")
             })
@@ -356,12 +388,155 @@ class StoreClass {
             })
    }
 
+   createEntry(nvh){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/entrycreate.json`,
+         method: "POST",
+         data: {
+               nvh: nvh
+         }
+      }).done(response => {
+         this.data.entryId = response.id
+         this.loadEntryList()
+      })
+   }
+
+   updateEntry(nvh){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/entryupdate.json`,
+         method: "POST",
+         data: {
+               id: this.data.entryId,
+               nvh: nvh
+         }
+      })
+            .done(response => {
+               if(this.data.entryRevisions.length){
+                  this.loadEntryRevisions()
+               }
+            })
+   }
+
+   deleteEntry(){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/entrydelete.json`,
+         method: "POST",
+         data: {
+               id: this.data.entryId
+         }
+      }).done(response => {
+         if(response.success){
+            this.data.entryId = null
+            this.data.entryList = this.data.entryList.filter(e => e.id != response.id)
+            this.trigger("entryListChanged", response.id)
+         }
+      })
+   }
+
+   loadEntryRevisions(){
+      if(!this.data.isEntryRevisionsLoading){
+         this.data.isEntryRevisionsLoading = true
+         this.trigger("isEntryRevisionsLoadingChanged")
+         return $.ajax({
+            url: `${window.API_URL}${this.data.dictId}/history.json`,
+            method: "POST",
+            data: {
+                  id: this.data.entryId
+            }
+         })
+               .done(response => {
+                  this.data.entryRevisions = response.history
+                  this.data.entryRevisions.forEach((r, idx) => {r.idx = idx})
+                  this.data.isEntryRevisionsLoaded = true
+                  this.trigger("entryRevisionChanged")
+               })
+               .fail(response => {
+                  M.toast({html: "Revisions could not be loaded."})
+               })
+               .always(response => {
+                  this.data.isEntryRevisionsLoading = false
+                  this.trigger("isEntryRevisionsLoadingChanged")
+               })
+      }
+   }
+
+   loadEntryLinks(){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/entrylinks.json`,
+         data: {
+            id: this.data.entryId
+         }
+      })
+            .fail(response => {
+               M.toast({html: "Links could not be loaded."})
+            })
+   }
+
+   createEntryLink(source_el, target_dict, target_id, target_el){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/links/add`,
+         data: {
+            source_el: source_el,
+            source_id: this.data.entryId,
+            target_dict: target_dict,
+            target_id: target_id,
+            target_el: target_el
+         }
+      })
+            .done(response => {
+               M.toast({html: "Link created."})
+            })
+            .fail(response => {
+               M.toast({html: "Could not create link."})
+            })
+   }
+
+   deleteEntryLink(linkId){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/links/delete/${linkId}`
+      })
+            .fail(response => {
+               M.toast({html: "Link deleted."})
+            })
+            .fail(response => {
+               M.toast({html: "Link could not be deleted."})
+            })
+   }
+
+   loadLinkables(dictId){
+       return $.ajax({
+         url: `${window.API_URL}${dictId}/linkablelist.json`
+      })
+   }
+
    loadDictionaryLinks(){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/links.json`
       })
             .fail(response => {
                M.toast({html: "Dictionary links could not be loaded."})
+            })
+   }
+
+   loadSchemas(){
+      return $.ajax({
+         url: `${window.API_URL}schemaitems.json`
+      })
+            .fail(response => {
+               M.toast({html: "Could not load schema templates."})
+            })
+   }
+
+   loadFinalSchema(schemaItems){
+      return $.ajax({
+         url: `${window.API_URL}schemafinal.json`,
+         method: "POST",
+         data: {
+            schema_items: JSON.stringify(schemaItems)
+         }
+      })
+            .fail(response => {
+               M.toast({html: "Could not load final schema."})
             })
    }
 
@@ -374,6 +549,9 @@ class StoreClass {
          }
       })
             .done(response => {
+               if(response.id == "structure"){
+                  this.migrateConfigStructure(response.content)
+               }
             })
             .fail(response => {
                M.toast({html: `Could not load the data ('${configId}'): ${response.statusText}`})
@@ -471,6 +649,13 @@ class StoreClass {
       })
             .done(response => {
                this.data.dictionaryList = response.dicts
+               // TODO merge with loadDictionaryList data processing
+               this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
+               this.data.dictionaryList.forEach(d => {
+                  if(!d.owners.includes(window.auth.data.email)){
+                     d.shared = true
+                  }
+               })
                M.toast({html: "Dictionary was deleted."})
                this.trigger("dictionaryListChanged")
             })
@@ -507,6 +692,68 @@ class StoreClass {
                   this.setDictionaryAttribute(dictId, "isSaving", false)
                   this.trigger("favoriteChanged")
                })
+   }
+
+   loadAdminDictionaryList(searchtext, howmany){
+      return $.ajax({
+            url: `${window.API_URL}dicts/dictlist.json`,
+            method: "POST",
+            data: {
+               searchtext: searchtext || "",
+               howmany: howmany || 100
+            }
+         })
+            .fail(response => {
+               M.toast({html: "Dictionary list could not be loaded."})
+            })
+   }
+
+   loadAdminUserList(searchtext, howmany){
+      return $.ajax({
+            url: `${window.API_URL}users/userlist.json`,
+            method: "POST",
+            data: {
+               searchtext: searchtext || "",
+               howmany: howmany || 100
+            }
+         })
+            .fail(response => {
+               M.toast({html: "User list could not be loaded."})
+            })
+   }
+
+   createUser(email){
+      return $.ajax({
+         url: `${window.API_URL}users/usercreate.json`,
+         method: 'POST',
+         data: {
+            id: email
+         }
+      })
+            .done(response => {
+               M.toast({html: "User was created."})
+            })
+            .fail(response => {
+               M.toast({html: "User could not be created."})
+            })
+   }
+
+   deleteUser(email){
+      return $.ajax({
+         url: `${window.API_URL}users/userdelete.json`,
+         method: 'POST',
+         data: {
+            id: email
+         }
+      })
+            .done(response => {
+               M.toast({html: "User was deleted."})
+            })
+            .fail(response => {
+               M.toast({html: "User could not be deleted."})
+            })
+            .always(repsonse => {
+            })
    }
 
    setDictionaryAttribute(dictId, attrName, attrValue){
@@ -563,12 +810,23 @@ class StoreClass {
             })
    }
 
-   loadCorpora(){
+   skeLoadCorpora(){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/skeget/corpora`
       })
             .fail(response => {
                M.toast({html: "Could not load Sketch Engine corpora."})
+            })
+   }
+
+   skeLoadData(method, data){
+      //$.get("/"+dictId+"/skeget/xampl/", {url: kex.apiurl, corpus: kex.corpus, username: ske_username, apikey: ske_apiKey, querytype: querytype, query: query, fromp: fromp}, function(json){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/skeget/${method}`,
+         data: data
+      })
+            .fail(response => {
+               M.toast({html: "Could not load Sketch Engine data."})
             })
    }
 
@@ -607,7 +865,7 @@ class StoreClass {
    autoAddImagesGetProgress(jobId){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/autoimageprogress.json`,
-         data: {jobId: jobId}
+         data: {jobid: jobId}
       })
             .fail(response => {
                M.toast({html: "Could not check image generation progress."})
@@ -658,6 +916,20 @@ class StoreClass {
       })
             .fail(response => {
                M.toast({html: "Autonumbering failed."})
+            })
+   }
+
+   sendFeedback(email, text){
+      return $.ajax({
+            url: `${window.API_URL}feedback.json`,
+            method: "POST",
+            data: {
+               email: email,
+               text: text
+            }
+         })
+            .fail(response => {
+               M.toast({html: "Could not send the feedback."})
             })
    }
 }

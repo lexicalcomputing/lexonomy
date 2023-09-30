@@ -1,8 +1,18 @@
 <app-header>
+   <ul if={ authData.authorized && authData.isAdmin}
+         id="dropdown-menu-admin"
+         class="dropdown-content">
+      <li>
+         <a href="#/admin/users">Users</a>
+      </li>
+      <li>
+         <a href="#/admin/dicts">Dictionaries</a>
+      </li>
+   </ul>
    <ul if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }
          id="dropdown-menu-dict"
          class="dropdown-content">
-      <li if={ dictData.userAccess.canEdit }>
+      <li if={ dictData.userAccess.canView && !dictData.userAccess.canEdit }>
          <a href="#/{ dictData.dictId }">View</a>
       </li>
       <li if={ dictData.userAccess.canEdit }>
@@ -17,7 +27,7 @@
       <li if={ dictData.userAccess.canUpload }>
          <a href="#/{ dictData.dictId }/upload">Upload</a>
       </li>
-      <li>
+      <li if={ dictData.userAccess.canEdit }>
          <a href="#/{ dictData.dictId }/links">Links</a>
       </li>
    </ul>
@@ -37,12 +47,20 @@
    <ul if={ authData.authorized }
          id="dropdown-menu-user"
          class="dropdown-content">
+      <li class="pointerEventsNone"
+            tabindex="-1">
+         <a class="grey-text">
+            {authData.username}
+         </a>
+      </li>
+      <li class="divider"
+            tabindex="-1"></li>
       <li>
          <a href="#/"
                onclick={ doLogout }>Log out</a>
       </li>
       <li>
-         <a href="#/userprofile">Your profile</a>
+         <a href="#/user-profile">Your profile</a>
       </li>
    </ul>
 
@@ -52,57 +70,89 @@
                class="brand-logo">
             <img class="site-logo" src="img/logo_50.png"/>
          </a>
-         <span class="fontSize black-text right">
-            <span style="font-size: 15px; position: relative; top: 2px;">A</span>
-            <span style="font-size: 22px; margin-right: 10px;">A</span>
-            <span class="fontSizeArrows">
-               <i class="material-icons clickable"
-                     onclick={onIncreaseFontSize}>arrow_drop_up</i>
-               <i class="material-icons clickable"
-                     onclick={onDecreaseFontSize}>arrow_drop_down</i>
-            </span>
-         </span>
          <a href="#"
                data-target="nav-mobile"
                class="sidenav-trigger">
             <i class="material-icons">menu</i>
          </a>
+
          <ul class="right hide-on-med-and-down">
-            <li if={ authData.authorized && dictData.isDictionaryLoaded }>
+            <li if={ authData.authorized && authData.isAdmin }>
                <a class="dropdown-trigger"
                      href="#/"
+                     data-target="dropdown-menu-admin">
+                  Admin
+                  <i class="material-icons right">arrow_drop_down</i>
+               </a>
+            </li>
+            <li if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }>
+               <a class="dropdown-trigger tooltipped"
+                     href="#/"
+                     data-tooltip={dictData.title}
                      data-target="dropdown-menu-dict">
                   Dictionary
                   <i class="material-icons right">arrow_drop_down</i>
                </a>
             </li>
-            <li if={ !authData.authorized }>
-               <a class="dropdown-trigger"
-                     href="#/"
-                     data-target="dropdown-menu-anon">
-                  anonymous user
-                  <i class="material-icons right">arrow_drop_down</i>
+            <li>
+               <a href="javascript:void(0);"
+                     class="iconLink"
+                     onclick={onHelpClick}>
+                  <i class="material-icons">help_outline</i>
                </a>
             </li>
-            <li if={ authData.authorized }>
+            <li>
+               <a href="javascript:void(0);"
+                     class="iconLink tooltipped"
+                     data-tooltip="Request help or support"
+                     onclick={onFeedbackClick}>
+                  <i class="material-icons">feedback</i>
+               </a>
+            </li>
+            <li if={ !authData.authorized }>
+               <a class="dropdown-trigger iconLink"
+                     href="#/"
+                     data-target="dropdown-menu-anon">
+                  <i class="material-icons">account_circle</i>
+               </a>
+            </li>
+            <li if={ authData.authorized }
+                  class="tooltipped"
+                  data-tooltip="Your account">
                <a class="dropdown-trigger"
                      href="#/"
                      data-target="dropdown-menu-user">
-                  {authData.username}
-                  <i class="material-icons right">arrow_drop_down</i>
+                  <span class="accountCircle white-text black">
+                     {authData.username[0].toUpperCase()}
+                  </span>
                </a>
             </li>
          </ul>
       </div>
    </nav>
+   <dict-nav if={props.page}
+         page={props.page}/>
 
    <ul id="nav-mobile"
          class="sidenav">
+      <template if={ authData.authorized && authData.isAdmin} >
+         <li class="sideNavSection">
+            <span>Admin</span>
+         </li>
+         <li>
+            <a href="#/admin/users"
+                  class="sidenav-close">Users</a>
+         </li>
+         <li>
+            <a href="#/admin/dicts"
+                  class="sidenav-close">Dictionaries</a>
+         </li>
+      </template>
       <template if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess} >
          <li class="sideNavSection">
             <span>Dictionary</span>
          </li>
-         <li if={ dictData.userAccess.canEdit }>
+         <li if={ dictData.userAccess.canView && !dictData.userAccess.canEdit }>
             <a href="#/{ dictData.dictId }"
                   class="sidenav-close">View</a>
          </li>
@@ -122,7 +172,7 @@
             <a href="#/{ dictData.dictId }/upload"
                   class="sidenav-close">Upload</a>
          </li>
-         <li>
+         <li if={ dictData.userAccess.canEdit }>
             <a href="#/{ dictData.dictId }/links"
                   class="sidenav-close">Links</a>
          </li>
@@ -148,34 +198,62 @@
                   onclick={ doLogout }>Log out</a>
          </li>
          <li>
-            <a href="#/userprofile"
+            <a href="#/user-profile"
                   class="sidenav-close">Your profile</a>
          </li>
       </template>
    </ul>
 
-   <style>
-      .fontSize{
-         display: flex;
-         user-select: none;
-         margin: 0 15px;
+   <script>
+      export default {
+         doLogout(event) {
+            if(!window.editorNeedsSaving(event)){
+               this.auth.logout()
+            }
+         },
+
+         onHelpClick(){
+            window.modal.open({
+               tag: "help-dialog",
+               tall: true,
+               fixedFooter: true
+            })
+         },
+
+         onFeedbackClick(){
+            window.modal.open({
+               title: "Request help or support",
+               tag: "feedback-dialog",
+               showCloseButton: false
+            })
+         },
+
+         onUpdated() {
+            $(".dropdown-trigger").each((idx, el) => {
+               $el = $(el)
+               $el[0].M_Dropdown && $el[0].M_Dropdown.destroy()
+               $el.dropdown({coverTrigger: false, constrainWidth: false})
+            })
+         },
+
+         onMounted(){
+            $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
+            $('#nav-mobile').sidenav()
+         }
       }
-      .fontSizeArrows{
-         display: flex;
-         flex-direction: column;
-         align-self: center;
-      }
-      .fontSizeArrows i{
-         height: 20px;
-         line-height: 20px;
-      }
-      .brand-logo{
-         padding: 0 20px 0 40px;
+   </script>
+
+
+   <style type="scss">
+      nav .brand-logo{
+         padding: 0 20px 0 20px;
+         height: 50px;
+         position: static;
       }
       .site-logo{
          height: 50px;
          position: relative;
-         top: 20px
+         top: 5px
       }
       .sidenav-trigger i{
          color: #000;
@@ -189,67 +267,38 @@
       .sideNavSection span{
          padding-left: 1rem;
       }
+      .iconLink{
+         text-decoration: none;
+      }
       nav{
          border-bottom: 1px solid black;
          box-shadow: none;
       }
-   </style>
+      .accountCircle{
+         display: inline-block;
+         width: 26px;
+         height: 26px;
+         line-height: 26px;
+         border-radius: 50%;
+         text-align: center;
+         text-decoration: none;
+         vertical-align: middle;
+      }
+      li:hover .accountCircle{
+         background-color: #c62132!important;
+      }
+      nav,
+      nav .nav-wrapper i,
+      nav a.sidenav-trigger,
+      nav a.sidenav-trigger i{
+         height: 60px;
+         line-height: 60px;
+      }
 
-   <script>
-      export default {
-         doLogout(event) {
-            if(!window.editorNeedsSaving(event)){
-               this.auth.logout()
-            }
-         },
-
-         onIncreaseFontSize(){
-            let size = parseInt($("html").css("font-size").replace("px", "")) + 1
-            if(size <= 22){
-               $("html").css("font-size", size + "px")
-               document.cookie = "fontSize=" + size
-            }
-         },
-
-         onDecreaseFontSize(){
-            let size = parseInt($("html").css("font-size").replace("px", "")) - 1
-            if(size >= 14){
-               $("html").css("font-size", size + "px")
-               document.cookie = "fontSize=" + size
-            }
-         },
-
-         getFontSizeFromCookies(){
-           let decodedCookie = decodeURIComponent(document.cookie)
-           let cookies = decodedCookie.split(';')
-           for(let i = 0; i < cookies.length; i++) {
-               let cookie = cookies[i].trim()
-               if (cookie.indexOf("fontSize=") == 0) {
-                   return cookie.substring(9, cookie.length)
-               }
-           }
-           return ""
-         },
-
-         onUpdated() {
-            $(".dropdown-trigger").each((idx, el) => {
-               $el = $(el)
-               $el[0].M_Dropdown && $el[0].M_Dropdown.destroy()
-               $el.dropdown({coverTrigger: false, constrainWidth: false})
-            })
-         },
-
-         onBeforeMount(){
-            let size = this.getFontSizeFromCookies()
-            if(size){
-               $("html").css("font-size", size + "px")
-            }
-         },
-
-         onMounted(){
-            $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
-            $('#nav-mobile').sidenav()
+      @media screen and (max-width: 992px){
+         nav .brand-logo{
+            transform: translateX(0);
          }
       }
-   </script>
+   </style>
 </app-header>

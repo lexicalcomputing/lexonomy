@@ -9,6 +9,7 @@ import ops
 import media
 from xml.dom import minidom, Node
 import random
+import traceback
 
 if len(sys.argv) < 6:
     print("Usage: ./autoImage.py dataDir dictID element number bgjob")
@@ -23,26 +24,30 @@ element = args[2]
 number = int(args[3])
 bgjob = args[4]
 
-dbname = dataDir + 'dicts/' + dictID + '.sqlite'
+dbname = os.path.join(dataDir, 'dicts', dictID + '.sqlite')
 db = sqlite3.connect(dbname)
 db.row_factory = sqlite3.Row
 configs = ops.readDictConfigs(db)
 c = db.execute("select id, xml from entries")
 for r in c.fetchall():
-    entryID = r["id"]
-    xml = r["xml"]
-    doc = minidom.parseString(xml)
-    head = ops.getEntryHeadword(xml, configs['titling'].get('headword'))
-    print('Processing entry ' + head)
-    res = media.get_images(configs, head)
-    for img in random.sample(res, number):
-        n_elem = doc.createElement(element)
-        n_elem.appendChild(doc.createTextNode(str(img['url'])))
-        n_elem.setAttribute('licence', img['licence'])
-        doc.documentElement.appendChild(n_elem)
-        print('Add image ' + img['url'])
-    xml = doc.toxml().replace('<?xml version="1.0" ?>', '').strip()
-    db.execute("update entries set xml=? where id=?", (xml, entryID))
+    try:
+        entryID = r["id"]
+        xml = r["xml"]
+        doc = minidom.parseString(xml)
+        head = ops.getEntryHeadword(xml, configs['titling'].get('headword'))
+        print('Processing entry ' + head)
+        res = media.get_images(configs, head)
+        if res:
+            for img in random.sample(res, min(number, len(res))):
+                n_elem = doc.createElement(element)
+                n_elem.appendChild(doc.createTextNode(str(img['url'])))
+                n_elem.setAttribute('licence', img['licence'])
+                doc.documentElement.appendChild(n_elem)
+                print('Add image ' + img['url'])
+        xml = doc.toxml().replace('<?xml version="1.0" ?>', '').strip()
+        db.execute("update entries set xml=? where id=?", (xml, entryID))
+    except Exception as e:
+        traceback.print_exc()
 db.execute("UPDATE bgjobs SET finished=0 WHERE id=?", (bgjob,))
 db.commit()
 print("COMPLETED\n")
