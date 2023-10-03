@@ -1,4 +1,4 @@
-bundle.js: $(wildcard riot/**/*.riot)
+bundle.js:
 	[ -d node_modules ] || npm install
 	npm run build
 bundle.min.js: bundle.js
