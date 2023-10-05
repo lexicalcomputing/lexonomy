@@ -151,8 +151,9 @@ def verifyLoginAndDictAccess(email, sessionkey, dictDB):
 def getSchemaItems():
     schema = []
     with open(os.path.join(currdir, "dictTemplates", "schema.json")) as f:
-        content = f.read()
-        schema = json.loads(content)
+        schema = json.load(f)
+        for item in schema: # nvh readability optimization
+            item["nvh"] = "\n".join(item["nvh"])
     return schema
 
 def mergeSchemaItems(keys):
