@@ -1607,19 +1607,16 @@ def refresh(dictDB, dictID, configs):
 """
 
 def resave(dictDB, dictID, configs):
-    from xml.dom import minidom, Node
-    c = dictDB.execute("select id, xml from entries where needs_resave=1")
+    c = dictDB.execute("select id, nvh from entries where needs_resave=1")
     for r in c.fetchall():
         entryID = r["id"]
-        xml = r["xml"]
-        xml = re.sub(r"\s+xmlns:lxnm=['\"]http:\/\/www\.lexonomy\.eu\/[\"']", "", xml)
-        xml = re.sub(r"^<([^>^ ]*) ", r"<\1 xmlns:lxnm='http://www.lexonomy.eu/' ", xml)
-        dictDB.execute("update entries set needs_resave=0, title=?, sortkey=? where id=?", (getEntryTitle(xml, configs["titling"]), getSortTitle(xml, configs["titling"]), entryID))
+        nvhParsed = nvh.parse_string(r["nvh"])
+        dictDB.execute("update entries set needs_resave=0, title=?, sortkey=? where id=?", (getEntryTitle(nvhParsed, configs["titling"]), getSortTitle(nvhParsed, configs["titling"]), entryID))
         dictDB.execute("delete from searchables where entry_id=?", (entryID,))
-        dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True), 1))
-        dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(xml, configs["titling"], True).lower(), 1))
-        headword = getEntryHeadword(xml, configs["titling"].get("headword"))
-        for searchable in getEntrySearchables(xml, configs):
+        dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(nvhParsed, configs["titling"], True), 1))
+        dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(nvhParsed, configs["titling"], True).lower(), 1))
+        headword = getEntryHeadword(nvhParsed, configs["titling"].get("headword"))
+        for searchable in getEntrySearchables(nvhParsed, configs):
             if searchable != headword:
                 dictDB.execute("insert into searchables(entry_id, txt, level) values(?,?,?)", (entryID, searchable, 2))
         if configs["links"]:
@@ -1653,9 +1650,9 @@ def updateEntryLinkables(dictDB, entryID, nvhParsed, configs, save=True, save_xm
         nvhParsed, linkableAr = updateLinkablesLevel(nvhParsed, linkref, nvhParsed, linkableAr)
     if save:
         dictDB.execute("DELETE FROM linkables WHERE entry_id=?", (entryID,))
-        for linkable in ret:
-            dictDB.execute("INSERT INTO linkables (entry_id, txt, element, preview) VALUES (?,?,?,?)", (entryID, linkable["identifier"], linkable["element"], linkable["preview"]))
-    if save_xml and len(ret)>0:
+        for linkable in configs["links"].values():
+            dictDB.execute("INSERT INTO linkables (entry_id, txt, element, preview) VALUES (?,?,?,?)", (entryID, linkable["identifier"], linkable["linkElement"], linkable["preview"]))
+    if save_xml and len(configs["links"].values())>0:
         dictDB.execute("UPDATE entries SET nvh=? WHERE id=?", (nvhParsed.dump_string(), entryID))
     dictDB.commit()
     return nvhParsed.dump_string()
@@ -1676,7 +1673,13 @@ def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
             elif len(extractfull) > 0:
                 text = extractfull[0]
             identifier = identifier.replace(pattern, text)
-        nvhNode.children.append(nvh(nvhNode, nvhNode.children[0].indent, "lxnm_linkable", identifier, []))
+        if nvhNode.children:
+            nvhNode.children.append(nvh(nvhNode, nvhNode.children[0].indent, "lxnm_linkable", identifier, []))
+        else:
+            ind_step = nvhNode.indent[len(nvhNode.parent.indent):]
+            indent = nvhNode.indent + ind_step
+            nvhNode.children.append(nvh(nvhNode, indent, "lxnm_linkable", identifier, []))
+
         # add preview
         preview = linkinfo["preview"]
         for pattern in re.findall(r"%\([^)]+\)", linkinfo["preview"]):
@@ -1696,9 +1699,8 @@ def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
 
     return nvhNode, linkableAr
 
-def getEntrySearchables(nvh, configs):
+def getEntrySearchables(nvhParsed, configs):
     ret = []
-    nvhParsed = nvh2json(nvh)
     ret.append(getEntryHeadword(nvhParsed, configs["titling"].get("headword")))
     if configs["searchability"].get("searchableElements"):
         for sel in configs["searchability"].get("searchableElements"):
