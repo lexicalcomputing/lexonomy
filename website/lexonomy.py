@@ -7,6 +7,7 @@ import ops
 import re
 import jwt
 import json
+from nvh import nvh
 import datetime
 import urllib.request
 from ops import siteconfig
@@ -148,6 +149,13 @@ def schemaitems():
 @post(siteconfig["rootPath"] + "schemafinal.json")
 def schemafinal():
     return {"schemafinal": ops.mergeSchemaItems(json.loads(request.forms.schema_items))}
+
+@post(siteconfig["rootPath"] + "schema_to_json.json")
+def schemafinal():
+    schema = nvh.parse_string(json.loads(request.forms.schema))
+    schema_dict: dict = {}
+    schema.build_json(schema_dict)
+    return {"schemajson": json.dumps(schema_dict)}
 
 @get(siteconfig["rootPath"] + "userdicts.json")
 @auth
