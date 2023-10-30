@@ -151,7 +151,7 @@ def schemafinal():
     return {"schemafinal": ops.mergeSchemaItems(json.loads(request.forms.schema_items))}
 
 @post(siteconfig["rootPath"] + "schema_to_json.json")
-def schemafinal():
+def schema_to_json():
     schema = nvh.parse_string(json.loads(request.forms.schema))
     schema_dict: dict = {}
     schema.build_json(schema_dict)
