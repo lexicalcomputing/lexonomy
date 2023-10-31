@@ -552,8 +552,8 @@ def userupdate(user):
 @post(siteconfig["rootPath"] + "users/usercreate.json")
 @authAdmin
 def usercreate(user):
-    res = ops.createUser(request.forms.content)
-    return {"success": True, "id": res["entryID"], "content": res["adjustedXml"]}
+    res = ops.createUser(request.forms.id, user)
+    return {"success": True, "id": res["entryID"]}
 
 @post(siteconfig["rootPath"] + "users/userdelete.json")
 @authAdmin

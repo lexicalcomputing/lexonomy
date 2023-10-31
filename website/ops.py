@@ -975,15 +975,24 @@ def listUsers(searchtext, howmany):
             user["dictionaries"].append({"id": r["dict_id"], "title": r["title"]})
     return {"entries":users, "total": total}
 
-def createUser(xml):
-    from lxml import etree as ET
-    root = ET.fromstring(xml)
-    email = root.attrib["email"]
-    passhash = hashlib.sha1(root.attrib["password"].encode("utf-8")).hexdigest();
+def createUser(email, user=""):
+    import secrets
+    passwd = secrets.token_urlsafe(8)
+    passhash = hashlib.sha1(passwd.encode('utf-8')).hexdigest();
     conn = getMainDB()
     conn.execute("insert into users(email, passwordHash) values(?, ?)", (email.lower(), passhash))
     conn.commit()
-    return {"entryID": email, "adjustedXml": readUser(email)["xml"]}
+    mailSubject = "New Lexonomy account"
+    mailText = "Dear Lexonomy user,\n\n"
+    mailText += "Welcome to the Lexonomy family. The user "+user['email']+" created a new Lexonomy account for you.\n"
+    mailText += "Your new credentials:\n";
+    mailText += "user: "+email+"\n";
+    mailText += "password: "+passwd+"\n";
+    mailText += "Please visit the lexonomy.eu and change the generated password in your account settings.\n\n"
+    mailText += "Yours,\nThe Lexonomy team"
+    sendmail(email, mailSubject, mailText)
+    
+    return {"entryID": email}
 
 def updateUser(email, xml):
     from lxml import etree as ET
