@@ -179,7 +179,7 @@ def entryread(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
 @authDict(["canEdit"])
 def entryupdate(dictID, user, dictDB, configs):
-    adjustedEntryID, adjustedNvh, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, request.forms.json, user["email"], {})
+    adjustedEntryID, adjustedNvh, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, user["email"], {})
     result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
     if feedback:
         result["feedback"] = feedback

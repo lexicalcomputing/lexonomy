@@ -219,38 +219,28 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
         entryNvh = updateEntryLinkables(db, entryID, nvhParsed, configs, False, False)
     return entryID, entryNvh, feedback
 
-def updateEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiography):
-    if (entryNvh == "" or not entryNvh) and entryJson != "":
-        entryNvh = json2nvh(entryJson).dump_string()
-    if entryNvh != "" and (entryJson == "" or not entryJson):
-        entryJson = nvh2json(entryNvh)
+def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
+    entryJson = nvh2json(entryNvh)
     c = dictDB.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
     row = c.fetchone()
-    if not row:
-        adjustedEntryID, feedback = createEntry(dictDB, configs, entryID, nvh, entryJson, email, historiography)
-        return adjustedEntryID, entryNvh, True, feedback
+    if row["nvh"] == entryNvh:
+        return entryID, entryNvh, False, None
     else:
-        if row["nvh"] == entryNvh:
-            return entryID, entryNvh, False, None
-        else:
-            #dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
-            nvhParsed = nvh.parse_string(entryNvh)
-            title = getEntryTitle(nvhParsed, configs["titling"])
-            sortkey = getSortTitle(nvhParsed, configs["titling"])
-            doctype = getDoctype(nvhParsed)
-            needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
-            # entry title already exists?
-            c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
-            r = c.fetchone()
-            feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
-            #return entryID, nvh, False, "UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, nvh, title, sortkey, needs_refresh, json, entryID)
-            dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, entryNvh, title, sortkey, needs_refresh, entryJson, entryID))
-            dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvhParsed, configs["titling"], True), entryID))
-            dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
-            dictDB.commit()
-            if configs["links"]:
-                entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
-            return entryID, entryNvh, True, feedback
+        nvhParsed = nvh.parse_string(entryNvh) 
+        title = getEntryTitle(nvhParsed, configs["titling"]) # TODO move to front-end
+        sortkey = getSortTitle(nvhParsed, configs["titling"])
+        doctype = getDoctype(nvhParsed)
+        needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
+        c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
+        r = c.fetchone()
+        feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
+        dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, entryNvh, title, sortkey, needs_refresh, entryJson, entryID))
+        dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvhParsed, configs["titling"], True), entryID))
+        dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
+        dictDB.commit()
+        if configs["links"]:
+            entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
+        return entryID, entryNvh, True, feedback
 
 def getEntryTitle(nvhParsed, titling, plaintext=False):
     if titling.get("headwordAnnotationsType") == "advanced" and not plaintext:
