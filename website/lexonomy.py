@@ -173,45 +173,14 @@ def entrydelete(dictID, user, dictDB, configs):
 @authDict([])
 def entryread(dictID, user, dictDB, configs):
     adjustedEntryID, nvh, json, _title = ops.readEntry(dictDB, configs, request.forms.id)
-    adjustedEntryID = int(adjustedEntryID)
-    html = ""
-    # TODO XSL/format
-    # if nvh:
-    #     if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
-    #         import lxml.etree as ET
-    #         dom = ET.XML(xml.encode("utf-8"))
-    #         xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
-    #         html = str(ET.XSLT(xslt)(dom))
-    #     elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
-    #         html = xml
-    #     else:
-    #         html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('" + xml.replace("'","\\'").replace("\n","").replace("\r","") + "', " + json.dumps(configs["xemplate"]) + ", " + json.dumps(configs["xema"]) + "));</script>"
+    adjustedEntryID = int(adjustedEntryID)   
     return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "nvh": nvh, "json": json}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
 @authDict(["canEdit"])
 def entryupdate(dictID, user, dictDB, configs):
     adjustedEntryID, adjustedNvh, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, request.forms.json, user["email"], {})
-    """
-    html = ""
-    if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
-        import lxml.etree as ET
-        dom = ET.XML(adjustedXml.encode("utf-8"))
-        xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
-        html = str(ET.XSLT(xslt)(dom))
-    elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
-        html = adjustedXml
-    else:
-        entrydata = re.sub(r"'", "\\'", adjustedXml)
-        entrydata = re.sub(r"[\n\r]", "", entrydata)
-        html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('"+entrydata+"', "+json.dumps(configs["xemplate"])+", "+json.dumps(configs["xema"])+"));</script>"
-    result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh, "contentHtml": html}
-    """
     result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
-    """
-    if len(configs['subbing']) > 0:
-        ops.refresh(dictDB, dictID, configs)
-    """
     if feedback:
         result["feedback"] = feedback
     return result
@@ -220,21 +189,6 @@ def entryupdate(dictID, user, dictDB, configs):
 @authDict(["canEdit"])
 def entrycreate(dictID, user, dictDB, configs):
     adjustedEntryID, adjustedNvh, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, request.forms.json, user["email"], {})
-    """
-    html = ""
-    if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
-        import lxml.etree as ET
-        dom = ET.XML(adjustedXml.encode("utf-8"))
-        xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
-        html = str(ET.XSLT(xslt)(dom))
-    elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
-        html = adjustedXml
-    else:
-        entrydata = re.sub(r"'", "\\'", adjustedXml)
-        entrydata = re.sub(r"[\n\r]", "", entrydata)
-        html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('"+entrydata+"', "+json.dumps(configs["xemplate"])+", "+json.dumps(configs["xema"])+"));</script>"
-    result = {"success": True, "id": adjustedEntryID, "content": adjustedXml, "contentHtml": html}
-    """
     result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
     if feedback:
         result["feedback"] = feedback
@@ -263,23 +217,6 @@ def history(dictID):
     history = ops.readDictHistory(ops.getDB(dictID), dictID, configs, request.forms.id)
     res_history = []
     for item in history:
-        """
-        xml = item["content"]
-        html = ""
-        if xml:
-            if configs["xemplate"].get("_xsl") and configs["xemplate"]["_xsl"] != "":
-                import lxml.etree as ET
-                dom = ET.XML(xml.encode("utf-8"))
-                xslt = ET.XML(configs["xemplate"]["_xsl"].encode("utf-8"))
-                html = str(ET.XSLT(xslt)(dom))
-            elif configs["xemplate"].get("_css") and configs["xemplate"]["_css"] != "":
-                html = xml
-            else:
-                entrydata = re.sub(r"'", "\\'", xml)
-                entrydata = re.sub(r"[\n\r]", "", entrydata)
-                html = "<script type='text/javascript'>$('#viewer').html(Xemplatron.xml2html('"+entrydata+"', "+json.dumps(configs["xemplate"])+", "+json.dumps(configs["xema"])+"));</script>"
-        item["contentHtml"] = html
-        """
         res_history.append(item)
     return {"history":res_history}
 
