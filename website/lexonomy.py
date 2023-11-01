@@ -140,6 +140,7 @@ def lexonomyconfig():
         configData['sketchengineLoginPage'] = siteconfig['sketchengineLoginPage']
     if "consent" in siteconfig and siteconfig["consent"].get("terms") != "":
         configData["consent"] = siteconfig["consent"]
+    configData['langs'] = ops.get_iso639_1()
     return configData
 
 @get(siteconfig["rootPath"] + "schemaitems.json")
