@@ -584,7 +584,7 @@ def dictread(user):
     if res["id"] == "":
         return {"success": False}
     else:
-        return {"success": True, "id": res["id"], "content": res["xml"]}
+        return {"success": True, "id": res["id"], "content": res["dict_info"]}
 
 @get(siteconfig["rootPath"]+"<dictID>/config.json")
 def dictconfig(dictID):
