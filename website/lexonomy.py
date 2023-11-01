@@ -548,7 +548,7 @@ def userelist(user):
 @authAdmin
 def userupdate(user):
     res = ops.updateUser(request.forms.email, request.forms.password)
-    return {"success": True, "id": res["email"], "content": res["xml"]}
+    return {"success": True, "id": res["email"], "content": res["info"]}
 
 @post(siteconfig["rootPath"] + "users/usercreate.json")
 @authAdmin
