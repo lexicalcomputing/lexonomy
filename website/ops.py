@@ -1056,15 +1056,18 @@ def readDict(dictId):
     conn = getMainDB()
     c = conn.execute("select * from dicts where id=?", (dictId, ))
     r = c.fetchone()
+    dict_info = {}
     if r:
-        xml =  "<dict id='"+clean4xml(r["id"])+"' title='"+clean4xml(r["title"])+"'>"
+        dict_info['id'] = clean4xml(r["id"])
+        dict_info['title'] = clean4xml(r["title"])
+
         c2 = conn.execute("select u.email from user_dict as ud inner join users as u on u.email=ud.user_email where ud.dict_id=? order by u.email", (r["id"], ))
+        dict_info['users'] = []
         for r2 in c2.fetchall():
-            xml += "<user email='" + r2["email"] + "'/>"
-        xml += "</dict>"
-        return {"id": r["id"], "xml": xml}
+            dict_info['users'].append(r2["email"])
+        return {"id": r["id"], "dict_info": dict_info}
     else:
-        return {"id":"", "xml":""}
+        return {"id":"", "dict_info":""}
 
 def clean4xml(text):
     return text.replace("&", "&amp;").replace('"', "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
