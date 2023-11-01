@@ -547,7 +547,7 @@ def userelist(user):
 @post(siteconfig["rootPath"] + "users/userupdate.json")
 @authAdmin
 def userupdate(user):
-    res = ops.updateUser(request.forms.id, request.forms.content)
+    res = ops.updateUser(request.forms.email, request.forms.password)
     return {"success": True, "id": res["email"], "content": res["xml"]}
 
 @post(siteconfig["rootPath"] + "users/usercreate.json")
@@ -569,7 +569,7 @@ def userread(user):
     if res["email"] == "":
         return {"success": False}
     else:
-        return {"success": True, "id": res["email"], "content": res["xml"]}
+        return {"success": True, "id": res["email"], "content": res["info"]}
 
 @post(siteconfig["rootPath"] + "dicts/dictlist.json")
 @authAdmin

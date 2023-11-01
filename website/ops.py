@@ -994,11 +994,9 @@ def createUser(email, user=""):
     
     return {"entryID": email}
 
-def updateUser(email, xml):
-    from lxml import etree as ET
-    root = ET.fromstring(xml)
-    if root.attrib['password']:
-        passhash = hashlib.sha1(root.attrib["password"].encode("utf-8")).hexdigest();
+def updateUser(email, pasword=''):
+    if pasword:
+        passhash = hashlib.sha1(pasword.encode("utf-8")).hexdigest();
         conn = getMainDB()
         conn.execute("update users set passwordHash=? where email=?", (passhash, email.lower()))
         conn.commit()
@@ -1024,18 +1022,18 @@ def readUser(email):
     conn = getMainDB()
     c = conn.execute("select * from users where email=?", (email.lower(), ))
     r = c.fetchone()
+    user_info = {}
     if r:
         if r["sessionLast"]:
-            xml =  "<user lastSeen='"+r["sessionLast"]+"'>"
-        else:
-            xml =  "<user>"
+            user_info['sessionLast'] = r["sessionLast"]
+
         c2 = conn.execute("select d.id, d.title from user_dict as ud inner join dicts as d on d.id=ud.dict_id  where ud.user_email=? order by d.title", (r["email"], ))
+        user_info['dicts'] = []
         for r2 in c2.fetchall():
-            xml += "<dict id='" + r2["id"] + "' title='" + clean4xml(r2["title"]) + "'/>"
-        xml += "</user>"
-        return {"email": r["email"], "xml": xml}
+            user_info['dicts'].append((r2['id'], clean4xml(r2["title"])))
+        return {"email": r["email"], "info": json.dumps(user_info)}
     else:
-        return {"email":"", "xml":""}
+        return {"email":"", "info":""}
 
 def listDicts(searchtext, howmany):
     conn = getMainDB()
