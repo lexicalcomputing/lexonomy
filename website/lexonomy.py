@@ -174,7 +174,7 @@ def entrydelete(dictID, user, dictDB, configs):
 @authDict([])
 def entryread(dictID, user, dictDB, configs):
     adjustedEntryID, nvh, json, _title = ops.readEntry(dictDB, configs, request.forms.id)
-    adjustedEntryID = int(adjustedEntryID)   
+    adjustedEntryID = int(adjustedEntryID)
     return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "nvh": nvh, "json": json}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
@@ -207,7 +207,7 @@ def entryflag(dictID, user, dictDB, configs):
 @get(siteconfig["rootPath"]+"<dictID>/subget")
 @authDict(["canEdit"])
 def subget(dictID, user, dictDB, configs):
-    total, entries, first = ops.listEntries(dictDB, dictID, configs, request.query.doctype, request.query.lemma, "wordstart", 100, False, False, True)
+    total, entries, first = ops.listEntries(dictDB, dictID, configs, request.query.doctype, request.query.lemma, "wordstart", 100, 0, False, False, True)
     return {"success": True, "total": total, "entries": entries}
 
 @post(siteconfig["rootPath"]+"<dictID>/history.json")
@@ -471,7 +471,7 @@ def makedict(user):
 @post(siteconfig["rootPath"] + "make.json")
 @auth
 def makedictjson(user):
-    res = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, "", user["email"])
+    res = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, "", user["email"], request.forms.addExamples == "true")
     return {"success": res, "url": request.forms.url}
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
@@ -640,11 +640,7 @@ def publicrandom(dictID):
     if not ops.dictExists(dictID):
         return redirect("/")
     dictDB = ops.getDB(dictID)
-    configs = ops.readDictConfigs(dictDB)
-    if not configs["publico"]["public"]:
-        return {"more": False, "entries": []}
-    res = ops.readRandoms(dictDB)
-    return res
+    return ops.readRandoms(dictDB, request.query.limit)
 
 @post(siteconfig["rootPath"]+"<dictID>/exportconfigs.json")
 @authDict(["canConfig"])
@@ -733,7 +729,7 @@ def entrylist(dictID, doctype, user, dictDB, configs):
             entries = ops.listEntriesById(dictDB, request.forms.id, configs)
             return {"success": True, "entries": entries}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, doctype, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.sortdesc, False)
+        total, entries, first = ops.listEntries(dictDB, dictID, configs, doctype, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
         return {"success": True, "entries": entries, "total": total, "firstRun": first}
 
 @post(siteconfig["rootPath"]+"<dictID>/search.json")
@@ -745,7 +741,7 @@ def publicsearch(dictID):
     if not configs["publico"]["public"]:
         return {"success": False}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, configs['structure']['root'], request.forms.searchtext, modifier, howmany)
+        total, entries, first = ops.listEntries(dictDB, dictID, configs, configs['structure']['root'], request.forms.searchtext, modifier, howmany, request.forms.offset)
         return {"success": True, "entries": entries, "total": total}
 
 @post(siteconfig["rootPath"]+"<dictID>/configread.json")
@@ -901,6 +897,7 @@ def pushapi():
             if dictTitle == "":
                 dictTitle = dictID
             dictBlurb = data["dictBlurb"]
+            addExamples = data["addExamples"]
             poses = []
             labels = []
             if "poses" in data:
@@ -911,7 +908,7 @@ def pushapi():
                 dictFormat = "teilex0"
             else:
                 dictFormat = "push"
-            res = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"])
+            res = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"], addExamples)
             if not res:
                 return {"success": False}
             else:

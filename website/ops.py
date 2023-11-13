@@ -226,7 +226,7 @@ def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
     if row["nvh"] == entryNvh:
         return entryID, entryNvh, False, None
     else:
-        nvhParsed = nvh.parse_string(entryNvh) 
+        nvhParsed = nvh.parse_string(entryNvh)
         title = getEntryTitle(nvhParsed, configs["titling"]) # TODO move to front-end
         sortkey = getSortTitle(nvhParsed, configs["titling"])
         doctype = getDoctype(nvhParsed)
@@ -507,7 +507,7 @@ def suggestDictId():
         dictid = generateDictId()
     return dictid
 
-def makeDict(dictID, schema_keys, title, blurb, email):
+def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
     final_schema = mergeSchemaItems(schema_keys)
     schema_elements = []
     schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
@@ -561,16 +561,17 @@ def makeDict(dictID, schema_keys, title, blurb, email):
     dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
     # add examples
-    examples = []
-    with open("dictTemplates/examples.json", 'r') as f:
-        for example in json.loads(f.read()):
-            rows = example["nvh"].splitlines()
-            rows = filter(lambda row: row.split(":")[0].strip() in schema_elements, rows)  #only example elements included in schema
-            example["nvh"] = "\n".join(rows)
-            examples.append(example)
-    for idx, example in enumerate(examples):
+    if addExamples:
+        examples = []
+        with open("dictTemplates/examples.json", 'r') as f:
+            for example in json.loads(f.read()):
+                rows = example["nvh"].splitlines()
+                rows = filter(lambda row: row.split(":")[0].strip() in schema_elements, rows)  #only example elements included in schema
+                example["nvh"] = "\n".join(rows)
+                examples.append(example)
+        for idx, example in enumerate(examples):
         dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
-        dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
+            dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
     dictDB.commit()
     attachDict(dictDB, dictID)
@@ -991,7 +992,7 @@ def createUser(email, user=""):
     mailText += "Please visit the lexonomy.eu and change the generated password in your account settings.\n\n"
     mailText += "Yours,\nThe Lexonomy team"
     sendmail(email, mailSubject, mailText)
-    
+
     return {"entryID": email}
 
 def updateUser(email, pasword=''):
@@ -1144,9 +1145,8 @@ def readNabesByText(dictDB, dictID, configs, text):
             nabes_after.append(n)
     return nabes_before[-8:] + nabes_after[0:15]
 
-def readRandoms(dictDB): # OK
+def readRandoms(dictDB, limit=10): # OK
     configs = readDictConfigs(dictDB)
-    limit = 75
     more = False
     randoms = []
     c = dictDB.execute("select id, title, sortkey, nvh from entries where doctype=? and id in (select id from entries order by random() limit ?)", (configs["structure"]["root"], limit))
@@ -1294,20 +1294,23 @@ def listEntriesById(dictDB, entryID, configs):
         entries.append({"id": r["id"], "title": r["title"], "nvh": r["nvh"]})
     return entries
 
-def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start", howmany=10, sortdesc=False, reverse=False, fullXML=False):
-    # fast initial loading, for large dictionaries without search
+def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start", howmany=10, offset=0, sortdesc=False, reverse=False, fullXML=False):
+    collate = ""
+    if "locale" in configs["titling"]:
+        collator = Collator.createInstance(Locale(getLocale(configs)))
+        dictDB.create_collation("custom", collator.compare)
+        collate = "collate custom"
     if searchtext == "":
-        sqlc = "select count(*) as total from entries"
-        cc = dictDB.execute(sqlc)
+        cc = dictDB.execute("select count(*) as total from entries")
         rc = cc.fetchone()
-        if int(rc["total"]) > 2000:
-            sqlf = "select * from entries order by sortkey limit 200"
-            cf = dictDB.execute(sqlf)
-            entries = []
-            for rf in cf.fetchall():
-                item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
-                entries.append(item)
-            return rc["total"], entries, True
+        cf = dictDB.execute("select * from entries order by sortkey %s limit %s offset %s" % (collate, howmany, 0 if not offset else offset))
+        entries = []
+        for rf in cf.fetchall():
+            item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
+            if "flag_element" in configs["flagging"]:
+                item["flag"] = extractText(nvh2json(rf["json"]), configs["flagging"]["flag_element"])
+            entries.append(item)
+        return rc["total"], entries, True
 
     lowertext = searchtext.lower()
     if type(sortdesc) == str:
@@ -1323,25 +1326,27 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         reverse = configs["titling"]["headwordSortDesc"]
     if reverse:
         sortdesc = not sortdesc
-
+    orderby = "ASC"
+    if sortdesc:
+        orderby = "DESC"
     if modifier == "start":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?) GROUP BY e.id ORDER BY s.level"
-        params1 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%", howmany, offset)
         sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?)"
         params2 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%")
     elif modifier == "wordstart":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? and (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level"
-        params1 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? and (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%", howmany, offset)
         sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?)"
         params2 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
     elif modifier == "substring":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level"
-        params1 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%", howmany, offset)
         sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?)"
         params2 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
     elif modifier == "exact":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER BY s.level"
-        params1 = (doctype, searchtext)
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (doctype, searchtext, howmany, offset)
         sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=?"
         params2 = (doctype, searchtext)
     c1 = dictDB.execute(sql1, params1)
@@ -1355,12 +1360,6 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         if r1["level"] > 1:
             item["title"] += " ← <span class='redirector'>" + r1["txt"] + "</span>"
         entries.append(item)
-
-    # sort by selected locale
-    collator = Collator.createInstance(Locale(getLocale(configs)))
-    entries.sort(key=lambda x: collator.getSortKey(x['sortkey']), reverse=sortdesc)
-    # and limit
-    entries = entries[0:int(howmany)]
 
     c2 = dictDB.execute(sql2, params2)
     r2 = c2.fetchone()
