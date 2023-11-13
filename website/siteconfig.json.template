@@ -1,5 +1,6 @@
 {
   "readonly": false,
+  "httpAuth": false,
   "baseUrl": "http://localhost:8080/",
   "rootPath": "/",
   "port": 8080,
