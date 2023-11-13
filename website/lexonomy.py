@@ -406,10 +406,9 @@ def check_login():
             response.add_header('Set-Cookie', "email=\""+res["email"]+"\"; Path=/; SameSite=None; Secure")
             response.add_header('Set-Cookie', "sessionkey="+res["key"]+"; Path=/; SameSite=None; Secure")
             return {"success": True, "email": res["email"], "sessionkey": res["key"], "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"]}
-    if request.cookies.email != "" and request.cookies.sessionkey != "":
-        res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
-        if res["loggedin"]:
-            return {"success": True, "email": res["email"], "sessionkey": request.cookies.sessionkey, "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"]}
+    res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
+    if res["loggedin"]:
+        return {"success": True, "email": res["email"], "sessionkey": request.cookies.sessionkey, "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"]}
     return {"success": False}
 
 @post(siteconfig["rootPath"] + "logout.json")

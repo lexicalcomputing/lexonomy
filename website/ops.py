@@ -20,6 +20,7 @@ from collections import defaultdict
 from icu import Locale, Collator
 import requests
 from nvh import nvh
+from bottle import request
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
@@ -121,6 +122,13 @@ def removeSubentryParentTags(xml):
 
 # auth
 def verifyLogin(email, sessionkey):
+    if "httpAuth" in siteconfig and siteconfig["httpAuth"] and request.auth[0]:
+        login_res = httpAuthLogin(request.auth[0])
+        if login_res["success"]:
+            email = request.auth[0]
+            sessionkey = login_res["key"]
+    if email == "" or sessionkey == "":
+        return {"loggedin": False, "email": None}
     conn = getMainDB()
     now = datetime.datetime.utcnow()
     yesterday = now - datetime.timedelta(days=1)
@@ -131,10 +139,9 @@ def verifyLogin(email, sessionkey):
         return {"loggedin": False, "email": None}
     conn.execute("update users set sessionLast=? where email=?", (now, email))
     conn.commit()
-    ret = {"loggedin": True, "email": email, "isAdmin": email in siteconfig["admins"],
+    return {"loggedin": True, "email": email, "isAdmin": email in siteconfig["admins"],
            "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"],
            "apiKey": user["apiKey"], "consent": user["consent"] == 1}
-    return ret
 
 def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     ret = verifyLogin(email, sessionkey)
@@ -299,6 +306,18 @@ def login(email, password):
     conn = getMainDB()
     passhash = hashlib.sha1(password.encode("utf-8")).hexdigest();
     c = conn.execute("select email, apiKey, ske_username, ske_apiKey, consent from users where email=? and passwordHash=?", (email.lower(), passhash))
+    user = c.fetchone()
+    if not user:
+        return {"success": False}
+    key = generateKey()
+    now = datetime.datetime.utcnow()
+    conn.execute("update users set sessionKey=?, sessionLast=? where email=?", (key, now, email))
+    conn.commit()
+    return {"success": True, "email": user["email"], "key": key, "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"], "apiKey": user["apiKey"], "consent": user["consent"] == 1, "isAdmin": user["email"] in siteconfig["admins"]}
+
+def httpAuthLogin(email):
+    conn = getMainDB()
+    c = conn.execute("select email, apiKey, ske_username, ske_apiKey, consent from users where email=?", (email.lower(), ))
     user = c.fetchone()
     if not user:
         return {"success": False}
