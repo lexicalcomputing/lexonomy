@@ -1075,24 +1075,6 @@ def clean4xml(text):
 def markdown_text(text):
     return markdown.markdown(text).replace("<a href=\"http", "<a target=\"_blank\" href=\"http")
 
-def setHousekeepingAttributes(entryID, xml, subbing):
-    entryID = str(entryID)
-    #delete any housekeeping attributes and elements that already exist in the XML
-    xml = re.sub(r"^(<[^>\/]*)\s+xmlns:lxnm=['\"]http:\/\/www\.lexonomy\.eu\/[\"']", r"\1", xml)
-    xml = re.sub(r"^(<[^>\/]*)\s+lxnm:entryID=['\"][^\"\']*[\"']", r"\1", xml)
-    xml = re.sub(r"^(<[^>\/]*)\s+lxnm:subentryID=['\"][^\"\']*[\"']", r"\1", xml)
-    xml = re.sub(r"^(<[^>\/]*)\s+lxnm:linkable=['\"][^\"\']*[\"']", r"\1", xml)
-    #get name of the top-level element
-    root = ""
-    root = re.search(r"^<([^\s>\/]+)", xml, flags=re.M).group(1)
-    #set housekeeping attributes
-    if root in subbing:
-        xml = re.sub(r"^<([^\s>\/]+)", r"<\1 lxnm:subentryID='"+entryID+"'", xml)
-    else:
-        xml = re.sub(r"^<([^\s>\/]+)", r"<\1 lxnm:entryID='"+entryID+"'", xml)
-    xml = re.sub(r"^<([^\s>\/]+)", r"<\1 xmlns:lxnm='http://www.lexonomy.eu/'", xml)
-    return xml
-
 def cleanHousekeeping(xml):
     xml = re.sub(r"^(<[^>\/]*)\s+xmlns:lxnm=['\"]http:\/\/www\.lexonomy\.eu\/[\"']", r"\1", xml)
     xml = re.sub(r"^(<[^>\/]*)\s+lxnm:entryID=['\"][^\"\']*[\"']", r"\1", xml)
@@ -1181,14 +1163,13 @@ def readRandoms(dictDB): # OK
         more = True
     return {"entries": randoms, "more": more}
 
-def readRandomOne(dictDB, dictID, configs):
-    c = dictDB.execute("select id, title, xml from entries where id in (select id from entries where doctype=? order by random() limit 1)", (configs["structure"]["root"], ))
+def readRandomOne(dictDB, dictID, configs): # TODO
+    c = dictDB.execute("select id, title, nvh from entries where id in (select id from entries where doctype=? order by random() limit 1)", (configs["structure"]["root"], ))
     r = c.fetchone()
     if r:
-        xml = setHousekeepingAttributes(r["id"], r["xml"], configs["subbing"])
-        return {"id": r["id"], "title": r["title"], "xml": xml}
+        return {"id": r["id"], "title": r["title"], "nvh": r["nvh"]}
     else:
-        return {"id": 0, "title": "", "xml": ""}
+        return {"id": 0, "title": "", "nvh": ""}
 
 def download_xslt(configs):
     if 'download' in configs and 'xslt' in configs['download'] and configs['download']['xslt'].strip != "" and len(configs['download']['xslt']) > 0 and configs['download']['xslt'][0] == "<":
