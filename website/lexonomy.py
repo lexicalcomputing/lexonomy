@@ -1137,26 +1137,45 @@ def elexgetlemma(dictID, headword):
     else:
         return json.dumps(lemmalist)
 
-@get(siteconfig["rootPath"] + "tei/<dictID>/<entryID>")
-def elexgetentry(dictID, entryID):
-    apikey = request.headers["X-API-KEY"]
-    user = ops.verifyUserApiKey("", apikey)
-    if not user["valid"]:
-        abort(403, "Forbidden (API key not specified or not valid")
-    entry = ops.elexisGetEntry(dictID, entryID)
+@get(siteconfig["rootPath"] + "<dictID>/<entryID>.nvh") # OK
+@authDict([])
+def getentrynvh(dictID, user, dictDB, configs, entryID):
+    entry = ops.getEntry(dictID, entryID, 'nvh')
     if entry is None:
         abort(404, "No Entry Available")
     else:
-        response.content_type = "text/xml; charset=utf-8"
+        response.content_type = "text/plain; charset=utf-8"
         return entry
 
-@get(siteconfig["rootPath"] + "json/<dictID>/<entryID>")
-def elexgetentry(dictID, entryID):
+@get(siteconfig["rootPath"] + "<dictID>/<entryID>.json") # OK
+@authDict([])
+def getentryjson(dictID, user, dictDB, configs, entryID):
+    entry = ops.getEntry(dictID, entryID, 'json')
+    if entry is None:
+        abort(404, "No Entry Available")
+    else:
+        return entry
+    
+@get(siteconfig["rootPath"] + "api/<dictID>/<entryID>.nvh") # OK
+def getentryapinvh(dictID, entryID):
     apikey = request.headers["X-API-KEY"]
     user = ops.verifyUserApiKey("", apikey)
     if not user["valid"]:
         abort(403, "Forbidden (API key not specified or not valid")
-    entry = ops.elexisConvertTei(ops.elexisGetEntry(dictID, entryID))
+    entry = ops.getEntry(dictID, entryID, 'nvh')
+    if entry is None:
+        abort(404, "No Entry Available")
+    else:
+        response.content_type = "text/plain; charset=utf-8"
+        return entry
+
+@get(siteconfig["rootPath"] + "api/<dictID>/<entryID>.json") # OK
+def getentryapijson(dictID, entryID):
+    apikey = request.headers["X-API-KEY"]
+    user = ops.verifyUserApiKey("", apikey)
+    if not user["valid"]:
+        abort(403, "Forbidden (API key not specified or not valid")
+    entry = ops.getEntry(dictID, entryID, 'json')
     if entry is None:
         abort(404, "No Entry Available")
     else:
