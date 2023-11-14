@@ -2383,16 +2383,16 @@ def elexisGuessPOS(xml):
             pos = arr[0]
     return pos
 
-def elexisGetEntry(dictID, entryID):
+def getEntry(dictID, entryID, out_format):
     dictDB = getDB(dictID)
     if dictDB:
-        query = "SELECT id, xml FROM entries WHERE id=?"
+        query = "SELECT id, %s FROM entries WHERE id=?" % (out_format)
         c = dictDB.execute(query, (entryID, ))
         r = c.fetchone()
         if not r:
             return None
         else:
-            return r["xml"]
+            return r[out_format]
     else:
         return None
 
