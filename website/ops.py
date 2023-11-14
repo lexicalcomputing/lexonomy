@@ -1162,14 +1162,14 @@ def readNabesByText(dictDB, dictID, configs, text):
             nabes_after.append(n)
     return nabes_before[-8:] + nabes_after[0:15]
 
-def readRandoms(dictDB):
+def readRandoms(dictDB): # OK
     configs = readDictConfigs(dictDB)
     limit = 75
     more = False
     randoms = []
-    c = dictDB.execute("select id, title, sortkey, xml from entries where doctype=? and id in (select id from entries order by random() limit ?)", (configs["structure"]["root"], limit))
+    c = dictDB.execute("select id, title, sortkey, nvh from entries where doctype=? and id in (select id from entries order by random() limit ?)", (configs["structure"]["root"], limit))
     for r in c.fetchall():
-        randoms.append({"id": r["id"], "title": r["title"], "sortkey": r["sortkey"], "titlePlain": getEntryTitle(r["xml"], configs["titling"], True)})
+        randoms.append({"id": r["id"], "title": r["title"], "sortkey": r["sortkey"], "titlePlain": getEntryTitle(nvh.parse_string(r["nvh"]), configs["titling"], True)})
 
     # sort by selected locale
     collator = Collator.createInstance(Locale(getLocale(configs)))
