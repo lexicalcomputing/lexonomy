@@ -646,11 +646,6 @@ def publicrandom(dictID):
     res = ops.readRandoms(dictDB)
     return res
 
-@post(siteconfig["rootPath"]+"<dictID>/randomone.json")
-@authDict(["canConfig"])
-def randomone(dictID, user, dictDB, configs):
-    return ops.readRandomOne(dictDB, dictID, configs)
-
 @post(siteconfig["rootPath"]+"<dictID>/exportconfigs.json")
 @authDict(["canConfig"])
 def exportconfigs(dictID, user, dictDB, configs):
