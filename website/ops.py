@@ -569,7 +569,7 @@ def makeDict(dictID, schema_keys, title, blurb, email):
             example["nvh"] = "\n".join(rows)
             examples.append(example)
     for idx, example in enumerate(examples):
-        dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], "", example["title"], example["sortkey"], 0, 0, 0))
+        dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
         dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
     dictDB.commit()
