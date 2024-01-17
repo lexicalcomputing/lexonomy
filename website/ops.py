@@ -585,7 +585,7 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
                 example["nvh"] = "\n".join(rows)
                 examples.append(example)
         for idx, example in enumerate(examples):
-        dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
+            dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
             dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
     dictDB.commit()
@@ -1309,7 +1309,7 @@ def listEntriesById(dictDB, entryID, configs):
         entries.append({"id": r["id"], "title": r["title"], "nvh": r["nvh"]})
     return entries
 
-def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start", howmany=10, offset=0, sortdesc=False, reverse=False, fullXML=False):
+def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start", howmany=10, offset=0, sortdesc=False, reverse=False, fullNVH=False):
     collate = ""
     if "locale" in configs["titling"]:
         collator = Collator.createInstance(Locale(getLocale(configs)))
@@ -1333,7 +1333,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
             sortdesc = True
         else:
             sortdesc = False
-    if "flag_element" in configs["flagging"] or fullXML:
+    if "flag_element" in configs["flagging"] or fullNVH:
         entryNVH = ", e.nvh "
     else:
         entryNVH = ""
@@ -1370,7 +1370,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
         if "flag_element" in configs["flagging"] and configs["flagging"]["flag_element"] != "":
             item["flag"] = extractText(nvh2json(r1["nvh"]), configs["flagging"]["flag_element"])
-        if fullXML:
+        if fullNVH:
             item["nvh"] = r1["nvh"]
         if r1["level"] > 1:
             item["title"] += " ← <span class='redirector'>" + r1["txt"] + "</span>"
