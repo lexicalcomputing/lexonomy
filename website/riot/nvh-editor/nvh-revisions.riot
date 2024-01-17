@@ -11,6 +11,10 @@
    <loading-overlay if={dictData.isEntryRevisionsLoading}/>
    <div if={dictData.isEntryRevisionsLoaded}
          class="nvh-revisions-wrapper">
+      <h5 if={!dictData.entryRevisions || !dictData.entryRevisions.length}
+            class="center-align grey-text pt-8">
+         no revisions found
+      </h5>
       <div each={(revision, idx) in dictData.entryRevisions}
             class="nvh-revision {nvhData.revision == revision ? 'yellow lighten-3' : ''}"
             onclick={onRevisionClick.bind(this, revision)}>

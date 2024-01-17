@@ -39,7 +39,7 @@
                   key={child.id}>
                <nvh-editor-view-item element={child}
                      read-only={props.readOnly}/>
-               <nvh-dnd-zone if={nvhStore.getElementStyle(child.name).shown}
+               <nvh-dnd-zone if={isElementDisplayed(child.name)}
                      element={props.element}
                      position={idx + 1}/>
             </template>
@@ -59,8 +59,8 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.style = this.nvhStore.getElementStyle(this.props.element.name)
-            this.state.config = this.nvhStore.getElementConfig(this.props.element.name)
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
             this.state.innerPunc = this.getPuncChars(this.state.style.innerPunc)
             this.state.outerPunc = this.getPuncChars(this.state.style.outerPunc)
             this.state.beforeElementContent = this.getBeforeElementContent()
@@ -78,13 +78,21 @@
 
          onMouseEnter(evt){
             if(!this.nvhStore.findElement(e => e.edit)){
-               this.nvhStore.openElementToolbar(this.props.element)
+               setTimeout(() => {
+                  // let previous toolbar close frist
+                  this.nvhStore.openElementToolbar(this.props.element)
+               }, 0)
             }
          },
 
          onEditClick(evt){
-            evt.stopPropagation()
+            evt.nvhStartEditing = true
             this.nvhStore.startElementEditing(this.props.element)
+         },
+
+         isElementDisplayed(elementName){
+            let style = this.nvhStore.getElementStyle(elementName)
+            return style && style.shown
          },
 
          getReadOnlyValue(){
@@ -253,6 +261,8 @@
       }
       .nvh-edit-icon{
          opacity: 0;
+         margin-top: 3px;
+         margin-left: 3px;
       }
       .nvh-children{
          padding-left: 15px;

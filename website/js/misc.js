@@ -25,25 +25,6 @@ window.showTooltip = (selector, message, delay, options) => {
    return tooltip
 }
 
-
-window.editorNeedsSaving = (evt) => {
-   // TODO
-   /*if(Screenful && Screenful.Editor && Screenful.Editor.needsSaving){
-      if(!confirm(Screenful.Loc.unsavedConfirm)){
-         if(evt){
-            evt.stopImmediatePropagation()
-            evt.stopPropagation()
-            evt.preventDefault()
-         }
-         return true
-      } else {
-         Screenful.Editor.needsSaving = false
-         return false
-      }
-   }*/
-   return false
-}
-
 window.isEmail = (str) => {
    return new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/).test(str)
 }
@@ -195,4 +176,8 @@ window.getFontSizeFromCookies = () => {
       }
    }
    return ""
+}
+
+window.trim = (str, max) => {
+   return str.length > max ? (str.substr(0, max) + "…") : str
 }

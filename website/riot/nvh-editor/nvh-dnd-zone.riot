@@ -66,7 +66,11 @@
 
          isChildInline(position){
             let child = this.props.element.children[position - 1]
-            return child && this.nvhStore.getElementStyle(child.name).layout == "inline"
+            if(child){
+               let style = this.nvhStore.getElementStyle(child.name)
+               return style && style.layout == "inline"
+            }
+            return false
          }
       }
    </script>

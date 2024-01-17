@@ -37,7 +37,8 @@
                   </button>
                </div>
             </div>
-            <a class="btnSkeLogin btn waves-effect waves-light"
+            <a if={ dictData.siteconfig && dictData.siteconfig.sketchengineLoginPage }
+                  class="btnSkeLogin btn waves-effect waves-light"
                   href={ state.skeLoginUrl }>Sign up with &nbsp;
                <img class="skelogin"
                      alt="Sketch Engine"

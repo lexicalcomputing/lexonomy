@@ -16,6 +16,7 @@ import './js/nvh-plugins/image-search.js'
 import './js/nvh-plugins/voice-rss.js'
 import './js/nvh-plugins/links.js'
 import './js/extendmaterialize.js'
+import './js/structure-editor-store.js'
 
 import App from './riot/main.riot'
 import api from './riot/api.riot'
@@ -91,6 +92,11 @@ import nvh_widget_panel from './riot/nvh-editor/nvh-widget-panel.riot'
 import nvh_plugin_buttons from './riot/nvh-editor/nvh-plugin-buttons.riot'
 import nvh_ske_dialog from './riot/nvh-editor/plugins/nvh-ske-dialog.riot'
 import nvh_links_dialog from './riot/nvh-editor/plugins/nvh-links-dialog.riot'
+import nvh_schema from './riot/nvh-schema.riot'
+import structure_editor from './riot/structure-editor.riot'
+import structure_editor_item from './riot/structure-editor-item.riot'
+import structure_dnd_zone from './riot/structure-dnd-zone.riot'
+import trim_text from './riot/trim-text.riot'
 
 riot_register('api', api)
 riot_register('admin-dicts', admin_dicts)
@@ -165,5 +171,10 @@ riot_register('nvh-widget-panel', nvh_widget_panel)
 riot_register('nvh-plugin-buttons', nvh_plugin_buttons)
 riot_register('nvh-ske-dialog', nvh_ske_dialog)
 riot_register('nvh-links-dialog', nvh_links_dialog)
+riot_register('nvh-schema', nvh_schema)
+riot_register('structure-editor', structure_editor)
+riot_register('structure-editor-item', structure_editor_item)
+riot_register('structure-dnd-zone', structure_dnd_zone)
+riot_register('trim-text', trim_text)
 
 component(App)(document.getElementById('root'))

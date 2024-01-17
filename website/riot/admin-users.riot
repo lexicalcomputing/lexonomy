@@ -47,15 +47,22 @@
                {user.dictionaries.length}
             </td>
             <td class="user-actions">
-               <a class="clickable"
-                     title="delete"
-                     onclick={ doDeleteUser.bind(this, user.email) }>
-                  <i class="material-icons">delete</i>
-               </a>
+               <div class="buttons">
+                  <a class="clickable tooltipped"
+                        data-tooltip="Reset password"
+                        onclick={onResetUserPasswordClick.bind(this, user.email)}>
+                     <i class="material-icons">vpn_key</i>
+                  </a>
+                  <a class="clickable tooltipped"
+                        data-tooltip="Delete user"
+                        onclick={onDeleteUserClick.bind(this, user.email)}>
+                     <i class="material-icons">delete</i>
+                  </a>
+               </div>
             </td>
          </tr>
          <tr class="dictionaryRow">
-            <td colspan="4">
+            <td colspan="5">
                <div class="dictionaryList" style="display: none;">
                   <div each={dictionary in user.dictionaries}>
                      <a href="#/{dictionary.id}">
@@ -110,7 +117,11 @@
                   })
          },
 
-         doDeleteUser(email) {
+         onResetUserPasswordClick(email){
+            this.store.resetUserPassword(email)
+         },
+
+         onDeleteUserClick(email) {
             if (confirm("Are you sure you want to delete user " + email + "? You will not be able to undo this.")) {
                this.update({isLoading: true})
                this.store.deleteUser(email)

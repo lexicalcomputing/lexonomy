@@ -3,32 +3,56 @@
          id="dropdown-menu-admin"
          class="dropdown-content">
       <li>
-         <a href="#/admin/users">Users</a>
+         <a href="#/admin/users">
+            <i class="material-icons left ">person</i>
+            Users
+         </a>
       </li>
       <li>
-         <a href="#/admin/dicts">Dictionaries</a>
+         <a href="#/admin/dicts">
+            <i class="material-icons left ">import_contacts</i>
+            Dictionaries
+         </a>
       </li>
    </ul>
    <ul if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }
          id="dropdown-menu-dict"
          class="dropdown-content">
       <li if={ dictData.userAccess.canView && !dictData.userAccess.canEdit }>
-         <a href="#/{ dictData.dictId }">View</a>
+         <a href="#/{ dictData.dictId }">
+            <i class="material-icons left ">view</i>
+            View
+         </a>
       </li>
       <li if={ dictData.userAccess.canEdit }>
-         <a href="#/{ dictData.dictId }/edit">Edit</a>
+         <a href="#/{ dictData.dictId }/edit">
+            <i class="material-icons left ">edit</i>
+            Edit
+         </a>
       </li>
       <li if={ dictData.userAccess.canConfig }>
-         <a href="#/{ dictData.dictId }/config">Configure</a>
+         <a href="#/{ dictData.dictId }/config">
+            <i class="material-icons left ">settings</i>
+            Configure
+         </a>
       </li>
       <li if={ dictData.userAccess.canDownload }>
-         <a href="#/{ dictData.dictId }/download">Download</a>
+         <a href="#/{ dictData.dictId }/download">
+            <i class="material-icons left ">download</i>
+            Download
+         </a>
       </li>
       <li if={ dictData.userAccess.canUpload }>
-         <a href="#/{ dictData.dictId }/upload">Upload</a>
+         <a href="#/{ dictData.dictId }/upload">
+            <i class="material-icons left ">upload</i>
+            Upload
+         </a>
       </li>
       <li if={ dictData.userAccess.canEdit }>
-         <a href="#/{ dictData.dictId }/links">Links</a>
+         <a href="#/{ dictData.dictId }/links">
+            <i class="material-icons left ">link</i>
+            Links
+         </a>
       </li>
    </ul>
    <ul if={ !authData.authorized }
@@ -57,10 +81,16 @@
             tabindex="-1"></li>
       <li>
          <a href="#/"
-               onclick={ doLogout }>Log out</a>
+               onclick={ doLogout }>
+            <i class="material-icons left ">exit_to_app</i>
+            Log out
+         </a>
       </li>
       <li>
-         <a href="#/user-profile">Your profile</a>
+         <a href="#/user-profile">
+            <i class="material-icons left ">account_box</i>
+            Your profile
+         </a>
       </li>
    </ul>
 
@@ -207,7 +237,7 @@
    <script>
       export default {
          doLogout(event) {
-            if(!window.editorNeedsSaving(event)){
+            if(!window.nvhStore.editorNeedsSaving(event)){
                this.auth.logout()
             }
          },
@@ -293,6 +323,10 @@
       nav a.sidenav-trigger i{
          height: 60px;
          line-height: 60px;
+      }
+      nav .dropdown-content i {
+         height: unset;
+         line-height: unset;
       }
 
       @media screen and (max-width: 992px){

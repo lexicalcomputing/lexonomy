@@ -1,0 +1,111 @@
+<structure-dnd-zone>
+   <div class="structure-dnd-wrapper">
+      <div class="structure-zone"
+            ondragenter={onDragEnter}
+            ondragleave={onDragLeave}
+            ondragover={onDragOver}
+            ondrop={onDrop}
+            style="display: none;">
+         <div class="structure-bar"></div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["structureStore", "onDndStart", "onDndStart"],
+                    ["structureStore", "onDndStop", "onDndStop"]],
+
+         state: {
+            active: false
+         },
+
+         onBeforeMount(){
+            this.structureStore = window.structureEditorStore
+         },
+
+         onDndStart(){
+            if(!this.state.active
+                  && !this.structureStore.getAllAncestorNames(this.props.element.name).includes(this.structureStore.data.draggedElement.name)){
+               this.state.maxIndent = this.structureStore.getAllAncestorNames(this.props.element.name).length
+               this.state.minIndent = Math.max(1, this.state.maxIndent - 1)
+               this.update({active: true})
+               $(".structure-bar", this.root).css("margin-left", this.state.minIndent * 40)
+               $(".structure-zone", this.root).show()
+            }
+         },
+
+         onDndStop(){
+            if(this.state.active){
+               this.state.active = false
+               $(".structure-zone", this.root).hide()
+            }
+         },
+
+         onDragEnter(){
+            $(this.root).addClass("structure-hover")
+         },
+
+         onDragOver(evt){
+            evt.preventDefault()
+            let fromLeft = evt.clientX - $("structure-editor")[0].offsetLeft
+            this.state.indent = Math.max(this.state.minIndent, Math.min(this.state.maxIndent, Math.floor(fromLeft / 40)))
+            $(".structure-bar", this.root).css("margin-left", this.state.indent * 40)
+         },
+
+         onDragLeave(){
+            $(this.root).removeClass("structure-hover")
+         },
+
+         onDrop(evt){
+            this.structureStore.moveElementToAnotherParent(this.structureStore.data.draggedElement, this.props.element, this.state.indent)
+            this.structureStore.stopElementDragging()
+            $(this.root).removeClass("structure-hover")
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         transition: 0.2s;
+         position: relative;
+         display: block;
+         min-height: 2px;
+         .structure-dnd-wrapper{
+            left: 0;
+            width: 200px;
+         }
+         .structure-zone{
+            transition: 0.2s;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+         }
+         .structure-bar{
+            transition: min-height 0.2s;
+            position: relative;
+            pointer-events: none;
+            min-height: 3px;
+            top: 10px;
+            max-width: 150px;
+            margin-left: 40px;
+         }
+         .structure-zone{
+            z-index: 998;
+            min-height: 30px;
+            top: -10px;
+            bottom: -10px;
+            left: 0px;
+            right: 20px;
+         }
+         &.structure-hover{
+            min-height: 30px;
+            .structure-bar{
+               min-height: 30px;
+               background-color: #eee;
+               border: 2px dashed #ccc;
+            }
+         }
+      }
+   </style>
+</structure-dnd-zone>

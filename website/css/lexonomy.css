@@ -18,7 +18,12 @@ app-footer{
    display: flex;
    gap: 10px;
 }
-
+.hint{
+   cursor: help;
+}
+.hint i{
+   font-size: 16px;
+}
 .loadingAnimation{
    display: inline-block;
    width: 1.5em;
@@ -131,6 +136,12 @@ h6{
    box-shadow: none;
    background-color: #231f20;
 }
+.btn.btn-large{
+   height: 54px;
+   line-height: 54px;
+   font-size: 15px;
+   padding: 0 28px;
+}
 .btn:focus,
 .btn-large:focus,
 .btn-small:focus,
@@ -157,21 +168,21 @@ h6{
 
 .tabs{
    margin-bottom: 15px;
-   border-bottom: 1px solid #e4e4e4;
+   border-bottom: none;
+   background-color: #eee;
 }
 .tabs .tab a{
    color: #767676;
    cursor: pointer;
+   font-size: 1em;
+   text-decoration: none;
 }
 .tabs .tab a:hover{
    color: #c62132;
 }
-.tabs li[active]{
-   border-bottom: 3px solid black;
-}
-.tabs li[active] a{
-   color: #000;
+.tabs li.active a{
    text-decoration: none;
+   background-color: #fafafa;
 }
 
 label{
@@ -217,6 +228,7 @@ textarea.materialize-textarea:focus:not([readonly]){
    -webkit-box-shadow: none;
    box-shadow: none;
    outline: 1px solid #000;
+   background-color: #fff;
 }
 
 input.invalid:not([type]),
@@ -330,9 +342,12 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    color: #000;
 }
 
-[type="checkbox"]:checked+span:not(.lever):before{
+[type="checkbox"]:not([disabled]):checked+span:not(.lever):before{
    border-right: 2px solid #000;
    border-bottom: 2px solid #000;
+}
+[type="checkbox"][disabled] + span{
+   cursor: default;
 }
 
 [type="radio"]:checked+span:after,
@@ -472,6 +487,10 @@ table.striped thead tr{
    text-align: center;
    font-weight: bold;
    padding: 0.7rem 1rem;
+   color: #fff;
+}
+
+.message a:not(.btn):hover{
    color: #fff;
 }
 

@@ -3,11 +3,8 @@
 
    <script>
       export default{
-         bindings: [["nvhStore", "updateEditor", "updateEditor"]],
-
-         state: {
-            error: ""
-         },
+         bindings: [["nvhStore", "updateEditor", "updateEditor"],
+                    ["nvhStore", "entryChanged", "updateEditor"]],
 
          onBeforeMount(){
             this.nvhStore = window.nvhStore
@@ -16,12 +13,7 @@
 
          onMounted(){
             this.editorNode = $("#editor", this.root)  // should be "#editor" - older custom editors may use this ID in css selectors
-
-
-
-
-            // TODO
-            this.readOnly = false
+            this.readOnly = !this.dictData.userAccess.canEdit || this.props.readOnly
             this.initCustomEditor()
          },
 
@@ -73,7 +65,7 @@
                   }
                }
                if(this.nvhData.editing._css){
-                  document.head.insertAdjacentHTML("beforeend", `<style id="customEditorStyle">${this.nvhData.editing._css}</style>`)
+                  document.head.insertAdjacentHTML("beforeend", `<style id="customEditorStyle" type="text/css">${this.nvhData.editing._css}</style>`)
                }
                if(this.nvhData.legacyCustomEditor){
                   this.nvhData.customEditor.editor(this.editorNode, {
@@ -81,11 +73,29 @@
                      id: window.store.data.entryId
                   }, this.readOnly)
                } else{
-                  this.nvhData.customEditor.editor(this.editorNode, this.nvhData.entry, this.readOnly)
+                  this.nvhData.customEditor.editor({
+                     node: this.editorNode,
+                     entry: this.nvhData.entry,
+                     readOnly: this.readOnly,
+                     onChange: this.onEditorChange,
+                     onValidChange: this.onValidChange
+                  })
                }
             } catch(e){
                M.toast({html: "Custom editor initialization failed."})
             }
+         },
+
+         onEditorChange(){
+            if(this.nvhData.isValid){
+               this.nvhStore.setEntryFromCustomEditor()
+               this.nvhStore.history.addState()
+            }
+         },
+
+         onValidChange(isValid){
+            this.nvhData.isValid = isValid
+            this.nvhStore.trigger("isValidChanged")
          }
       }
    </script>

@@ -12,25 +12,29 @@
    </label>
    <br><br>
    <div id="editors"
-         class="row"
+         class="row displayFlex mb-16"
          style="display: none;">
-      <div class="input-field mb-16">
+      <div class="jsCode input-field">
          <label>JavaScript</label>
          <pre id="editor_js"
                class="codeEditor language-javascript"
-               oninput={onJSInput}></pre>
-         <div id="codeStatus"></div>
+               onkeydown={onKeyDown}></pre>
+         <div id="codeStatus"
+               class="displayFlex">
+            <span class="codeStatusMessage"></span>
+            <small class="ml-auto grey-text">ctrl+s or ⌘+s to save</small>
+         </div>
          <span class="helper-text">
-            You can customize the editor by defining two functions in JavaScript: one that will render the HTML editor from the XML entry and one that will harvest the (edited) HTML back into XML. If you would like to see an example,
+            You can create your own entry editor (<a class="pointer" onclick={onShowEditorHelpClick}>learn more</a>). If you would like to see an example,
             <a class="pointer" onclick={ exampleJS }>click here to load a sample JavaScript code</a>.
          </span>
       </div>
-      <div class="input-field">
+      <div class="cssCode input-field">
          <label for="editor_css">CSS</label>
          <pre id="editor_css"
-               oninput={onCSSInput}
+               onkeydown={onKeyDown}
                class="codeEditor language-css"></pre>
-         <span class="helper-text">
+         <span class="helper-text mt-2">
             You can customize the editor look and feel by writing your own CSS styles. If you would like to see an example,
             <a class="pointer" onclick={ exampleCSS }>click here to load a sample CSS style</a>.
          </span>
@@ -43,6 +47,7 @@
          state: {
             isLoading: true,
             isSaving: false,
+            isJSValid: null,
             data: {
                _useOwnEditor: undefined,
                _js: "",
@@ -58,36 +63,61 @@
          exampleJS() {
             this.state.data._js =
 `{
-   editor: function(div, entry, uneditable){
-      //div = the div into which you should render the editor
-      //entry.id = the entry ID (a number, eg. 123), or zero if new entry
-      //entry.content = the entry's XML source code, eg. "<entry></headword>hello</headword></entry>"
-      //uneditable = true if we want the entry to be uneditable (read-only)
-      $(div).html("<div class='myEditor'>HEADWORD: <input class='headword' "+(uneditable?"disabled":"")+"/></div>");
-      $(div).find("input.headword").val($($.parseXML(entry.content)).find("headword").html());
+   editor: function(options) {
+      // options = {
+      //   node: the node into which you should render the editor
+      //   entry = JSON object representing the entry
+      //   readOnly = true if we want the entry to be uneditable
+      //   onChange = method to call if data changes
+      //   onValidChange - method to call if data state changes from valid to invalid or vice versa
+      // }
+      this.options = options
+      this.node = $(options.node)
+      this.entry = options.entry
+      let editorNode = $("<div class='myEditor'><h3>My custom editor</h3></div>").appendTo(this.node)
+      this.contentNode = $('<div class="myEditorContentNode"></div>').appendTo(editorNode)
+      this.isValid = null
+      this._render()
+      this._validate()
    },
-   harvester: function(div){
-      //div = the div from which you should harvest the contents of the editor
-      var headword=$(div).find("input.headword").val();
-      return "<entry><headword>"+headword+"</headword></entry>";
+
+   getValue: function() {
+      return {
+         name: "entry",
+         value: "",
+         children: [{
+            name: "headword",
+            value: this.contentNode.find("input.headword").val()
+         }]
+      }
    },
-   adjustDocSpec: function (docSpec) {
-      // NOTE: you normally want to use this method if you don't have a custom editor,
-      // but just want to change certain aspects of how Xonomy presents the document.
-      $.each(docSpec.elements, function (elementName, elementSpec) {
-         // Expand <sense> elements by default.
-         if (elementName === 'sense') {
-            elementSpec.collapsed = function (jsElement) { return false; }
-         }
-         // Make <example> read-only
-         if (elementName === 'example') {
-            elementSpec.isReadOnly = true;
-         }
-         // Hide <partOfSpeech>.
-         if (elementName === 'partOfSpeech') {
-            elementSpec.isInvisible = true;
-         }
-      });
+
+   update: function(entry) {
+      this.entry = entry
+      this._render()
+      this._validate()
+   },
+
+   _render: function() {
+      this.contentNode.empty()
+      $(\`<input class="headword"
+            \$\{this.options.readOnly? "disabled" : ""}
+            value="\$\{this.entry.children[0].value}"/>\`)
+            .appendTo(this.contentNode)
+            .on("input", this._onInput.bind(this))
+            .on("change", this.options.onChange)
+   },
+
+   _onInput: function() {
+      this._validate()
+   },
+
+   _validate: function() {
+      let wasValid = this.isValid
+      this.isValid = this.contentNode.find("input.headword").val() !== ""
+      if (wasValid != this.isValid) {
+         this.options.onValidChange(this.isValid)
+      }
    }
 }`
             this.codeEditorJS.updateCode(this.state.data._js)
@@ -96,8 +126,12 @@
 
          exampleCSS() {
             this.state.data._css =
-`div.myEditor {padding: 20px; font-size: 1.25em}
-div.myEditor input {font-weight: bold}`
+`.myEditor{
+   padding: 0 30px
+}
+.myEditor headword{
+   font-size: 1.25em
+}`
             this.codeEditorCSS.updateCode(this.state.data._css)
          },
 
@@ -135,6 +169,51 @@ div.myEditor input {font-weight: bold}`
             this.state.data._css = this.codeEditorCSS.toString()
          },
 
+         onKeyDown(evt){
+            if(this.state.isJSValid && evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
+               evt.preventDefault()
+               this.saveData()
+            }
+         },
+
+         onShowEditorHelpClick(){
+            window.modal.open({
+               title: "Custom editor",
+               tag: "raw-html",
+               opts: {
+                  content: `Your custom editor should be JavaScript object with these functions:<br>
+                  <b class="monospace">editor(options)</b><br>
+                  <div class="pl-4">
+                     Options is object with following keys:<br>
+                     <div class="pl-4">
+                        node: jQuery object of the root node to which editor should be attached.<br>
+                        entry: JSON representation of the entry<br>
+                        readOnly: true/false <br>
+                        onChange: method to be called every time the entry changes<br>
+                        onValidChange: method to be called every time the entry valid status changes (entry is in valid or invalid state)<br><br>
+                     </div>
+                  </div>
+                  <b class="monospace">update()</b><br>
+                  <div class="pl-4">
+                     Redraw the editor after data change (e.g. user navigates to another entry, uses undo/redo commands...).<br><br>
+                  </div>
+                  <b class="monospace">getValue()</b>
+                  <div class="pl-4">
+                     Returns JSON representation of the actual state of the entry.<br>
+      <pre>
+      {
+         name: "entry",
+         value: "",
+         children: [{
+            name: "headword",
+            value: ""
+         }]
+      }</pre>
+                  </div>`
+               }
+            })
+         },
+
          getConfigData() {
             return Object.assign({
                _version: window.LEXONOMY_VERSION
@@ -151,7 +230,9 @@ div.myEditor input {font-weight: bold}`
                } catch(e){
                   err = e.toString().split('\n')[0]
                }
-               $("#codeStatus").html(isOk ? `<b class="green-text">valid</b>` : `<b class="red-text">${err}</b>`)
+               $("#codeStatus .codeStatusMessage").html(isOk ? `<b class="green-text">valid</b>` : `<b class="red-text">${err}</b>`)
+               this.state.isJSValid = isOk
+               $("#submit_button").toggleClass("disabled", !isOk)
             }
          },
 
@@ -167,17 +248,37 @@ div.myEditor input {font-weight: bold}`
       textarea{
          min-height: 30vh;
       }
+      #editors{
+         gap: 20px;
+
+      }
+      .jsCode{
+         max-width: 65%;
+      }
+      .cssCode{
+         max-width: 35%;
+      }
+      @media screen and (max-width: 1450px) {
+         #editors{
+            flex-wrap: wrap;
+         }
+         .jsCode,
+         .cssCode{
+            max-width: 100%;
+         }
+      }
       #editor_js{
          padding-top: 25px;
       }
       #codeStatus{
-         bottom: 0px;
          position: sticky;
+         bottom: 0px;
          right: 1px;
          left: 1px;
          background-color: #dfdfdf;
          padding: 3px 8px;
          margin-bottom: 5px;
+         align-items: center;
       }
       .codeEditor{
          margin: 0;

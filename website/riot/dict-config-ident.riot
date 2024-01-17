@@ -23,13 +23,13 @@
                      rows="3">{ state.data.blurb }</textarea>
                <label for="ident_blurb">Dictionary description</label>
                <span class="helper-text">
-                  This will appear on your dictionary's home page. You can leave it blank if you prefer.<br/>You can use <a href='https://daringfireball.net/projects/markdown/' target='_blank'>Markdown</a> here.
+                  This will appear on your dictionary's home page. You can leave it blank if you prefer.<br/>You can use <a href="https://daringfireball.net/projects/markdown/" target="_blank">Markdown</a> here.
                </span>
             </div>
          </div>
          <div class="row">
             <div class="input-field">
-               <input value={ state.data.lang }
+               <input data-selected-locale={ state.data.lang }
                      type="text"
                      id="ident_lang"
                      class="autocomplete"
@@ -63,36 +63,39 @@
          },
 
          onMounted() {
+            $("#ident_lang").autocomplete({
+               data: this.store.data.siteconfig.langs.map(lang => {
+                  return {
+                     value: lang.code,
+                     label: lang.lang
+                  }
+               })
+            })
             this.store.loadDictionaryConfig("ident")
                   .done(response => {
                      this.state.data = response.content
+                     if(this.state.data.lang){
+                        $("#ident_lang").val(this.store.getLanguageName(this.state.data.lang))
+                     }
                   })
                   .always(() => {
                      this.update({isLoading: false})
                      M.updateTextFields()
-                     M.textareaAutoResize($('#ident_blurb'))
-                     if(this.state.data.langs){
-                        var langs_data = {}
-                        this.state.data.langs.forEach(lang => {
-                           langs_data[lang['lang']] = null
-                        })
-                        $('#ident_lang').autocomplete({data: langs_data})
-                     }
+                     M.textareaAutoResize($("#ident_blurb"))
                   })
          },
 
          saveData() {
             this.update({isSaving: true})
             this.store.updateDictionaryConfig("ident", {
-               'title': $('#ident_title').val(),
-               'blurb': $('#ident_blurb').val(),
-               'lang': $('#ident_lang').val(),
-               'handle': $('#ident_handle').val()
+               title: $("#ident_title").val(),
+               blurb: $("#ident_blurb").val(),
+               lang: this.store.getLanguageCode($("#ident_lang").val()),
+               handle: $("#ident_handle").val()
             })
                   .done(this.store.loadDictionaryList.bind(this.store))
                   .always(() => this.update({isSaving: false}))
          }
       }
    </script>
-
 </dict-config-ident>

@@ -12,7 +12,6 @@ install(function(component) {
    let oldOnUpdated = component.onUpdated
 
    component.onMounted = () => {
-      oldOnMounted.apply(component)
       if(component.bindings){
          let boundFunction
          component.bindings.forEach(b => {
@@ -21,6 +20,7 @@ install(function(component) {
             component.boundFunctions[`${b[1]}_${b[2]}`] = boundFunction
          })
       }
+      oldOnMounted.apply(component)
       initTooltipDebounced()
    }
    component.onBeforeUnmount = () => {

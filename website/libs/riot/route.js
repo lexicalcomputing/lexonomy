@@ -291,7 +291,7 @@ window.route = function () {
     ) { return }
 
     /* BEGIN added for Screenful */
-    if(window.editorNeedsSaving(e)){
+    if(window.nvhStore.editorNeedsSaving(e)){
          return
     }
     /* END added for Screenful */

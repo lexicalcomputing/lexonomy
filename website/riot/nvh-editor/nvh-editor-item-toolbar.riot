@@ -1,34 +1,39 @@
 <nvh-editor-item-toolbar class="noSelect">
-   <span if={state.show}
-         class="nvh-value-icons">
-      <i class="nvh-icon-drag material-icons tooltipped {state.isDragDisabled ? 'disabled' : ''}"
-            draggable="true"
-            ondragstart={onDragStart}
-            ondragend={onDragEnd}
-            data-tooltip="Drag element to new position">drag_handle</i>
-      <i class="nvh-icon-edit material-icons tiny tooltipped"
-            onclick={onEditClick}
-            data-tooltip="Change element value">edit</i>
-      <i class="nvh-icon-add material-icons tiny tooltipped {state.isAddDisabled ? 'disabled' : ''}"
-            onclick={onAddClick}
-            data-tooltip="Add new element">add</i>
-      <i class="nvh-icon-copy material-icons tiny tooltipped {state.isDuplicationDisabled ? 'disabled' : ''}"
-            onclick={onDuplicateClick}
-            data-tooltip="Copy element">content_copy</i>
-      <i class="nvh-icon-remove material-icons tiny tooltipped {state.isRemovalDisabled ? 'disabled' : ''}"
-            onclick={onRemoveClick}
-            data-tooltip="Remove">delete</i>
-      <i class="nvh-icon-move-up material-icons tiny tooltipped {state.isMoveUpDisabled ? 'disabled' : ''}"
-            onclick={onMoveUpClick}
-            data-tooltip="Move up">keyboard_arrow_up</i>
-      <i class="nvh-icon-move-down material-icons tiny tooltipped {state.isMoveDownDisabled ? 'disabled' : ''}"
-         onclick={onMoveDownClick}
-            data-tooltip="Move down">keyboard_arrow_down</i>
-      <i if={dictData.userAccess.canConfig}
-            class="nvh-icon-style material-icons tiny tooltipped"
-            onclick={onEditStyleClick}
-            data-tooltip="Change appearance of '{state.element.name}'">palette</i>
-   </span>
+   <div if={state.show}
+         class="nvh-toolbar-wrapper">
+      <div class="nvh-element-name">
+         {state.element && state.element.name}
+      </div>
+      <span class="nvh-value-icons">
+         <i class="nvh-icon-drag material-icons tooltipped {state.isDragDisabled ? 'disabled' : ''}"
+               draggable="true"
+               ondragstart={onDragStart}
+               ondragend={onDragEnd}
+               data-tooltip="Drag element to new position">drag_handle</i>
+         <i class="nvh-icon-edit material-icons tiny tooltipped"
+               onclick={onEditClick}
+               data-tooltip="Change element value">edit</i>
+         <i class="nvh-icon-add material-icons tiny tooltipped {state.isAddDisabled ? 'disabled' : ''}"
+               onclick={onAddClick}
+               data-tooltip="Add new element">add</i>
+         <i class="nvh-icon-copy material-icons tiny tooltipped {state.isDuplicationDisabled ? 'disabled' : ''}"
+               onclick={onDuplicateClick}
+               data-tooltip="Copy element">content_copy</i>
+         <i class="nvh-icon-remove material-icons tiny tooltipped {state.isRemovalDisabled ? 'disabled' : ''}"
+               onclick={onRemoveClick}
+               data-tooltip="Remove">delete</i>
+         <i class="nvh-icon-move-up material-icons tiny tooltipped {state.isMoveUpDisabled ? 'disabled' : ''}"
+               onclick={onMoveUpClick}
+               data-tooltip="Move up">keyboard_arrow_up</i>
+         <i class="nvh-icon-move-down material-icons tiny tooltipped {state.isMoveDownDisabled ? 'disabled' : ''}"
+            onclick={onMoveDownClick}
+               data-tooltip="Move down">keyboard_arrow_down</i>
+         <i if={dictData.userAccess.canConfig}
+               class="nvh-icon-style material-icons tiny tooltipped {state.isStyleDisabled ? 'disabled' : ''}"
+               onclick={onEditStyleClick}
+               data-tooltip="Change appearance of '{state.element.name}'">palette</i>
+      </span>
+   </div>
 
    <script>
       export default{
@@ -56,6 +61,7 @@
                      && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, -1),
                this.state.isMoveDownDisabled = children.indexOf(this.state.element) == children.length -1
                      && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, 1)
+               this.state.isStyleDisabled = !this.nvhStore.getElementConfig(this.state.element.name)
             }
          },
 
@@ -169,10 +175,17 @@
          position: absolute;
          z-index: 999;
       }
-      .nvh-value-icons{
-         display: flex;
+      .nvh-toolbar-wrapper{
          background-color: whitesmoke;
          box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+      }
+      .nvh-element-name{
+         padding: 2px 5px 0;
+         color: grey;
+         font-size: 0.8em;
+      }
+      .nvh-value-icons{
+         display: flex;
          i{
             cursor: pointer;
             width: 28px;

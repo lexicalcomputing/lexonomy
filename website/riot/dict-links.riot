@@ -179,6 +179,9 @@
                      }
                      this.checkAllLoaded()
                   })
+                  .fail(response => {
+                     this.update({isLoading: false})
+                  })
          }
       }
    </script>

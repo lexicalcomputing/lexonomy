@@ -44,7 +44,7 @@
          <div class="input-field">
             <select id="headwordAnnotations"
                   multiple
-                  disabled={ state.data.headwordAnnotationsType == 'advanced' }>
+                  disabled={ state.data.headwordAnnotationsType == "advanced" }>
             </select>
             <span class="helper-text">You can select any elements here whose content you want displayed beside the headword in the entry list, such as homograph numbers or part-of-speech labels.</span>
          </div>
@@ -63,7 +63,7 @@
             <textarea id="advancedAnnotations"
                   class="materialize-textarea"
                   placeholder="headword annotations"
-                  disabled={ state.data.headwordAnnotationsType == 'simple' }>{ state.data.headwordAnnotationsAdvanced }</textarea>
+                  disabled={ state.data.headwordAnnotationsType == "simple" }>{ state.data.headwordAnnotationsAdvanced }</textarea>
             <span class="helper-text">You can insert any HTML containing placeholders for elements in the form of '%(element)', e.g. '&lt;b>%(headword)&lt;/b>'.</span>
          </div>
       </div>
@@ -71,10 +71,11 @@
    <div class="row">
       <div class="input-field col s8">
          <input data-selected-locale={ state.data.locale }
-               type="text" id="sort_locale"
+               type="text"
+               id="locale"
                class="autocomplete"
                placeholder="Type to search for language"/>
-         <label for="sort_locale">Alphabetical order</label>
+         <label for="locale">Alphabetical order</label>
          <span class="helper-text">Select language to sort entries alphabetically in the entry list.</span>
       </div>
    </div>
@@ -83,8 +84,8 @@
          <input value={ state.data.numberEntries}
                id="numberEntries"
                type="number" />
-         <label for="numberEntries">Number of entries to be shown in the entry list at once</label>
-         <span class="helper-text">If your dictionary contains large entries (large XML files), it is recommended to reduce this number for quicker loading of entry list.</span>
+         <label for="numberEntries">Number of entries to be loaded in the entry list at once</label>
+         <span class="helper-text">High number may reduce Lexonomy performance.</span>
       </div>
    </div>
    <dict-config-buttons save-data={saveData}></dict-config-buttons>
@@ -95,109 +96,82 @@
             isLoading: true,
             isSaving: false,
             data: {
-               headwordAnnotationsType: 'simple',
+               headwordAnnotationsType: "simple",
                headwordAnnotations: []
             }
          },
 
          changeAnnotation() {
-            if ($('[name=hwannotype][value=advanced]').is(':checked')) {
-               $('#headwordAnnotations').attr('disabled', 'disabled')
-               $('#advancedAnnotations').removeAttr('disabled')
+            if ($("[name=hwannotype][value=advanced]").is(":checked")) {
+               $("#headwordAnnotations").attr("disabled", "disabled")
+               $("#advancedAnnotations").removeAttr("disabled")
             } else {
-               $('#advancedAnnotations').attr('disabled', 'disabled')
-               $('#headwordAnnotations').removeAttr('disabled')
+               $("#advancedAnnotations").attr("disabled", "disabled")
+               $("#headwordAnnotations").removeAttr("disabled")
             }
-            $('#headwordAnnotations').formSelect()
+            $("#headwordAnnotations").formSelect()
          },
 
          onMounted() {
+            $("#locale").autocomplete({
+               data: this.store.data.siteconfig.langs.map(lang => {
+                  return {
+                     value: lang.code,
+                     label: lang.lang
+                  }
+               })
+            })
             this.store.loadDictionaryConfig("titling")
                   .done(response => {
                      this.state.data = response.content
                      if (!this.state.data.numberEntries) this.state.data.numberEntries = 1000
-                     if (!this.state.data.headwordAnnotationsType) this.state.data.headwordAnnotationsType = 'simple'
+                     if (!this.state.data.headwordAnnotationsType) this.state.data.headwordAnnotationsType = "simple"
                      if (!this.state.data.headwordAnnotations) this.state.data.headwordAnnotations = []
-
-                     // fill locale list for autocomplete
-                     if (this.state.data.sort_locale && this.state.data.sort_locale != '') {
-                        $('#sort_locale').data('selected-locale', this.state.data.sort_locale)
+                     if(this.state.data.locale){
+                        $("#locale").val(this.store.getLanguageName(this.state.data.locale))
                      }
-                     var localeList = {}
-                     var localeData = {}
-                     var selected = ''
-                     this.state.data.locales.forEach(loc => {
-                        localeList[loc['lang']] = null
-                        localeData[loc['lang']] = loc['code']
-                        if (loc['code'] == this.state.data.locale) {
-                           selected = loc['lang']
-                        }
-                     })
-                     $('#sort_locale').autocomplete({data: localeList})
-                     $('#sort_locale').data('locales', localeData)
-                     if (selected != '') {
-                        $('#sort_locale').val(selected)
-                     }
-                     $('#sort_locale').on('change', function() {
-                        var localeData = $(this).data('locales')
-                        $(this).data('selected-locale', localeData[$(this).val()])
-                     })
                   })
                   .always(() => {
                      this.update({isLoading: false})
                      M.updateTextFields()
-                     M.textareaAutoResize($('#advancedAnnotations'))
-                  })
-         },
+                     M.textareaAutoResize($("#advancedAnnotations"))
+                     if (this.dictData.dictConfigs.structure && this.dictData.dictConfigs.structure.elements) {
+                        Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
+                           $("#headword").append(`<option value="${key}">${key}</option>`)
+                        })
+                        Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
+                           $("#headwordSorting").append(`<option value="${key}">${key}</option>`)
+                        })
+                        Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
+                           if (key != this.state.data.headword) {
+                              $("#headwordAnnotations").append(`<option value="${key}">${key}</option>`)
+                           }
+                        })
+                        $(`#headword option[value="${this.state.data.headword}"]`).attr("selected", "selected")
+                        $(`#headwordSorting option[value="${this.state.data.headwordSorting}"]`).attr("selected", "selected")
+                        this.state.data.headwordAnnotations.forEach(el => {
+                           $(`#headwordAnnotations option[value="${el}"]`).attr("selected", "selected")
+                        })
 
-         onUpdated() {
-            if (this.dictData.dictConfigs.structure && this.dictData.dictConfigs.structure.elements) {
-               if ($('#headword option').length == 1) {
-                  Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
-                     $('#headword').append('<option value="' + key + '">' + key + '</option>')
-                  })
-               }
-               if ($('#headwordSorting option').length == 1) {
-                  Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
-                     $('#headwordSorting').append('<option value="' + key + '">' + key + '</option>')
-                  })
-               }
-               if ($('#headwordAnnotations option').length == 0) {
-                  Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
-                     if (key != this.state.data.headword) {
-                        $('#headwordAnnotations').append('<option value="' + key + '">' + key + '</option>')
+                        $("select").formSelect()
                      }
                   })
-               }
-               if (this.state.data.headword != '') {
-                  $('#headword option[value='+this.state.data.headword+']').attr('selected','selected')
-               }
-               if (this.state.data.headwordSorting != '') {
-                  $('#headwordSorting option[value='+this.state.data.headwordSorting+']').attr('selected','selected')
-               }
-               this.state.data.headwordAnnotations.forEach(el => {
-                  $('#headwordAnnotations option[value='+el+']').attr('selected','selected')
-               })
-
-
-               $('select').formSelect()
-            }
          },
 
          getConfigData() {
-            var newData = {
-               headword: $('#headword').val(),
-               headwordSorting: $('#headwordSorting').val(),
-               sortDesc: $('#sortDesc').is(':checked'),
-               numberEntries: $('#numberEntries').val(),
-               locale: $('#sort_locale').data('selected-locale')
+            let newData = {
+               headword: $("#headword").val(),
+               headwordSorting: $("#headwordSorting").val(),
+               sortDesc: $("#sortDesc").is(":checked"),
+               numberEntries: $("#numberEntries").val(),
+               locale: this.store.getLanguageCode($("#locale").val())
             }
-            if ($('[name=hwannotype][value=advanced]').is(':checked')) {
-               newData.headwordAnnotationsType = 'advanced'
-               newData.headwordAnnotationsAdvanced = $('#advancedAnnotations').val()
+            if ($("[name=hwannotype][value=advanced]").is(":checked")) {
+               newData.headwordAnnotationsType = "advanced"
+               newData.headwordAnnotationsAdvanced = $("#advancedAnnotations").val()
             } else {
-               newData.headwordAnnotationsType = 'simple'
-               newData.headwordAnnotations = $('#headwordAnnotations').val()
+               newData.headwordAnnotationsType = "simple"
+               newData.headwordAnnotations = $("#headwordAnnotations").val()
             }
             return newData
          },
