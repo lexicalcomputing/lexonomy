@@ -634,12 +634,12 @@ def publicentryxml(dictID, entryID):
     response.content_type = "text/xml; charset=utf-8"
     return res["xml"]
 
-@post(siteconfig["rootPath"]+"<dictID>/random.json")
+@post(siteconfig["rootPath"]+"<dictID>/random.json") # OK
 def publicrandom(dictID):
     if not ops.dictExists(dictID):
         return redirect("/")
     dictDB = ops.getDB(dictID)
-    return ops.readRandoms(dictDB, request.query.limit)
+    return ops.readRandoms(dictDB, int(request.query.limit) if request.query.limit else 10)
 
 @post(siteconfig["rootPath"]+"<dictID>/exportconfigs.json")
 @authDict(["canConfig"])
