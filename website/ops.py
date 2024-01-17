@@ -559,17 +559,13 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
 
     def addElementAndItsChildrenToStructureDict(nvh_node):
         # TODO: add ranges, types, values... to schema
-        children = []
-        for child in nvh_node.children:
-            children.append({
-                "name": child.name,
-                "min": 0,
-                "max": 0
-            })
         elements[nvh_node.name] = {
-            "type": "chd" if len(children) else "txt",
+            "type": "string",
+            "min": 0,
+            "max": 0,
             "values": [],
-            "children": children
+            "re": "",
+            "children": [child.name for child in nvh_node.children]
         }
         for child in nvh_node.children:
             addElementAndItsChildrenToStructureDict(child)
