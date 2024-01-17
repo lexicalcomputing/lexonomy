@@ -9,16 +9,20 @@
    <div if={!Object.keys(state.warnings).length}
          class="nvh-validity lighten-4 green-text green">
       <span class="mr-4">●</span> valid
+      <small class="ml-auto grey-text mr-4">ctrl+s or ⌘+s to save</small>
    </div>
    <div if={Object.keys(state.warnings).length}
          class="nvh-validity lighten-4 red-text red">
-      <div each={lineObj in Object.entries(state.warnings)}
-            class="nvh-validation-row">
-         <span class="mr-4">●</span>
-         <span class="nvh-validation-line-number"
-               onclick={onScrollToLineClick.bind(this, lineObj[0])}>line {lineObj[0]}:</span>
-         <raw-html content={lineObj[1]}/>
+      <div>
+         <div each={lineObj in Object.entries(state.warnings)}
+               class="nvh-validation-row">
+            <span class="mr-4">●</span>
+            <span class="nvh-validation-line-number"
+                  onclick={onScrollToLineClick.bind(this, lineObj[0])}>line {lineObj[0]}:</span>
+            <raw-html content={lineObj[1]}/>
+         </div>
       </div>
+      <small class="ml-auto grey-text mr-4">ctrl+s or ⌘+s to save</small>
    </div>
 
    <div class="nvh-autocomplete"></div>
@@ -100,7 +104,12 @@
                this.hideSuggestions()
                return
             }
-            if((evt.keyCode == 13 && this.state.suggestions.length)  //enter
+            if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
+               if(this.nvhStore.getAvailableActions().save){
+                  this.validate()
+                  this.nvhData.isValid && this.nvhStore.saveEntry()
+               }
+            } else if((evt.keyCode == 13 && this.state.suggestions.length)  //enter
                   || (evt.keyCode == 9 && this.state.autocompleteText)){ //tab
                this.doAutocomplete()
             } else if(evt.keyCode == 38 && this.state.suggestions.length){  //up
@@ -329,7 +338,8 @@
          border: 1px solid black;
          border-top: none;
          position: sticky;
-         display: block;
+         display: flex;
+         align-items: center;
          width: 100%;
          bottom: 0;
          left: 0;

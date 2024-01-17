@@ -172,11 +172,11 @@
                      this.state.data = {users:[]}
                      let id = 0
                      for (var key in response.content) {
-                        var info = response.content[key]
-                        info.email = key
-                        info.id = id
+                        var user = response.content[key]
+                        user.email = key
+                        user.id = id
                         id++
-                        this.state.data.users.push(info)
+                        this.state.data.users.push(user)
                      }
                   })
                   .always(() => {
@@ -185,11 +185,13 @@
          },
 
          saveData() {
-            if (Object.values(this.state.data.users).find(row => row.canConfig) == undefined) {
+            if (!this.state.data.users.length) {
+               this.update({errorMessage: 'Please, add at least one user.'})
+            } else if (this.state.data.users.find(row => row.canConfig) == undefined) {
                this.update({errorMessage: 'At least one user must have <i>Configure</i> permission.'})
-            } else if(Object.values(this.state.data.users).find(row => row.email == "")) {
+            } else if(this.state.data.users.find(row => row.email == "")) {
                this.update({errorMessage: 'Email must not be empty.'})
-            } else if (Object.values(this.state.data.users).find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
+            } else if (this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
                this.update({errorMessage: 'User should have assigned at least one privilege.'})
             } else {
                let data = {}

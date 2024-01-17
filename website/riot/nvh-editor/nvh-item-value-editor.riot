@@ -4,7 +4,8 @@
       <div class="nvh-toolbar">
       </div>
       <div class="nvh-editable-div"
-            onkeyup={onKeyUp}>
+            onkeyup={onKeyUp}
+            onblur={onBlur}>
       </div>
       <small class="nvh-save-note grey-text">
          Ctrl + Enter to confirm
@@ -27,8 +28,8 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.config = this.nvhStore.getElementConfig(this.props.element.name)
-            this.state.style = this.nvhStore.getElementStyle(this.props.element.name)
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
             this.state.showEditor = this.state.config.type == "inl" || this.state.config.type == "txt"
          },
 
@@ -74,12 +75,10 @@
                this.initFormSelect()
             }
             this.focusInput()
-            document.addEventListener('click', this.handleClickOutside)
          },
 
          onBeforeUnmount(){
             this.state.showEditor && this.state.editor.destroy()
-            document.removeEventListener('click', this.handleClickOutside)
          },
 
          onKeyUp(evt){
@@ -89,6 +88,10 @@
             } else if(evt.keyCode == 27){
                this.nvhStore.stopElementEditing()
             }
+         },
+
+         onBlur(evt){
+            this.changeValue()
          },
 
          onSelectChange(evt){
@@ -112,13 +115,6 @@
             this.state.editor.destroy()
             this.nvhStore.changeElementValue(this.props.element, value.trim())
             this.nvhStore.stopElementEditing()
-         },
-
-         handleClickOutside(evt){
-            if (!this.root.contains(evt.target)){
-               evt.stopPropagation()
-               this.changeValue()
-            }
          },
 
          initFormSelect(){
@@ -176,6 +172,7 @@
          .nvh-editable-div{
             padding: 5px 8px 25px;
             min-height: 50px;
+            outline: none;
          }
          .nvh-save-note{
             position: absolute;

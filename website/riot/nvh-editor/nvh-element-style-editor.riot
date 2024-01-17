@@ -268,7 +268,7 @@
          onOpenStyleEditor(elementName, elementNode){
             this.update({
                elementName: elementName,
-               style: this.nvhStore.getElementStyle(elementName),
+               style: this.nvhStore.getElementStyle(elementName) || {},
                elementNode: elementNode,
                availableOptions: this.getAvailableOptions(elementName)
             })
@@ -284,7 +284,7 @@
          onElementChange(evt){
             this.update({
                elementName: evt.target.value,
-               style: this.nvhStore.getElementStyle(evt.target.value),
+               style: this.nvhStore.getElementStyle(evt.target.value) || {},
                availableOptions: this.getAvailableOptions(evt.target.value)
             })
          },
@@ -354,11 +354,15 @@
          },
 
          getAvailableOptions(elementName){
-            let options = ["shown", "layout", "separation", "gutter", "border", "background", "outerPunc", "label"]
-           if(["txt", "inl", "lst"].includes(this.nvhStore.getElementConfig(elementName).type)){
-               options = options.concat(["colour", "slant", "weight", "textsize", "innerPunc"])
+            let config = this.nvhStore.getElementConfig(elementName)
+            if(config){
+               let options = ["shown", "layout", "separation", "gutter", "border", "background", "outerPunc", "label"]
+               if(["txt", "inl", "lst"].includes(config.type)){
+                  options = options.concat(["colour", "slant", "weight", "textsize", "innerPunc"])
+               }
+               return options
             }
-            return options
+            return []
          }
       }
    </script>
@@ -470,6 +474,9 @@
                border: 1px dotted black;
             }
          }
+      }
+      .dropdown-content{
+         min-width: 200px;
       }
    </style>
 </nvh-element-style-editor>

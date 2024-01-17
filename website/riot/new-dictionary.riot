@@ -33,7 +33,7 @@
                   minlength="5"
                   pattern="[a-zA-Z0-9\-_]*"
                   oninput={onUrlInput}
-                  style="max-width: 300px;border: none;outline: none; padding-left: 5px;"/>
+                  style="max-width: 300px;border: none;outline: none; padding-left: 5px;background-color: unset;"/>
          </span>
       </div>
       <div style="color: rgba(0,0,0,0.54);font-size: 0.7rem;">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
@@ -42,48 +42,21 @@
    <div class="row mb-4">
       <h4>Entry structure</h4>
       <p class="grey-text">Chose modules you want to use in your dictionary. You can change this later.</p>
-      <div class="" style="background-color: whitesmoke;padding: 20px; display: inline-flex;">
-         <div>
-            <h6>Available modules</h6>
-            <div if={state.schemas}
-                  class="availableModules displayFlex">
-               <div class="pl-4"
-                     style="min-width: 250px;">
-                  <div each={item in state.schemas}
-                        class="mt-2">
-                     <span style="padding-left: {(item.key.split('.').length - 1) * 30}px">
-                        <label class="checkbox">
-                           <input type="checkbox"
-                                 checked={item.checked}
-                                 name={item.key}
-                                 onchange={onSchemaCheckboxChange}>
-                           <span>
-                              {item.name}
-                              <i if={item.description}
-                                    class="itemHelpIcon ml-2 material-icons tooltipped"
-                                    data-tooltip={item.description}>help_outline</i>
-                           </span>
-                        </label>
-                     </span>
-                  </div>
-               </div>
-               <div class="modulesArrow">
-                  <i class="material-icons">chevron_right</i>
-               </div>
-            </div>
-         </div>
-         <div class="finalStructure positionRelative pl-8">
-            <h6>Final entry structure</h6>
-            <loading-overlay if={state.isSchemaLoading}/>
-            <div class="pl-4"
-                  style="min-width: 250px;">
-               <pre if={state.finalSchema}><!--
-               --><div each={(row, idx) in state.finalSchema.trim().split("\n")}
-                           style="color: {window.nvhStore.getColorByIndex(idx)};">
-                     {row}
-                  </div>
-               </pre>
-            </div>
+      <nvh-schema selected-modules={state.selectedModules}
+            on-schema-loaded={onSchemaLoaded}
+            on-schema-change={onSchemaChange}
+            on-modules-change={onModulesChange}/>
+
+      <div class="row">
+         <div class="input-field">
+            <label class="checkbox">
+               <input id="addExamples"
+                     type="checkbox"
+                     checked="checked">
+               <span>
+                  Add example entries
+               </span>
+            </label>
          </div>
       </div>
    </div>
@@ -118,36 +91,44 @@
             title: "",
             url: "",
             isLoading: true,
-            isSchemaLoading: false,
             errorMessage: "",
             baseUrl: "https://www.lexonomy.eu/",
-            schemas: null,
-            finalSchema: null
+            finalSchema: null,
+            selectedModules: []
          },
 
          onMounted() {
-            promises = [
-               this.store.suggestUrl()
-                     .done(response => {
-                        this.state.url = response.suggested
-                        this.state.baseUrl = response.baseUrl
-                     }),
-               this.store.loadSchemas()
-                     .done(response => {
-                        this.state.schemas = Object.values(response.items).sort((a, b) => {
-                              return a.key.localeCompare(b.key)
-                           })
-                     })
-            ]
-
-            Promise.all(promises)
-                  .then(results => {
+            this.store.suggestUrl()
+                  .done(response => {
+                     this.state.url = response.suggested
+                     this.state.baseUrl = response.baseUrl
+                  })
+                  .always(results => {
                      this.update({isLoading: false})
                      M.updateTextFields()
-                     $("select").formSelect()
-                     this.state.schemas && this.loadFinalSchema()
                   })
 
+            this.refreshMakeButtonDisabled()
+         },
+
+         onModulesChange(modules){
+            this.state.selectedModules = modules
+            this.update()
+            this.refreshMakeButtonDisabled()
+         },
+
+         onSchemaLoaded(schemas){
+            if(!this.state.selectedModules.length){
+               this.state.selectedModules = schemas.filter(schema => schema.checked || schema.required)
+                     .map(schema => schema.key.split(".").pop())
+               this.update()
+               this.refreshMakeButtonDisabled()
+            }
+         },
+
+         onSchemaChange(schema){
+            this.state.selectedModules = schema.filter(s => s.checked).map(s => s.key)
+            this.update()
             this.refreshMakeButtonDisabled()
          },
 
@@ -165,29 +146,14 @@
             $("#id").focus()
          },
 
-         onSchemaCheckboxChange(evt){
-            let key = evt.target.name
-            let checked = evt.target.checked
-            if(checked && key.indexOf(".") != -1){
-               do{
-                  // check item -> check all its parents
-                  this.state.schemas.find(s => s.key == key).checked = checked
-                  key = key.substring(0, key.lastIndexOf("."))
-               } while(key && key.indexOf(".") != 0)
-            } else if(!checked){
-               // uncheck item -> unchek all its children
-               this.state.schemas.filter(s => s.key.startsWith(key)).forEach(s => s.checked = false)
-            }
-            this.loadFinalSchema()
-         },
-
          onCreateDictionaryClick(event) {
             let title = $("#title").val()
             if(title){
                this.update({isLoading: true})
                this.store.createDictionary({
                   url: $("#url").val(),
-                  schemaKeys: JSON.stringify(this.state.schemas.filter(s => s.checked).map(s => s.key)),
+                  schemaKeys: JSON.stringify(this.state.selectedModules),
+                  addExamples: $("#addExamples").is(":checked"),
                   title: title
                })
                      .done(response => {
@@ -201,50 +167,17 @@
             }
          },
 
-         loadFinalSchema(){
-            let schemas = this.state.schemas.filter(s => s.checked).map(s => s.key)
-            this.update({isSchemaLoading: true})
-            this.store.loadFinalSchema(schemas)
-                  .done(response => {
-                     this.state.finalSchema = response.schemafinal
-                  })
-                  .always(() => {
-                     this.update({isSchemaLoading: false})
-                     this.refreshMakeButtonDisabled()
-                  })
-            this.refreshMakeButtonDisabled()
-         },
-
          refreshMakeButtonDisabled(){
-            $("#makeButton", this.root).toggleClass("disabled", this.state.title == "" || this.state.url == "" || this.state.isSchemaLoading)
+            $("#makeButton", this.root).toggleClass("disabled", this.state.title == ""
+                  || this.state.url == ""
+                  || !this.state.selectedModules.length)
          }
       }
    </script>
 
-   <style type="scss">
-      .availableModules{
-         gap: 40px;
-      }
-      .modulesArrow{
-         display: flex;
-         align-items: center;
-         gap: 20px;
-         i{
-            font-size: 100px;
-            opacity: 0.1
-         }
-      }
-      .finalStructure{
-         .overlay{
-            background-color: rgba(0, 0, 0, 0)
-         }
-      }
-      .itemHelpIcon{
-         opacity: 0.5;
-         line-height: 25px;
-         height: 25px;
-         font-size: 17px;
-         vertical-align: bottom;
+   <style>
+      nvh-schema{
+         background-color: whitesmoke;
       }
    </style>
 </new-dictionary>

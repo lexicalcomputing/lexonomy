@@ -1,0 +1,144 @@
+<nvh-schema class="displayInlineFlex p-12">
+   <div>
+      <h6>Available modules</h6>
+      <div if={state.schemas}
+            class="availableModules displayFlex">
+         <div class="pl-4"
+               style="min-width: 250px;">
+            <div each={item in state.schemas}
+                  class="mt-2">
+               <span style="padding-left: {(item.key.split('.').length - 1) * 30}px">
+                  <label class="checkbox">
+                     <input type="checkbox"
+                           checked={item.required || props.selectedModules.includes(item.key)}
+                           name={item.key}
+                           disabled={item.required}
+                           onchange={onSchemaCheckboxChange}>
+                     <span>
+                        {item.name}
+                        <i if={item.description}
+                              class="itemHelpIcon ml-2 material-icons tooltipped"
+                              data-tooltip={item.description}>help_outline</i>
+                     </span>
+                  </label>
+               </span>
+            </div>
+         </div>
+         <div class="modulesArrow">
+            <i class="material-icons">chevron_right</i>
+         </div>
+      </div>
+   </div>
+   <div class="finalStructure positionRelative pl-8">
+      <h6>Final entry structure</h6>
+      <loading-overlay if={state.isLoading}/>
+      <div class="pl-4"
+            style="min-width: 250px;">
+         <pre if={state.finalSchema}><!--
+         --><div each={(row, idx) in state.finalSchema.trim().split("\n")}
+                     style="color: {window.nvhStore.getColorByIndex(idx)};">
+               {row}
+            </div>
+         </pre>
+      </div>
+   </div>
+
+
+   <script>
+       export default {
+         state: {
+            isLoading: true,
+            schemas: null,
+            finalSchema: null
+         },
+
+         onMounted() {
+            this.store.loadSchemas()
+                  .done(response => {
+                     this.state.schemas = Object.values(response.items).sort((a, b) => {
+                           return a.key.localeCompare(b.key)
+                        })
+                     this.state.schemas.forEach(schema => {
+                        schema.checked = this.props.selectedModules.includes(schema.key)
+                     })
+                  })
+                  .always(results => {
+                     this.update({isLoading: false})
+                     M.updateTextFields()
+                     $("select").formSelect()
+                     this.state.schemas && this.loadFinalSchema()
+                     this.props.onSchemaLoaded && this.props.onSchemaLoaded(this.state.schemas)
+                  })
+         },
+
+         onBeforeUpdate(){
+            if(this.state.schemas){
+               let schemaModules = this.state.schemas.filter(schema => schema.checked).map(schema => schema.key)
+               if(schemaModules.sort().toString() != this.props.selectedModules.sort().toString()){
+                  this.state.schemas.forEach(schema => {
+                     schema.checked = this.props.selectedModules.includes(schema.key)
+                  })
+                  this.loadFinalSchema()
+               }
+            }
+         },
+
+         onSchemaCheckboxChange(evt){
+            let key = evt.target.name
+            let checked = evt.target.checked
+            if(checked && key.indexOf(".") != -1){
+               do{
+                  // check item -> check all its parents
+                  this.state.schemas.find(s => s.key == key).checked = checked
+                  key = key.substring(0, key.lastIndexOf("."))
+               } while(key && key.indexOf(".") != 0)
+            } else if(!checked){
+               // uncheck item -> unchek all its children
+               this.state.schemas.filter(s => s.key.startsWith(key)).forEach(s => s.checked = false)
+            }
+            this.props.onModulesChange && this.props.onModulesChange(this.state.schemas.filter(s => s.checked).map(s => s.key))
+            this.loadFinalSchema()
+         },
+
+         loadFinalSchema(){
+            let schemas = this.state.schemas.filter(s => s.checked).map(s => s.key)
+            this.update({isLoading: true})
+            this.store.loadFinalSchema(schemas)
+                  .done(response => {
+                     this.state.finalSchema = response.schemafinal
+                  })
+                  .always(() => {
+                     this.update({isLoading: false})
+                     this.props.onSchemaChange && this.props.onSchemaChange(this.state.schemas, this.state.finalSchema)
+                  })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .availableModules{
+         gap: 40px;
+      }
+      .modulesArrow{
+         display: flex;
+         align-items: center;
+         gap: 20px;
+         i{
+            font-size: 100px;
+            opacity: 0.1
+         }
+      }
+      .finalStructure{
+         .overlay{
+            background-color: rgba(0, 0, 0, 0)
+         }
+      }
+      .itemHelpIcon{
+         opacity: 0.5;
+         line-height: 25px;
+         height: 25px;
+         font-size: 17px;
+         vertical-align: bottom;
+      }
+   </style>
+</nvh-schema>

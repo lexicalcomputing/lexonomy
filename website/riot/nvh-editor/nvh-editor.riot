@@ -4,23 +4,26 @@
    <template if={nvhData.entry}>
       <nvh-editor-context-menu/>
       <nvh-revisions/>
-      <template if={nvhData.editorMode == "view"}>
-         <nvh-element-style-editor if={dictData.userAccess.canEdit}/>
-         <nvh-editor-item-toolbar if={dictData.userAccess.canEdit}/>
-         <nvh-custom-editor if={nvhData.customEditor}/>
-         <div if={!nvhData.customEditor}
-               class="nvh-editor-view-items {nvhData.revision ? 'pointerEventsNone' : ''}">
-            <nvh-editor-view-item element={nvhData.entry}
-                  read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
-         </div>
-      </template>
-      <template if={nvhData.editorMode == "edit"}>
-         <nvh-side-dnd-panel if={dictData.userAccess.canEdit}/>
-         <nvh-widget-panel/>
-         <div class="nvh-editor-edit-items {nvhData.revision ? 'pointerEventsNone' : ''}">
-            <nvh-editor-edit-item element={nvhData.entry}
-                  read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
-         </div>
+      <nvh-custom-editor if={nvhData.customEditor && nvhData.editorMode != "code"}/>
+      <template if={!nvhData.customEditor}>
+         <template if={nvhData.editorMode == "view"}>
+            <nvh-element-style-editor if={dictData.userAccess.canEdit}/>
+            <nvh-editor-item-toolbar if={dictData.userAccess.canEdit}/>
+            <div class="nvh-editor-view-items {nvhData.revision ? 'pointerEventsNone' : ''}">
+               <nvh-editor-view-item element={nvhData.entry}
+                     read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
+            </div>
+         </template>
+         <template if={nvhData.editorMode == "edit"}>
+            <nvh-custom-editor if={nvhData.customEditor}/>
+            <nvh-side-dnd-panel if={dictData.userAccess.canEdit}/>
+            <nvh-widget-panel/>
+            <div if={!nvhData.customEditor}
+                  class="nvh-editor-edit-items {nvhData.revision ? 'pointerEventsNone' : ''}">
+               <nvh-editor-edit-item element={nvhData.entry}
+                     read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
+            </div>
+         </template>
       </template>
       <nvh-source-code if={nvhData.editorMode == "code"}
             read-only={!dictData.userAccess.canEdit}/>
@@ -41,7 +44,7 @@
       export default{
          bindings: [["store", "isEntryLoadingChanged", "onIsEntryLoadingChanged"],
                     ["nvhStore", "updateEditor", "update"],
-                    ["nvhStore", "entryChanged", "update"],
+                    ["nvhStore", "entryChanged", "onEntryChanged"],
                     ["nvhStore", "editorModeChanged", "onEditorModeChanged"]],
 
 
@@ -68,12 +71,19 @@
             this.refreshListeners()
          },
 
+         onEntryChanged(){
+            // update URL here not in store, so changing entryId in other part
+            // of lexonomy does not trigger URL update
+            this.nvhStore.updateUrl()
+            this.update()
+         },
+
          onCreateNewEntryClick(){
             this.nvhStore.createNewEntry()
          },
 
          handleClickOutside(evt){
-            if (!this.root.contains(evt.target)){
+            if (!evt.nvhStartEditing && !this.root.contains(evt.target)){
                this.nvhStore.blurElement()
                this.nvhStore.trigger("closeContextMenu")
             }
@@ -85,6 +95,12 @@
                && evt.target.contentEditable != 'true'){
                // prvent screen from scrolling
                evt.preventDefault()
+            } else if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){  // ctrl + s
+               evt.preventDefault()
+               if(this.nvhStore.getAvailableActions().save){
+                  this.nvhStore.validateAllElements()
+                  this.nvhData.isValid && this.nvhStore.saveEntry()
+               }
             }
          },
 
@@ -163,6 +179,10 @@
    </script>
 
    <style type="scss">
+      :host{
+         min-height: 400px;
+         display: block;
+      }
       .nvh-no-entry{
          min-height: 50vh;
          text-align: center;

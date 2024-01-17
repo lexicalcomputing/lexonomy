@@ -16,8 +16,7 @@
             class="doctypes">
          <ul class="tabs">
             <li each={ type in dictData.doctypes }
-                  active={ type == dictData.doctype }
-                  class="tab col s2">
+                  class="tab col s2 {type == dictData.doctype ? 'active' : ''}">
                <a onclick={ doChangeDoctype.bind(this, type) }>{ type }</a>
             </li>
          </ul>
@@ -30,12 +29,13 @@
 
                <loading-overlay if={dictData.isEntryListLoading}/>
                <template if={dictData.isEntryListLoaded}>
-                  <dict-entry-filter search-func={store.searchEntryList.bind(store)}/>
+                  <dict-entry-filter search-func={onFilterChanged}/>
                   <div if={dictData.entryCount > dictData.entryList.length}
                         class="entriesCountInfo">
                      Showing {dictData.entryList.length} of {dictData.entryCount} entries.
                   </div>
-                  <div class="entry-list collection">
+                  <div class="entry-list collection"
+                        onscroll={onEntryListScroll}>
                      <div each={ (entry, idx) in dictData.entryList }
                            data-idx={idx}
                            class="collection-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}"
@@ -56,6 +56,10 @@
                      <div if={!dictData.entryList.length && !dictData.isEntryListLoading}
                            style="padding-top: 10vh;">
                         <h2 class="grey-text center-align">No entries</h2>
+                     </div>
+                     <div if={dictData.isLoadingMoreEntries}
+                           class="loadingMoreEntries positionRelative">
+                        <loading-overlay/>
                      </div>
                   </div>
                   <ul if={dictData.config.flagging.flags.length}
@@ -98,7 +102,8 @@
          bindings: [["store", "dictionaryListLoadingChanged", "update"],
                     ["store", "entryListChanged", "update"],
                     ["store", "entryListLoadingChanged", "update"],
-                    ["store", "entryIdChanged", "update"]],
+                    ["store", "isLoadingMoreEntriesChanged", "update"],
+                    ["store", "entryIdChanged", "onEntryIdChanged"]],
 
          state: {
             focused: false,
@@ -109,14 +114,33 @@
             timer: null
          },
 
+         onEntryIdChanged(){
+            this.update()
+            this.setCursorByEntryId()
+         },
+
          getFlagStyle(flag){
             let bgColor = this.store.getFlagColor(flag) || 'initial'
             let color = this.store.getFlagTextColor(bgColor)
             return `color: ${color}; background-color: ${bgColor}`
          },
 
+         onEntryListScroll(evt){
+            let list = $(".entry-list", this.root)[0]
+            if(list.scrollHeight - list.scrollTop <= list.clientHeight + 500){
+               this.store.loadMoreEntries()
+            }
+         },
+
+         onFilterChanged(){
+            this.store.one("entryListChanged", () => {
+               $(".entry-list").scrollTop(0)
+            })
+            this.store.searchEntryList()
+         },
+
          onHeadwordClick(entryId, evt){
-            if(!window.editorNeedsSaving(evt)){
+            if(!window.nvhStore.editorNeedsSaving(evt)){
                this.store.changeEntryId(entryId)
                this.closeSidenav()
                //this.updateUrl()
@@ -124,13 +148,14 @@
          },
 
          onHeadwordLinkClick(entryId, evt){
-            evt.preventDefault()
-            if(!window.editorNeedsSaving(evt)){
+            /*evt.preventDefault()
+            evt.stopPropagation()
+            if(!window.nvhStore.editorNeedsSaving(evt)){
                this.onDocumentClick(evt)
                this.store.changeEntryId(entryId)
                this.closeSidenav()
                //this.updateUrl()
-            }
+            }*/
          },
 
          onOpenFlagMenuClick(entry, evt){
@@ -170,7 +195,6 @@
                if(inComponent || inComponent != this.state.focused){
                   this.state.focused = inComponent
                   this.state.cursorPosition = inComponent ? $(evt.target).closest(".collection-item").data("idx") + 1 : null
-                  this.updateCursor()
                }
             }
          },
@@ -272,6 +296,7 @@
                this.state.cursorPosition = Math.min(this.state.cursorPosition + (step || 1), this.dictData.entryList.length)
             }
             this.updateCursor()
+            this.scrollSelectedIntoView()
          },
 
          moveCursorUp(step){
@@ -281,6 +306,7 @@
                this.state.cursorPosition = Math.max(1,  this.state.cursorPosition - (step || 1))
             }
             this.updateCursor()
+            this.scrollSelectedIntoView()
          },
 
          updateCursor(){
@@ -288,9 +314,6 @@
             if(this.state.cursorPosition){
                const node = $(".collection-item:nth-child(" + this.state.cursorPosition + ")")
                $(node).addClass("focused")
-               if(node){
-                  this.scrollSelectedIntoView()
-               }
             }
          },
 
@@ -303,12 +326,12 @@
             if(selectedItem){
                let offsetTop = selectedItem.offsetTop
                let rowHeight = selectedItem.clientHeight
-               let min = list.scrollTop
-               let max = list.scrollTop + list.clientHeight - rowHeight
+               let min = list.scrollTop + (3 * rowHeight)
+               let max = list.scrollTop + list.clientHeight - (3 * rowHeight)
                if(offsetTop < min){
-                  list.scrollTop = offsetTop
+                  list.scrollTop = offsetTop - (2 * rowHeight)
                } else if(offsetTop > max){
-                  list.scrollTop = offsetTop - list.clientHeight + rowHeight
+                  list.scrollTop = offsetTop - list.clientHeight + (3 * rowHeight)
                }
             }
          },
@@ -327,6 +350,7 @@
                if(idx != -1){
                   this.state.cursorPosition = idx + 1
                   this.updateCursor()
+                  this.scrollSelectedIntoView()
                }
             }
          },
@@ -385,7 +409,7 @@
          },*/
 
          onBeforeMount(){
-            this.store.loadEntry()
+            //this.store.loadEntry()
          },
 
          onMounted(){
@@ -457,7 +481,7 @@
       .entry-list {
          max-height: 80vh;
          overflow-y: auto;
-         max-height: max(100vh - 70px); /* height of entry filter bar */
+         max-height: max(100vh - 260px);
       }
       .dictEditEntry{
          min-width: 500px;
@@ -527,6 +551,9 @@
       }
       .collection-item.focused{
          background-color: #eceff1;
+      }
+      .loadingMoreEntries{
+         height: 130px;
       }
       .lineNum{
          font-size: 0.8rem;

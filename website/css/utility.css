@@ -4,11 +4,17 @@
 .displayInlineFlex{
     display: inline-flex;
 }
+.alignCenter{
+    align-items: center;
+}
 .positionRelative {
     position: relative;
 }
 .inlineBlock {
     display: inline-block;
+}
+.monospace{
+    font-family: monospace;
 }
 .pointer {
     cursor: pointer;
@@ -30,6 +36,12 @@
 }
 .borderBottom{
     border-bottom: 1px solid #dfdfdf;
+}
+.borderLeft{
+    border-left: 1px solid #dfdfdf;
+}
+.borderRight{
+    border-right: 1px solid #dfdfdf;
 }
 .clickable{
    opacity: 0.7;

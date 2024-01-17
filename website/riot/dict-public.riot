@@ -1,26 +1,18 @@
 <dict-public>
-   <loading-overlay if={state.isLoading || dictData.isDictionaryLoading || state.isEntryListLoading}/>
+   <loading-overlay if={state.isLoading || dictData.isDictionaryLoading}/>
    <template if={!dictData.isDictionaryLoading}>
-      <h1 class="header">
-         { dictData.title }
-         <dict-favorite-toggle if={authData.authorized}
-               dict-id={dictData.dictId}/>
-         <div class="dictBtns buttons">
+      <div class="header displayFlex">
+         <h1>
+            { dictData.title }
+         </h1>
+         <div class="dictBtns buttons ml-auto">
             <a if={dictData.userAccess.canEdit}
                   href="#/{dictData.dictId}/edit"
-                  class="btn">edit</a>
-            <a if={dictData.userAccess.canConfig}
-                  href="#/{dictData.dictId}/config"
-                  class="btn">config</a>
-            <a if={dictData.userAccess.canUpload}
-                  href="#/{dictData.dictId}/upload"
-                  class="btn">upload</a>
-            <a if={dictData.userAccess.canDownload}
-                  href="#/{dictData.dictId}/download"
-                  class="btn">download</a>
-            <a if={dictData.userAccess.canEdit}
-                  href="#/{dictData.dictId}/links"
-                  class="btn">links</a>
+                  class="btn btn-primary btn-large">
+               open editor
+            </a>
+            <dict-favorite-toggle if={authData.authorized}
+                  dict-id={dictData.dictId}/>
             <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit}
                   class="dropdown-trigger btn btn-floating btn-flat"
                   href="#"
@@ -30,7 +22,31 @@
             <ul id="dictMenuDropdown"
                   class="dropdown-content">
                <li if={dictData.userAccess.canConfig}>
-                  <a href=""
+                  <a href="#/{dictData.dictId}/config">
+                     <i class="material-icons">settings</i>
+                     Config
+                  </a>
+               </li>
+               <li if={dictData.userAccess.canUpload}>
+                  <a href="#/{dictData.dictId}/upload">
+                        <i class="material-icons">upload</i>
+                     Upload
+                  </a>
+               </li>
+               <li if={dictData.userAccess.canDownload}>
+                  <a href="#/{dictData.dictId}/download">
+                     <i class="material-icons">download</i>
+                     Download
+                  </a>
+               </li>
+               <li if={dictData.userAccess.canEdit}>
+                  <a href="#/{dictData.dictId}/links">
+                     <i class="material-icons">link</i>
+                     Links
+                  </a>
+               </li>
+               <li if={dictData.userAccess.canConfig}>
+                  <a href="javascript:void(0);"
                         onclick={onClone}>
                      <i class="material-icons left">content_copy</i>
                      Clone
@@ -45,60 +61,64 @@
                </li>
             </ul>
          </div>
-      </h1>
+      </div>
 
       <div class="firstRowContainer">
-         <div class="firstRowCol description">
-            <h3>Description</h3>
-            <raw-html content={dictData.blurb}></raw-html>
-         </div>
          <template if={dictData.public || dictData.userAccess}>
-            <div class="sectionDivider"></div>
             <div class="firstRowCol">
                <div class="search">
-                  <h3>Search</h3>
+                  <h3 class="grey-text">Search</h3>
                   <dict-entry-filter search-func={search}/>
-                  <div if={!state.isEntryListLoading && state.showFoundEntries && dictData.entryList}
-                        class="searchResult">
-                     <ul if={dictData.entryList.length}
-                           class="entry-list found-entries">
-                        <li each={entry in dictData.entryList}>
-                           <a href={getEntryUrl(entry)}>
-                              <raw-html content={entry.title}></raw-html>
-                           </a>
-                        </li>
-                     </ul>
-                     <div if={dictData.entryCount > 20}
-                           class="serchResultNote grey-text">
-                           Showing first 20 entries of {dictData.entryCount}.
-                     </div>
-                     <div if={!dictData.entryList.length}
-                           class="noEntries">
-                         <h2 class="grey-text center-align">No entries</h2>
-                     </div>
-                  </div>
                </div>
                <div class="divider"></div>
                <div class="randomEntries">
-                  <a if={dictData.dictionaryExamplesHasMore}
-                        class="refreshExamplesBtn btn btn-floating waves-effect waves-light right"
-                        onclick={ onReloadExamplesClick }>
-                     <i class="material-icons">refresh</i>
-                  </a>
-                  <h3>Random entries</h3>
-                  <div if={dictData.isDictionaryExamplesLoading}
-                        class="loadingExamples grey-text">
-                     Loading...
+                  <h3 class="grey-text">Random entries</h3>
+                  <div class="randomEntryList">
+                     <div if={dictData.isDictionaryExamplesLoading}
+                           class="loadingExamples grey-text">
+                        Loading...
+                     </div>
+                     <ul if={ !dictData.isDictionaryExamplesLoading && dictData.dictionaryExamples }
+                           class="entry-list">
+                        <li each={ entry in dictData.dictionaryExamples }
+                              class={entry.id == state.displayedEntryId ? "activeEntryLink" : ""}>
+                           <a href="javascript:void(0);"
+                                 onclick={onRandomEntryClick.bind(this, entry)}>{ entry.title.replace(/(<([^>]+)>)/gi, "") }</a>
+                        </li>
+                        <li>
+                           <a if={dictData.dictionaryExamplesHasMore}
+                                 class="refreshExamplesBtn btn btn-floating btn-flat waves-effect waves-light tooltipped"
+                                 data-tooltip="Show other random entries."
+                                 onclick={ onReloadExamplesClick }>
+                              <i class="material-icons black-text">refresh</i>
+                           </a>
+                        </li>
+                     </ul>
                   </div>
-                  <ul if={ !dictData.isDictionaryExamplesLoading && dictData.dictionaryExamples }
-                        class="entry-list random-entries">
-                     <li each={ entry in dictData.dictionaryExamples }>
-                        <a href={getEntryUrl(entry)}>{ entry.titlePlain }</a>
-                     </li>
-                  </ul>
+
+                  <div class="positionRelative randomEntry">
+                     <a if={state.displayedEntryId }
+                           href={getEntryUrl()}
+                           class="btn btnOpenInEditor">
+                        open in editor
+                     </a>
+                     <loading-overlay if={dictData.isEntryLoading}/>
+                     <div if={!nvhData.customEditor && nvhData.entry}
+                           class="nvh-editor-view-items">
+                        <nvh-editor-view-item element={nvhData.entry}
+                              read-only={true}/>
+                     </div>
+                     <nvh-custom-editor if={nvhData.customEditor}
+                           read-only={true}/>
+                  </div>
                </div>
             </div>
          </template>
+         <div class="sectionDivider"></div>
+         <div class="firstRowCol description">
+            <h3 class="grey-text">Description</h3>
+            <raw-html content={dictData.blurb}></raw-html>
+         </div>
       </div>
 
       <div if={ dictData.public || dictData.userAccess }>
@@ -109,77 +129,36 @@
       </div>
    </template>
 
-   <style>
-      dict-favorite-toggle{
-         font-size: 0.6em;
-         margin-left: 0.5rem;
-      }
-      .dictBtns{
-         margin-top: 5px;
-      }
-      .firstRowContainer{
-         display: flex;
-      }
-      .sectionDivider{
-         width: 1px;
-         border-left: 1px solid #e0e0e0;
-         margin-left: 30px;
-      }
-      .firstRowCol{
-         flex: 1;
-         padding-bottom: 30px;
-      }
-      .firstRowCol .divider{
-         margin-top: 30px;
-      }
-      .description{
-         word-break: break-word;
-      }
-      dict-entry-filter{
-         max-width: 500px;
-      }
-      .search,
-      .randomEntries{
-         padding-left: 30px;
-      }
-      .searchResult{
-         min-height: max(15vh, 200px);
-      }
-      .searchResultNote{
-         font-size: 0.8rem;
-         margin-left: 10px;
-      }
-      .noEntries{
-         padding-top: 50px;
-      }
-      .entry-list li {
-         display: inline-block;
-         padding: 3px 10px;
-      }
-      .entry-list li a:hover {
-         text-decoration: underline;
-      }
-      .refreshExamplesBtn{
-         margin-top: 15px;
-      }
-      .loadingExamples{
-         min-height: 20px;
-         margin: 15px 10px;
-      }
-      .licence{
-         opacity: .5;
-      }
-   </style>
-
    <script>
       export default {
          bindings: [["store", "dictionaryChanged", "onDictionaryChanged"],
-                    ["store", "isDictionaryExamplesLoading", "update"]],
+                    ["store", "isEntryLoadingChanged", "update"],
+                    ["store", "isDictionaryExamplesLoadingChanged", "isDictionaryExamplesLoadingChanged"]],
 
          state: {
             isLoading: false,
-            isEntryListLoading: false,
-            showFoundEntries: false
+            displayedEntryId: null
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.nvhData = this.nvhStore.data
+         },
+
+         onMounted(){
+            this.dictData.searchtext = ""
+            if(!this.dictData.isDictionaryExamplesLoading){
+               this.reloadDictionaryExamples()
+            }
+            if(!this.dictData.isDictionaryLoading){
+               this.initializeDropdown()
+            }
+         },
+
+         isDictionaryExamplesLoadingChanged(){
+            this.state.displayedEntryId = this.dictData.dictionaryExamples && this.dictData.dictionaryExamples.length ? this.dictData.dictionaryExamples[0].id : null
+            this.store.changeEntryId(this.state.displayedEntryId)
+            this.update()
          },
 
          onClone(){
@@ -203,17 +182,17 @@
          },
 
          search(){
-            this.update({isEntryListLoading: true})
-            let request = this.store.loadEntryList(20)
-            request && request.done(() => {
-                     this.state.showFoundEntries = true
-                  })
-                  .always(() => {
-                     this.update({isEntryListLoading: false})
-                  })
+            this.store.loadEntryList()
+            route(`/${this.dictData.dictId}/edit?s=${this.dictData.searchtext}&m=${this.dictData.modifier}`)
          },
 
-         onReloadExamplesClick(){
+         onRandomEntryClick(entry){
+            this.state.displayedEntryId = entry.id
+            this.store.changeEntryId(entry.id)
+         },
+
+         onReloadExamplesClick(evt){
+            M.Tooltip.getInstance(evt.currentTarget).destroy()
             this.reloadDictionaryExamples()
             this.update()
          },
@@ -223,8 +202,12 @@
             this.initializeDropdown()
          },
 
-         onCloseSearchResultClick(){
-            this.update({showFoundEntries: false})
+         getEntryUrl(){
+            if(this.dictData.userAccess && this.dictData.userAccess.canEdit){
+               return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${this.state.displayedEntryId}/view`
+            } else {
+               return `#/${this.dictData.dictId}/${this.state.displayedEntryId}`
+            }
          },
 
          initializeDropdown(){
@@ -232,35 +215,88 @@
                coverTrigger: false,
                constrainWidth: false
             })
-         },
-
-         getEntryUrl(entry){
-            if(this.dictData.userAccess && this.dictData.userAccess.canEdit){
-               return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${entry.id}/view`
-            } else {
-               return `#/${this.dictData.dictId}/${entry.id}`
-            }
-         },
-
-         onUpdated(){
-            // make all items in list same width to create columns
-            [".entry-list li", ".random-entries li"].forEach(selector => {
-               let maxWidth = 0;
-               $(selector).each((i, e) => {maxWidth = Math.max(maxWidth, $(e).width())})
-               $(selector).each((i, e) => {$(e).css("width", Math.min(300, maxWidth + 20) + "px")})
-            })
-         },
-
-         onMounted(){
-            this.dictData.searchtext = ""
-            if(!this.dictData.dictionaryExamples && !this.dictData.isDictionaryExamplesLoading){
-               this.reloadDictionaryExamples()
-            }
-            if(!this.dictData.isDictionaryLoading){
-               this.initializeDropdown()
-            }
          }
       }
    </script>
+
+   <style type="scss">
+      dict-favorite-toggle{
+         font-size: 1.4rem;
+      }
+      .header{
+         border-bottom: 1px solid #e0e0e0;
+         padding-bottom: 0.5rem;
+         h1{
+            margin: 0;
+         }
+      }
+      h3{
+         margin-left: 0;
+      }
+      .btnOpenInEditor{
+         position: absolute;
+         right: 0;
+         top: 10px;
+         z-index: 99;
+      }
+      .dictBtns{
+         margin-top: 5px;
+         align-items: center;
+      }
+      .firstRowContainer{
+         display: flex;
+      }
+      .sectionDivider{
+         width: 1px;
+         border-left: 1px solid #e0e0e0;
+         margin-right: 30px;
+      }
+      .firstRowCol{
+         flex: 1;
+         padding-bottom: 30px;
+      }
+      .firstRowCol .divider{
+         margin-top: 30px;
+      }
+      .description{
+         word-break: break-word;
+      }
+      dict-entry-filter{
+         max-width: 500px;
+      }
+      .search,
+      .randomEntries{
+         padding-right: 30px;
+      }
+      .randomEntryList{
+         min-height: 46px;
+         ul{
+            margin: 0
+         }
+      }
+      .randomEntry{
+         padding-top: 20px;
+         min-height: 200px;
+      }
+      .activeEntryLink{
+         a{
+            font-weight: bold;
+         }
+      }
+      .entry-list li {
+         display: inline-block;
+         padding: 3px 10px;
+      }
+      .entry-list li a:hover {
+         text-decoration: underline;
+      }
+      .loadingExamples{
+         min-height: 20px;
+         margin: 15px 10px;
+      }
+      .licence{
+         opacity: .5;
+      }
+   </style>
 </dict-public>
 

@@ -76,8 +76,8 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.style = this.nvhStore.getElementStyle(this.props.element.name)
-            this.state.config = this.nvhStore.getElementConfig(this.props.element.name)
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
             this.state.labelColor = this.nvhStore.getElementColor(this.props.element.name)
          },
 
@@ -118,23 +118,25 @@
          },
 
          onLabelClick(evt){
-            evt.stopPropagation()
-            if(!this.props.element.edit){
-               if(this.props.element.focused){
-                  this.nvhStore.trigger("openContextMenu")
-               } else {
-                  this.nvhStore.focusElement(this.props.element)
+            if(!evt.target.classList.contains("nvh-collapse-toggle")){
+               if(!this.props.element.edit){
+                  if(this.props.element.focused){
+                     this.nvhStore.trigger("openContextMenu")
+                  } else {
+                     this.nvhStore.focusElement(this.props.element)
+                  }
                }
             }
          },
 
          onCollapseToggleClick(evt){
-            evt.stopPropagation()
+            //evt.stopPropagation()
             this.nvhStore.toggleElementCollapsed(this.props.element)
          },
 
          onEditClick(evt){
-            evt.stopPropagation()
+            //evt.stopPropagation()
+            evt.nvhStartEditing = true
             this.nvhStore.startElementEditing(this.props.element)
          },
 
@@ -221,6 +223,7 @@
          border-radius: 10px;
          transition: 0.2s;
          white-space: nowrap;
+         align-items: baseline;
       }
       .nvh-item-value-editor{
          padding: 5px;

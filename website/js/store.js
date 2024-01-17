@@ -13,7 +13,8 @@ class StoreClass {
          publicDictionaryList: [],
          entryRevisions: [],
          isEntryRevisionsLoading: false,
-         isEntryRevisionsLoaded: false
+         isEntryRevisionsLoaded: false,
+         actualPage: null
       }
 
       this.resetDictionary()
@@ -127,6 +128,22 @@ class StoreClass {
             })
    }
 
+   getLanguageCode(name){
+      let lang = this.data.siteconfig.langs.find(l => l.lang == name)
+      if(lang){
+         return lang.code
+      }
+      return ""
+   }
+
+   getLanguageName(code){
+      let lang = this.data.siteconfig.langs.find(l => l.code == code)
+      if(lang){
+         return lang.lang
+      }
+      return ""
+   }
+
    getFlag(flagName){
       if(flagName){
          return this.data.config.flagging.flags.find(f => f.name == flagName)
@@ -153,6 +170,22 @@ class StoreClass {
          return (red * 0.299 + green * 0.587 + blue * 0.114) > 186 ? "#000000" : "#ffffff"
       }
       return "#000000"
+   }
+
+   isStructureValid(){
+      if(this.data.config
+            && this.data.config.structure
+            && this.data.config.structure.root
+            && this.data.config.structure.elements
+            && Object.values(this.data.config.structure.elements).every(element => {
+               if(element.children && element.type){
+                  return true
+               }
+            })
+      ){
+         return true
+      }
+      return false
    }
 
    resetDictionary(){
@@ -209,15 +242,8 @@ class StoreClass {
       this.trigger("dictionaryListLoadingChanged")
       return $.ajax(`${window.API_URL}userdicts.json`)
             .done(response => {
-               this.data.dictionaryList = response.dicts || []
-               this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
-               this.data.dictionaryList.forEach(d => {
-                  if(!d.owners.includes(window.auth.data.email)){
-                     d.shared = true
-                  }
-               })
+               this._setDictionaryList(response.dicts)
                this.data.isDictionaryListLoaded = true
-               this.trigger("dictionaryListChanged")
             })
             .fail(response => {
                M.toast({html: "Dictionary list could not be loaded."})
@@ -266,11 +292,19 @@ class StoreClass {
                if(response.success){
                   // TODO: backward compatibility, may be removed in future
                   //response.configs.structure = response.configs.structure || response.configs.xema
-                  for(let elementName in response.configs.structure.elements){
-                     response.configs.structure.elements[elementName].children.forEach(c => {
-                        c.min = c.min * 1
-                        c.max = c.max * 1
-                     })
+                  let elements = response.configs.structure.elements
+                  if(elements){
+                     for(let elementName in elements){
+                        if(typeof elements[elementName].children == "undefined"){
+                           elements[elementName].children = []
+                        }
+                        if(typeof elements[elementName].min != "undefined"){
+                           elements[elementName].min = elements[elementName].min * 1
+                        }
+                        if(typeof elements[elementName].max != "undefined"){
+                           elements[elementName].max = elements[elementName].max * 1
+                        }
+                     }
                   }
                   Object.assign(this.data, {
                         config: response.configs,
@@ -300,6 +334,15 @@ class StoreClass {
             })
             .always(response => {
                this.trigger("isDictionaryLoadingChanged")
+               if(this.data.actualPage != "dict-config-structure"
+                     && (!this.data.doctypes
+                              || !this.data.doctypes.length
+                              || !this.data.doctypes[0]
+                              || !this.isStructureValid()
+                        )
+               ){
+                  this.showBrokenStructureDialog()
+               }
             })
    }
 
@@ -313,29 +356,31 @@ class StoreClass {
             }.bind(this, dictId))
    }
 
+   loadMoreEntries(){
+      if(!this.data.isLoadingMoreEntries && (this.data.entryCount > this.data.entryList.length)){
+         this.data.isLoadingMoreEntries = true
+         this.trigger("isLoadingMoreEntriesChanged")
+         this._loadEntries(null, this.data.entryList.length)
+               .done(response => {
+                  if(response.entries){
+                     this.data.entryList = this.data.entryList.concat(response.entries)
+                     this.data.entryCount = response.total
+                  }
+               })
+               .always(response => {
+                  this.data.isLoadingMoreEntries = false
+                  this.trigger("isLoadingMoreEntriesChanged")
+               })
+      }
+   }
+
    loadEntryList(howmany){
-      let authorized = window.auth.data.authorized
-      if(!this.data.dictId || (authorized && !this.data.doctype)){
+      if(!this.data.dictId || (window.auth.data.authorized && !this.data.doctype)){
          return
       }
       this.data.isEntryListLoading = true
       this.trigger("entryListLoadingChanged")
-      let url;
-      let data = {
-         searchtext: this.data.searchtext,
-         modifier: this.data.modifier,
-         howmany: howmany ? howmany : (this.data.dictConfigs.titling.numberEntries || 1000)
-      }
-      if(authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
-         url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
-      } else {
-         url = `${window.API_URL}${this.data.dictId}/search.json`
-      }
-      return $.ajax({
-         url: url,
-         method: "POST",
-         data: data
-      })
+      return this._loadEntries(howmany)
             .done(response => {
                if(response.entries){
                   this.data.entryList = response.entries
@@ -347,12 +392,32 @@ class StoreClass {
                this.data.isEntryListLoaded = true
                this.trigger("entryListChanged")
             })
-            .fail(response => {
-               M.toast({html: "Entry list could not be loaded."})
-            })
             .always(response => {
                this.data.isEntryListLoading = false
                this.trigger("entryListLoadingChanged")
+            })
+   }
+
+   _loadEntries(howmany, offset){
+      let url;
+      let data = {
+         searchtext: this.data.searchtext,
+         modifier: this.data.modifier,
+         howmany: howmany || this.data.dictConfigs.titling.numberEntries || 500,
+         offset: offset || 0
+      }
+      if(window.auth.data.authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
+         url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
+      } else {
+         url = `${window.API_URL}${this.data.dictId}/search.json`
+      }
+      return $.ajax({
+         url: url,
+         method: "POST",
+         data: data
+      })
+            .fail(response => {
+               M.toast({html: "Entry list could not be loaded."})
             })
    }
 
@@ -540,6 +605,19 @@ class StoreClass {
             })
    }
 
+   schemaToJSON(schema){
+      return $.ajax({
+         url: `${window.API_URL}schema_to_json.json`,
+         method: "POST",
+         data: {
+            schema: JSON.stringify(schema)
+         }
+      })
+            .fail(response => {
+               M.toast({html: "Could not transform schema to JSON format."})
+            })
+   }
+
    loadDictionaryConfig(configId){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/configread.json`,
@@ -627,9 +705,8 @@ class StoreClass {
          method: 'POST'
       })
             .done(response => {
-               this.data.dictionaryList = response.dicts
+               this._setDictionaryList(response.dicts)
                M.toast({html: "Dictionary was cloned."})
-               this.trigger("dictionaryListChanged")
                this.changeDictionary(response.dictID)
                this.one("dictionaryChanged", () => {
                   route(response.dictID)
@@ -648,16 +725,8 @@ class StoreClass {
          method: 'POST'
       })
             .done(response => {
-               this.data.dictionaryList = response.dicts
-               // TODO merge with loadDictionaryList data processing
-               this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
-               this.data.dictionaryList.forEach(d => {
-                  if(!d.owners.includes(window.auth.data.email)){
-                     d.shared = true
-                  }
-               })
+               this._setDictionaryList(response.dicts)
                M.toast({html: "Dictionary was deleted."})
-               this.trigger("dictionaryListChanged")
             })
             .fail(response => {
                M.toast({html: "Dictionary clone creation failed."})
@@ -708,6 +777,17 @@ class StoreClass {
             })
    }
 
+   _setDictionaryList(dictionaryList){
+      this.data.dictionaryList = dictionaryList || []
+      this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
+      this.data.dictionaryList.forEach(d => {
+         if(!d.owners.includes(window.auth.data.email)){
+            d.shared = true
+         }
+      })
+      this.trigger("dictionaryListChanged")
+   }
+
    loadAdminUserList(searchtext, howmany){
       return $.ajax({
             url: `${window.API_URL}users/userlist.json`,
@@ -735,6 +815,22 @@ class StoreClass {
             })
             .fail(response => {
                M.toast({html: "User could not be created."})
+            })
+   }
+
+   resetUserPassword(email){
+      return $.ajax({
+         url: `${window.API_URL}users/userupdate.json`,
+         method: 'POST',
+         data: {
+            email: email
+         }
+      })
+            .done(response => {
+               M.toast({html: "User password was reset."})
+            })
+            .fail(response => {
+               M.toast({html: "User password could not be reset."})
             })
    }
 
@@ -791,7 +887,7 @@ class StoreClass {
          return
       }
       this.data.isDictionaryExamplesLoading = true
-      this.trigger("isDictionaryExamplesLoading")
+      this.trigger("isDictionaryExamplesLoadingChanged")
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/random.json`,
          method: 'POST'
@@ -806,7 +902,7 @@ class StoreClass {
             })
             .always(response => {
                this.data.isDictionaryExamplesLoading = false
-               this.trigger("isDictionaryExamplesLoading")
+               this.trigger("isDictionaryExamplesLoadingChanged")
             })
    }
 
@@ -931,6 +1027,26 @@ class StoreClass {
             .fail(response => {
                M.toast({html: "Could not send the feedback."})
             })
+   }
+
+   showBrokenStructureDialog(){
+      let content = this.data.userAccess.canConfig
+            ? `There is an error in dictionary configruation. Entry structure is broken. <div class="center-align mt-6"><a id="btnOpenStructureConfig" class="btn btn-primary">open structure settings</a></div>`
+            : `There is an error in dictionary configruation. Entry structure is broken. Please contact the owner of the dictionary`
+      window.modal.open({
+         title: "Broken structure",
+         tag: "raw-html",
+         small: true,
+         opts: {
+            content: content
+         }
+      })
+      setTimeout(() => {
+         $("#btnOpenStructureConfig").click(()=>{
+            window.modal.close();
+            route(`${this.data.dictId}/config/structure`)
+         })
+      }, 400)
    }
 }
 

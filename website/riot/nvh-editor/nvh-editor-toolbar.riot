@@ -1,4 +1,4 @@
-   <nvh-editor-toolbar>
+<nvh-editor-toolbar>
    <div if={nvhData.revision}
          class="nvh-revision-toolbar yellow noSelect">
       <button class="btn btn-flat tooltipped mr-auto {nvhData.revision.idx == 0 ? 'nvh-hidden' : ''}"
@@ -32,7 +32,7 @@
 
          <button class="btnSave btn-flat tooltipped {!state.actions.save ? 'disabled' : ''}"
                onclick={onSaveClick}
-               data-tooltip="Save entry">
+               data-tooltip="Save entry (ctrl+s or ⌘+s)</small>">
             <i class="material-icons">save</i>
          </button>
 
@@ -77,16 +77,25 @@
       </button>
 
       <span class="ml-auto"></span>
-      <button class="btn btn-flat tooltipped {nvhData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
-            data-tooltip="Preview entry"
-            onclick={onModeChangeClick.bind(this, "view")}>
-         <i class="material-icons">visibility</i>
-      </button>
-      <button class="btn btn-flat tooltipped {nvhData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
-            data-tooltip="Edit entry"
-            onclick={onModeChangeClick.bind(this, "edit")}>
-         <i class="material-icons">edit</i>
-      </button>
+      <template if={nvhData.customEditor}>
+         <button class="btn btn-flat tooltipped {nvhData.editorMode == "edit" ? 'btn-primary white-text' : ''}"
+               data-tooltip="Edit entry"
+               onclick={onModeChangeClick.bind(this, "edit")}>
+            <i class="material-icons">edit</i>
+         </button>
+      </template>
+      <template if={!nvhData.customEditor}>
+         <button class="btn btn-flat tooltipped {nvhData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
+               data-tooltip="Preview entry"
+               onclick={onModeChangeClick.bind(this, "view")}>
+            <i class="material-icons">visibility</i>
+         </button>
+         <button class="btn btn-flat tooltipped {nvhData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
+               data-tooltip="Edit entry"
+               onclick={onModeChangeClick.bind(this, "edit")}>
+            <i class="material-icons">edit</i>
+         </button>
+      </template>
       <button class="btn btn-flat tooltipped {nvhData.editorMode == "code" ? 'btn-primary white-text' : ''} {!state.actions.code ? 'disabled' : ''}"
             data-tooltip="View source code"
             onclick={onModeChangeClick.bind(this, "code")}>
@@ -139,11 +148,11 @@
          },
 
          onNewEntryClick(){
-            this.nvhStore.createNewEntry()
+            !this.nvhStore.editorNeedsSaving() && this.nvhStore.createNewEntry()
          },
 
          onDuplicateClick(){
-            this.nvhStore.duplicateEntry()
+            !this.nvhStore.editorNeedsSaving() && this.nvhStore.duplicateEntry()
          },
 
          onDeleteClick(){
@@ -163,11 +172,11 @@
          },
 
          onOpenPreviousEntryClick(){
-            this.store.changeEntryId(this.state.prevEntryId)
+            !this.nvhStore.editorNeedsSaving() && this.store.changeEntryId(this.state.prevEntryId)
          },
 
          onOpenNextEntryClick(){
-            this.store.changeEntryId(this.state.nextEntryId)
+            !this.nvhStore.editorNeedsSaving() && this.store.changeEntryId(this.state.nextEntryId)
          },
 
          onModeChangeClick(mode){
@@ -207,29 +216,11 @@
          },
 
          refreshAvailableActions(){
-            let revisions = !!this.nvhData.revision
-            this.state.actions = {
-               save: this.nvhData.entry
-                     && !this.nvhData.isSaving
-                     && this.nvhData.isValid
-                     && (this.nvhStore.history.actualIdx != 0 || this.dictData.entryId == "new" || this.nvhData.editorMode == "code")
-                     && !revisions,
-               undo: this.nvhStore.history.actualIdx > 0
-                     && !revisions,
-               redo: (this.nvhStore.history.actualIdx < this.nvhStore.history.records.length - 1)
-                     && !revisions,
-               add: true,
-               duplicate: this.nvhData.entry && this.dictData.entryId != "new"
-                     && !revisions,
-               delete: this.nvhData.entry && this.dictData.entryId != "new"
-                     && !revisions,
-               prevEntry: !!this.state.prevEntryId,
-               nextEntry: !!this.state.nextEntryId,
-               view: this.nvhData.entry,
-               edit: this.nvhData.entry,
-               code: this.nvhData.entry,
-               history: this.nvhData.entry && this.dictData.entryId != "new"
-            }
+            this.state.actions = Object.assign(this.nvhStore.getAvailableActions(),
+               {
+                  prevEntry: !!this.state.prevEntryId,
+                  nextEntry: !!this.state.nextEntryId,
+               })
          }
       }
    </script>
@@ -238,7 +229,7 @@
       :host{
          display: block;
          margin-bottom: 7px;
-         border-bottom: 1px solid #d9d9d8;
+         border: 1px solid #d9d9d8;
          position: sticky;
          top: 0;
          z-index: 900;

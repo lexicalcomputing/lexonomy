@@ -12,7 +12,7 @@
   "admins": ["root@localhost"],
   "trackingCode": "",
   "welcome": "Welcome to your <a href='http://www.lexonomy.eu/'>Lexonomy</a> installation.",
-  "mailconfig": {"host": "smtp.server.example", "port": 465,"secure": true, "from": "noreply@example.com"},
+  "mailconfig": {"host": "localhost", "port": 25,"secure": false, "from": "noreply@localhost"},
   "sketchengineKey": null,
   "sketchengineLoginPage": null,
   "consent": {"terms": null, "confirm": null},

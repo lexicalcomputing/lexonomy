@@ -1,158 +1,337 @@
 <dict-config-structure>
-   <loading-overlay if={state.isLoading || state.isSaving}/>
+   <loading-overlay if={state.isLoading || state.isBusy}/>
    <h1>Entry structure</h1>
-   <div if={(!state.data._nvhSchema || state.data._nvhSchema == "") && !state.override }
-         class="mb-8">
-      <div id="editor"></div>
 
-      <button class="btn waves-effect waves-light"
-            onclick={ startOverride } >
-         Use your own schema
-         <i class="material-icons right">edit</i>
-      </button>
+   <div if={state.tab == "simple" && state.brokenConfig}
+         class="message messageError">
+      Structure is broken. Empty structure is used instead.
+      <a href="javascript:void(0);"
+            onclick={onShowBrokenStructureClick}>show broken structure</a>
    </div>
 
-   <div if={(state.data._nvhSchema && state.data._nvhSchema != "") || state.override }
-         class="mb-8">
-      <div>
-         <p>To specify your custom Lexonomy schema use <i>NVH schema</i>.
-            Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
-         </p>
-      </div>
-      <div class="mb-4">
-         <div class="input-field">
-            <textarea id="editor_nvh_schema"
-                  class="materialize-textarea"
-                  oninput={onSchemaInput}>{ state.data._nvhSchema }</textarea>
-            <label for="editor_nvh_schema">Your NVH schema</label>
-            <span class="helper-text">
-               If you would like to see an example,
-               <a onclick={ exampleNVHSchema } class="pointer">click here to load a sample NVH schema</a>.
-            </span>
+   <div if={!state.isLoading}
+         class="contentWrapper displayFlex">
+      <div class="settingsRadio borderRight">
+         <div>
+            <label>
+              <input name="structure"
+                  type="radio"
+                  checked={state.tab == "simple"}
+                  onchange={onTabChange.bind(this, "simple")}/>
+              <span>Simple settings</span>
+            </label>
          </div>
-      </div>
-      <div class="input-field" style="flex: 1">
-         <div style="display: flex; gap: 20px;">
-            <textarea id="editor_newEntryNvh"
-                  class="materialize-textarea">{ state.data._newEntryNvh }</textarea>
-            <button id="generateNewNVHBtn"
-                  class="btn {state.data._newEntryNvh ? '' : 'disabled'}"
-                  onclick={onGenerateNewNVHClick}>Generate from NVH schema</button>
+         <div>
+            <label>
+              <input name="structure"
+                  type="radio"
+                  checked={state.tab == "advanced"}
+                  onchange={onTabChange.bind(this, "advanced")}/>
+              <span>Advanced settings</span>
+            </label>
          </div>
-         <label for="editor_newEntryNvh">NVH template for new entries</label>
-         <span class="helper-text">If you would like to see an example,
-            <a onclick={ exampleNVH } class="pointer">click here to load a sample NVH template</a>.
-         </span>
+         <div>
+            <label>
+              <input name="structure"
+                  type="radio"
+                  checked={state.tab == "custom"}
+                  onchange={onTabChange.bind(this, "custom")}/>
+              <span>Custom structure</span>
+            </label>
+         </div>
       </div>
 
-      <div>
-         <button class="btn waves-effect waves-light"
-               onclick={ stopOverride } >
-            Stop using your own schema
-            <i class="material-icons left">arrow_back</i>
-         </button>
+      <div class="tabsContent">
+         <div if={state.tab == "simple"}>
+            <nvh-schema selected-modules={[...structureStore.data.basic_modules]}
+                  on-modules-change={onBasicSchemaModulesChange}
+                  on-schema-change={onBasicSchemaChange}
+                  on-schema-loaded={onBasicSchemaLoaded}/>
+         </div>
+
+         <div if={state.tab == "advanced"}>
+            <structure-editor/>
+         </div>
+
+         <div if={state.tab == "custom"}>
+            <div>
+               <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
+                  Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
+               </p>
+            </div>
+            <div class="mb-16">
+               <div class="input-field">
+                  <textarea id="custom_NVHSchema"
+                        class="materialize-textarea"
+                        oninput={onSchemaInput}>{structureStore.data.custom_NVHSchema}</textarea>
+                  <label for="custom_NVHSchema">Your NVH schema</label>
+                  <div class="buttons">
+                     <button id="custom_importFromSimple"
+                           class="btn btn-secondary {!structureStore.data.basic_modules || !structureStore.data.basic_modules.length ? 'disabled' : ''}"
+                           onclick={onCustomImportFromSimpleClick}>Import from Simple settings</button>
+                     <!--button id="custom_importFromSimple"
+                           class="btn btn-secondary {!structureStore.data.advanced_structure.root ? 'disabled' : ''}"
+                           onclick={onCustomImportFromAdvancedClick}>Import from Advanced settings</button-->
+                     <button id="custom_importFromSimple"
+                           class="btn btn-secondary "
+                           onclick={onLoadSampleNVHSchemaClick}>Load sample NVH schema</button>
+                  </div>
+               </div>
+            </div>
+            <div class="input-field">
+               <textarea id="custom_newEntryTemplate"
+                     class="materialize-textarea"
+                     oninput={onNewEntryInput}>{structureStore.data.custom_newEntryTemplate}</textarea>
+               <label for="custom_newEntryTemplate">NVH template for new entries</label>
+               <div class="buttons">
+                  <button id="custom_generateNewNVHBtn"
+                        class="btn btn-secondary {structureStore.data.custom_NVHSchema ? '' : 'disabled'}"
+                        onclick={onGenerateNewNVHClick}>Generate from NVH schema</button>
+                  <button id="custom_generateNewNVHBtn"
+                        class="btn btn-secondary"
+                        onclick={onExampleNewEntryTemplateClick}>Load sample NVH template</button>
+               </div>
+            </div>
+         </div>
+
+         <div class="mt-16">
+            <dict-config-buttons save-data={save}></dict-config-buttons>
+         </div>
       </div>
    </div>
-   <dict-config-buttons save-data={saveData}></dict-config-buttons>
 
    <script>
       export default {
+         bindings: [["structureStore",  "elementChanged", "refreshBtnSaveDisabled"]],
+
          state: {
             isLoading: true,
-            isSaving: false,
-            override: false,
-            data: {}
+            isBusy: false,
+            tab: "simple",
+            data: null,
+            brokenConfig: null
          },
 
-         startOverride() {
-            this.update({override: true})
-         },
-
-         stopOverride() {
-            delete this.state.data._nvhSchema
-            delete this.state.data._newEntryNvh
-            this.update({override: false})
-            this.structureDesigner.start(this.state.data)
-         },
-
-         onSchemaInput(evt){
-            $("#generateNewNVHBtn").toggleClass("disabled", !evt.target.value)
-         },
-
-         onGenerateNewNVHClick(){
-            $('#editor_newEntryNvh').val(window.nvhStore.nvhSchemaToNvh($('#editor_nvh_schema').val()))
-            M.textareaAutoResize($('#editor_newEntryNvh'))
-            M.updateTextFields()
-         },
-
-         exampleNVH() {
-            $('#editor_newEntryNvh').val(`entry:  \n  headword:`)
-            M.textareaAutoResize($('#editor_newEntryNvh'))
-            M.updateTextFields()
-         },
-
-         exampleNVHSchema() {
-            $('#editor_nvh_schema').val(`entry:\n  headword:\n  partOfSpeach: ?\n  sense: +\n    definition: ?\n    example: *\n  `)
-            $("#generateNewNVHBtn").removeClass("disabled")
-            M.textareaAutoResize($('#editor_nvh_schema'))
-            M.updateTextFields()
+         onBeforeMount(){
+            this.structureStore = window.structureEditorStore
          },
 
          onMounted() {
-            this.structureDesigner = new StructureDesignerClass()
             this.store.loadDictionaryConfig("structure")
                   .done(response => {
-                     this.state.data = response.content
-                     this.state.override = this.state.data._nvh || this.state.data._nvhSchema
+                     if(response.content.tab){
+                        // new data format (NVH lexonomy)
+                        this.state.tab = response.content.tab
+                        Object.assign(this.structureStore.data, {
+                           basic_modules: response.content.basic_modules || [],
+                           advanced_structure: response.content.advanced_structure || {elements: {}, root: null},
+                           custom_NVHSchema: response.content.custom_NVHSchema || "",
+                           custom_newEntryTemplate: response.content.custom_newEntryTemplate || ""
+                        })
+                        if(response.content.advanced_structure){
+                           this.structureStore.setConfigStructure(response.content.advanced_structure)
+                        }
+                     } else {
+                        // old data format (XML lexonomy)
+                        this.state.tab = (response.content._nvh || response.content._nvhSchema) ? "custom" : "advanced"
+                        Object.assign(this.structureStore.data, {
+                           custom_NVHSchema: response.content._nvhSchema || "",
+                           custom_newEntryTemplate: response.content._nvh || "",
+                        })
+                     }
+                     if(this.state.tab == "simple"){
+                        if(!this.store.isStructureValid()){
+                           this.state.brokenConfig = this.state.data
+                           this.state.data = {
+                              elements: {
+                                 entry: {
+                                    children: [],
+                                    type: "txt"
+                                 }
+                              },
+                              root: "entry"
+                           }
+                        }
+                     }
                   })
                   .always(() => {
                      this.update({isLoading: false})
-                     if(this.state.override){
-                        $("#generateNewNVHBtn").toggleClass("disabled", !this.state.data._nvhSchema)
-                        M.updateTextFields()
-                        M.textareaAutoResize($('#editor_newEntryNvh'))
-                        M.textareaAutoResize($('#editor_nvh_schema'))
-                     } else {
-                        this.structureDesigner.start(this.state.data)
+                     if(this.state.tab == "custom"){
+                        $("#custom_generateNewNVHBtn").toggleClass("disabled", !this.structureStore.data.custom_NVHSchema)
+                        this.refreshCustomTextFields()
                      }
+                     this.refreshBtnSaveDisabled()
                   })
          },
 
-         getConfigData() {
-            var newData = {}
-            if (this.structureDesigner.structure && this.structureDesigner.structure.elements) {
-               for(var el in this.structureDesigner.structure.elements){
-                  for(var prop in this.structureDesigner.structure.elements[el]){
-                     if(prop.indexOf("_")==0) delete this.structureDesigner.structure.elements[el][prop]
-                  }
-               }
-               newData = this.structureDesigner.structure
-            }
-            if (this.state.override) {
-               if ($('#editor_newEntryNvh').val() != ""){
-                  newData._newEntryNvh = $('#editor_newEntryNvh').val()
-               }
-               if ($('#editor_nvh_schema').val() != "") {
-                  newData._nvhSchema = $('#editor_nvh_schema').val().trim()
-                  try {
-                     newData.elements = window.nvhStore.nvhSchemaToJSON(newData._nvhSchema)
-                     newData.root = newData._nvhSchema.slplit(":", 1)[0]
-                  } catch(e) {}
-               }
-            }
-            return newData
+         onSchemaInput(evt){
+            $("#custom_generateNewNVHBtn").toggleClass("disabled", !evt.target.value)
+            this.structureStore.data.custom_NVHSchema = evt.target.value
+            this.refreshBtnSaveDisabled()
          },
 
-         saveData() {
-            this.update({isSaving: true})
-            this.store.updateDictionaryConfig("structure", this.getConfigData())
-                  .always(() => this.update({isSaving: false}))
+         onNewEntryInput(evt){
+            this.structureStore.data.custom_newEntryTemplate = evt.target.value
+            this.refreshBtnSaveDisabled()
+         },
+
+         onGenerateNewNVHClick(){
+            this.setCustomNewEntryTemplate(window.nvhStore.nvhSchemaToNvh($("#custom_NVHSchema").val()))
+         },
+
+         onTabChange(tab){
+            this.update({tab: tab})
+            this.refreshBtnSaveDisabled()
+            if(tab == "custom"){
+               this.refreshCustomTextFields()
+            }
+         },
+
+         onBasicSchemaLoaded(schemas){
+            if(!this.structureStore.data.basic_modules.length){
+               this.structureStore.data.basic_modules = schemas.filter(schema => schema.checked || schema.required)
+                     .map(schema => schema.key.split(".").pop())
+               this.update()
+            }
+         },
+
+         onBasicSchemaModulesChange(modules){
+            this.structureStore.data.basic_modules = modules
+            this.update()
+         },
+
+         onBasicSchemaChange(schema, finalSchema){
+            this.structureStore.data.basic_finalSchema = finalSchema
+            this.refreshBtnSaveDisabled()
+         },
+
+         onCustomImportFromSimpleClick(){
+            this.update({isBusy: true})
+            this.store.loadFinalSchema(this.structureStore.data.basic_modules)
+                  .always(response => {
+                     this.update({isBusy: false})
+                     response.schemafinal && this.setCustomNVHSchema(response.schemafinal)
+                  })
+         },
+
+         /*onCustomImportFromAdvancedClick(){
+            this.setCustomNVHSchema(this.structureStore.getNvh())
+         },*/
+
+         onExampleNewEntryTemplateClick() {
+            this.structureStore.data.custom_newEntryTemplate = `entry:  \n  headword:`
+            $("#custom_newEntryTemplate").val(this.structureStore.data.custom_newEntryTemplate)
+            this.refreshBtnSaveDisabled()
+            this.refreshCustomTextFields()
+         },
+
+         onLoadSampleNVHSchemaClick() {
+            this.setCustomNVHSchema(`entry:\n  headword:\n  partOfSpeach: ?\n  sense: +\n    definition: ?\n    example: *\n  `)
+         },
+
+         onShowBrokenStructureClick(){
+            window.modal.open({
+               title: "Broken structure",
+               tag: "raw-html",
+               opts: {
+                  content: JSON.stringify(this.state.brokenConfig)
+               }
+            })
+         },
+
+         save() {
+            this.update({isBusy: true})
+            if(this.state.tab == "simple"){
+               this.store.schemaToJSON(this.structureStore.data.basic_finalSchema)
+                     .done(response => {
+                        this.saveData({
+                           elements: JSON.parse(response.schemajson),
+                           root: response.schemajson.split(":", 1)[0].replace(/["{]/g, "")
+                        })
+                     })
+            } else if (this.state.tab == "advanced"){
+               this.saveData(this.structureStore.getStructureToSave())
+            } else if( this.state.tab == "custom"){
+               this.store.schemaToJSON(this.structureStore.data.custom_NVHSchema)
+                     .done(response => {
+                        this.saveData({
+                           elements: JSON.parse(response.schemajson),
+                           root: response.schemajson.split(":", 1)[0].replace(/["{]/g, "")
+                        })
+                     })
+            }
+         },
+
+         saveData(data){
+            Object.assign(data, {
+               tab: this.state.tab,
+               basic_modules: this.structureStore.data.basic_modules,
+               advanced_structure: this.structureStore.getStructureToSave(),
+               custom_NVHSchema: this.structureStore.data.custom_NVHSchema,
+               custom_newEntryTemplate: this.structureStore.data.custom_newEntryTemplate
+            })
+            data.tab = this.state.tab
+            this.store.updateDictionaryConfig("structure", data)
+                  .done(response => {
+                     this.state.brokenConfig = null
+                  })
+                  .always(() => this.update({isBusy: false}))
+         },
+
+         setCustomNVHSchema(nvhSchema){
+            this.structureStore.data.custom_NVHSchema = nvhSchema
+            $("#custom_NVHSchema").val(nvhSchema)
+            $("#custom_generateNewNVHBtn").removeClass("disabled")
+            this.refreshCustomTextFields()
+            this.refreshBtnSaveDisabled()
+         },
+
+         setCustomNewEntryTemplate(newEntryTemplate){
+            this.structureStore.data.custom_newEntryTemplate = newEntryTemplate
+            $("#custom_newEntryTemplate").val(newEntryTemplate)
+            this.refreshCustomTextFields()
+            this.refreshBtnSaveDisabled()
+         },
+
+         refreshBtnSaveDisabled(){
+            let disabled = false
+            if(this.state.tab == "simple"){
+               disabled = !this.structureStore.data.basic_finalSchema
+            } else if(this.state.tab == "advanced"){
+               disabled = !this.structureStore.data.structure.root
+            } else if(this.state.tab == "custom"){
+               disabled = !$("#custom_NVHSchema", this.root).val() || !$("#custom_newEntryTemplate", this.root).val()
+            }
+            $("#submit_button", this.root).toggleClass("disabled", disabled)
+         },
+
+         refreshCustomTextFields(){
+            M.updateTextFields()
+            M.textareaAutoResize($("#custom_NVHSchema"))
+            M.textareaAutoResize($("#custom_newEntryTemplate"))
          }
       }
    </script>
 
-   <style>
-      #editor {
+   <style type="scss">
+      .contentWrapper{
+         gap: 40px;
+         @media screen and (max-width: 900px) {
+            flex-wrap: wrap;
+         }
+      }
+      .settingsRadio{
+         width: 250px;
+      }
+      .tabsContent{
+         width: 100%;
+      }
+      .customFieldWithButtons{
+         display: flex;
+         gap: 20px;
+      }
+
+      /*#editor {
          position: relative !important;
          min-height: 750px;
       }
@@ -167,6 +346,12 @@
       }
       #editor.designer input[type=radio] {
          opacity: 1 !important;
+      }*/
+      .tabs {
+         border-bottom: none;
+         a.active{
+            background-color: #fafafa;
+         }
       }
    </style>
 </dict-config-structure>

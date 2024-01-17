@@ -32,6 +32,7 @@ class NVHStoreClass {
       this.validateAllElements()
       this.history.reset()
       this.history.addState()
+      this.data.editorMode == "view" && this.changeEditorMode("edit")
       this.trigger("entryChanged")
       this.updateUrl()
    }
@@ -39,12 +40,16 @@ class NVHStoreClass {
    saveEntry(){
       this.data.isSaving = true
       this.trigger("isSavingChanged")
+      if(this.data.customEditor && this.data.editorMode != "code"){
+         this.setEntryFromCustomEditor()
+      }
       let nvh = this.jsonToNvh(this.data.entry)
       if(window.store.data.entryId != "new"){
          return window.store.updateEntry(nvh)
                .always(response => {
                   if(response.success){
                      M.toast({html: "Entry updated"})
+                     this.history.lastSavedIdx = this.history.actualIdx
                   } else {
                      M.toast({html: `Entry was not updated: ${response.feedback}`})
                   }
@@ -56,6 +61,7 @@ class NVHStoreClass {
             .always(response => {
                if(response.success){
                   M.toast({html: "Entry created"})
+                  this.history.lastSavedIdx = this.history.actualIdx
                } else {
                   M.toast({html: `Entry was not created: ${response.feedback}`})
                }
@@ -152,8 +158,27 @@ class NVHStoreClass {
       this.data.editorMode = window.store.data.mode // TODO better initialization
       this.history.reset()
       this.history.addState()
-      this.updateUrl()
       this.trigger("entryChanged")
+   }
+
+   editorNeedsSaving(evt) {
+      if(window.store.data.actualPage == "dict-edit"
+            && (this.data.entryId == "new"
+                  || (window.store.data.entry
+                        && (this.jsonToNvh(this.data.entry) != window.store.data.entry.nvh)
+                     )
+               )
+            ){
+         if(!confirm("You have some unsaved changes. Do you wish to continue and discard the changes?")){
+            if(evt){
+               evt.stopImmediatePropagation()
+               evt.stopPropagation()
+               evt.preventDefault()
+            }
+            return true
+         }
+      }
+      return false
    }
 
    showRevision(revision){
@@ -206,7 +231,7 @@ class NVHStoreClass {
 
    jsonToNvh(element, indent=0){
       let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.value === null ? "" : element.value.replaceAll("\n", this.const.markDownNewLine)}\n`
-      element.children.forEach(child => {
+         element.children && element.children.forEach(child => {
          nvh += this.jsonToNvh(child, indent + 1)
       }, this)
       return nvh
@@ -362,16 +387,9 @@ class NVHStoreClass {
 
    changeEditorMode(mode){
       if(this.data.editorMode != mode){
-         if(this.data.editorMode == "view" && this.data.customEditor){
-            if(this.data.legacyCustomEditor){
-               let entry = this.XMLToJson(this.data.customEditor.harvester())
-               if(this.jsonToNvh(this.data.entry) != this.jsonToNvh(entry)){
-                  this.entry = entry
-                  this.history.addState()
-               }
-            } else {
-               this.data.entry = this.nvhToJson(this.data.customEditor.getValue())
-            }
+         if(this.data.editorMode != "code" && this.data.customEditor){
+            this.setEntryFromCustomEditor()
+            this.history.addState()
             this.validateAllElements()
          }
          // TODO merge and use only one mode
@@ -379,6 +397,17 @@ class NVHStoreClass {
          window.store.data.mode = mode
          this.trigger("editorModeChanged")
          this.updateUrl()
+      }
+   }
+
+   setEntryFromCustomEditor(){
+      if(this.data.legacyCustomEditor){
+         let entry = this.XMLToJson(this.data.customEditor.harvester())
+         if(this.jsonToNvh(this.data.entry) != this.jsonToNvh(entry)){
+            this.data.entry = entry
+         }
+      } else {
+         this.data.entry = this.nvhToJson(this.jsonToNvh(this.data.customEditor.getValue())) // to add all necessary properties to each element
       }
    }
 
@@ -393,6 +422,35 @@ class NVHStoreClass {
       if(this.data.isRevisionsOpen){
          this.data.isRevisionsOpen = false
          this.trigger("isRevisionsOpenChanged")
+      }
+   }
+
+   getAvailableActions(){
+      let revisions = !!this.data.revision
+      let hasEntry = !!this.data.entry
+      return {
+         save: hasEntry
+               && !this.data.isSaving
+               && this.data.isValid
+               && (this.history.actualIdx != this.history.lastSavedIdx
+                        || window.store.data.entryId == "new"
+                        || this.data.editorMode == "code"
+                        || this.data.customEditor
+                  )
+               && !revisions,
+         undo: this.history.actualIdx > 0
+               && !revisions,
+         redo: (this.history.actualIdx < this.history.records.length - 1)
+               && !revisions,
+         add: true,
+         duplicate: hasEntry && window.store.data.entryId != "new"
+               && !revisions,
+         delete: hasEntry && window.store.data.entryId != "new"
+               && !revisions,
+         view: hasEntry && window.store.data.entryId != "new",
+         edit: hasEntry,
+         code: hasEntry,
+         history: hasEntry && window.store.data.entryId != "new"
       }
    }
 
@@ -434,15 +492,15 @@ class NVHStoreClass {
    }
 
    getElementConfig(elementName){
-      return this.data.structure.elements[elementName] || {}
+      return this.data.structure.elements[elementName]
    }
 
    getElementStyle(elementName){
-      return this.data.xemplate[elementName] || {}
+      return this.data.xemplate[elementName]
    }
 
    getAvailableChildElements(element){
-      let config = this.data.structure.elements[element.name] || {}
+      let config = this.data.structure.elements[element.name]
       let elements = []
       if(config){
          elements = config.children.filter(c => {
@@ -658,7 +716,7 @@ class NVHStoreClass {
 
    startElementEditing(element){
       let config = this.getElementConfig(element.name)
-      if(!["chd", "emp"].includes(config.type)){  // element with value
+      if(config && !["chd", "emp"].includes(config.type)){  // element with value
          let elements = this.findElements(e => e.focused || e.edit)
          elements.forEach(e => {
             e.focused = e == element,
@@ -675,7 +733,7 @@ class NVHStoreClass {
    startElementOrChildEditing(element){
       let firstEditableElement = this.findElement(el => {
          let config = this.getElementConfig(el.name)
-         return !["chd", "emp"].includes(config.type)
+         return config && !["chd", "emp"].includes(config.type)
       }, element)
       firstEditableElement && this.startElementEditing(firstEditableElement)
    }
@@ -780,7 +838,7 @@ class NVHStoreClass {
 
    addRequiredChildren(element){
       let config = this.getElementConfig(element.name)
-      config.children.forEach(childConfig => {
+      config && config.children.forEach(childConfig => {
          if(childConfig.min > 0){
             Array.from({length: childConfig.min}).forEach(empty => {
                let childElement = this._addChildElement(element, childConfig.name)
@@ -792,7 +850,7 @@ class NVHStoreClass {
 
    addAllChildren(element){
       let config = this.getElementConfig(element.name)
-      config.children.forEach(childConfig => {
+      config && config.children.forEach(childConfig => {
          Array.from({length: childConfig.min || 1}).forEach(empty => {
             let childElement = this._addChildElement(element, childConfig.name)
             this.addAllChildren(childElement)
@@ -819,13 +877,13 @@ class NVHStoreClass {
    }
 
    removeElement(element){
-      // TODO focus some element after removing active element, so user can work with keyboard
       let globalIdx = this.getElementList().indexOf(element)
       let childIdx = element.parent.children.findIndex(e => e == element)
       element.parent.children.splice(childIdx, 1)
-      let nextElement = this.getElementList()[globalIdx]
-      nextElement && this.forEachElement(e => {e.focused = e == nextElement})
-      this.trigger("updateElements", [element.parent])
+      let elementList = this.getElementList()
+      let siblingElement = elementList[globalIdx] || elementList[globalIdx - 1] // next or previous element
+      siblingElement && this.forEachElement(e => {e.focused = e == siblingElement})
+      this.trigger("updateElements", [element.parent, siblingElement])
       this.trigger("closeContextMenu")
       this.history.addState()
    }
@@ -854,10 +912,17 @@ class NVHStoreClass {
       if(element.name == this.data.rootElement){
          return false
       }
-      let minimumNumberOfElements = this.getElementConfig(element.parent.name).children.find(e => e.name == element.name).min
-      let actualNumberOfElements = this.findElements(e => e.name == element.name, element.parent).length
-      return element.name != this.data.rootElement
-            && (!minimumNumberOfElements || minimumNumberOfElements > actualNumberOfElements)
+      let config = this.getElementConfig(element.parent.name)
+      if(config){
+         let childConfig = config.children.find(e => e.name == element.name)
+         if(childConfig){
+            let minimumNumberOfElements = childConfig.min
+            let actualNumberOfElements = this.findElements(e => e.name == element.name, element.parent).length
+            return element.name != this.data.rootElement
+                  && (!minimumNumberOfElements || minimumNumberOfElements > actualNumberOfElements)
+         }
+      }
+      return true
    }
 
    validateElement(element){
@@ -981,11 +1046,13 @@ class NVHStoreClass {
 
    _getElementDefaultValue(elementName){
       let config = this.getElementConfig(elementName)
-      let type = config.type
-      if(["chd", "emp"].includes(type)){
-         return null
-      } else if(type == "lst"){
-         return config.values[0].value
+      if(config){
+         let type = config.type
+         if(["chd", "emp"].includes(type)){
+            return null
+         } else if(type == "lst"){
+            return config.values[0].value
+         }
       }
       return ""
    }
@@ -1011,6 +1078,7 @@ class NVHStoreClass {
    history = {
       records: [],
       actualIdx: 0,
+      lastSavedIdx: 0,
       addState: () => {
          if(!this.history.records.length ||
             (this.jsonToNvh(this.data.entry) != this.jsonToNvh(this.history.records[this.history.actualIdx]))){
@@ -1043,6 +1111,7 @@ class NVHStoreClass {
       reset: () => {
          this.history.records = []
          this.history.actualIdx = 0
+         this.history.lastSavedIdx = 0
       }
    }
 

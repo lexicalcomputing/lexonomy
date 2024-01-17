@@ -1,0 +1,153 @@
+<structure-editor-item
+      draggable="true"
+      ondragstart={onDragStart}
+      ondragend={onDragEnd}
+      onmousedown={onMouseDown}>
+   <div if={props.element}
+         class="structure-item-wrapper"
+         style="padding-left: {props.element.indent * 40}px;">
+      <i if={props.element.name != structureStore.data.root}
+               class="structure-drag-handle material-icons grey-text">drag_handle</i>
+      <div class="valueWrapper pr-2 {structureStore.data.editedElement == props.element ? "grey lighten-3" : ""}"
+            onclick={onEditClick}>
+         <span class="structure-item-name"
+               style="color: {getElementColor()};">
+            {props.element.name}
+         </span>
+         <span class="pl-2 grey-text">
+            [{structureStore.const.types[props.element.type] || props.element.type}]
+         </span>
+         <span if={props.element.min || props.element.max}
+               class="pl-2">
+            {getElementCountString()}
+         </span>
+         <span if={props.element.re}
+               class="pl-2 monospace">
+            /{props.element.re}/
+         </span>
+         <span if={props.element.values}
+               class="pl-2">
+            <trim-text text={props.element.values.join(", ")}
+                  max=30/>
+         </span>
+         <span class="elementActions">
+            <i class="material-icons tiny grey-text ml-2">edit</i>
+            <i class="material-icons tiny grey-text ml-2"
+                  onclick={onDeleteClick}>
+               delete
+            </i>
+         </span>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            target: null
+         },
+
+         onBeforeMount() {
+            this.structureStore = window.structureEditorStore
+         },
+
+         onMouseDown(evt){
+            this.state.target = evt.target
+         },
+
+         onDragStart(evt){
+            if ($(".structure-drag-handle", this.root).first()[0].contains(this.state.target)) {
+               setTimeout(() => {
+                  // prevent DOM manipulation to fire ondragend event immediately after ondragstart
+                  $(this.root).addClass("structure-dragged-element")
+                  this.structureStore.startElementDragging(this.props.element)
+
+               }, 0)
+            } else {
+               evt.preventDefault()
+            }
+            evt.stopPropagation()
+         },
+
+         onDragEnd(){
+            $(this.root).removeClass("structure-dragged-element")
+            this.structureStore.stopElementDragging()
+         },
+
+         onEditClick(){
+            this.structureStore.startElementEditing(this.props.element)
+         },
+
+         onDeleteClick(evt){
+            evt.stopPropagation()
+            this.structureStore.removeElement(this.props.element)
+            this.structureStore.stopElementEditing()
+         },
+
+         getElementColor(){
+            let idx = Object.keys(this.structureStore.data.structure.elements).indexOf(this.props.element.name)
+            return window.nvhStore.getColorByIndex(idx)
+         },
+
+         getElementCountString(){
+            let min = this.props.element.min
+            let max = this.props.element.max
+            let str
+            if(min > 0){
+               if(max > 0){
+                  if(min == max){
+                     return `${min}×`
+                  } else {
+                     return `${min}–${max}×`
+                  }
+               } else {
+                  return `at least ${min}×`
+               }
+            } else if(max > 0){
+               return `at most ${max}×`
+            }
+            return ""
+         }
+
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: block;
+         &.structure-dragged-element{
+            opacity: 0.3;
+         }
+      }
+      .structure-item-wrapper{
+         display: flex
+      }
+      .structure-item-name{
+         font-size: 1.1em;
+      }
+      input{
+         height: 22px!important;
+         padding: 2px!important;
+      }
+      .valueWrapper{
+         cursor: pointer;
+         width: 100%;
+         .elementActions{
+            opacity: 0;
+         }
+         &:hover{
+            background-color: whitesmoke;
+            .elementActions{
+               opacity: 1;
+            }
+         }
+      }
+      .structure-drag-handle{
+         cursor: move;
+         opacity: 0.5;
+         &:hover{
+            opacity: 1;
+         }
+      }
+   </style>
+
+</structure-editor-item>

@@ -3,7 +3,8 @@
    <modal-dialog/>
    <app-header page={state.page}/>
    <div class="contentWrapper">
-      <div if={!state.isLoading}
+      <loading-overlay if={dictData.isDictionaryLoading}/>
+      <div if={!state.isLoading }
             is={ state.page }
             class="container content wideContainer row"
             token={state.token}></div>
@@ -29,123 +30,13 @@
          state: {
             isLoading: true,
             page: '',
-            token: '',
-            isShowingDictionary: false
+            token: ''
          },
          bindings: [["auth", "authChanged", "onAuthChanged"],
                     ["auth", "checkingAuthChanged", "onCheckingAuthChange"],
+                    ["store", "isDictionaryLoadingChanged", "update"],
                     ["store", "dictionaryChanged", "update"]],
 
-         onAuthChanged(){
-            if(route.query().next){
-               window.location.href = decodeURIComponent(route.query().next)
-            } else {
-               this.update()
-            }
-         },
-
-         onCheckingAuthChange(){
-            this.update()
-            if(this.authData.authorized){
-               this.store.loadDictionaryList()
-               this.checkConsentAndShowConsentDialog()
-            }
-            route.start()
-            route.exec()
-         },
-
-         goTo(page, storeParams, updateParams){
-            if(!this.authData.authorized && this.needAuthorization(page)){
-               this.update({
-                  page: 'unauthorized',
-                  isShowingDictionary: false
-               })
-            } else {
-               if(!storeParams){
-                  this.update(Object.assign({
-                     page: page,
-                     isShowingDictionary: false
-                  }, updateParams || {}))
-               } else {
-                  this.store.open(...storeParams)
-                  let query = route.query()
-                  this.store.changeSearchParams({
-                     searchtext: decodeURIComponent(query.s || ""),
-                     modifier: query.m
-                  })
-                  if(this.store.data.isDictionaryLoading){
-                     this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, updateParams))
-                  } else{
-                     this.checkAccessAndOpenPage(page, updateParams)
-                  }
-               }
-            }
-         },
-
-         checkAccessAndOpenPage(page, updateParams){
-            if(this.hasUserAccessToThePage(page)){
-               this.update(Object.assign({
-                  page: page,
-                  isShowingDictionary: true
-               }, updateParams || {}))
-            } else {
-               this.update({
-                  page: "unauthorized",
-                  isShowingDictionary: false
-               })
-            }
-         },
-
-         hasUserAccessToThePage(page){
-            let uA = this.store.data.userAccess
-            if(this.authData.isAdmin
-               || !this.needAuthorization()
-               || this.store.data.public
-               || (page == "dict-download" && uA.canDownload)
-               || (page == "dict-upload" && uA.canUpload)
-               || (page.startsWith("dict-public"))
-               || (page.startsWith("dict-edit")/* && (uA.canEdit)*/)
-               || (page.startsWith("dict-links") && (uA.canEdit))
-               || (page.startsWith("dict-config") && (uA.canConfig || uA.canUpload || uA.canDownload))){
-               return true
-            }
-            return false
-         },
-
-         needAuthorization(page){
-            return !['e404', 'open-dictionaries', 'dict-public', 'dict-public-entry',
-               'api', 'login', 'register', 'register-password', 'forgot',
-               'forgot-password'].includes(page)
-         },
-
-         checkConsentAndShowConsentDialog(){
-            if(this.authData.authorized
-                     && this.dictData.siteconfig
-                     && this.dictData.siteconfig.consent
-                     && this.dictData.siteconfig.consent.terms
-                     && !this.authData.consent){
-               window.modal.open({
-                  tag: "user-consent",
-                  showCloseButton: false,
-                  dismissible: false
-               })
-            }
-         },
-
-         routeParser(path, filter){
-            // remove trailing slashes
-            path = path.replace(/\/+$/, "")
-            var f = filter
-               .replace(/\?/g, '\\?')
-               .replace(/\*/g, '([^/?#]+?)')
-               .replace(/\.\./, '.*')
-            var re = new RegExp(("^" + f + "$"))
-            var args = path.match(re)
-
-            if (args) {
-               return args.slice(1)
-            }
-         },
 
          onBeforeMount() {
             $.ajaxSetup({
@@ -265,7 +156,114 @@
             }
             this.state.isLoading = this.authData.isCheckingAuth
                   || this.dictData.isSiteconfigLoading
-                  || (this.state.isShowingDictionary && this.dictData.isDictionaryLoading)
+            this.dictData.actualPage = this.state.page
+         },
+
+         onAuthChanged(){
+            if(route.query().next){
+               window.location.href = decodeURIComponent(route.query().next)
+            } else {
+               this.update()
+            }
+         },
+
+         onCheckingAuthChange(){
+            this.update()
+            if(this.authData.authorized){
+               this.store.loadDictionaryList()
+               this.checkConsentAndShowConsentDialog()
+            }
+            route.start()
+            route.exec()
+         },
+
+         goTo(page, storeParams, updateParams){
+            if(!this.authData.authorized && this.needAuthorization(page)){
+               this.update({
+                  page: 'unauthorized'
+               })
+            } else {
+               if(!storeParams){
+                  this.update(Object.assign({
+                     page: page
+                  }, updateParams || {}))
+               } else {
+                  this.store.open(...storeParams)
+                  let query = route.query()
+                  this.store.changeSearchParams({
+                     searchtext: decodeURIComponent(query.s || ""),
+                     modifier: query.m
+                  })
+                  if(this.store.data.isDictionaryLoading){
+                     this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, updateParams))
+                  } else{
+                     this.checkAccessAndOpenPage(page, updateParams)
+                  }
+               }
+            }
+         },
+
+         checkAccessAndOpenPage(page, updateParams){
+            if(this.hasUserAccessToThePage(page)){
+               this.update(Object.assign({
+                  page: page
+               }, updateParams || {}))
+            } else {
+               this.update({
+                  page: "unauthorized"
+               })
+            }
+         },
+
+         hasUserAccessToThePage(page){
+            let uA = this.store.data.userAccess
+            if(this.authData.isAdmin
+               || !this.needAuthorization()
+               || this.store.data.public
+               || (page == "dict-download" && uA.canDownload)
+               || (page == "dict-upload" && uA.canUpload)
+               || (page.startsWith("dict-public"))
+               || (page.startsWith("dict-edit")/* && (uA.canEdit)*/)
+               || (page.startsWith("dict-links") && (uA.canEdit))
+               || (page.startsWith("dict-config") && (uA.canConfig || uA.canUpload || uA.canDownload))){
+               return true
+            }
+            return false
+         },
+
+         needAuthorization(page){
+            return !['e404', 'open-dictionaries', 'dict-public', 'dict-public-entry',
+               'api', 'login', 'register', 'register-password', 'forgot',
+               'forgot-password'].includes(page)
+         },
+
+         checkConsentAndShowConsentDialog(){
+            if(this.authData.authorized
+                     && this.dictData.siteconfig
+                     && this.dictData.siteconfig.consent
+                     && this.dictData.siteconfig.consent.terms
+                     && !this.authData.consent){
+               window.modal.open({
+                  tag: "user-consent",
+                  showCloseButton: false,
+                  dismissible: false
+               })
+            }
+         },
+
+         routeParser(path, filter){
+            // remove trailing slashes
+            path = path.replace(/\/+$/, "")
+            var f = filter
+               .replace(/\?/g, '\\?')
+               .replace(/\*/g, '([^/?#]+?)')
+               .replace(/\.\./, '.*')
+            var re = new RegExp(("^" + f + "$"))
+            var args = path.match(re)
+
+            if (args) {
+               return args.slice(1)
+            }
          },
 
          setFontSizeFromCookies(){

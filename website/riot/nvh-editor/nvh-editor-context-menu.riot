@@ -27,7 +27,7 @@
                </small>
             </li>
             <li if={option.submenu}
-                  class="nvh-focusable-option"
+                  class="nvh-focusable-option nvh-has-submenu"
                   onclick={onSubmenuClick.bind(this, option.submenu)}>
                {option.label}
                <i class="ml-auto material-icons">chevron_right</i>
@@ -137,6 +137,7 @@
             evt.stopPropagation()
             action()
          },
+
          onSubmenuClick(submenu, evt){
             evt.stopPropagation()
             this.changeActualOptions(submenu)
@@ -152,14 +153,14 @@
                 this.moveCursorUp()
             } else if(evt.keyCode == 40){
                 this.moveCursorDown()
-            } else if(evt.keyCode == 27){ //esc
+            } else if(evt.keyCode == 27 || evt.keyCode == 37){ //esc, left arrow
                let parentMenu = this.state.actualOptions[0].parentMenu
                if(parentMenu){
                   this.changeActualOptions(parentMenu)
-               } else {
+               } else if(evt.keyCode == 27){
                   this.close()
                }
-            } else if(evt.keyCode == 13){ // enter
+            } else if(evt.keyCode == 13 || (evt.keyCode == 39 && $(".nvh-highlight", this.root).hasClass("nvh-has-submenu"))){ // enter, right arrow
                $(".nvh-highlight", this.root).click()
             }
          },
@@ -182,9 +183,11 @@
                this.update({ show: true})
                $(".nvh-highlight", this.root).removeClass("nvh-highlight")
                $(".nvh-focusable-option", this.root).first().addClass("nvh-highlight")
-               document.addEventListener('click', this.handleClickOutside)
-               document.addEventListener('keyup', this.onKeyUp)
                this.updatePosition()
+               setTimeout(() => {
+                  document.addEventListener('click', this.handleClickOutside)
+                  document.addEventListener('keyup', this.onKeyUp)
+               }, 0)
             }
          },
 
