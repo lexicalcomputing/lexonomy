@@ -138,6 +138,7 @@
                            custom_NVHSchema: response.content._nvhSchema || "",
                            custom_newEntryTemplate: response.content._nvh || "",
                         })
+                        this.structureStore.setConfigStructure(response.content)
                      }
                      if(this.state.tab == "simple"){
                         if(!this.store.isStructureValid()){

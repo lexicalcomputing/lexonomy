@@ -127,18 +127,65 @@
             </label>
          </div>
 
-         <div if={["string", "int"].includes(structureStore.data.editedElement.type)}
-               class="input-field">
-            <input id="values"
-                  value={structureStore.data.editedElement.values}
-                  type="text">
-            <label for="values">
-               Values
-               <span class="hint tooltipped"
-                     data-tooltip="User will only be able to select values from this list.">
-                  <i class="material-icons">help</i>
-               </span>
-            </label>
+         <div if={["string", "int"].includes(structureStore.data.editedElement.type)}>
+            <div class="input-field">
+               <label>
+                  Values
+                  <span class="hint tooltipped"
+                        data-tooltip="User will only be able to select values from this list.">
+                     <i class="material-icons">help</i>
+                  </span>
+               </label>
+            </div>
+            <div class="pl-4">
+               <div if={!state.values.length}
+                     class="grey-text pt-4 pb-2">
+                     No values added
+               </div>
+               <table if={state.values.length}
+                     class="valueTable">
+                  <thead>
+                     <tr>
+                        <th>Value</th>
+                        <th>Label</th>
+                        <th></th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr each={(value, idx) in state.values}>
+                        <td>
+                           <span class="input-field">
+                              <input class="valueValue"
+                                    value={value.value}
+                                    oninput={onValueValueInput.bind(this, value)}
+                                    onkeyup={idx + 1 == state.values.length ? onValueKeyUp : null}
+                                    type="text">
+                           </span>
+                        </td>
+                        <td>
+                           <span class="input-field">
+                              <input class="valueLabel"
+                                    value={value.label}
+                                    oninput={onValueLabelInput.bind(this, value)}
+                                    onkeyup={idx + 1 == state.values.length ? onValueKeyUp : null}
+                                    type="text">
+                           </span>
+                        </td>
+                        <td>
+                           <button class="btn btn-flat btn-floating"
+                                 onclick={onValueDeleteClick.bind(this, value)}>
+                              <i class="material-icons grey-text">delete</i>
+                           </button>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+               <button class="btn btn-floating mt-4 tooltipped"
+                     data-tooltip="Add value"
+                     onclick={onValueAddClick}>
+                  <i class="material-icons">add</i>
+               </button>
+            </div>
          </div>
          <div class="center-align">
             <button class="btn {state.errors.name ? 'disabled' : ''}"
@@ -149,6 +196,16 @@
 
    <script>
       export default{
+
+
+
+         // TODO novy element nejde zaradit na konec primo pod entry, nebo jako posledni potomek prvku
+
+
+
+
+
+
          bindings: [["structureStore", "elementChanged", "update"],
                     ["structureStore", "onDndStart", "onDndStart"],
                     ["structureStore", "onDndStop", "onDndStop"]],
@@ -161,6 +218,7 @@
 
          onBeforeMount(){
             this.structureStore = window.structureEditorStore
+            this.state.values = this.structureStore.data.editedElement ? [...this.structureStore.data.editedElement.values || []] : []
          },
 
          onMounted(){
@@ -201,6 +259,34 @@
             this.update()
          },
 
+         onValueAddClick(){
+            this.state.values.push({value: "", label: ""})
+            this.update()
+            setTimeout(() => {
+               $(".valueTable tbody tr:last-child td:first-child input").focus()
+            }, 1)
+         },
+
+         onValueDeleteClick(value, evt){
+            evt.stopPropagation()
+            this.state.values = this.state.values.filter(v => v != value)
+            this.update()
+         },
+
+         onValueValueInput(value, evt){
+            value.value = evt.target.value
+         },
+
+         onValueLabelInput(value, evt){
+            value.label = evt.target.value
+         },
+
+         onValueKeyUp(evt){
+            if(evt.keyCode == 13){
+               this.onValueAddClick()
+            }
+         },
+
          onDocumentClick(evt){
             if(!$(".structureForm, .structure-item-wrapper", this.root).find(evt.target)[0]
                 && $(".structureForm", this.root)[0] != evt.target){
@@ -220,16 +306,17 @@
          },
 
          onEditOkClick(){
+            let values = this.state.values.filter(value => value.value != "")
             let element = {
                name: $("#name").val(),
                type: $("#type").val(),
                min: $("#min").val(),
                max: $("#max").val(),
                re: $("#re").val(),
-               values: ($("#values").val() || "")
+               values: values/*($("#values").val() || "")
                      .split(",")
                      .map(val => val.trim())
-                     .filter(val => val != "")
+                     .filter(val => val != "")*/
             }
             if(this.structureStore.data.structure.elements[this.structureStore.data.editedElement.name]){
                this.structureStore.updateElement(this.structureStore.data.editedElement.name, element)
@@ -299,6 +386,24 @@
          }
          .structure-delete-zone-text{
             margin-left: 5px;
+         }
+      }
+      .valueTable{
+         .input-field{
+            border-bottom: 0;
+            input[type="text"]{
+               height: 2rem;
+               line-height: 2rem;
+               margin: 0;
+            }
+         }
+         tbody{
+            tr{
+               border-bottom: none;
+               td{
+                  padding: 5px 5px 5px 0;
+               }
+            }
          }
       }
    </style>

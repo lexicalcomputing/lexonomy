@@ -165,7 +165,8 @@ class NVHStoreClass {
       if(window.store.data.actualPage == "dict-edit"
             && (this.data.entryId == "new"
                   || (window.store.data.entry
-                        && (this.jsonToNvh(this.data.entry) != window.store.data.entry.nvh)
+                     // TODO: conversion to json and back to nvh to be sure both are formatted the same way (spaces, new lines....), find better solution
+                        && (this.jsonToNvh(this.data.entry) != this.jsonToNvh(this.nvhToJson(window.store.data.entry.nvh)))
                      )
                )
             ){
@@ -376,7 +377,9 @@ class NVHStoreClass {
          nvh += `${" ".repeat(indent * 2)}${element.name}:\n`
          element.children.forEach(child => {
             if(child.min){
-               addElementAndChildren(json[child.name], indent + 1)
+               for(let i = 0; i < child.min; i++){
+                  addElementAndChildren(json[child.name], indent + 1)
+               }
             }
          })
       }
@@ -496,24 +499,23 @@ class NVHStoreClass {
    }
 
    getElementStyle(elementName){
-      return this.data.xemplate[elementName]
+      return this.data.xemplate[elementName] || {}
    }
 
    getAvailableChildElements(element){
       let config = this.data.structure.elements[element.name]
       let elements = []
       if(config){
-         elements = config.children.filter(c => {
-            return this.canHaveAnotherChild(element, c.name)
+         elements = config.children.filter(childName => {
+            return this.canHaveAnotherChild(element, childName)
          })
-               .map(c => c.name)
       }
       return elements
    }
 
    canHaveAnotherChild(element, childName){
-      let config = this.data.structure.elements[element.name].children.find(c => c.name == childName)
-      return !config.max || config.max > element.children.filter(c => c.name == childName).length
+      let childConfig = this.data.structure.elements[childName]
+      return !childConfig.max || childConfig.max > element.children.filter(c => c.name == childName).length
    }
 
    getAvailableParentElementNames(element){
@@ -555,6 +557,10 @@ class NVHStoreClass {
 
    changeElementStyleOption(elementName, option, value){
       if(this.getElementStyle(elementName)[option] != value){
+         // TODO temporary fix
+         if(!this.data.xemplate[elementName]){
+            this.data.xemplate[elementName] = {}
+         }
          if(!value){
             delete this.data.xemplate[elementName][option]
          } else {
@@ -716,7 +722,7 @@ class NVHStoreClass {
 
    startElementEditing(element){
       let config = this.getElementConfig(element.name)
-      if(config && !["chd", "emp"].includes(config.type)){  // element with value
+      if(config && config.type != "empty"){  // element with value
          let elements = this.findElements(e => e.focused || e.edit)
          elements.forEach(e => {
             e.focused = e == element,
@@ -733,7 +739,7 @@ class NVHStoreClass {
    startElementOrChildEditing(element){
       let firstEditableElement = this.findElement(el => {
          let config = this.getElementConfig(el.name)
-         return config && !["chd", "emp"].includes(config.type)
+         return config && config.type != "empty"
       }, element)
       firstEditableElement && this.startElementEditing(firstEditableElement)
    }
@@ -838,10 +844,11 @@ class NVHStoreClass {
 
    addRequiredChildren(element){
       let config = this.getElementConfig(element.name)
-      config && config.children.forEach(childConfig => {
+      config && config.children.forEach(childName => {
+         let childConfig = this.getElementConfig(childName)
          if(childConfig.min > 0){
             Array.from({length: childConfig.min}).forEach(empty => {
-               let childElement = this._addChildElement(element, childConfig.name)
+               let childElement = this._addChildElement(element, childName)
                this.addRequiredChildren(childElement)
             })
          }
@@ -850,9 +857,10 @@ class NVHStoreClass {
 
    addAllChildren(element){
       let config = this.getElementConfig(element.name)
-      config && config.children.forEach(childConfig => {
+      config && config.children.forEach(childName => {
+         let childConfig = this.getElementConfig(childName)
          Array.from({length: childConfig.min || 1}).forEach(empty => {
-            let childElement = this._addChildElement(element, childConfig.name)
+            let childElement = this._addChildElement(element, childName)
             this.addAllChildren(childElement)
          })
       })
@@ -912,15 +920,11 @@ class NVHStoreClass {
       if(element.name == this.data.rootElement){
          return false
       }
-      let config = this.getElementConfig(element.parent.name)
+      let config = this.getElementConfig(element.name)
       if(config){
-         let childConfig = config.children.find(e => e.name == element.name)
-         if(childConfig){
-            let minimumNumberOfElements = childConfig.min
-            let actualNumberOfElements = this.findElements(e => e.name == element.name, element.parent).length
-            return element.name != this.data.rootElement
-                  && (!minimumNumberOfElements || minimumNumberOfElements > actualNumberOfElements)
-         }
+         let actualNumberOfElements = this.findElements(e => e.name == element.name, element.parent).length
+         return element.name != this.data.rootElement
+               && (!config.min || config.min > actualNumberOfElements)
       }
       return true
    }
@@ -931,51 +935,50 @@ class NVHStoreClass {
       if(!config || !config.type){  // has valid configuration
          warnings.push(`Unknown element "${element.name}".`)
       } else {
-         if(config.type == "emp"){
-            if(element.children.length){
-               warnings.push(`Element "${element.name}" should be empty but it contains other element.`)
-            }
-         } else if(config.type == "chd"){
+         if(config.type == "empty"){
             if(element.value){
                warnings.push(`Element "${element.name}" should not have any text.`)
             }
-         } else if(config.type == "lst"){
+         } else if(config.values.length){
             if(!element.value){
                warnings.push(`Element "${element.name}" should not be empty.`)
             } else if(!config.values.find(v => v.value == element.value)){
                warnings.push(`Element "${element.name}" should not have the value "${element.value}".`)
             }
          }
-         if(["txt", "inl"].includes(config.type)){
+         if(config.type != "empty"){
             if(!element.value){
                warnings.push(`Element "${element.name}" should have some text.`)
             }
          }
-         if(["chd", "inl"].includes(config.type)){
+         //if(["chd", "inl"].includes(config.type)){
             let counts = element.children.reduce((counts, e) => {
                counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
                return counts
             }, {})
-            config.children.forEach(childConfig => {
-               if (childConfig.max && (counts[childConfig.name] || 0) > childConfig.max){
-                  warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childConfig.name}"`)
-               }
-               if (childConfig.min && (counts[childConfig.name] || 0) < childConfig.min){
-                  warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childConfig.name}"`)
+            config.children.forEach(childName => {
+               let childConfig = this.getElementConfig(childName)
+               if(childConfig){
+                  if (childConfig.max && (counts[childConfig.name] || 0) > childConfig.max){
+                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childConfig.name}"`)
+                  }
+                  if (childConfig.min && (counts[childConfig.name] || 0) < childConfig.min){
+                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childConfig.name}"`)
+                  }
                }
             })
-         }
+         //}
          element.children.forEach(child => {
             if(!window.store.data.config.structure.elements[child.name]){
                warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
             }
-            if(!config.children.map(c => c.name).includes(child.name)){
+            if(!config.children.includes(child.name)){
                warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
             }
          })
       }
 
-      element.warnings = warnings
+      element.warnings = [...new Set(warnings)] // remove duplicities
       element.isValid = !warnings.length
       let isValid = !this.findElement(e => !e.isValid)
       if(this.data.isValid != isValid){
@@ -1047,10 +1050,11 @@ class NVHStoreClass {
    _getElementDefaultValue(elementName){
       let config = this.getElementConfig(elementName)
       if(config){
-         let type = config.type
-         if(["chd", "emp"].includes(type)){
+         if(config.type == "empty"){
             return null
-         } else if(type == "lst"){
+         } else if(config.type == "bool"){
+            return 0
+         } else if(config.values.length){
             return config.values[0].value
          }
       }
