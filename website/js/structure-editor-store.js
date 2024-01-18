@@ -12,7 +12,7 @@ class StructureEditorStoreClass {
             image: "Image",
             audio: "Audio",
             url: "URL",
-            empty: "Empty",
+            empty: "Empty", // no value, just child elements
             bool: "Yes/No"
          }
       }
@@ -170,7 +170,7 @@ class StructureEditorStoreClass {
             regex = ` ~${element.regex}`
          }
          if(element.values && element.values.length){
-            values = ` [${element.values}]`
+            values = ` [${element.values.map(v => v.value).join(", ")}]`
          }
 
          let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.type}${count}${regex}${values}\n`
@@ -231,7 +231,8 @@ class StructureEditorStoreClass {
             addElementAndItsChildren(this.getElementByName(childName), indent + 1)
          })
       }
-      addElementAndItsChildren(this.getRootElement(), 0)
+      let rootElement = this.getRootElement()
+      rootElement && addElementAndItsChildren(rootElement, 0)
    }
 }
 

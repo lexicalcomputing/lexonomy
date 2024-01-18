@@ -27,7 +27,7 @@
          </span>
          <span if={props.element.values}
                class="pl-2">
-            <trim-text text={props.element.values.join(", ")}
+            <trim-text text={props.element.values.map(v => v.value).join(", ")}
                   max=30/>
          </span>
          <span class="elementActions">

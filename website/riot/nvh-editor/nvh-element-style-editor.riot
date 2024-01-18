@@ -357,7 +357,7 @@
             let config = this.nvhStore.getElementConfig(elementName)
             if(config){
                let options = ["shown", "layout", "separation", "gutter", "border", "background", "outerPunc", "label"]
-               if(["txt", "inl", "lst"].includes(config.type)){
+               if(config.type == "string"){
                   options = options.concat(["colour", "slant", "weight", "textsize", "innerPunc"])
                }
                return options

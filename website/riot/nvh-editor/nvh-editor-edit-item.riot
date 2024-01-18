@@ -30,7 +30,7 @@
                onclick={onCollapseToggleClick}
                style={props.element.collapsed ? '' : 'display: none;'}>{getCollapsedValue()}</span>
 
-         <span if={state.config.type != "chd"}
+         <span if={state.config.type != "empty"}
                class="nvh-value"
                style={props.element.collapsed ? 'display: none;' : ''}>
             <span if={!props.element.edit}
@@ -142,11 +142,13 @@
 
          getReadOnlyValue(){
             let value = this.props.element.value
-            if(this.state.config.type == "lst"){
+            if(this.state.config.values.length){
                let option = this.state.config.values.find(v => v.value == this.props.element.value)
-               value = option ? option.caption : value
-            } else if(this.state.config.type == "inl"){
-               value = this.nvhStore.parseMarkDown(value)
+               return option ? option.label : value
+            } else if(this.state.config.type == "bool"){
+               return value == 1 ? "yes" : "no"
+            } else if(this.state.config.type == "string"){
+               return this.nvhStore.parseMarkDown(value)
             }
             return value
          },

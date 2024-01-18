@@ -5,7 +5,7 @@
       <span if={state.beforeElementContent}
             class="nvh-gutter">{state.beforeElementContent}</span>
       <span class="nvh-outer-wrapper {getOuterWrapperStyleClasses()}">
-         <span if={state.config.type != "chd"}
+         <span if={state.config.type != "empty"}
                class="nvh-inner-wrapper {getInnerWrapperStyleClasses()}">
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper"
@@ -14,9 +14,10 @@
                      class="nvh-user-label">{state.style.label}</span>
                <span if={state.outerPunc && state.outerPunc[0]}
                      class="nvh-outer-punc">{state.outerPunc[0]}</span>
-               <nvh-item-media if={state.config.type == "med"}
+               <nvh-item-media if={["image", "audio", "video", "url"].includes(state.config.type)}
+                     type={state.config.type}
                      url={props.element.value}/>
-               <span if={state.config.type != "med"}
+               <span if={["string", "int", "bool"].includes(state.config.type)}
                      class="nvh-readonly-value pointer"
                      onclick={!props.readOnly && onEditClick}>
                   <raw-html content={getReadOnlyValue()}/>
@@ -97,11 +98,13 @@
 
          getReadOnlyValue(){
             let value = this.props.element.value
-            if(this.state.config.type == "lst"){
+            if(this.state.config.values.length){
                let option = this.state.config.values.find(v => v.value == this.props.element.value)
-               value = option ? option.caption : value
-            } else if (this.state.config.type == "inl"){
+               value = option ? option.label : value
+            } else if (this.state.config.type == "string"){
                value = this.nvhStore.parseMarkDown(value)
+            } else if(this.state.config.type == "bool"){
+               value = value ? "yes" : "no"
             }
             if(this.state.innerPunc){
                value = `${this.state.innerPunc[0]}${value}${this.state.innerPunc[1]}`

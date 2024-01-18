@@ -11,16 +11,35 @@
          Ctrl + Enter to confirm
       </small>
    </div>
-   <input if={state.config.type == "med"}
+   <input if={state.config.type == "int"}
          class="nvh-input"
+         type="number"
          value={props.element.value}
          onkeyup={onKeyUp}/>
-   <select if={state.config.type == "lst"}
+   <span if={state.config.type == "bool"}>
+      <label>
+         <input name="bool"
+               type="radio"
+               value=1
+               checked={props.element.value == 1}
+               onchange={onBoolChange}/>
+         <span>Yes</span>
+      </label>
+      <label>
+         <input name="bool"
+               type="radio"
+               value=0
+               checked={props.element.value != 1}
+               onchange={onBoolChange}/>
+         <span>No</span>
+      </label>
+   </span>
+   <select if={state.config.values.length}
          class="nvh-select"
          onchange={onSelectChange}>
       <option each={option in state.config.values}
             selected={option.value == props.element.value}
-            value={option.value}>{option.caption}</option>
+            value={option.value}>{option.label}</option>
    </select>
 
    <script>
@@ -30,13 +49,13 @@
             this.nvhData = this.nvhStore.data
             this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
             this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
-            this.state.showEditor = this.state.config.type == "inl" || this.state.config.type == "txt"
+            this.state.showEditor = ["string", "image", "audio", "url"].includes(this.state.config.type) && !this.state.config.values.length
          },
 
          onMounted(){
             if(this.state.showEditor){
                let actionList = ["undo", "redo", "bold", "italic", /*"underline", "createlink", "inserthorizontalrule",*/ "close"]
-               if(this.state.config.type == "txt"){
+               if(this.state.config.type == "string"){
                   actionList = ["undo", "redo", "close"]
                }
                $(".nvh-editable-div", this.root).html(this.nvhStore.parseMarkDown(this.props.element.value))
@@ -99,6 +118,10 @@
             this.nvhStore.stopElementEditing()
          },
 
+         onBoolChange(evt){
+            this.nvhStore.changeElementValue(this.props.element, evt.target.value)
+         },
+
          changeValue(){
             if(this.state.showEditor){
                this.saveEditorValue()
@@ -118,7 +141,7 @@
          },
 
          initFormSelect(){
-            if(this.state.config.type == "lst"){
+            if(this.state.config.values.length){
                $("select", this.root).formSelect({
                   dropdownOptions: {
                      coverTrigger: false,
@@ -129,7 +152,7 @@
          },
 
          focusInput(){
-            if(this.props.element.edit){
+            if(this.props.element.edit && this.state.config.type != "bool"){
                let el = $(this.state.showEditor ? ".nvh-editable-div" : "input, textarea", this.root).first().focus()
                window.scrollToTheEndOfInput(el)
             }

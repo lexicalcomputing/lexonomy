@@ -294,17 +294,18 @@ class StoreClass {
                   //response.configs.structure = response.configs.structure || response.configs.xema
                   let elements = response.configs.structure.elements
                   if(elements){
-                     for(let elementName in elements){
-                        if(typeof elements[elementName].children == "undefined"){
-                           elements[elementName].children = []
+                     Object.values(elements).forEach(element => {
+                        if(typeof element.children == "undefined"){
+                           element.children = []
                         }
-                        if(typeof elements[elementName].min != "undefined"){
-                           elements[elementName].min = elements[elementName].min * 1
+                        if(typeof element.min != "undefined"){
+                           element.min = element.min * 1
                         }
-                        if(typeof elements[elementName].max != "undefined"){
-                           elements[elementName].max = elements[elementName].max * 1
+                        if(typeof element.max != "undefined"){
+                           element.max = element.max * 1
                         }
-                     }
+                        element.values = element.values || []
+                     })
                   }
                   Object.assign(this.data, {
                         config: response.configs,
