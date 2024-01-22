@@ -130,7 +130,7 @@ def authAdmin(func):
 def home():
     return static_file("/index.html", root="./")
 
-@get(siteconfig["rootPath"] + "siteconfigread.json")
+@get(siteconfig["rootPath"] + "siteconfigread.json") # OK
 def lexonomyconfig():
     configData = {
         "licences": siteconfig['licences'],
@@ -143,15 +143,15 @@ def lexonomyconfig():
     configData['langs'] = ops.get_iso639_1()
     return configData
 
-@get(siteconfig["rootPath"] + "schemaitems.json")
+@get(siteconfig["rootPath"] + "schemaitems.json") # OK
 def schemaitems():
     return {"items": ops.getSchemaItems()}
 
-@post(siteconfig["rootPath"] + "schemafinal.json")
+@post(siteconfig["rootPath"] + "schemafinal.json") # OK
 def schemafinal():
     return {"schemafinal": ops.mergeSchemaItems(json.loads(request.forms.schema_items))}
 
-@post(siteconfig["rootPath"] + "schema_to_json.json")
+@post(siteconfig["rootPath"] + "schema_to_json.json") # OK
 def schema_to_json():
     schema = nvh.parse_string(json.loads(request.forms.schema))
     schema_dict: dict = {}
@@ -451,13 +451,13 @@ def do_create_account():
     return {"success": res}
 
 @post(siteconfig["rootPath"] + "forgotpwd.json")
-def forgotpwd():
+def forgotpwd(): # OK
     client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
     res = ops.sendToken(request.forms.email, client_ip)
     return {"success": res}
 
 @post(siteconfig["rootPath"] + "recoverpwd.json")
-def do_recover_pwd():
+def do_recover_pwd(): #OK
     client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
     res = ops.resetPwd(request.forms.token, request.forms.password, client_ip)
     return {"success": res}
@@ -537,31 +537,31 @@ def skelogin(token):
     except Exception as e:
         return redirect("/")
 
-@post(siteconfig["rootPath"] + "users/userlist.json")
+@post(siteconfig["rootPath"] + "users/userlist.json") # OK
 @authAdmin
 def userelist(user):
     res = ops.listUsers(request.forms.searchtext, request.forms.howmany)
     return {"success": True, "entries": res["entries"], "total": res["total"]}
 
-@post(siteconfig["rootPath"] + "users/userupdate.json")
+@post(siteconfig["rootPath"] + "users/userupdate.json") # TODO front-end
 @authAdmin
 def userupdate(user):
     res = ops.updateUser(request.forms.email, request.forms.password)
     return {"success": True, "id": res["email"], "content": res["info"]}
 
-@post(siteconfig["rootPath"] + "users/usercreate.json")
+@post(siteconfig["rootPath"] + "users/usercreate.json") # OK
 @authAdmin
 def usercreate(user):
     res = ops.createUser(request.forms.id, user)
     return {"success": True, "id": res["entryID"]}
 
-@post(siteconfig["rootPath"] + "users/userdelete.json")
+@post(siteconfig["rootPath"] + "users/userdelete.json") # OK
 @authAdmin
 def userdelete(user):
     res = ops.deleteUser(request.forms.id)
     return {"success": True, "id": request.forms.id}
 
-@post(siteconfig["rootPath"] + "users/userread.json")
+@post(siteconfig["rootPath"] + "users/userread.json") # TODO front-end
 @authAdmin
 def userread(user):
     res = ops.readUser(request.forms.id)
@@ -576,7 +576,7 @@ def dictlist(user):
     res = ops.listDicts(request.forms.searchtext, request.forms.howmany)
     return {"success": True, "entries": res["entries"], "total": res["total"]}
 
-@post(siteconfig["rootPath"] + "dicts/dictread.json")
+@post(siteconfig["rootPath"] + "dicts/dictread.json") # TODO front-end
 @authAdmin
 def dictread(user):
     res = ops.readDict(request.forms.id)
@@ -618,7 +618,7 @@ def publicentrynabes(dictID, entryID):
     nabes = ops.readNabesByEntryID(dictDB, dictID, entryID, configs)
     return {"nabes": nabes}
 
-@get(siteconfig["rootPath"]+"<dictID>/<entryID:re:\d+>.xml")
+@get(siteconfig["rootPath"]+"<dictID>/<entryID:re:\d+>.xml") # TODO check funkcioanalyty
 def publicentryxml(dictID, entryID):
     if not ops.dictExists(dictID):
         return redirect("/")
@@ -678,7 +678,7 @@ def importconfigs(dictID, user, dictDB, configs):
         except:
             return {"success": False}
 
-@get(siteconfig["rootPath"]+"<dictID>/download.xml")
+@get(siteconfig["rootPath"]+"<dictID>/download.xml") # TODO check funkcinality
 @authDict(["canDownload"], True)
 def downloadxml(dictID, user, dictDB, configs):
     clean = False
@@ -717,7 +717,7 @@ def importjson(dictID, user, dictDB, configs):
     else:
         return ops.importfile(dictID, request.query.filename, user["email"])
 
-@post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json")
+@post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
 @authDict(["canEdit"])
 def entrylist(dictID, doctype, user, dictDB, configs):
     if request.forms.id:

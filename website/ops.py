@@ -356,7 +356,7 @@ def sendSignupToken(email, remoteip):
     else:
         return False
 
-def sendToken(email, remoteip):
+def sendToken(email, remoteip): # OK
     if siteconfig["readonly"]:
         return False
     conn = getMainDB()
@@ -415,7 +415,7 @@ def createAccount(token, password, remoteip):
     else:
         return False
 
-def resetPwd(token, password, remoteip):
+def resetPwd(token, password, remoteip): # OK
     conn = getMainDB()
     c = conn.execute("select * from recovery_tokens where token=? and expiration>=datetime('now') and usedDate is null", (token,))
     row = c.fetchone()
@@ -1034,7 +1034,7 @@ def deleteUser(email):
     conn.commit()
     return True
 
-def readUser(email):
+def readUser(email): # TODO load info about each dictionary, such as language, number of entries
     conn = getMainDB()
     c = conn.execute("select * from users where email=?", (email.lower(), ))
     r = c.fetchone()
@@ -1091,12 +1091,12 @@ def clean4xml(text):
 def markdown_text(text):
     return markdown.markdown(text).replace("<a href=\"http", "<a target=\"_blank\" href=\"http")
 
-def cleanHousekeeping(xml):
-    xml = re.sub(r"^(<[^>\/]*)\s+xmlns:lxnm=['\"]http:\/\/www\.lexonomy\.eu\/[\"']", r"\1", xml)
-    xml = re.sub(r"^(<[^>\/]*)\s+lxnm:entryID=['\"][^\"\']*[\"']", r"\1", xml)
-    xml = re.sub(r"^(<[^>\/]*)\s+lxnm:subentryID=['\"][^\"\']*[\"']", r"\1", xml)
-    xml = re.sub(r"^(<[^>\/]*)\s+lxnm:linkable=['\"][^\"\']*[\"']", r"\1", xml)
-    return xml
+# def cleanHousekeeping(xml):
+#     xml = re.sub(r"^(<[^>\/]*)\s+xmlns:lxnm=['\"]http:\/\/www\.lexonomy\.eu\/[\"']", r"\1", xml)
+#     xml = re.sub(r"^(<[^>\/]*)\s+lxnm:entryID=['\"][^\"\']*[\"']", r"\1", xml)
+#     xml = re.sub(r"^(<[^>\/]*)\s+lxnm:subentryID=['\"][^\"\']*[\"']", r"\1", xml)
+#     xml = re.sub(r"^(<[^>\/]*)\s+lxnm:linkable=['\"][^\"\']*[\"']", r"\1", xml)
+#     return xml
 
 def exportEntryXml(dictDB, dictID, entryID, configs, baseUrl):
     c = dictDB.execute("select * from entries where id=?", (entryID,))
@@ -1694,7 +1694,7 @@ def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
 
     return nvhNode, linkableAr
 
-def getEntrySearchables(nvhParsed, configs):
+def getEntrySearchables(nvhParsed, configs): # TODO search
     ret = []
     ret.append(getEntryHeadword(nvhParsed, configs["titling"].get("headword")))
     if configs["searchability"].get("searchableElements"):
@@ -2619,7 +2619,7 @@ def parse_level(query_list):
                 result_list.append(dql2sqliteToken(token))
     return '(' + ' '.join(result_list) + ')'
 
-def dql2sqlite(query):
+def dql2sqlite(query): # TODO search
     parsed_query = parse_nested(query)
     sql = "select distinct json_extract(entries.entry_data,'$.hw.lemma') from entries, json_tree(entries.entry_data) where " + parse_level(parsed_query) + " limit 10;"
     return sql
