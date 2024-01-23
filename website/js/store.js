@@ -437,9 +437,6 @@ class StoreClass {
       })
             .done(response => {
                this.data.entry = response
-               if(this.data.entry.json){
-                  this.data.entry.json = JSON.parse(this.data.entry.json)
-               }
                this.data.entryRevisions = []
                this.data.isEntryRevisionsLoaded = false
                this.data.isEntryLoaded = true
