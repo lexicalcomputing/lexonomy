@@ -62,9 +62,14 @@
             <div class="mb-16">
                <div class="input-field">
                   <textarea id="custom_NVHSchema"
-                        class="materialize-textarea"
+                        class="materialize-textarea {state.custom_NVHSchemaError ? 'invalid' : ''}"
                         oninput={onSchemaInput}>{structureStore.data.custom_NVHSchema}</textarea>
                   <label for="custom_NVHSchema">Your NVH schema</label>
+                  <div class="textareaErrorMessage red-text">
+                     <small>
+                        {state.custom_NVHSchemaError}
+                     </small>
+                  </div>
                   <div class="buttons">
                      <button id="custom_importFromSimple"
                            class="btn btn-secondary {!structureStore.data.basic_modules || !structureStore.data.basic_modules.length ? 'disabled' : ''}"
@@ -80,14 +85,19 @@
             </div>
             <div class="input-field">
                <textarea id="custom_newEntryTemplate"
-                     class="materialize-textarea"
+                     class="materialize-textarea {state.custom_newEntryTemplateError ? 'invalid' : ''}"
                      oninput={onNewEntryInput}>{structureStore.data.custom_newEntryTemplate}</textarea>
                <label for="custom_newEntryTemplate">NVH template for new entries</label>
+               <div class="textareaErrorMessage red-text">
+                  <small>
+                     {state.custom_newEntryTemplateError}
+                  </small>
+               </div>
                <div class="buttons">
                   <button id="custom_generateNewNVHBtn"
                         class="btn btn-secondary {structureStore.data.custom_NVHSchema ? '' : 'disabled'}"
                         onclick={onGenerateNewNVHClick}>Generate from NVH schema</button>
-                  <button id="custom_generateNewNVHBtn"
+                  <button id="custom_loadSampleNVHTemplateBtn"
                         class="btn btn-secondary"
                         onclick={onExampleNewEntryTemplateClick}>Load sample NVH template</button>
                </div>
@@ -109,7 +119,9 @@
             isBusy: false,
             tab: "simple",
             data: null,
-            brokenConfig: null
+            brokenConfig: null,
+            custom_NVHSchemaError: "",
+            custom_newEntryTemplateError: ""
          },
 
          onBeforeMount(){
@@ -158,7 +170,7 @@
                   .always(() => {
                      this.update({isLoading: false})
                      if(this.state.tab == "custom"){
-                        $("#custom_generateNewNVHBtn").toggleClass("disabled", !this.structureStore.data.custom_NVHSchema)
+                        $("#custom_generateNewNVHBtn").toggleClass("disabled", !this.structureStore.data.custom_NVHSchema || !!this.state.custom_NVHSchemaError)
                         this.refreshCustomTextFields()
                      }
                      this.refreshBtnSaveDisabled()
@@ -166,13 +178,15 @@
          },
 
          onSchemaInput(evt){
-            $("#custom_generateNewNVHBtn").toggleClass("disabled", !evt.target.value)
             this.structureStore.data.custom_NVHSchema = evt.target.value
+            this.validateNVHSyntax("custom_NVHSchema")
             this.refreshBtnSaveDisabled()
+            $("#custom_generateNewNVHBtn").toggleClass("disabled", !evt.target.value || !!this.state.custom_NVHSchemaError)
          },
 
          onNewEntryInput(evt){
             this.structureStore.data.custom_newEntryTemplate = evt.target.value
+            this.validateNVHSyntax("custom_newEntryTemplate")
             this.refreshBtnSaveDisabled()
          },
 
@@ -283,6 +297,7 @@
             this.structureStore.data.custom_NVHSchema = nvhSchema
             $("#custom_NVHSchema").val(nvhSchema)
             $("#custom_generateNewNVHBtn").removeClass("disabled")
+            this.validateNVHSyntax("custom_NVHSchema")
             this.refreshCustomTextFields()
             this.refreshBtnSaveDisabled()
          },
@@ -290,8 +305,21 @@
          setCustomNewEntryTemplate(newEntryTemplate){
             this.structureStore.data.custom_newEntryTemplate = newEntryTemplate
             $("#custom_newEntryTemplate").val(newEntryTemplate)
+            this.validateNVHSyntax("custom_newEntryTemplate")
             this.refreshCustomTextFields()
             this.refreshBtnSaveDisabled()
+         },
+
+         validateNVHSyntax(key){
+            let parseError = ""
+            try{
+               window.nvhStore.nvhToJson(this.structureStore.data[key])
+            } catch (e){
+               parseError = e
+            }
+            if(parseError != this.state[key + "Error"]){
+               this.update({[key + "Error"]: parseError})
+            }
          },
 
          refreshBtnSaveDisabled(){
@@ -301,7 +329,9 @@
             } else if(this.state.tab == "advanced"){
                disabled = !this.structureStore.data.structure.root
             } else if(this.state.tab == "custom"){
-               disabled = !$("#custom_NVHSchema", this.root).val() || !$("#custom_newEntryTemplate", this.root).val()
+               disabled = !$("#custom_NVHSchema", this.root).val()
+                     || !!this.state.custom_NVHSchemaError
+                     || !!this.state.custom_newEntryTemplateError
             }
             $("#submit_button", this.root).toggleClass("disabled", disabled)
          },
@@ -331,23 +361,14 @@
          display: flex;
          gap: 20px;
       }
-
-      /*#editor {
-         position: relative !important;
-         min-height: 750px;
+      textarea{
+         min-height: 89px;
       }
-      #editor .list {
-         width: 25% !important;
+      .textareaErrorMessage{
+         min-height: 24px;
+         position: relative;
+         top: -15px;
       }
-      #editor .details {
-         left: 25% !important;
-      }
-      #editor.designer input.textbox.cap {
-         width: 15em !important;
-      }
-      #editor.designer input[type=radio] {
-         opacity: 1 !important;
-      }*/
       .tabs {
          border-bottom: none;
          a.active{
