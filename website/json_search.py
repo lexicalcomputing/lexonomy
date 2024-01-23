@@ -54,9 +54,12 @@ def query2sqliteToken(token):
             operator = 'exist'
             path = token.strip()
             value = ''
+    
+    # fullpath = path.replace('.', '[%].')
+    # fullpathval = '$.' + fullpath + '[%]._value'
 
-    fullpath = path.replace('.', '[%].')
-    fullpathval = '$.' + fullpath + '[%]._value'
+    fullpath = '$.%.' + path + '[%]'
+    fullpathval = fullpath + '._value'
 
     sql = ''
     match operator:
@@ -65,15 +68,15 @@ def query2sqliteToken(token):
         case '!=':
             sql = "(json_tree.key='_value' AND json_tree.value != '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
         case 'exist':
-            sql = "(json_tree.fullkey LIKE '$." + fullpath + "[%]')"
+            sql = "(json_tree.fullkey LIKE '" + fullpath + "')"
         case '~=':
             sql = "(json_tree.key='_value' AND json_tree.value REGEXP '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
         case '#=':
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)=" + value + "))"
+            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.fullkey LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)=" + value + "))"
         case '#>':
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)>" + value + "))"
+            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.fullkey LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)>" + value + "))"
         case '#<':
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)<" + value + "))"
+            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.fullkey LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)<" + value + "))"
     return sql
 
 
@@ -137,47 +140,58 @@ def result_id_list(query, db):
         
 
 # Unit tests
-class TestStringMethods(unittest.TestCase):
+class TestQueries(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(f'{current_dir}/tests/test.sqlite')
 
     def test_key_exists(self):
-        query = dql2sqlite('entry.hw.sense')
+        query = dql2sqlite('sense')
+        print(query)
         self.assertListEqual(result_id_list(query, self.db), [1, 2, 3, 5])
 
     # VALUES
     def test_value_equals(self): # OK
-        query = dql2sqlite('entry.hw.sense=test_5')
+        query = dql2sqlite('sense=test_5')
         self.assertListEqual(result_id_list(query, self.db), [5])
 
     def test_value_re_equals(self):
-        query = dql2sqlite('entry.hw.sense~=test_2.*')
+        query = dql2sqlite('sense~=test_2.*')
         self.assertListEqual(result_id_list(query, self.db), [2])
     
     # COUNT
-    def test_count_more_than(self): # OK
-        query = dql2sqlite('entry.hw.sense.example#>0')
+    def test_count_more_than(self):
+        query = dql2sqlite('sense_example#>0')
         self.assertListEqual(result_id_list(query, self.db), [1, 2, 3])
 
     def test_count_less_than(self):
-        query = dql2sqlite('entry.hw.sense.image#<0')
+        query = dql2sqlite('image#<1')
+        print(query)
         self.assertListEqual(result_id_list(query, self.db), [1, 2, 3, 4])
     
     def test_count_equals(self):
-        query = dql2sqlite('entry.hw.sense#=0')
+        query = dql2sqlite('sense#=0')
         self.assertListEqual(result_id_list(query, self.db), [4])
 
     # def test_count_condition(self):
-    #     query = dql2sqlite('entry.hw.sense.example#>0.quality=bad')
+    #     query = dql2sqlite('example#>0.quality=bad')
     #     self.assertListEqual(result_id_list(query, self.db), [4])
 
     # OPERATORS
     def test_and_operator(self):
-        query = dql2sqlite('entry.hw.sense and entry.hw.flag=nok')
+        # OLD
+        # select distinct entries.id, entries.json from entries, json_tree(entries.json) 
+        # where ((json_tree.fullkey LIKE '$.%.sense[%]') and 
+        # (json_tree.key='_value' AND json_tree.value = 'nok' AND json_tree.fullkey LIKE '$.%.flag[%]._value')) limit 10;
+        # NEW
+        # select distinct entries.id, entries.json from entries, json_tree(entries.json) AS sense,  json_tree(entries.json) AS flag 
+        # where ((sense.fullkey LIKE '$.%.sense[%]') and 
+        # (flag.key='_value' AND flag.value = 'nok' AND flag.fullkey LIKE '$.%.flag[%]._value')) limit 10;
+        query = dql2sqlite('sense and flag=nok')
+        print(query)
         self.assertListEqual(result_id_list(query, self.db), [3])
 
     def test_or_operator(self):
-        query = dql2sqlite('entry.hw.flag=nok or entry.hw.flag=low_frq')
+        query = dql2sqlite('flag=nok or flag=low_frq')
         self.assertListEqual(result_id_list(query, self.db), [3, 4, 5])
 
 
