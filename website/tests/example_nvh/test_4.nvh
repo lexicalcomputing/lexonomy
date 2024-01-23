@@ -1,0 +1,8 @@
+entry:
+  hw: test_4
+    lemma: test_4
+    pos: ADJ
+    rank: 0
+    flag: nok
+    prefix_sense: test_4
+    notes: TODO unfinished
