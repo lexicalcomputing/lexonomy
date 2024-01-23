@@ -11,7 +11,7 @@
                onclick={onCloseStyleEditor}>close</i>
       </div>
       <div class="nvh-options p-2">
-         <div if={state.availableOptions.includes("shown")}
+         <div if={state.availableOptions.includes("hidden")}
                class="nvh-option">
             <span class="nvh-label">
                Hide
@@ -19,13 +19,13 @@
             <span class="nvh-values">
                   <label>
                      <input type="checkbox"
-                           checked={!state.style.shown}
+                           checked={state.style.hidden}
                            onchange={onHideChange}/>
                      <span></span>
                   </label>
             </span>
          </div>
-         <template if={state.style.shown}>
+         <template if={!state.style.hidden}>
             <div if={state.availableOptions.includes("textsize")}
                   class="nvh-option">
                <span class="nvh-label">
@@ -299,7 +299,7 @@
          },
 
          onHideChange(evt){
-            this.nvhStore.changeElementStyleOption(this.state.elementName, "shown", !evt.target.checked)
+            this.nvhStore.changeElementStyleOption(this.state.elementName, "hidden", evt.target.checked)
             this.update()
          },
 
@@ -356,9 +356,13 @@
          getAvailableOptions(elementName){
             let config = this.nvhStore.getElementConfig(elementName)
             if(config){
-               let options = ["shown", "layout", "separation", "gutter", "border", "background", "outerPunc", "label"]
+               let options = []
+               if(this.nvhData.rootElement != elementName){
+                  options.push("hidden")
+               }
+               options.push(...["layout", "separation", "gutter", "border", "background", "outerPunc", "label"])
                if(config.type == "string"){
-                  options = options.concat(["colour", "slant", "weight", "textsize", "innerPunc"])
+                  options.push(...["colour", "slant", "weight", "textsize", "innerPunc"])
                }
                return options
             }

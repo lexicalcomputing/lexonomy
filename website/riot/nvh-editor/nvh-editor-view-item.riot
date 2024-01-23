@@ -1,6 +1,6 @@
 <nvh-editor-view-item id="nvh-item-{props.element.id}"
       class="nvh-editor-view-item {state.style.layout == 'inline' ? 'inlineBlock' : 'block'} {props.readOnly ? 'nvh-read-only' : ''}">
-   <div if={state.style.shown}
+   <div if={!state.style.hidden}
          class="nvh-item {props.element.focused ? 'nvh-focused' : ''}">
       <span if={state.beforeElementContent}
             class="nvh-gutter">{state.beforeElementContent}</span>
@@ -31,7 +31,7 @@
             <nvh-item-value-editor if={props.element.edit}
                   element={props.element}/>
          </span>
-         <nvh-dnd-zone if={state.style.shown}
+         <nvh-dnd-zone if={!state.style.hidden}
                element={props.element}
                position=0/>
          <div if={props.element.children.length}
@@ -93,7 +93,7 @@
 
          isElementDisplayed(elementName){
             let style = this.nvhStore.getElementStyle(elementName)
-            return style && style.shown
+            return style && !style.hidden
          },
 
          getReadOnlyValue(){
