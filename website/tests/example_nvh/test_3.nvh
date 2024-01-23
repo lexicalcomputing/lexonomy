@@ -1,0 +1,22 @@
+entry:
+  hw: test_3
+    lemma: test_3
+    pos: N
+    sense: test_3.1 
+      sense_example: First example of test_3.1
+        translations:
+          lang: en
+            translation: English translation test_3.1
+          lang: cs
+            translation: Czech translation test_3.1
+          lang: de
+            translation: German translation test_3.1
+    image: test_3.jpg
+      license: general
+      source: source_2
+      quality: good
+      author: LCC 
+      explicit: no
+    rank: 3
+    flag: nok
+    notes: TODO more senses

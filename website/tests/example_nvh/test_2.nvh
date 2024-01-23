@@ -1,0 +1,33 @@
+entry:
+  hw: test_2
+    lemma: test_2
+    pos: N
+    sense: test_2.1 
+      image: test_2.1.jpg
+        license: general
+        source: source_1
+        quality: good
+        author: LCC 
+        explicit: no
+      sense_example: First example of test_2.1
+        translations:
+          lang: en
+            translation: English translation of fist example test_2.1
+      sense_example: Second example of test_2.1
+        translations:
+          lang: en
+            translation: English translation of second example test_2.1
+    sense: test_2.2 
+      image: test_2.2.jpg
+        license: general
+        source: source_2
+        quality: good
+        author: LCC 
+        explicit: no
+      sense_example: First example of test_2.2
+        translations:
+          lang: en
+            translation: English translation test_2.2
+    rank: 3
+    flag: ok
+    notes: finished
