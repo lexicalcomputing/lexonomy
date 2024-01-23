@@ -1,10 +1,8 @@
 {
     "entry": {
-        "shown": true,
         "layout": "block"
     },
     "headword": {
-        "shown": true,
         "layout": "inline",
         "separation": "space",
         "gutter": "",
@@ -14,7 +12,6 @@
         "textsize": "bigger"
     },
     "partOfSpeech": {
-        "shown": true,
         "layout": "inline",
         "separation": "space",
         "gutter": "",
@@ -23,7 +20,6 @@
         "colour": "green"
     },
     "flag": {
-        "shown": true,
         "layout": "inline",
         "separation": "space",
         "gutter": "",
@@ -33,7 +29,6 @@
         "innerPunc": "squareBrackets"
     },
     "sense": {
-        "shown": true,
         "layout": "block",
         "separation": "space",
         "gutter": "None",
@@ -44,7 +39,6 @@
         "background": "yellow"
     },
     "definition": {
-        "shown": true,
         "layout": "block",
         "separation": "space",
         "gutter": "",
@@ -53,18 +47,15 @@
         "colour": ""
     },
     "example": {
-        "shown": true,
         "layout": "block",
         "gutter": "indent"
     },
     "text": {
-        "shown": true,
         "layout": "block",
         "gutter": "None",
         "slant": "italic"
     },
     "example_translations": {
-        "shown": true,
         "layout": "block"
     },
     "example_lang": {
@@ -72,14 +63,12 @@
         "innerPunc": "colon"
     },
     "example_translation": {
-        "shown": true,
         "layout": "block",
         "slant": "italic",
         "colour": "blue",
         "gutter": ""
     },
     "translations": {
-        "shown": true,
         "layout": "block"
     },
     "lang": {
@@ -89,7 +78,6 @@
         "textsize": "smaller"
     },
     "translation": {
-        "shown": true,
         "layout": "block",
         "colour": "blue",
         "gutter": ""
