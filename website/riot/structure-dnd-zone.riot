@@ -26,6 +26,7 @@
          onDndStart(){
             if(!this.state.active
                   && !this.structureStore.getAllAncestorNames(this.props.element.name).includes(this.structureStore.data.draggedElement.name)){
+               this.state.lastEvtX = null
                this.state.maxIndent = this.structureStore.getAllAncestorNames(this.props.element.name).length
                this.state.minIndent = Math.max(1, this.state.maxIndent - 1)
                this.update({active: true})
@@ -47,9 +48,13 @@
 
          onDragOver(evt){
             evt.preventDefault()
-            let fromLeft = evt.clientX - $("structure-editor")[0].offsetLeft
-            this.state.indent = Math.max(this.state.minIndent, Math.min(this.state.maxIndent, Math.floor(fromLeft / 40)))
-            $(".structure-bar", this.root).css("margin-left", this.state.indent * 40)
+            if(this.state.lastEvtX != evt.clientX){
+               this.state.lastEvtX = evt.clientX
+               let fromLeft = evt.clientX - $("structure-editor")[0].getBoundingClientRect().left
+               this.state.indent = Math.max(this.state.minIndent, Math.min(this.state.maxIndent, Math.floor(fromLeft / 40)))
+
+               $(".structure-bar", this.root).css("margin-left", this.state.indent * 40)
+            }
          },
 
          onDragLeave(){
