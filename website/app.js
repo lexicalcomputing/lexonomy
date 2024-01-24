@@ -43,7 +43,6 @@ import dict_config_users from './riot/dict-config-users.riot'
 import dict_config_structure from './riot/dict-config-structure.riot'
 import dict_config_limits from './riot/dict-config-limits.riot'
 import dict_download from './riot/dict-download.riot'
-import dict_edit_entry from './riot/dict-edit-entry.riot'
 import dict_edit from './riot/dict-edit.riot'
 import dictionaries from './riot/dictionaries.riot'
 import new_dictionary from './riot/new-dictionary.riot'
@@ -122,7 +121,6 @@ riot_register('dict-config-users', dict_config_users)
 riot_register('dict-config-structure', dict_config_structure)
 riot_register('dict-config-limits', dict_config_limits)
 riot_register('dict-download', dict_download)
-riot_register('dict-edit-entry', dict_edit_entry)
 riot_register('dict-edit', dict_edit)
 riot_register('dictionaries', dictionaries)
 riot_register('new-dictionary', new_dictionary)
