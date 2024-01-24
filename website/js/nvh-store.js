@@ -125,9 +125,9 @@ class NVHStoreClass {
       this.data.rootElement = this.data.structure.root
       this.data.customEditor = null
       this.data.legacyCustomEditor = false
-      if(this.data.editing._js){
+      if(this.data.editing.useOwnEditor){
          try{
-            let customEditor = new Function("return " + this.data.editing._js)();
+            let customEditor = new Function("return " + this.data.editing.js)();
             if(customEditor.editor && customEditor.harvester){
                this.data.customEditor = customEditor
                this.data.legacyCustomEditor = true
