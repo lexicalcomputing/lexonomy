@@ -521,7 +521,7 @@ class NVHStoreClass {
    getAvailableParentElementNames(element){
       let elements = this.data.structure.elements
       return Object.keys(elements).filter(elementName => {
-         return elements[elementName].children.some(c => c.name == element.name)
+         return elements[elementName].children.some(child => child == element.name)
       })
    }
 
@@ -959,11 +959,11 @@ class NVHStoreClass {
             config.children.forEach(childName => {
                let childConfig = this.getElementConfig(childName)
                if(childConfig){
-                  if (childConfig.max && (counts[childConfig.name] || 0) > childConfig.max){
-                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childConfig.name}"`)
+                  if (childConfig.max && (counts[childName] || 0) > childConfig.max){
+                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childName}"`)
                   }
-                  if (childConfig.min && (counts[childConfig.name] || 0) < childConfig.min){
-                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childConfig.name}"`)
+                  if (childConfig.min && (counts[childName] || 0) < childConfig.min){
+                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childName}"`)
                   }
                }
             })
