@@ -315,7 +315,15 @@
                this.update({ show: true})
                $(".highlight").removeClass("highlight")
                $(".nvh-focusable-option", this.root).first().addClass("highlight")
-               this.updatePosition()
+               let coords = JSON.parse(localStorage.getItem("styleEditorPosition"))
+               if(coords){
+                  $(this.root).css({
+                     left: coords.left,
+                     top: coords.top
+                  })
+               } else {
+                  this.updatePosition()
+               }
                window.makeElementDraggable(this.root, $(".nvh-header", this.root)[0])
                document.addEventListener('click', this.handleClickOutside) // it has to be after dragElement()
             }
@@ -323,6 +331,10 @@
 
          close(){
            if(this.state.show){
+               localStorage.setItem("styleEditorPosition", JSON.stringify({
+                  top: $(this.root).css("top"),
+                  left: $(this.root).css("left")
+               }))
                this.update({show: false})
                document.removeEventListener('click', this.handleClickOutside)
             }
