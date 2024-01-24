@@ -19,7 +19,7 @@
             <span class="nvh-values">
                   <label>
                      <input type="checkbox"
-                           checked={state.style.hidden}
+                           checked={state.style.hidden ? 'checked' : ''}
                            onchange={onHideChange}/>
                      <span></span>
                   </label>
@@ -199,7 +199,8 @@
                   Label
                </span>
                <span class="nvh-values">
-                  <input type="text"
+                  <input id="label"
+                        type="text"
                         class="input-field"
                         value={state.style.label}
                         oninput={onLabelInput}/>
@@ -262,6 +263,8 @@
                let input = $(".nvh-header input")
                let width = window.getInputValueWidth(input[0])
                input.css("width", Math.min(width + 30, 300) + "px")
+               //fixed riot bug/feature, if user changes value, then navigates to element without label, label is not updated
+               $("#label").val(this.state.style.label)
             }
          },
 
