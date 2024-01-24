@@ -6,7 +6,7 @@
    </p>
    <label class="checkbox">
       <input type="checkbox"
-            checked={state.data._useOwnEditor}
+            checked={state.data.useOwnEditor}
             onclick={onCheckboxClick}/>
       <span>Use own editor</span>
    </label>
@@ -49,19 +49,19 @@
             isSaving: false,
             isJSValid: null,
             data: {
-               _useOwnEditor: undefined,
-               _js: "",
-               _css: ""
+               useOwnEditor: undefined,
+               js: "",
+               css: ""
             }
          },
 
          onCheckboxClick(evt){
-            this.state.data._useOwnEditor = evt.target.checked
+            this.state.data.useOwnEditor = evt.target.checked
             $("#editors").toggle(evt.target.checked)
          },
 
          exampleJS() {
-            this.state.data._js =
+            this.state.data.js =
 `{
    editor: function(options) {
       // options = {
@@ -120,19 +120,19 @@
       }
    }
 }`
-            this.codeEditorJS.updateCode(this.state.data._js)
+            this.codeEditorJS.updateCode(this.state.data.js)
             this.checkJSCode()
          },
 
          exampleCSS() {
-            this.state.data._css =
+            this.state.data.css =
 `.myEditor{
    padding: 0 30px
 }
 .myEditor headword{
    font-size: 1.25em
 }`
-            this.codeEditorCSS.updateCode(this.state.data._css)
+            this.codeEditorCSS.updateCode(this.state.data.css)
          },
 
          onMounted() {
@@ -151,22 +151,22 @@
                   })
                   .always(response => {
                      this.update({isLoading: false})
-                     if(this.state.data._useOwnEditor || (typeof this.state.data._useOwnEditor == "undefined" && this.state.data._js)){
-                        this.codeEditorJS.updateCode(this.state.data._js)
-                        this.codeEditorCSS.updateCode(this.state.data._css)
+                     this.state.data.js && this.codeEditorJS.updateCode(this.state.data.js)
+                     this.state.data.css &&this.codeEditorCSS.updateCode(this.state.data.css)
+                     if(this.state.data.useOwnEditor){
                         $("#editors").show()
                      }
-                     response.content._js && this.checkJSCode()
+                     this.state.data.js && this.checkJSCode()
                   })
          },
 
          onJSCodeUpdate(){
-            this.state.data._js = this.codeEditorJS.toString()
+            this.state.data.js = this.codeEditorJS.toString()
             this.checkJSCode()
          },
 
          onCSSCodeUpdate(){
-            this.state.data._css = this.codeEditorCSS.toString()
+            this.state.data.css = this.codeEditorCSS.toString()
          },
 
          onKeyDown(evt){
@@ -221,11 +221,11 @@
          },
 
          checkJSCode(){
-            if(this.state.data._js){
+            if(this.state.data.js){
                let isOk = false
                let err = ""
                try{
-                  new Function("return " + this.state.data._js)()
+                  new Function("return " + this.state.data.js)()
                   isOk = true
                } catch(e){
                   err = e.toString().split('\n')[0]

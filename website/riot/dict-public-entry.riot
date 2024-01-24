@@ -103,11 +103,6 @@
             if (this.dictData.dictId && !this.dictData.isEntryLoading) {
                this.store.loadEntry()
             }
-         },
-
-         onUpdated(){
-            var xemplate = this.dictData.config.xemplate;
-            $("#xemplateStyle").html(xemplate._css ? `<style>${xemplate._css}</style>` : '')
          }
       }
    </script>

@@ -64,8 +64,8 @@
                      }
                   }
                }
-               if(this.nvhData.editing._css){
-                  document.head.insertAdjacentHTML("beforeend", `<style id="customEditorStyle" type="text/css">${this.nvhData.editing._css}</style>`)
+               if(this.nvhData.editing.css){
+                  document.head.insertAdjacentHTML("beforeend", `<style id="customEditorStyle" type="text/css">${this.nvhData.editing.css}</style>`)
                }
                if(this.nvhData.legacyCustomEditor){
                   this.nvhData.customEditor.editor(this.editorNode, {
