@@ -1039,7 +1039,7 @@ class NVHStoreClass {
          //strip p from pre
          .replace(/(\<pre.+\>)\s*\n\<p\>(.+)\<\/p\>/gm, '$1$2')
          //remove trailing <br>
-         .replace(/[\<br\>]*$/,"")
+         .replace(/<br>*$/,"")
    }
 
    _getNewElementId(){
