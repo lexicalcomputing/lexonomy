@@ -20,18 +20,32 @@
          <div if={state.availableOptions.includes("hidden")}
                class="nvh-option">
             <span class="nvh-label">
-               Hide
+               Hide element
             </span>
             <span class="nvh-values">
                   <label>
                      <input type="checkbox"
                            checked={state.style.hidden ? 'checked' : ''}
-                           onchange={onHideChange}/>
+                           onchange={onHideElementChange}/>
                      <span></span>
                   </label>
             </span>
          </div>
          <template if={!state.style.hidden}>
+            <div if={state.availableOptions.includes("hideValue")}
+                  class="nvh-option">
+               <span class="nvh-label">
+                  Hide value
+               </span>
+               <span class="nvh-values">
+                     <label>
+                        <input type="checkbox"
+                              checked={state.style.hideValue ? 'checked' : ''}
+                              onchange={onHideValueChange}/>
+                        <span></span>
+                     </label>
+               </span>
+            </div>
             <div if={state.availableOptions.includes("textsize")}
                   class="nvh-option">
                <span class="nvh-label">
@@ -331,8 +345,13 @@
             this.nvhStore.changeElementStyleOption(this.state.elementName, option, evt.target.value)
          },
 
-         onHideChange(evt){
+         onHideElementChange(evt){
             this.nvhStore.changeElementStyleOption(this.state.elementName, "hidden", evt.target.checked)
+            this.update()
+         },
+
+         onHideValueChange(evt){
+            this.nvhStore.changeElementStyleOption(this.state.elementName, "hideValue", evt.target.checked)
             this.update()
          },
 
@@ -398,6 +417,9 @@
                let options = []
                if(this.nvhData.rootElement != elementName){
                   options.push("hidden")
+               }
+               if(config.type != "empty"){
+                  options.push("hideValue")
                }
                options.push(...["layout", "separation", "gutter", "border", "background", "outerPunc", "label"])
                if(config.type == "string"){

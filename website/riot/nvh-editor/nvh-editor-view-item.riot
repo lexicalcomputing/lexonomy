@@ -5,7 +5,7 @@
       <span if={state.beforeElementContent}
             class="nvh-gutter">{state.beforeElementContent}</span>
       <span class="nvh-outer-wrapper {getOuterWrapperStyleClasses()}">
-         <span if={state.config.type != "empty"}
+         <span if={state.config.type != "empty" && !state.style.hideValue}
                class="nvh-inner-wrapper {getInnerWrapperStyleClasses()}">
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper"
