@@ -2,12 +2,18 @@
    <div if={state.show}
          class="nvh-wrapper z-depth-2 grey lighten-4">
       <div class="nvh-header grey lighten-3">
+         <i class="material-icons clickable mr-auto"
+               onclick={onShowPrevElementClick}
+               style={state.prevElementName ? '' : 'visibility:hidden'}>chevron_left</i>
          <select onchange={onElementChange}>
             <option each={elementName in Object.keys(nvhData.structure.elements)}
                   selected={state.elementName == elementName}
                   value={elementName}>{elementName}</option>
          </select>
-         <i class="material-icons ml-auto clickable"
+         <i class="material-icons clickable ml-auto"
+               onclick={onShowNextElementClick}
+               style={state.nextElementName ? '' : 'visibility:hidden'}>chevron_right</i>
+         <i class="material-icons clickable ml-2"
                onclick={onCloseStyleEditor}>close</i>
       </div>
       <div class="nvh-options p-2">
@@ -257,6 +263,13 @@
             document.removeEventListener('click', this.handleClickOutside)
          },
 
+         onBeforeUpdate(){
+            let elementList = Object.keys(this.nvhData.structure.elements)
+            let actualElementIdx = elementList.indexOf(this.state.elementName)
+            this.state.prevElementName = elementList[actualElementIdx - 1]
+            this.state.nextElementName = elementList[actualElementIdx + 1]
+         },
+
          onUpdated(){
             if(this.state.show){
                $("select", this.root).formSelect()
@@ -268,11 +281,10 @@
             }
          },
 
-         onOpenStyleEditor(elementName, elementNode){
+         onOpenStyleEditor(elementName){
             this.update({
                elementName: elementName,
                style: this.nvhStore.getElementStyle(elementName) || {},
-               elementNode: elementNode,
                availableOptions: this.getAvailableOptions(elementName)
             })
            if(!this.state.show){
@@ -289,6 +301,24 @@
                elementName: evt.target.value,
                style: this.nvhStore.getElementStyle(evt.target.value) || {},
                availableOptions: this.getAvailableOptions(evt.target.value)
+            })
+         },
+
+         onShowPrevElementClick(evt){
+            evt.stopPropagation()
+            this.update({
+               elementName: this.state.prevElementName,
+               style: this.nvhStore.getElementStyle(this.state.prevElementName) || {},
+               availableOptions: this.getAvailableOptions(this.state.prevElementName)
+            })
+         },
+
+         onShowNextElementClick(evt){
+            evt.stopPropagation()
+            this.update({
+               elementName: this.state.nextElementName,
+               style: this.nvhStore.getElementStyle(this.state.nextElementName) || {},
+               availableOptions: this.getAvailableOptions(this.state.nextElementName)
             })
          },
 
@@ -352,18 +382,12 @@
 
          updatePosition(){
             let windowHeight = $(window).height()
-            let menuHeight = $(this.root).first().height()
-            let editorOffset = $("nvh-editor").offset()
-            let wrapperOffset = this.state.elementNode.offset()
-            let wrapperBR = this.state.elementNode[0].getBoundingClientRect()
-            let top = (wrapperOffset.top - editorOffset.top)
-            if(wrapperBR.top  < windowHeight / 2){
-               top += this.state.elementNode.height() + 8
-            } else {
-               top -= menuHeight + 8
-            }
+            let windowWidth = $(this.root).width()
+            let editorOffsetLeft = $("nvh-editor")[0].getBoundingClientRect().left
+            let top = Math.max(10, (Math.round(windowHeight / 2)) - 240) //center vertically
+            let left = Math.max(10, Math.round(editorOffsetLeft - windowWidth))
             $(this.root).css({
-               left: (wrapperOffset.left - editorOffset.left) + "px",
+               left: left + "px",
                top: top + "px"
             })
          },
@@ -388,11 +412,12 @@
 
    <style type="scss">
       :host{
-         position: absolute;
+         position: fixed;
          z-index: 9999;
       }
       .nvh-header{
          display: flex;
+         align-items: center;
          border-bottom: 1px solid grey;
          padding: 10px 10px 5px;
          cursor: move;
@@ -402,6 +427,7 @@
                border: none;
                height: 1.5rem;
                padding: 2px 20px 2px 5px;
+               margin-bottom: 0px;
             }
          }
       }
