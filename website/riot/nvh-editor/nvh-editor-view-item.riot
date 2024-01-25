@@ -21,7 +21,7 @@
                      class="nvh-readonly-value pointer"
                      onclick={!props.readOnly && onEditClick}>
                   <raw-html content={getReadOnlyValue()}/>
-                  <i if={!props.readOnly}
+                  <i if={!props.readOnly && state.config.type}
                         class="nvh-edit-icon material-icons tiny">edit</i>
                </span>
 
@@ -98,7 +98,7 @@
 
          getReadOnlyValue(){
             let value = this.props.element.value
-            if(this.state.config.values.length){
+            if(this.state.config.values && this.state.config.values.length){
                let option = this.state.config.values.find(v => v.value == this.props.element.value)
                value = option ? option.label : value
             } else if (this.state.config.type == "string"){

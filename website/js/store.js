@@ -456,9 +456,10 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entrycreate.json`,
          method: "POST",
          data: {
-               nvh: nvh
+            nvh: nvh
          }
       }).done(response => {
+         this.data.entry.nvh = response.content
          this.data.entryId = response.id
          this.loadEntryList()
       })
@@ -469,11 +470,12 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entryupdate.json`,
          method: "POST",
          data: {
-               id: this.data.entryId,
-               nvh: nvh
+            id: this.data.entryId,
+            nvh: nvh
          }
       })
             .done(response => {
+               this.data.entry.nvh = response.content
                if(this.data.entryRevisions.length){
                   this.loadEntryRevisions()
                }

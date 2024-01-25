@@ -8,8 +8,7 @@
          </button>
       </span>
       { dictData.title }
-      <span if={dictData.entryCount}
-            class="totalEntries">total {dictData.entryCount} entries</span>
+      <span class="totalEntries">total {dictData.entryCount} entries</span>
    </h1>
    <template if={dictData.isDictionaryLoaded && !dictData.isDictionaryListLoading}>
       <div if={ dictData.doctypes.length > 1 }
