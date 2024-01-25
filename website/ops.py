@@ -539,7 +539,8 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
         return False
     #init db schema
     sql_schema = open("dictTemplates/general.sqlite.schema", 'r').read()
-    conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], "dicts/" + dictID + ".sqlite?modeof=."), uri=True)
+    conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], 
+                                                  "dicts/" + dictID + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/")), uri=True)
     conn.executescript(sql_schema)
     conn.commit()
     #update dictionary info
