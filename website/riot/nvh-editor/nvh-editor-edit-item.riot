@@ -16,10 +16,10 @@
                   style="color: {state.labelColor};"></span>
             <span if={!props.element.isValid}
                   class="nvh-warning pulse tooltipped"
-                  data-tooltip={props.element.warnings.join("\n")}
+                  data-tooltip={props.element.warnings.join("<br>")}
                   style="background-color: {state.labelColor};">!</span>
             {props.element.name}{props.element.value ? ": " : ""}
-            <nvh-plugin-buttons if={!props.readOnly}
+            <nvh-plugin-buttons if={!props.readOnly && state.config.type}
                   element={props.element}/>
             <i if={props.element.children.length && !props.readOnly}
                   class="nvh-collapse-toggle material-icons clickable noSelect"
@@ -39,7 +39,7 @@
                <span class="nvh-readonly-value pointer">
                   <raw-html content={getReadOnlyValue()}/>
                </span>
-               <i if={!props.readOnly}
+               <i if={!props.readOnly && state.config.type}
                      class="nvh-edit-icon pointer material-icons tiny">edit</i>
             </span>
             <nvh-item-value-editor if={props.element.edit}
@@ -142,7 +142,7 @@
 
          getReadOnlyValue(){
             let value = this.props.element.value
-            if(this.state.config.values.length){
+            if(this.state.config.values && this.state.config.values.length){
                let option = this.state.config.values.find(v => v.value == this.props.element.value)
                return option ? option.label : value
             } else if(this.state.config.type == "bool"){

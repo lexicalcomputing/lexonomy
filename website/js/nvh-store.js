@@ -165,8 +165,7 @@ class NVHStoreClass {
       if(window.store.data.actualPage == "dict-edit"
             && (this.data.entryId == "new"
                   || (window.store.data.entry
-                     // TODO: conversion to json and back to nvh to be sure both are formatted the same way (spaces, new lines....), find better solution
-                        && (this.jsonToNvh(this.data.entry) != this.jsonToNvh(this.nvhToJson(window.store.data.entry.nvh)))
+                           && !this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
                      )
                )
             ){
@@ -386,6 +385,15 @@ class NVHStoreClass {
       addElementAndChildren(json[nvhSchema.split(":", 1)[0]], 0)
 
       return nvh
+   }
+
+   areNvhJsonsEqual(element1, element2){
+      return element1 && element2
+            && (element1.value + "").trim() == (element2.value + "").trim()
+            && element1.children.length == element2.children.length
+            && element1.children.every(child1 => {
+               return this.areNvhJsonsEqual(child1, element2.children.find(c => c.name == child1.name))
+            }, this)
    }
 
    changeEditorMode(mode){
@@ -890,8 +898,12 @@ class NVHStoreClass {
       element.parent.children.splice(childIdx, 1)
       let elementList = this.getElementList()
       let siblingElement = elementList[globalIdx] || elementList[globalIdx - 1] // next or previous element
-      siblingElement && this.forEachElement(e => {e.focused = e == siblingElement})
-      this.trigger("updateElements", [element.parent, siblingElement])
+      if(siblingElement){
+         this.forEachElement(e => {e.focused = e == siblingElement})
+         this.trigger("updateElements", [element.parent, siblingElement])
+      } else {
+         this.trigger("updateElements", [element.parent])
+      }
       this.trigger("closeContextMenu")
       this.history.addState()
    }
@@ -913,6 +925,7 @@ class NVHStoreClass {
 
    isElementDuplicationAllowed(element){
       return element.name != this.data.rootElement
+            && !!element.parent
             && this.getAvailableChildElements(element.parent).includes(element.name)
    }
 
