@@ -22,9 +22,52 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-import sys, re, os, fileinput
+import sys, re, os, fileinput, json
 from urllib.parse import quote_plus
 import hashlib
+
+# ================
+# RE to match value format:
+# 1) min/max number of allowed elements of the name: '+', '*', '?', '2+', '2-5'
+# 2) type of the value: 'int', 'image', 'bool', 'audio', 'empty', 'url'
+# 3) list of allowed values enclosed in brackets
+# 4) regular expression introduced by tilde
+# Example schema:
+# hw: +
+#     lempos: ? ~.*-.
+#     freq: ? int
+#     audio: * audio
+#     image: 2-5 image
+#         quality: ? ["good","bad"]
+#         explicit: ? bool
+#         source: ? url ~.*pixabey.*
+#     examples: empty
+#         example: 2+ ~.{10,100}
+#     translation: *
+#         language: ~.{3}
+#     affiliation: * ["MU (Brno)", "VUT \"Brno\"", "UK, Praha"]
+# ================
+supported_types = ['int', 'image', 'bool', 'audio', 'empty', 'url'] # string is the default
+format_re = re.compile('^([*?+]|\d+\+|\d+\-\d+)?' # min/max
+                       '\s*(' + '|'.join(supported_types) + ')?' # type
+                       '\s*(\[.*?\])?' # list
+                       '\s*(~.*?)?$' # re
+                      )
+count_range_re = re.compile('(\d+)\-(\d+)')
+count_min_re = re.compile('(\d+)\+')
+
+audio_extensions = ['.3gp','.aa ','.aac','.aax','.act','.aiff','.alac','.amr','.ape','.au ','.awb','.dss',
+                    '.dvf','.flac','.gsm','.iklax','.ivs','.m4a','.m4b','.m4p','.mmf','.movpkg','.mp3','.mpc',
+                    '.msv','.nmf','.ogg','.oga','.mogg','.opus','.ra ','.rm ','.raw','.rf64','.sln','.tta','.voc',
+                    '.vox','.wav','.wma','.wv ','.webm','.8svx','.cda']
+image_extensions = [".jpeg", ".jpg", ".png", ".gif", ".bmp", ".tiff", ".svg", ".raw", ".ico", ".webp",
+                    ".heic", ".heif", ".psd", ".eps", ".ai", ".tga", ".pdf"]
+
+bool_re = re.compile('(true|false|1|0|yes|no)', re.IGNORECASE)
+url_re = re.compile(r'^(https?://|www\.).*?', re.IGNORECASE)
+audio_re = re.compile(r'.*?('+ '|'.join([re.escape(x) for x in audio_extensions]) + ')$', re.IGNORECASE)
+image_re = re.compile(r'.*?('+ '|'.join([re.escape(x) for x in image_extensions]) + ')$', re.IGNORECASE)
+
 
 def get_filename(value, extension='.nvh'):
     enc_value = quote_plus(value)
@@ -237,15 +280,45 @@ class nvh:
             c.dump(outfile)
 
     def generate_schema (self, schema, firstParent = True):
+        """
+        value restrictions
+        'max'
+        'type': ['int', 'image', 'bool', 'audio', 'empty', 'url', 'string'],
+        'values': # difficult to detect
+        're': # difficult to detect
+        """
+
         seen = {n: False for n in schema}
         firstInThisParent = {c.name: True for c in self.children}
         for c in self.children:
             is_this_new = firstInThisParent[c.name] and firstParent
+            curr_value_type = 'string'
+            # type
+            try: # int
+                int(c.value)
+                curr_value_type = 'int'
+            except ValueError:
+                pass
+            if url_re.match(c.value):
+                curr_value_type = 'url'
+            elif audio_re.match(c.value):
+                curr_value_type = 'audio'
+            elif image_re.match(c.value):
+                curr_value_type = 'image'
+            elif bool_re.match(c.value):
+                curr_value_type = 'bool'
+
             if c.name not in schema: # first occurrence across all parents
-                schema[c.name] = {"optional": not firstParent, "repeated": False, "schema": {}}
+                schema[c.name] = {"optional": not firstParent, "type": curr_value_type, 'max': 1, "schema": {}}
                 is_this_new = True
+
             elif not firstInThisParent[c.name]:
-                schema[c.name]["repeated"] = True
+                schema[c.name]['max'] += 1
+
+                # type
+                if schema[c.name]['type'] != curr_value_type:
+                    schema[c.name]['type'] = 'string'
+
             seen[c.name] = True
             c.generate_schema(schema[c.name]["schema"], is_this_new)
             firstInThisParent[c.name] = False
@@ -253,8 +326,8 @@ class nvh:
             if not seen[n]:
                 schema[n]["optional"] = True
 
-    def check_schema(self, schema, parent="ROOT", ancestor=None, outfile=sys.stdout):
 
+    def check_schema(self, schema, parent="ROOT", ancestor=None, outfile=sys.stdout):
         def report(s):
             outfile.write("ERROR: %s (%s)\n" % (s, ancestor))
 
@@ -263,42 +336,113 @@ class nvh:
         duplicates = [d for d in keyval_freqs.items() if d[1] > 1]
         for d in duplicates:
             report("Duplicate key-value pair '%s: %s' for parent %s (occurs %d times)" % (d[0][0], d[0][1], parent, d[1]))
+
+        # check frequencies
         freqs = Counter(c.name for c in self.children)
         for n in freqs:
             if n not in schema:
                 report("%s not allowed as a child of %s" % (n, parent))
                 continue
-            if freqs[n] > 1 and not schema[n]["repeated"]:
-                report("%s not allowed to be repeated" % n)
-        for n in schema:
-            if not schema[n]["optional"] and not n in freqs:
-                report("%s is mandatory and missing as child of %s" % (n, parent))
+            if freqs[n] < schema[n]["min"]:
+                report("%s: minimum count must be %d." % (n, schema[n]["min"]))
+            if freqs[n] > schema[n]["max"]:
+                report("%s: maximum count must be %d." % (n, schema[n]["max"]))
+
+        for c in self.children:
+            # check values
+            if schema[c.name]['type'] == 'list' and c.value not in schema[c.name]['values']:
+                report("%s: the value \"%s\" must be in: %s" % (c.name, c.value, ','.join(schema[c.name]['values'])))
+
+            # check re
+            if schema[c.name]['re'] and not re.match(schema[c.name]['re'], c.value):
+                report("%s: the value \"%s\" is not accepted by regular expression \"%s\"." % (c.name, c.value,
+                                                                                               schema[c.name]['re']))
+
+            # check type. Available ['int', 'image', 'bool', 'audio', 'empty', 'url', 'string']
+            if schema[c.name]['type'] == 'empty' and c.value:
+                    report("%s: the value must be empty." % c.name)
+            elif schema[c.name]['type'] == 'string' and not c.value:
+                    report("%s: the value must be non-empty string." % c.name)
+            elif schema[c.name]['type'] == 'int':
+                try:
+                    int(c.value)
+                except ValueError:
+                    report("%s: the value must be integer." % c.name)
+
+            elif schema[c.name]['type'] == 'bool' and not bool_re.match(c.value):
+                report("%s: the value must be bool." % c.name)
+
+            elif schema[c.name]['type'] == 'url' and not url_re.match(c.value):
+                report("%s: the value must be url." % c.name)
+
+            elif schema[c.name]['type'] == 'audio' and not audio_re.match(c.value):
+                report("%s: the value must be audio file.  Supported extensions %s." % (c.name, ','.join(audio_extensions)))
+
+            elif schema[c.name]['type'] == 'image' and not image_re.match(c.value):
+                report("%s: the value must be image file. Supported extensions %s." % (c.name, ','.join(image_extensions)))
 
         for c in self.children:
             if c.name in schema:
                 c.check_schema(schema[c.name]["schema"], c.name, ancestor or "%s: %s" % (c.name, c.value), outfile=outfile)
 
+    def get_schema_value_format(self):
+        # Transform NVH node restrictions from string to dict item
+        # ==============
+        # Default values
+        value_format = {'min': 1,
+                        'max': 1,
+                        'type': 'string',
+                        'values': [],
+                        're': None}
+        # ==============
+
+        format_match = format_re.match(self.value)
+        if self.value and not format_match: # value is present but not match by format_re
+            raise Exception("Invalid schema: %s has invalid value '%s'" % (self.name, self.value))
+
+        # ==============
+        # min/max
+        min_max = format_match.group(1)
+        if min_max:
+            if min_max == '*':
+                value_format['min'] = 0
+                value_format['max'] = None
+            elif min_max == '+':
+                value_format['min'] = 1
+                value_format['max'] = None
+            elif min_max == '?':
+                value_format['min'] = 0
+                value_format['max'] = 1
+            elif count_range_re.match(min_max):
+                c = count_range_re.match(min_max)
+                value_format['min'] = int(c.group(1))
+                value_format['max'] = int(c.group(2))
+            elif count_min_re.match(min_max):
+                c = count_min_re.match(min_max)
+                value_format['min'] = int(c.group(1))
+                value_format['max'] = None
+        # ==============
+
+        if format_match.group(2): # type
+            value_format['type'] = format_match.group(2)
+
+        if format_match.group(3): # list
+            value_format['values'] = list(json.loads(format_match.group(3)))
+
+            value_format['type'] = 'list'
+
+        if format_match.group(4): # re
+            value_format['re'] = format_match.group(4)[1:]
+
+        return value_format
 
     def nvh2schema (self):
         schema = {}
         for c in self.children:
             if c.name in schema:
                 raise Exception("Invalid schema: %s specified multiple times" % c.name)
-            node_def = {}
-            if c.value == "":
-                node_def["optional"] = False
-                node_def["repeated"] = False
-            elif c.value == "?":
-                node_def["optional"] = True
-                node_def["repeated"] = False
-            elif c.value == "+":
-                node_def["optional"] = False
-                node_def["repeated"] = True
-            elif c.value == "*":
-                node_def["optional"] = True
-                node_def["repeated"] = True
-            else:
-                raise Exception("Invalid schema: %s has invalid value '%s'" % (c.name, c.value))
+
+            node_def = c.get_schema_value_format()
             node_def["schema"] = c.nvh2schema()
             schema[c.name] = node_def
         return schema
@@ -306,13 +450,19 @@ class nvh:
     @staticmethod
     def print_schema (s, indent = 0, outfile = sys.stdout):
         def get_symbol(d):
+            result = []
             if d["optional"]:
-                if d["repeated"]:
-                    return "*"
-                return "?"
-            elif d["repeated"]:
-                return "+"
-            return ""
+                if d["max"] > 1:
+                    result.append("*")
+                result.append("?")
+            elif d["max"] > 1:
+                result.append("+")
+
+            if d['type'] != 'string':
+                result.append(d["type"])
+
+            return ' '.join(result)
+
         for k in s:
             print("%s%s: %s" % (" " * indent, k, get_symbol(s[k])), file=outfile)
             nvh.print_schema (s[k]["schema"], indent + 4, outfile)
@@ -374,6 +524,23 @@ class nvh:
             last_indent = indent
         return dictionary
 
+    def build_json(self, schema_dict: dict) -> None:
+        # build json for each nvh node recursively
+        if self.name:
+            item = {}
+            if self.children:
+                item['children'] = [x.name for x in self.children]
+
+            for key, value in self.get_schema_value_format().items():
+                if value:
+                    item[key] = value
+
+            schema_dict[self.name] = item
+
+        for c in self.children:
+            c.build_json(schema_dict)
+
+
 if __name__ == "__main__":
     def err(s):
         print(s, file=sys.stderr)
@@ -385,6 +552,7 @@ if __name__ == "__main__":
         err("%s split file.nvh OUTPUT_DIRECTORY" % sys.argv[0])
         err("%s genschema file.nvh" % sys.argv[0])
         err("%s checkschema file.nvh schema.nvh" % sys.argv[0])
+        err("%s schema2json schema.nvh" % sys.argv[0])
         err("DB is a file in NVH format")
         err("FILTER is a dot-notated path to a name, multiple FILTERs can be comma-separated and are ANDed")
         err("SELECT_FILTER supports equality, non-equality, Python regexp testing and count (#)")
@@ -448,6 +616,21 @@ if __name__ == "__main__":
             schema = nvh.parse_file(infile)
             schema = schema.nvh2schema()
             dictionary.check_schema(schema)
+        elif sys.argv[1] == "schema2json":
+            # Transforms NVH schema to json:
+            # {'node_name': {
+            #     'children': ['string']
+            #     'min': int,
+            #     'max': int,
+            #     'type': 'string',
+            #     'values': ['string'],
+            #     're': 'string'},
+            #     ...}
+            if len(sys.argv) < 3:
+                usage()
+            schema_json: dict = {}
+            dictionary.build_json(schema_json)
+            print(json.dumps(schema_json, indent=2))
         else:
             usage()
     except:
