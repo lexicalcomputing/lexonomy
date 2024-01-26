@@ -1,17 +1,13 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.10
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import os
 import re
-import sys
-import pysqlite3 as sqlite3
+import sqlite3
 import unittest
+from ops import getLocale
+from icu import Locale, Collator
 current_dir = os.path.dirname(os.path.realpath(__file__))
-
-
-def regexp(expr, item):
-    reg = re.compile(expr)
-    return reg.search(item) is not None
 
 
 def query2sqliteToken(token, all_json_trees):
@@ -131,7 +127,7 @@ def get_query_tokens(text, left=r'[(]', right=r'[)]', sep=r' '):
     return stack.pop()
 
 
-def dql2sqlite(query):
+def nvh_query2sql_query(query, collate="", orderby="ASC", howmany=10, offset=0):
     def make_json_trees(query_tokens, sql, tree_id, all_json_trees):
         for item in query_tokens:
             if isinstance(item, list):
@@ -149,24 +145,54 @@ def dql2sqlite(query):
         # select distinct entries.id, entries.json from entries, json_tree(entries.json) AS sense,  json_tree(entries.json) AS flag 
         # where ((sense.fullkey LIKE '$.%.sense[%]') and 
         # (flag.key='_value' AND flag.value = 'nok' AND flag.fullkey LIKE '$.%.flag[%]._value')) limit 10;
-        sql = ["SELECT DISTINCT entries.id, entries.json FROM entries"]
+        sql = ["SELECT DISTINCT entries.id, entries.json, entries.nvh, entries.sortkey, entries.title FROM entries"]
         make_json_trees(query_tokens, sql, 0, all_json_trees)
         sql = ''.join(sql) + " where " + query2sqliteQuery(query_tokens, all_json_trees) + " limit 10;"
     else:
-        sql = "SELECT DISTINCT entries.id, entries.json FROM entries, json_tree(entries.json) WHERE " + query2sqliteQuery(query_tokens, all_json_trees) + " limit 10;"
+        sql = "SELECT DISTINCT entries.id, entries.json, entries.nvh, entries.sortkey, entries.title FROM entries, json_tree(entries.json) WHERE " + \
+              query2sqliteQuery(query_tokens, all_json_trees) + \
+              "ORDER BY entries.sortkey " + collate + " " + orderby + " LIMIT " + str(howmany) + " OFFSET " + str(offset) + ";" 
     return sql
 
 
-def get_entries(query, db):
-    db.create_function("REGEXP", 2, regexp)
-    c = db.execute(query)
-    for r in c.fetchall():
-        yield(r)
+def regexp(expr, item):
+        reg = re.compile(expr)
+        return reg.search(item) is not None
+
+
+def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, reverse=False, fullNVH=False):
+    collate = ""
+    if "locale" in configs["titling"]:
+        collator = Collator.createInstance(Locale(getLocale(configs)))
+        dictDB.create_collation("custom", collator.compare)
+        collate = "collate custom"
+
+    if reverse:
+        sortdesc = not sortdesc
+    orderby = "ASC"
+    if sortdesc:
+        orderby = "DESC"
+
+    sql_query = nvh_query2sql_query(query, collate, orderby, howmany, offset)
+    # raise Exception(query)
+    dictDB.create_function("REGEXP", 2, regexp)
+    c = dictDB.execute(sql_query)
+    entries = []
+    for entry in c.fetchall():
+        item = {"id": entry["id"], "title": entry["title"], "sortkey": entry["sortkey"]}
+        # TODO flagging
+        if fullNVH:
+            item["nvh"] = entry["nvh"]
+        entries.append(item)
+
+    total = len(entries)
+    return total, entries, False
 
 
 def result_id_list(query, db):
+    sql_query = nvh_query2sql_query(query, howmany=1000)
     db.create_function("REGEXP", 2, regexp)
-    c = db.execute(query)
+    c = db.execute(sql_query)
     return  [x[0] for x in c.fetchall()]
         
 
@@ -176,43 +202,34 @@ class TestQueries(unittest.TestCase):
         self.db = sqlite3.connect(f'{current_dir}/tests/test.sqlite')
 
     def test_key_exists(self): # OK
-        query = dql2sqlite('sense')
-        self.assertListEqual(result_id_list(query, self.db), [1, 2, 3, 5])
+        self.assertListEqual(result_id_list('sense', self.db), [1, 2, 3, 5])
 
     # VALUES
     def test_value_equals(self): # OK
-        query = dql2sqlite('sense=test_5')
-        self.assertListEqual(result_id_list(query, self.db), [5])
+        self.assertListEqual(result_id_list('sense=test_5', self.db), [5])
 
     def test_value_re_equals(self): # OK
-        query = dql2sqlite('sense~=test_2.*')
-        self.assertListEqual(result_id_list(query, self.db), [2])
+        self.assertListEqual(result_id_list('sense~=test_2.*', self.db), [2])
     
     # COUNT
     def test_count_more_than(self):
-        query = dql2sqlite('sense_example#>0')
-        self.assertListEqual(result_id_list(query, self.db), [1, 2, 3])
+        self.assertListEqual(result_id_list('sense_example#>0', self.db), [1, 2, 3])
 
     def test_count_less_than(self):
-        query = dql2sqlite('image#<2')
-        self.assertListEqual(result_id_list(query, self.db), [3])
+        self.assertListEqual(result_id_list('image#<2', self.db), [3])
     
     def test_count_equals(self):
-        query = dql2sqlite('sense#=0')
-        self.assertListEqual(result_id_list(query, self.db), [4])
+        self.assertListEqual(result_id_list('sense#=0', self.db), [4])
 
     # def test_count_condition(self): # TODO
-    #     query = dql2sqlite('example#>0.quality=bad')
-    #     self.assertListEqual(result_id_list(query, self.db), [4])
+    #     self.assertListEqual(result_id_list('example#>0.quality=bad', self.db), [4])
 
     # OPERATORS
     def test_and_operator(self):
-        query = dql2sqlite('sense and flag=nok')
-        self.assertListEqual(result_id_list(query, self.db), [3])
+        self.assertListEqual(result_id_list('sense and flag=nok', self.db), [3])
 
     def test_or_operator(self):
-        query = dql2sqlite('flag=nok or flag=low_frq')
-        self.assertListEqual(result_id_list(query, self.db), [3, 4, 5])
+        self.assertListEqual(result_id_list('flag=nok or flag=low_frq', self.db), [3, 4, 5])
 
 
 if __name__ == '__main__':
