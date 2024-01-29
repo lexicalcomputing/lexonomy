@@ -391,8 +391,8 @@ class NVHStoreClass {
       return element1 && element2
             && (element1.value + "").trim() == (element2.value + "").trim()
             && element1.children.length == element2.children.length
-            && element1.children.every(child1 => {
-               return this.areNvhJsonsEqual(child1, element2.children.find(c => c.name == child1.name))
+            && element1.children.every((child1, idx) => {
+               return this.areNvhJsonsEqual(child1, element2.children[idx])
             }, this)
    }
 
