@@ -44,10 +44,7 @@ def query2sqliteToken(token, all_json_trees):
             parts = token.split('#<')
             path = parts[0]
             value = parts[1]
-            if value == '1':
-                operator = 'not_exist'
-            else:
-                operator = '#<'
+            operator = '#<'
         case _ if '=' in token:
             # =
             parts = token.split('=')
@@ -89,7 +86,8 @@ def query2sqliteToken(token, all_json_trees):
         case '#>':
             sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.path LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)>" + value + "))"
         case '#<':
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.path LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)<" + value + "))"
+            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.path LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)<" + value + "))" + \
+                  " or (entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) where (json_tree.fullkey LIKE '" + fullpathval + "')))"
     return sql
 
 
@@ -151,7 +149,7 @@ def nvh_query2sql_query(query, collate="", orderby="ASC", howmany=10, offset=0):
     else:
         sql = "SELECT DISTINCT entries.id, entries.json, entries.nvh, entries.sortkey, entries.title FROM entries, json_tree(entries.json) WHERE " + \
               query2sqliteQuery(query_tokens, all_json_trees) + \
-              "ORDER BY entries.sortkey " + collate + " " + orderby + " LIMIT " + str(howmany) + " OFFSET " + str(offset) + ";" 
+              " ORDER BY entries.sortkey " + collate + " " + orderby + " LIMIT " + str(howmany) + " OFFSET " + str(offset) + ";" 
     return sql
 
 
@@ -174,8 +172,8 @@ def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, 
         orderby = "DESC"
 
     sql_query = nvh_query2sql_query(query, collate, orderby, howmany, offset)
-    # raise Exception(query)
     dictDB.create_function("REGEXP", 2, regexp)
+    # IMPORTANT INFO: we relay on uniqueness of attribute names
     c = dictDB.execute(sql_query)
     entries = []
     for entry in c.fetchall():
@@ -213,10 +211,10 @@ class TestQueries(unittest.TestCase):
     
     # COUNT
     def test_count_more_than(self):
-        self.assertListEqual(result_id_list('sense_example#>0', self.db), [1, 2, 3])
+        self.assertListEqual(result_id_list('s_example#>0', self.db), [1, 2, 3])
 
     def test_count_less_than(self):
-        self.assertListEqual(result_id_list('image#<2', self.db), [3])
+        self.assertListEqual(result_id_list('image#<2', self.db), [1,2,3,4])
     
     def test_count_equals(self):
         self.assertListEqual(result_id_list('sense#=0', self.db), [4])
