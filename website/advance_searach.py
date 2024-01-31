@@ -81,7 +81,7 @@ def query2sqliteToken(token, all_json_trees):
         case 'exist':
             sql = "(" + json_tree + ".fullkey LIKE '" + fullpath + '[%]' + "')"
         case 'not_exist':
-            sql = "entries.id NOT IN (SELECT DISTINCT entries.id from entries, " + json_tree + "(entries.json) where (" + json_tree + ".fullkey LIKE '" + fullpathval + "'))"
+            sql = "entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) where (json_tree.fullkey LIKE '" + fullpathval + "'))"
         case '~=':
             sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + fullpathval + "')"
         case '#=':
