@@ -3,35 +3,35 @@ entry:
     lemma: test_1
     pos: N
     sense: test_1.1 
-      image: test_1.1.jpg
-        license: general
-        source: source_1
-        quality: good
-        author: LCC 
-        explicit: no
-      sense_example: First example of test_1.1
-        translations:
-          lang: en
-            translation: English translation test_1.1
-          lang: cs
-            translation: Czech translation test_1.1
-          lang: de
-            translation: German translation test_1.1
+      s_image: test_1.1.jpg
+        s_i_license: general
+        s_i_source: source_1
+        s_i_quality: good
+        s_i_author: LCC 
+        s_i_explicit: no
+      s_example: First example of test_1.1
+        s_e_translations:
+          s_e_t_lang: en
+            s_e_t_translation: English translation test_1.1
+          s_e_t_lang: cs
+            s_e_t_translation: Czech translation test_1.1
+          s_e_t_lang: de
+            s_e_t_translation: German translation test_1.1
     sense: test_1.2 
-      image: test_1.2.jpg
-        license: general
-        source: source_2
-        quality: good
-        author: LCC 
-        explicit: no
-      sense_example: First example of test_1.2
-        translations:
-          lang: en
-            translation: English translation test_1.2
-          lang: cs
-            translation: Czech translation test_1.2
-          lang: de
-            translation: German translation test_1.2
+      s_image: test_1.2.jpg
+        s_i_license: general
+        s_i_source: source_2
+        s_i_quality: good
+        s_i_author: LCC 
+        s_i_explicit: no
+      s_example: First example of test_1.2
+        s_e_translations:
+          s_e_t_lang: en
+            s_e_t_translation: English translation test_1.2
+          s_e_t_lang: cs
+            s_e_t_translation: Czech translation test_1.2
+          s_e_t_lang: de
+            s_e_t_translation: German translation test_1.2
     rank: 5
     flag: ok
     notes: finished
