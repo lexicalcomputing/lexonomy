@@ -728,8 +728,12 @@ def entrylist(dictID, doctype, user, dictDB, configs):
         else:
             entries = ops.listEntriesById(dictDB, request.forms.id, configs)
             return {"success": True, "entries": entries}
-    elif request.forms.advance_query: 
-        total, entries, first = advance_searach.getEntries(dictDB, configs, request.forms.advance_query, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False, False)
+    elif request.forms.advance_query:
+        try:
+            total, entries, first = advance_searach.getEntries(dictDB, configs, request.forms.advance_query, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False, False)
+        except ValueError as e:
+            return {"success": False, "entries": [], "total": 0, "firstRun": False, "error": e}
+
         return {"success": True, "entries": entries, "total": total, "firstRun": first}
     else:
         total, entries, first = ops.listEntries(dictDB, dictID, configs, doctype, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
