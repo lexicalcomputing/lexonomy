@@ -5,13 +5,14 @@ import os
 import re
 import sqlite3
 import unittest
+import sys
 from ops import getLocale
 from icu import Locale, Collator
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def query2sqliteToken(condition):
-    path = condition['attr']
+def condition2sql(condition, all_json_trees, queried_trees=[]):
+    key = condition['attr']
     value = condition['val']
     operator = condition['op']
 
@@ -19,58 +20,87 @@ def query2sqliteToken(condition):
         operator = 'not_exist'
     if not operator and not value:
         operator = 'exist'
-    
-    if '_' in path:
-        fullpath = '$.%.' + '"' + path + '"'
-    else:
-        fullpath = '$.%.' + path
 
-    fullpathval = fullpath + '[%]' + '."_value"'
+    valkey = key
+    if '_' in key:
+        valkey = f'"{key}"'
+
+    path = f'$.%.{valkey}[_]."_value"' # TODO resolve support for 0-9 items
+
     sql = ''
-    json_tree = 'json_tree'
-    
+    json_tree = all_json_trees.pop(0)
+    key_not_exists = "(entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) WHERE json_tree.key='" + key + "'))"
+
     match operator:
         case '=':
-            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value = '" + value + "' AND " + json_tree + ".fullkey LIKE '" + fullpathval + "')"
+            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value = '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
         case '!=':
-            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value != '" + value + "' AND " + json_tree + ".fullkey LIKE '" + fullpathval + "')"
+            sql = "((" + json_tree + ".key='_value' AND " + json_tree + ".value != '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "') OR " + key_not_exists + ")"
         case 'exist':
-            sql = "(" + json_tree + ".fullkey LIKE '" + fullpath + '[%]' + "')"
+            sql = "(" + json_tree + ".key='" + key + "')"
         case 'not_exist':
-            sql = "entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) where (json_tree.fullkey LIKE '" + fullpathval + "'))"
+            sql = key_not_exists
         case '~=':
-            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + fullpathval + "')"
+            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
         case '#=':
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.path LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)=" + value + "))"
+            sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)=" + value + ")"
         case '#>':
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.path LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)>" + value + "))"
+            sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)>" + value + ")"
         case '#<':
-            # second part for count=0 (asks if attribute exists)
-            sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.json) WHERE json_tree.path LIKE '" + fullpath + "' GROUP BY entries.id HAVING COUNT(json_tree.key)<" + value + "))" + \
-                  " or (entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) where (json_tree.fullkey LIKE '" + fullpathval + "')))"
+            sql = "((" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)<" + value + ") OR " + key_not_exists + ")"
+
+    queried_trees.append("SUBSTR(" + json_tree + ".fullkey, 0, INSTR(" + json_tree + ".fullkey, '." + valkey + "'))")
     return sql
 
 
-def query2sqliteQuery(query_list):
-    result_list = []
-    for token in query_list:
-        if type(token) == list:
-            result_list.append(query2sqliteQuery(token))
+def path_equal_check(queried_trees):
+    t0, t1 = queried_trees[-2:]
+    queried_trees.pop()
+    return "(INSTR(" + t0 + "," + t1 + ") OR INSTR(" + t1 + "," + t0 + "))"
+
+
+def lex_query2sql(query, all_json_trees, queried_trees):
+    if isinstance(query, list):
+        if 'iand' in query:
+            sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
+            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
+
+            sql = '(' + sub_sql_1 + ' AND ' + sub_sql_2 + ' AND ' + path_equal_check(queried_trees) + ')'
+
+        elif 'eand' in query:
+            sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
+            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
+
+            sql = '(' + sub_sql_1 + ' AND ' + sub_sql_2 + ')'
+            queried_trees.pop() # only one tree to compare with outer condition
+
+        elif 'or' in query:
+            sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
+            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
+
+            sql = '(' + sub_sql_1 + ' OR ' + sub_sql_2 + ')' # TODO check if it can interfere with inclusive AND
+            queried_trees.pop()
+
+        elif len(query)==1 and isinstance(query[0], dict):
+            sql = condition2sql(query[0], all_json_trees, queried_trees)
+
+        elif len(query)==1 and isinstance(query[0], list):
+            sql = lex_query2sql(query[0], all_json_trees, queried_trees)
         else:
-            if token == 'and' or token == 'or':
-                result_list.append(token)
-            else:
-                result_list.append(query2sqliteToken(token))
-    return '(' + ' '.join(result_list) + ')'
+            raise ValueError('ERROR: not correctly created query')
+    else:
+        sql = condition2sql(query, all_json_trees, queried_trees)
+
+    return sql
 
 
-attr = '(?P<attr>((?!=|!=|~=|#=|#>|#<| |\(|\)).)*)'
-operators='(?P<op>=|!=|~=|#=|#>|#<)?'
-value = '("(?P<val>((?!=|!=|~=|#=|#>|#<).)*)")?'
-and_or = '(\s*(?P<lop>and|or)\s*)?'
-rest = '(?P<rest>.*)?'
-left = '(?P<left>\(*)?'
-right = '(?P<right>\)*)?'
+attr = '\s*(?P<attr>((?!=|!=|~=|#=|#>|#<| |\(|\)).)*)\s*'
+operators='\s*(?P<op>=|!=|~=|#=|#>|#<)?\s*'
+value = '\s*("(?P<val>((?!=|!=|~=|#=|#>|#<).)*)")?\s*'
+and_or = '\s*(?P<lop>iand|eand|or)?\s*'
+rest = '\s*(?P<rest>.*)?\s*'
+left = '(?P<left>[ \(]*)?'
+right = '(?P<right>[ \)]*)?'
 query_split_re = re.compile('^' + left + attr + operators + value + right + and_or + rest + '$')
 
 def split_query(text, tokens):
@@ -78,7 +108,7 @@ def split_query(text, tokens):
 
     # left bracket
     if match_result_dict.get('left', False):
-        tokens += [x for x in match_result_dict['left']]
+        tokens += [x for x in match_result_dict['left'] if x != ' ']
 
     # attribute operator value
     condition = {'attr': None, 'op': None, 'val': None}
@@ -89,21 +119,22 @@ def split_query(text, tokens):
 
     # right bracket
     if match_result_dict.get('right', False):
-        tokens += [x for x in match_result_dict['right']]
+        tokens += [x for x in match_result_dict['right'] if x != ' ']
 
     # and/or operator
     if match_result_dict.get('lop', False):
         tokens.append(match_result_dict['lop'])
-    
+
     # rest
     if match_result_dict.get('rest', False):
-        if re.match('^[()]*$', match_result_dict['rest']):
-            condition.append(match_result_dict['rest'])
-        else:
-            split_query(match_result_dict['rest'], tokens)
-    
+        split_query(match_result_dict['rest'], tokens)
+
 
 def get_query_parts(text):
+    """
+    Splits Lexonomy query into separate conditions and
+    check correct bracketing (using stack automaton)
+    """
     query_parts = []
     split_query(text, query_parts)
 
@@ -123,11 +154,35 @@ def get_query_parts(text):
     return stack.pop()
 
 
-def nvh_query2sql_query(query, collate="", orderby="ASC", howmany=10, offset=0):
+def add_json_trees(query_tokens, sql, all_json_trees, tree_id=1):
+    """
+    add the same number of JSON trees as the number of conditions
+    joined by AND/OR operators, because each condition have to be
+    evaluated on its own tree.
+    """
+    for item in query_tokens:
+        if isinstance(item, list):
+            tree_id = add_json_trees(item, sql, all_json_trees, tree_id)
+        elif isinstance(item, str) and item in ['iand', 'eand', 'or']:
+            sql.append(f',json_tree(entries.json) AS tree{tree_id} ')
+            all_json_trees.append(f'tree{tree_id}')
+            tree_id += 1
+    return tree_id
+
+
+def get_sql_query(query, collate="", orderby="ASC", howmany=10, offset=0):
+    """
+    Transform Lexonomy query into SQL query
+    query: str, query form Lexonomy
+    """
     query_tokens = get_query_parts(query)
-    sql = "SELECT DISTINCT entries.id, entries.json, entries.nvh, entries.sortkey, entries.title FROM entries, json_tree(entries.json) WHERE " + \
-            query2sqliteQuery(query_tokens) + \
-            " ORDER BY entries.sortkey " + collate + " " + orderby + " LIMIT " + str(howmany) + " OFFSET " + str(offset) + ";" 
+    sql = ["SELECT DISTINCT entries.id, entries.json, entries.nvh, entries.sortkey, entries.title FROM entries, json_tree(entries.json) AS tree0 "]
+    all_json_trees = ['tree0']
+    queried_trees = []
+    add_json_trees(query_tokens, sql, all_json_trees)
+    sql = ''.join(sql) + " WHERE " + lex_query2sql(query_tokens, all_json_trees, queried_trees) + \
+          " ORDER BY entries.sortkey " + collate + " " + orderby + " LIMIT " + str(howmany) + " OFFSET " + str(offset) + ";"
+
     return sql
 
 
@@ -149,14 +204,13 @@ def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, 
     if sortdesc:
         orderby = "DESC"
 
-    sql_query = nvh_query2sql_query(query, collate, orderby, howmany, offset)
+    sql_query = get_sql_query(query, collate, orderby, howmany, offset)
     dictDB.create_function("REGEXP", 2, regexp)
     # IMPORTANT INFO: we relay on uniqueness of attribute names
     c = dictDB.execute(sql_query)
     entries = []
     for entry in c.fetchall():
         item = {"id": entry["id"], "title": entry["title"], "sortkey": entry["sortkey"]}
-        # TODO flagging
         if fullNVH:
             item["nvh"] = entry["nvh"]
         entries.append(item)
@@ -166,53 +220,75 @@ def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, 
 
 
 def result_id_list(query, db):
-    sql_query = nvh_query2sql_query(query, howmany=1000)
+    sql_query = get_sql_query(query, howmany=1000)
     db.create_function("REGEXP", 2, regexp)
     c = db.execute(sql_query)
     return  [x[0] for x in c.fetchall()]
-        
+
 
 # Unit tests
 class TestQueries(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(f'{current_dir}/tests/test.sqlite')
 
-    def test_key_exists(self): # OK
+    def test_key_exists(self):
         self.assertListEqual(result_id_list('sense', self.db), [1, 2, 3, 5])
 
+    def test_key_not_exists(self):
+        self.assertListEqual(result_id_list('sense#="0"', self.db), [4])
+
     # VALUES
-    def test_value_equals(self): # OK
+    def test_value_equals(self):
         self.assertListEqual(result_id_list('sense="test_5"', self.db), [5])
 
-    def test_value_re_equals(self): # OK
+    def test_value_not_equals(self):
+        self.assertListEqual(result_id_list('sense!="test_5"', self.db), [1,2,3,4])
+
+    def test_value_re_equals(self):
         self.assertListEqual(result_id_list('sense~="test_2.*"', self.db), [2])
-    
+
     # COUNT
     def test_count_more_than(self):
         self.assertListEqual(result_id_list('s_example#>"0"', self.db), [1, 2, 3])
 
     def test_count_less_than(self):
         self.assertListEqual(result_id_list('image#<"2"', self.db), [1,2,3,4])
-    
-    def test_count_equals(self):
-        self.assertListEqual(result_id_list('sense#="0"', self.db), [4])
 
-    # def test_count_condition(self): # TODO
-    #     self.assertListEqual(result_id_list('example#>0.quality=bad', self.db), [4])
+    def test_count_equals(self):
+        self.assertListEqual(result_id_list('sense#="2"', self.db), [1,2])
 
     # OPERATORS
     def test_and_operator(self):
-        self.assertListEqual(result_id_list('sense and flag="nok"', self.db), [3])
+        self.assertListEqual(result_id_list('sense eand flag="nok"', self.db), [3])
+
+    def test_incluse_and_operator(self):
+        self.assertListEqual(result_id_list('s_image#="1" iand s_i_quality="bad"', self.db), [2])
+
+    def test_incluse_and_operatori_2(self):
+        self.assertListEqual(result_id_list('i_quality="good" iand i_license="general"', self.db), [3, 5])
+
+    def test_incluse_and_operatori_3(self):
+        self.assertListEqual(result_id_list('i_quality="good" iand i_license="general" iand i_author="LCC"', self.db), [3, 5])
+
+    def test_incluse_and_operator_with_or(self):
+        self.assertListEqual(result_id_list('s_image#="1" iand (s_i_quality="bad" or s_i_quality="low")', self.db), [2])
 
     def test_or_operator(self):
         self.assertListEqual(result_id_list('flag="nok" or flag="low_frq"', self.db), [3, 4, 5])
 
-    def test_query_format(self):
-        query = '(sense~="my t*" and (flag="nok" or flag="offensive") and image)'
-        print(get_query_parts(query))
-        print(nvh_query2sql_query(query))
+    def test_query_parse_1(self):
+        query = 'sense~="my t*" iand (flag="nok" or flag="offensive") iand image'
+        self.assertEqual(get_query_parts(query), [{'attr': 'sense', 'op': '~=', 'val': 'my t*'}, 'iand', [{'attr': 'flag', 'op': '=', 'val': 'nok'}, 'or', {'attr': 'flag', 'op': '=', 'val': 'offensive'}], 'iand', {'attr': 'image', 'op': None, 'val': None}])
 
+    def test_query_parse_2(self):
+        query = 'definition!="asda*" eand (headword!="sads" eand (example_translation!="akk"))'
+        self.assertEqual(get_query_parts(query), [{'attr': 'definition', 'op': '!=', 'val': 'asda*'}, 'eand', [{'attr': 'headword', 'op': '!=', 'val': 'sads'}, 'eand', [{'attr': 'example_translation', 'op': '!=', 'val': 'akk'}]]])
+
+    def test_query_parse_3(self):
+        query = ' ( definition != "asda*"   eand   (headword != "sads"   eand  (   example_translation != "akk"  )  )    )  '
+        self.assertEqual(get_query_parts(query), [[{'attr': 'definition', 'op': '!=', 'val': 'asda*'}, 'eand', [{'attr': 'headword', 'op': '!=', 'val': 'sads'}, 'eand', [{'attr': 'example_translation', 'op': '!=', 'val': 'akk'}]]]])
 
 if __name__ == '__main__':
-    print('SQLite version: ' + sqlite3.connect(':memory:').execute('SELECT sqlite_version();').fetchall()[0][0])
+    sys.stderr.write('SQLite version: ' + sqlite3.connect(':memory:').execute('SELECT sqlite_version();').fetchall()[0][0] + '\n')
     unittest.main()
+
