@@ -915,9 +915,9 @@ def pushapi():
                 dictFormat = "teilex0"
             else:
                 dictFormat = "push"
-            res = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"], addExamples)
+            res, error = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"], addExamples)
             if not res:
-                return {"success": False}
+                return {"success": False, "error": error}
             else:
                 if dictFormat == "push":
                     dictDB = ops.getDB(dictID)

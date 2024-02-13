@@ -223,7 +223,7 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
     dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
     dictDB.commit()
     if configs["links"]:
-        entryNvh = updateEntryLinkables(db, entryID, nvhParsed, configs, False, False)
+        entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, False, False)
     return entryID, entryNvh, feedback
 
 def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
