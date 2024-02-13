@@ -535,8 +535,10 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
         title = "?"
     if blurb == "":
         blurb = "Yet another Lexonomy dictionary."
-    if dictID in prohibitedDictIDs or dictExists(dictID):
-        return False
+    if dictID in prohibitedDictIDs:
+        return False, "The entered name of the dictionary is prohibited"
+    if dictExists(dictID):
+        return False, "The dict with the entered name already exists"
     #init db schema
     sql_schema = open("dictTemplates/general.sqlite.schema", 'r').read()
     conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], 
@@ -591,7 +593,7 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
 
     dictDB.commit()
     attachDict(dictDB, dictID)
-    return True
+    return True, ""
 
 def attachDict(dictDB, dictID):
     configs = readDictConfigs(dictDB)
