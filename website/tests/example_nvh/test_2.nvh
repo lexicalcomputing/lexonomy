@@ -21,7 +21,7 @@ entry:
       s_image: test_2.2.jpg
         s_i_license: general
         s_i_source: source_2
-        s_i_quality: good
+        s_i_quality: bad
         s_i_author: LCC 
         s_i_explicit: no
       s_example: First example of test_2.2
