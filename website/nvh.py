@@ -328,6 +328,8 @@ class nvh:
                 if schema[c.name]['type'] != curr_value_type:
                     schema[c.name]['type'] = 'string'
 
+            schema[c.name]['min'] = 0
+            schema[c.name]['children'] = list(set([x.name for x in c.children]))
             seen[c.name] = True
             c.generate_schema(schema[c.name]["schema"], is_this_new)
             firstInThisParent[c.name] = False
