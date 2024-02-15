@@ -1,14 +1,9 @@
 #!/usr/bin/python3.10
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
-import os
 import re
-import sqlite3
-import unittest
-import sys
 from ops import getLocale
 from icu import Locale, Collator
-current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def condition2sql(condition, all_json_trees, queried_trees=[]):
@@ -61,13 +56,13 @@ def path_equal_check(queried_trees):
 
 def lex_query2sql(query, all_json_trees, queried_trees):
     if isinstance(query, list):
-        if 'iand' in query:
+        if 'where' in query:
             sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
             sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
 
             sql = '(' + sub_sql_1 + ' AND ' + sub_sql_2 + ' AND ' + path_equal_check(queried_trees) + ')'
 
-        elif 'eand' in query:
+        elif 'and' in query:
             sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
             sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
 
@@ -97,7 +92,7 @@ def lex_query2sql(query, all_json_trees, queried_trees):
 attr = '\s*(?P<attr>((?!=|!=|~=|#=|#>|#<| |\(|\)).)*)\s*'
 operators='\s*(?P<op>=|!=|~=|#=|#>|#<)?\s*'
 value = '\s*("(?P<val>((?!=|!=|~=|#=|#>|#<).)*)")?\s*'
-and_or = '\s*(?P<lop>iand|eand|or)?\s*'
+and_or = '\s*(?P<lop>where|and|or)?\s*'
 rest = '\s*(?P<rest>.*)?\s*'
 left = '(?P<left>[ \(]*)?'
 right = '(?P<right>[ \)]*)?'
@@ -163,7 +158,7 @@ def add_json_trees(query_tokens, sql, all_json_trees, tree_id=1):
     for item in query_tokens:
         if isinstance(item, list):
             tree_id = add_json_trees(item, sql, all_json_trees, tree_id)
-        elif isinstance(item, str) and item in ['iand', 'eand', 'or']:
+        elif isinstance(item, str) and item in ['where', 'and', 'or']:
             sql.append(f',json_tree(entries.json) AS tree{tree_id} ')
             all_json_trees.append(f'tree{tree_id}')
             tree_id += 1
@@ -224,71 +219,3 @@ def result_id_list(query, db):
     db.create_function("REGEXP", 2, regexp)
     c = db.execute(sql_query)
     return  [x[0] for x in c.fetchall()]
-
-
-# Unit tests
-class TestQueries(unittest.TestCase):
-    def setUp(self):
-        self.db = sqlite3.connect(f'{current_dir}/tests/test.sqlite')
-
-    def test_key_exists(self):
-        self.assertListEqual(result_id_list('sense', self.db), [1, 2, 3, 5])
-
-    def test_key_not_exists(self):
-        self.assertListEqual(result_id_list('sense#="0"', self.db), [4])
-
-    # VALUES
-    def test_value_equals(self):
-        self.assertListEqual(result_id_list('sense="test_5"', self.db), [5])
-
-    def test_value_not_equals(self):
-        self.assertListEqual(result_id_list('sense!="test_5"', self.db), [1,2,3,4])
-
-    def test_value_re_equals(self):
-        self.assertListEqual(result_id_list('sense~="test_2.*"', self.db), [2])
-
-    # COUNT
-    def test_count_more_than(self):
-        self.assertListEqual(result_id_list('s_example#>"0"', self.db), [1, 2, 3])
-
-    def test_count_less_than(self):
-        self.assertListEqual(result_id_list('image#<"2"', self.db), [1,2,3,4])
-
-    def test_count_equals(self):
-        self.assertListEqual(result_id_list('sense#="2"', self.db), [1,2])
-
-    # OPERATORS
-    def test_and_operator(self):
-        self.assertListEqual(result_id_list('sense eand flag="nok"', self.db), [3])
-
-    def test_incluse_and_operator(self):
-        self.assertListEqual(result_id_list('s_image#="1" iand s_i_quality="bad"', self.db), [2])
-
-    def test_incluse_and_operatori_2(self):
-        self.assertListEqual(result_id_list('i_quality="good" iand i_license="general"', self.db), [3, 5])
-
-    def test_incluse_and_operatori_3(self):
-        self.assertListEqual(result_id_list('i_quality="good" iand i_license="general" iand i_author="LCC"', self.db), [3, 5])
-
-    def test_incluse_and_operator_with_or(self):
-        self.assertListEqual(result_id_list('s_image#="1" iand (s_i_quality="bad" or s_i_quality="low")', self.db), [2])
-
-    def test_or_operator(self):
-        self.assertListEqual(result_id_list('flag="nok" or flag="low_frq"', self.db), [3, 4, 5])
-
-    def test_query_parse_1(self):
-        query = 'sense~="my t*" iand (flag="nok" or flag="offensive") iand image'
-        self.assertEqual(get_query_parts(query), [{'attr': 'sense', 'op': '~=', 'val': 'my t*'}, 'iand', [{'attr': 'flag', 'op': '=', 'val': 'nok'}, 'or', {'attr': 'flag', 'op': '=', 'val': 'offensive'}], 'iand', {'attr': 'image', 'op': None, 'val': None}])
-
-    def test_query_parse_2(self):
-        query = 'definition!="asda*" eand (headword!="sads" eand (example_translation!="akk"))'
-        self.assertEqual(get_query_parts(query), [{'attr': 'definition', 'op': '!=', 'val': 'asda*'}, 'eand', [{'attr': 'headword', 'op': '!=', 'val': 'sads'}, 'eand', [{'attr': 'example_translation', 'op': '!=', 'val': 'akk'}]]])
-
-    def test_query_parse_3(self):
-        query = ' ( definition != "asda*"   eand   (headword != "sads"   eand  (   example_translation != "akk"  )  )    )  '
-        self.assertEqual(get_query_parts(query), [[{'attr': 'definition', 'op': '!=', 'val': 'asda*'}, 'eand', [{'attr': 'headword', 'op': '!=', 'val': 'sads'}, 'eand', [{'attr': 'example_translation', 'op': '!=', 'val': 'akk'}]]]])
-
-if __name__ == '__main__':
-    sys.stderr.write('SQLite version: ' + sqlite3.connect(':memory:').execute('SELECT sqlite_version();').fetchall()[0][0] + '\n')
-    unittest.main()
-
