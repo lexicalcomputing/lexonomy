@@ -365,7 +365,7 @@ class nvh:
                 report("%s: the value \"%s\" must be in: %s" % (c.name, c.value, ','.join(schema[c.name]['values'])))
 
             # check re
-            if schema[c.name]['re'] and not re.match(schema[c.name]['re'], c.value):
+            if schema[c.name].get('re', False) and not re.match(schema[c.name]['re'], c.value):
                 report("%s: the value \"%s\" is not accepted by regular expression \"%s\"." % (c.name, c.value,
                                                                                                schema[c.name]['re']))
 
@@ -465,7 +465,8 @@ class nvh:
             if d["optional"]:
                 if d["max"] > 1:
                     result.append("*")
-                result.append("?")
+                else:
+                    result.append("?")
             elif d["max"] > 1:
                 result.append("+")
 
