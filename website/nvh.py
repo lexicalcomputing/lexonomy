@@ -279,7 +279,13 @@ class nvh:
             outfile = open("%s/%s" % (outdir, get_filename(c.value)), "w")
             c.dump(outfile)
 
-    def generate_schema (self, schema, firstParent = True):
+    def get_entries(self):
+        entries = []
+        for c in self.children:
+            entries.append(c)
+        return entries, self.children[0].name
+
+    def generate_schema (self, schema, firstParent=True, tln=False):
         """
         value restrictions
         'max'
