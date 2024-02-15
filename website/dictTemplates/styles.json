@@ -81,5 +81,8 @@
         "layout": "block",
         "colour": "blue",
         "gutter": ""
+    },
+    "__other__": {
+        "layout": "block"
     }
 }
