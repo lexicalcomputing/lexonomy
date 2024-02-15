@@ -318,6 +318,9 @@ class nvh:
                 schema[c.name] = {"optional": not firstParent, "type": curr_value_type, 'max': 1, "schema": {}}
                 is_this_new = True
 
+            elif tln:
+                schema[c.name]['max'] = float('inf')
+
             elif not firstInThisParent[c.name]:
                 schema[c.name]['max'] += 1
 
@@ -613,7 +616,7 @@ if __name__ == "__main__":
             dictionary.split(outdir)
         elif sys.argv[1] == "genschema":
             schema = {}
-            dictionary.generate_schema(schema)
+            dictionary.generate_schema(schema, tln=True)
             nvh.print_schema (schema)
         elif sys.argv[1] == "checkschema":
             if len(sys.argv) < 4:
