@@ -8,6 +8,7 @@ import advance_searach
 import re
 import jwt
 import json
+import fileinput
 from nvh import nvh
 import datetime
 import urllib.request
@@ -471,8 +472,33 @@ def makedict(user):
 @post(siteconfig["rootPath"] + "make.json")
 @auth
 def makedictjson(user):
-    res, error = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, "", user["email"], request.forms.addExamples == "true")
-    return {"success": res, "url": request.forms.url, "error": error}
+    if request.query.filename and request.query.hwNode:
+        supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
+
+        if supported_formats.match(request.query.filename):
+            try:
+                if request.query.filename.endswith('.xml'):
+                    # XML file transforamtion
+                    input_nvh = ops.xml2nvh(request.query.filename)
+                    dictionary, schema = ops.nvh_dict_schema(input_nvh)
+                    with open(request.query.filename + ".xml2nvh.nvh", 'w') as f:
+                        dictionary.dump(f)
+
+                elif request.query.filename.endswith('.nvh'):
+                    dictionary, schema = ops.nvh_dict_schema(fileinput.input([request.query.filename]))
+
+            except ValueError as e:
+                return {"msg": "", "success": False, "error": e, "url": request.forms.url}
+        else:
+            return{"success": False, "url": request.forms.url, 
+                   "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
+        
+        res, msg, error = ops.makeDict(request.forms.url, None, request.forms.title, "", user["email"], 
+                                       None, request.query.filename + ".xml2nvh.nvh", request.query.hwNode, schema)
+    else:
+        res, msg, error = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, 
+                                       "", user["email"], request.forms.addExamples == "true")
+    return {"success": res, "url": request.forms.url, "error": error, 'msg': msg}
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
 @authDict(["canConfig"])
@@ -716,7 +742,28 @@ def importjson(dictID, user, dictDB, configs):
         response.set_header("Content-Disposition", "attachment; filename=error.log")
         return ops.showImportErrors(request.query.filename, truncate)
     else:
-        return ops.importfile(dictID, request.query.filename, user["email"])
+        supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
+        # XML file transforamtion
+        if request.query.filename.endswith('.xml'):
+            input_nvh = ops.xml2nvh(request.query.filename)
+
+            try:
+                dictionary, _ = ops.nvh_dict_schema(input_nvh)
+            except ValueError as e:
+                return {"finished": False, "progressMessage": "", "error": e}
+            
+            with open(request.query.filename + ".xml2nvh.nvh", 'w') as f:
+                dictionary.dump(f)
+
+            progress, finished, err = ops.importfile(dictID, request.query.filename + ".xml2nvh.nvh", user["email"])
+            return{"finished": finished, "progressMessage": progress, "error": err}
+        
+        elif not supported_formats.match(request.query.filename):
+            return{"finished": False, "progressMessage": "",
+                   "error": 'Unsupported format for import file. An .xml or .nvh file are required.'}
+        else:
+            progress, finished, err = ops.importfile(dictID, request.query.filename, user["email"])
+            return{"finished": finished, "progressMessage": progress, "error": err}
 
 @post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
 @authDict(["canEdit"])
