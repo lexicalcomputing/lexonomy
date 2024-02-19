@@ -16,7 +16,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 # Unit tests
 class TestQueries(unittest.TestCase):
     def setUp(self):
-        self.db = sqlite3.connect(f'{current_dir}/test_db/test_import.sqlite')
+        self.db = sqlite3.connect(f'{current_dir}/../../data/dicts/test_import_nvh.sqlite')
 
     def test_key_exists(self):
         self.assertListEqual(result_id_list('sense', self.db), [1, 2, 3, 5])
