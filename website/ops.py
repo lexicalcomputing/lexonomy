@@ -21,6 +21,10 @@ from icu import Locale, Collator
 import requests
 from nvh import nvh
 from bottle import request
+import fileinput
+import xml.sax
+import xml.dom.minidom
+import sys
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
@@ -526,21 +530,42 @@ def suggestDictId():
         dictid = generateDictId()
     return dictid
 
-def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
-    final_schema = mergeSchemaItems(schema_keys)
-    schema_elements = []
-    schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
-    schema_elements = list(filter(None, schema_elements))  #filter out empty strings
+def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filename=None, hwNode=None, schema_from_import=None):
+    def get_gen_schema_elements(schema, schema_elements):
+        for k in schema:
+            schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None), 
+                                  'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
+                                  're': schema[k].get('re', ''), 'children': schema[k].get('children', [])}
+            get_gen_schema_elements(schema[k]["schema"], schema_elements)
+
+    def get_schema_elements(nvh_node, elements):
+        elements[nvh_node.name] = {
+            "type": "string",
+            "min": 0,
+            "max": 0,
+            "values": [],
+            "re": "",
+            "children": [child.name for child in nvh_node.children]
+        }
+        for child in nvh_node.children:
+            get_schema_elements(child, elements)
+
+    if not import_filename:
+        final_schema = mergeSchemaItems(schema_keys)
+        schema_elements = []
+        schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
+        schema_elements = list(filter(None, schema_elements))  #filter out empty strings
+
     if title == "":
         title = "?"
     if blurb == "":
         blurb = "Yet another Lexonomy dictionary."
     if dictID in prohibitedDictIDs:
-        return False, "The entered name of the dictionary is prohibited"
+        return False, "", "The entered name of the dictionary is prohibited"
     if dictExists(dictID):
-        return False, "The dict with the entered name already exists"
+        return False, "", "The dict with the entered name already exists"
     #init db schema
-    sql_schema = open("dictTemplates/general.sqlite.schema", 'r').read()
+    sql_schema = open(currdir + "/dictTemplates/general.sqlite.schema", 'r').read()
     conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], 
                                                   "dicts/" + dictID + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/")), uri=True)
     conn.executescript(sql_schema)
@@ -554,32 +579,30 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
     ident = {"title": title, "blurb": blurb}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
 
+    elements = {}
+    if not import_filename:
+        nvh_structure = nvh.parse_string(final_schema).children[0]
+        get_schema_elements(nvh_structure, elements)
+
+        structure = {"root": nvh_structure.name, "elements": elements}
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
+    else:
+        get_gen_schema_elements(schema_from_import, elements)
+        structure = {"root": hwNode, "elements": elements}
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
+
     xemplate = {}
-    with open("dictTemplates/styles.json", 'r') as f:
+    with open(currdir + "/dictTemplates/styles.json", 'r') as f:
         styles = json.loads(f.read())
-        xemplate = {key: styles[key] for key in schema_elements}
+        for key in elements.keys():
+            if styles.get(key):
+                xemplate[key] = styles[key]
+            else:
+                xemplate[key] = styles['__other__']
     dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("xemplate", json.dumps(xemplate)))
 
-    def addElementAndItsChildrenToStructureDict(nvh_node):
-        # TODO: add ranges, types, values... to schema
-        elements[nvh_node.name] = {
-            "type": "string",
-            "min": 0,
-            "max": 0,
-            "values": [],
-            "re": "",
-            "children": [child.name for child in nvh_node.children]
-        }
-        for child in nvh_node.children:
-            addElementAndItsChildrenToStructureDict(child)
-    elements = {}
-    nvh_structure = nvh.parse_string(final_schema).children[0]
-    addElementAndItsChildrenToStructureDict(nvh_structure)
-    structure = {"root": nvh_structure.name, "elements": elements}
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
-
     # add examples
-    if addExamples:
+    if addExamples and not import_filename:
         examples = []
         with open("dictTemplates/examples.json", 'r') as f:
             for example in json.loads(f.read()):
@@ -593,7 +616,12 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples):
 
     dictDB.commit()
     attachDict(dictDB, dictID)
-    return True, ""
+
+    if import_filename:
+        progress_msg, _, err = importfile(dictID, import_filename, email, hwNode)
+        return True, progress_msg, err
+    
+    return True, "", ""
 
 def attachDict(dictDB, dictID):
     configs = readDictConfigs(dictDB)
@@ -1256,7 +1284,112 @@ def showImportErrors(filename, truncate):
     else:
         return content
 
-def importfile(dictID, filename, email):
+rootTag = ''
+entryTag = ''
+entryCount = 0
+class handlerFirst(xml.sax.ContentHandler):
+    def startElement(self, name, attrs):
+        global rootTag
+        global entryTag
+        if rootTag == "":
+            rootTag = name
+        elif entryTag == "":
+            entryTag = name
+        else:
+            pass
+
+    def endElement(self, name):
+        global entryCount
+        global entryTag
+        if name == entryTag:
+            entryCount += 1
+
+def xml_entry2nvh_entry(dom, nvh_entry, indent=0):
+    """
+    Transforming the XML entry into NVH entry
+    """
+    for ch in dom.childNodes:
+        if not isinstance(ch, xml.dom.minidom.Text):
+            if isinstance(ch.firstChild, xml.dom.minidom.Text):
+                # content in tag value
+                nvh_element = '{}{}: {}'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.firstChild.nodeValue.strip()))
+            elif ch.attributes.length > 0:
+                # content in tag attribute
+                if ch.attributes.length > 1:
+                    print('The XML node has more than one attribute.')
+                nvh_element = '{}{}: {}'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.attributes.items()[0][1].strip()))
+            else:
+                # wrapper without value
+                nvh_element = '{}{}'.format('  '*indent if indent else '', ch.tagName)
+            nvh_entry.append(nvh_element)
+        xml_entry2nvh_entry(ch, nvh_entry, indent + 1)
+
+
+def xml2nvh(input_xml):
+    global rootTag
+    global entryTag
+    global entryCount
+    xmldata = open(input_xml, 'rb').read().decode('utf-8-sig')
+    xmldata = re.sub(r'<\?xml[^?]*\?>', '', xmldata)
+    xmldata = re.sub(r'<!DOCTYPE[^>]*>', '', xmldata)
+    xmldata = re.sub(r'</?b>', '', xmldata)
+    xmldata = re.sub(r'</?p>', '', xmldata)
+    xmldata = re.sub(r'</?i>', '', xmldata)
+
+    # Parsing xml and finding the root tag and the entry tag
+    try:
+        xml.sax.parseString("<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata, handlerFirst())
+        xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata
+    except xml.sax._exceptions.SAXParseException as e:
+        if "junk after document element" in str(e):
+            xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n<fakeroot>"+xmldata+"</fakeroot>"
+            rootTag = ""
+            entryTag = ""
+            entryCount = 0
+            xml.sax.parseString(xmldata, handlerFirst())
+        else:
+            if entryTag == "":
+                print("Not possible to detect element name for entry, please fix errors:")
+                print(e, file=sys.stderr)
+                sys.exit()
+
+    re_entry = re.compile(r'<'+entryTag+'[^>]*>.*?</'+entryTag+'>', re.MULTILINE|re.DOTALL|re.UNICODE)
+    nvh_entries = []
+    for entry in re.findall(re_entry, xmldata):
+        try:
+            # Check if the entry is ok
+            xml.sax.parseString(entry, xml.sax.handler.ContentHandler())
+        except xml.sax._exceptions.SAXParseException as e:
+            print("Skipping entry, XML parsing error: " + str(e), file=sys.stderr)
+            print("Skipping entry, XML parsing error: " + str(e))
+            print("Entry with error: " + entry, file=sys.stderr)
+            entryInserted += 1
+
+        xml_entry2nvh_entry(xml.dom.minidom.parseString(entry), nvh_entries)
+
+    return nvh_entries
+
+def nvh_dict_schema(input_nvh):
+    """
+    Creates dictionary and check dict according to generated schema
+    """
+    dictionary = nvh.parse_file(input_nvh)
+
+    schema = {}
+    dictionary.generate_schema(schema, tln=True)
+
+    schema_err = []
+    dictionary.check_schema(schema, outfile=schema_err)
+
+    if schema_err:
+        raise ValueError('\n'.join(schema_err))
+    return dictionary, schema
+    
+
+def importfile(dictID, filename, email, hwNode):
+    """
+    return progress, finished status, error messages
+    """
     import subprocess
     pidfile = filename + ".pid"
     errfile = filename + ".err"
@@ -1264,10 +1397,11 @@ def importfile(dictID, filename, email):
         pidfile_f = open(pidfile, "x")
     except FileExistsError:
         return checkImportStatus(pidfile, errfile)
+    
     errfile_f = open(errfile, "w")
     dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
-    p = subprocess.Popen(["adminscripts/import.py", dbpath, filename, email], stdout=pidfile_f, stderr=errfile_f, start_new_session=True, close_fds=True)
-    return {"progressMessage": "Import started. You may close the window, import will run in the background. Please wait...", "finished": False, "errors": False}
+    p = subprocess.Popen([currdir + "/import_nvh.py", dbpath, filename, email, hwNode], stdout=pidfile_f, stderr=errfile_f, start_new_session=True, close_fds=True)
+    return "Import started. You may close the window, import will run in the background. Please wait...", False, ""
 
 def checkImportStatus(pidfile, errfile):
     content = ''

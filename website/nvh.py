@@ -305,7 +305,9 @@ class nvh:
                 curr_value_type = 'int'
             except ValueError:
                 pass
-            if url_re.match(c.value):
+            if not c.value:
+                curr_value_type = 'empty'
+            elif url_re.match(c.value):
                 curr_value_type = 'url'
             elif audio_re.match(c.value):
                 curr_value_type = 'audio'
@@ -340,10 +342,16 @@ class nvh:
 
     def check_schema(self, schema, parent="ROOT", ancestor=None, outfile=sys.stdout):
         def report(s):
-            outfile.write("ERROR: %s (%s)\n" % (s, ancestor))
+            if isinstance(outfile, io.IOBase):
+                outfile.write("ERROR: %s (%s)\n" % (s, ancestor))
+            elif isinstance(outfile, list):
+                outfile.append("ERROR: %s (%s)\n" % (s, ancestor))
+            else:
+                sys.stderr.write('Outfile has to be list or file descriptor.')
+                sys.exit()
 
         from collections import Counter
-        keyval_freqs = Counter((c.name, c.value) for c in self.children)
+        keyval_freqs = Counter((c.name, c.value) for c in self.children if c.value) # not count nodes with "empty" type 
         duplicates = [d for d in keyval_freqs.items() if d[1] > 1]
         for d in duplicates:
             report("Duplicate key-value pair '%s: %s' for parent %s (occurs %d times)" % (d[0][0], d[0][1], parent, d[1]))
@@ -486,9 +494,9 @@ class nvh:
         if indent:
             i = indent.group(0)
             if " " in i and "\t" in i:
-                raise Exception ("Mixing tabs and spaces on line %d" % line_nr)
+                raise ValueError("Mixing tabs and spaces on line %d" % line_nr)
             if (" " in i and "\t" in parent.indent) or ("\t" in i and " " in parent.indent):
-                raise Exception ("Inconsistent indentation on line %d" % line_nr)
+                raise ValueError("Inconsistent indentation on line %d" % line_nr)
             indent = i
         else:
             indent = ""
