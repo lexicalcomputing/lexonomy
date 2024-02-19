@@ -1,22 +1,22 @@
 entry:
   hw: test_3
-    lemma: test_3
-    pos: N
-    sense: test_3.1 
-      s_example: First example of test_3.1
-        s_e_translations:
-          s_e_t_lang: en
-            s_e_t_translation: English translation test_3.1
-          s_e_t_lang: cs
-            s_e_t_translation: Czech translation test_3.1
-          s_e_t_lang: de
-            s_e_t_translation: German translation test_3.1
-    image: test_3.jpg
-      i_license: general
-      i_source: source_2
-      i_quality: good
-      i_author: LCC 
-      i_explicit: no
-    rank: 3
-    flag: nok
-    notes: TODO more senses
+  lemma: test_3
+  pos: N
+  sense: test_3.1 
+    s_example: First example of test_3.1
+      s_e_translations:
+        s_e_t_lang: en
+          s_e_t_translation: English translation test_3.1
+        s_e_t_lang: cs
+          s_e_t_translation: Czech translation test_3.1
+        s_e_t_lang: de
+          s_e_t_translation: German translation test_3.1
+  image: test_3.jpg
+    i_license: general
+    i_source: source_2
+    i_quality: good
+    i_author: LCC 
+    i_explicit: no
+  rank: 3
+  flag: nok
+  notes: TODO more senses
