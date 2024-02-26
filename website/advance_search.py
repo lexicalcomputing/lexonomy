@@ -96,7 +96,7 @@ and_or = '\s*(?P<lop>where|and|or)?\s*'
 rest = '\s*(?P<rest>.*)?\s*'
 left = '(?P<left>[ \(]*)?'
 right = '(?P<right>[ \)]*)?'
-query_split_re = re.compile('^' + left + attr + operators + value + right + and_or + rest + '$')
+query_split_re = re.compile('^' + left + attr + operators + value + right + and_or + rest + '$', re.IGNORECASE)
 
 def split_query(text, tokens):
     match_result_dict = query_split_re.match(text).groupdict()
@@ -118,7 +118,7 @@ def split_query(text, tokens):
 
     # and/or operator
     if match_result_dict.get('lop', False):
-        tokens.append(match_result_dict['lop'])
+        tokens.append(match_result_dict['lop'].lower())
 
     # rest
     if match_result_dict.get('rest', False):
@@ -132,6 +132,10 @@ def get_query_parts(text):
     """
     query_parts = []
     split_query(text, query_parts)
+
+    # raise Value error if no brackets in complex query consisting of more than one operator
+    if (len(set([x for x in query_parts if x in ['and', 'or', 'where']])) > 1) and not ('(' in query_parts or ')' in query_parts):
+        raise ValueError('More than one type of logic operator without any brackets')
 
     stack = [[]]
     for x in query_parts:
