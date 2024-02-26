@@ -7,8 +7,8 @@ import sqlite3
 import unittest
 
 sys.path.append('../')
-from advance_searach import result_id_list
-from advance_searach import get_query_parts
+from advance_search import result_id_list
+from advance_search import get_query_parts
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
