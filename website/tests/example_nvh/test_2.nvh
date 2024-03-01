@@ -10,6 +10,7 @@ entry:
       s_i_author: LCC 
       s_i_explicit: no
     s_example: First example of test_2.1
+      s_e_quality: bad
       s_e_translations:
         s_e_t_lang: en
           s_e_t_translation: English translation of fist example test_2.1
@@ -25,6 +26,7 @@ entry:
       s_i_author: LCC 
       s_i_explicit: no
     s_example: First example of test_2.2
+      s_e_quality: good
       s_e_translations:
         s_e_t_lang: en
           s_e_t_translation: English translation test_2.2
