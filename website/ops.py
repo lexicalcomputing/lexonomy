@@ -1331,7 +1331,8 @@ def xml2nvh(input_xml):
     global rootTag
     global entryTag
     global entryCount
-    xmldata = open(input_xml, 'rb').read().decode('utf-8-sig')
+    with open(input_xml, 'rb') as f:
+        xmldata = f.read().decode('utf-8-sig')
     xmldata = re.sub(r'<\?xml[^?]*\?>', '', xmldata)
     xmldata = re.sub(r'<!DOCTYPE[^>]*>', '', xmldata)
     xmldata = re.sub(r'</?b>', '', xmldata)
