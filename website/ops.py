@@ -565,7 +565,9 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
     if dictExists(dictID):
         return False, "", "The dict with the entered name already exists"
     #init db schema
-    sql_schema = open(currdir + "/dictTemplates/general.sqlite.schema", 'r').read()
+    with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
+        sql_schema = f.read()
+        
     conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], 
                                                   "dicts/" + dictID + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/")), uri=True)
     conn.executescript(sql_schema)
