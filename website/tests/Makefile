@@ -12,7 +12,7 @@ test_import: test_import.xml test_import.nvh
 	./import_test.py
 
 test_advance_search: ../../data/dicts/test_import_nvh.sqlite
-	./advance_search.py
+	./advance_search_test.py
 
 clean:
-	rm -rf test_import.xml.xml2nvh.nvh test_import.*.err test_import.*.pid ../../data/dicts/test_import_xml.sqlite ../../data/dicts/test_import_nvh.sqlite
+	rm -rf test_import.nvh test_import.xml.xml2nvh.nvh test_import.*.err test_import.*.pid ../../data/dicts/test_import_xml.sqlite ../../data/dicts/test_import_nvh.sqlite
