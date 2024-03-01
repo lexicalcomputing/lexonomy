@@ -22,7 +22,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-import sys, re, os, fileinput, json
+import sys, re, os, fileinput, json, io
 from urllib.parse import quote_plus
 import hashlib
 
