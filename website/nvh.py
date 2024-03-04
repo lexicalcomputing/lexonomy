@@ -503,7 +503,8 @@ class nvh:
         return indent, n.strip(), v.strip()
 
     @staticmethod
-    def parse_file (infile):
+    def parse_file (infile, skip_duplicities=False):
+        errors = []
         dictionary = nvh(None)
         curr_parent = dictionary
         line_nr = 0
@@ -519,9 +520,17 @@ class nvh:
                 while indent != curr_parent.indent:
                     curr_parent = curr_parent.parent
                 curr_parent = curr_parent.parent
-            curr_parent.children.append(nvh(curr_parent, indent, name, value))
+            # remove duplicities - for imported nvh    
+            if (name, value) in [(x.name, x.value) for x in curr_parent.children]:
+                if not skip_duplicities:
+                    curr_parent.children.append(nvh(curr_parent, indent, name, value))
+                else:
+                    errors.append('Duplicate key, value: (%s, %s)' % (name, value))
+            else:
+                curr_parent.children.append(nvh(curr_parent, indent, name, value))
+
             last_indent = indent
-        return dictionary
+        return dictionary, errors
 
     @staticmethod
     def parse_string (instring):
@@ -592,7 +601,7 @@ if __name__ == "__main__":
 
     try:
         infile = fileinput.input([sys.argv[2]])
-        dictionary = nvh.parse_file(infile)
+        dictionary, parse_err = nvh.parse_file(infile)
         if sys.argv[1].startswith("get"):
             select_filters = []
             project_filters = []
@@ -610,7 +619,7 @@ if __name__ == "__main__":
             if len(sys.argv) < 4:
                 usage()
             infile = fileinput.input([sys.argv[3]])
-            patch = nvh.parse_file(infile)
+            patch, parse_err = nvh.parse_file(infile)
             if len(sys.argv) > 4:
                 replace_filters = sys.argv[4].split(",")
             else:
@@ -633,7 +642,7 @@ if __name__ == "__main__":
             if len(sys.argv) < 4:
                 usage()
             infile = fileinput.input([sys.argv[3]])
-            schema = nvh.parse_file(infile)
+            schema, parse_err = nvh.parse_file(infile)
             schema = schema.nvh2schema()
             dictionary.check_schema(schema)
         elif sys.argv[1] == "schema2json":

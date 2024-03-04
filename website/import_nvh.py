@@ -56,7 +56,7 @@ def main():
           "import will run in the background. Please wait...\n")
 
 
-    import_nvh = nvh.parse_file(fileinput.input(args.filename))
+    import_nvh, pase_err = nvh.parse_file(fileinput.input(args.filename))
     import_entries, tl_name = import_nvh.get_entries()
     entry_count = len(import_entries)
 

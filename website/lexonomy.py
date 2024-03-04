@@ -480,12 +480,12 @@ def makedictjson(user):
                 if request.query.filename.endswith('.xml'):
                     # XML file transforamtion
                     input_nvh = ops.xml2nvh(request.query.filename)
-                    dictionary, schema = ops.nvh_dict_schema(input_nvh)
+                    dictionary, schema, nvh_pase_errors = ops.nvh_dict_schema(input_nvh) # TODO
                     with open(request.query.filename + ".xml2nvh.nvh", 'w') as f:
                         dictionary.dump(f)
 
                 elif request.query.filename.endswith('.nvh'):
-                    dictionary, schema = ops.nvh_dict_schema(fileinput.input([request.query.filename]))
+                    dictionary, schema, nvh_pase_errors = ops.nvh_dict_schema(fileinput.input([request.query.filename])) # TODO
 
             except ValueError as e:
                 return {"msg": "", "success": False, "error": e, "url": request.forms.url}
@@ -748,7 +748,7 @@ def importjson(dictID, user, dictDB, configs):
             input_nvh = ops.xml2nvh(request.query.filename)
 
             try:
-                dictionary, _ = ops.nvh_dict_schema(input_nvh)
+                dictionary, _, nvh_pase_errors = ops.nvh_dict_schema(input_nvh) # TODO
             except ValueError as e:
                 return {"finished": False, "progressMessage": "", "error": e}
             
