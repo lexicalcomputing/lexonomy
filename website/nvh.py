@@ -47,14 +47,15 @@ import hashlib
 #         language: ~.{3}
 #     affiliation: * ["MU (Brno)", "VUT \"Brno\"", "UK, Praha"]
 # ================
-supported_types = ['int', 'image', 'bool', 'audio', 'empty', 'url'] # string is the default
-format_re = re.compile('^([*?+]|\d+\+|\d+\-\d+)?' # min/max
+supported_types = ['int', 'image', 'bool', 'audio', 'empty', 'url', 'string', 'list'] # string is the default
+format_re = re.compile('^([*?+]|\d+\+|\d+\-\d+|\d+)?' # min/max
                        '\s*(' + '|'.join(supported_types) + ')?' # type
                        '\s*(\[.*?\])?' # list
                        '\s*(~.*?)?$' # re
                       )
 count_range_re = re.compile('(\d+)\-(\d+)')
 count_min_re = re.compile('(\d+)\+')
+count_exact_re = re.compile('(\d+)')
 
 audio_extensions = ['.3gp','.aa ','.aac','.aax','.act','.aiff','.alac','.amr','.ape','.au ','.awb','.dss',
                     '.dvf','.flac','.gsm','.iklax','.ivs','.m4a','.m4b','.m4p','.mmf','.movpkg','.mp3','.mpc',
@@ -380,8 +381,6 @@ class nvh:
             # check type. Available ['int', 'image', 'bool', 'audio', 'empty', 'url', 'string']
             if schema[c.name]['type'] == 'empty' and c.value:
                     report("%s: the value must be empty." % c.name)
-            elif schema[c.name]['type'] == 'string' and not c.value:
-                    report("%s: the value must be non-empty string." % c.name)
             elif schema[c.name]['type'] == 'int':
                 try:
                     int(c.value)
@@ -440,6 +439,11 @@ class nvh:
                 c = count_min_re.match(min_max)
                 value_format['min'] = int(c.group(1))
                 value_format['max'] = None
+            elif count_exact_re.match(min_max):
+                c = count_exact_re.match(min_max)
+                value_format['min'] = int(c.group(1))
+                value_format['max'] = int(c.group(1))
+
         # ==============
 
         if format_match.group(2): # type
@@ -477,9 +481,8 @@ class nvh:
                     result.append("?")
             elif d["max"] > 1:
                 result.append("+")
-
-            if d['type'] != 'string':
-                result.append(d["type"])
+                
+            result.append(d["type"])
 
             return ' '.join(result)
 
