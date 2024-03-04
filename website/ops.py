@@ -1322,7 +1322,7 @@ def xml_entry2nvh_entry(dom, nvh_entry, indent=0):
                 nvh_element = '{}{}: {}'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.attributes.items()[0][1].strip()))
             else:
                 # wrapper without value
-                nvh_element = '{}{}'.format('  '*indent if indent else '', ch.tagName)
+                nvh_element = '{}{}:'.format('  '*indent if indent else '', ch.tagName)
             nvh_entry.append(nvh_element)
         xml_entry2nvh_entry(ch, nvh_entry, indent + 1)
 
