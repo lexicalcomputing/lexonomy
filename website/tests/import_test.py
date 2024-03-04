@@ -21,12 +21,12 @@ def transform(import_file):
             if import_file.endswith('.xml'):
                 # XML file transforamtion
                 input_nvh = ops.xml2nvh(import_file)
-                dictionary, schema = ops.nvh_dict_schema(input_nvh)
+                dictionary, schema, nvh_pase_errors = ops.nvh_dict_schema(input_nvh, skip_duplicities=True) # TODO
                 with open(import_file + ".xml2nvh.nvh", 'w') as f:
                     dictionary.dump(f)
                 
             elif import_file.endswith('.nvh'):
-                dictionary, schema = ops.nvh_dict_schema(fileinput.input([import_file]))
+                dictionary, schema, nvh_pase_errors = ops.nvh_dict_schema(fileinput.input([import_file]), skip_duplicities=True) # TODO
 
         except ValueError as e:
             return {"msg": "", "success": False, "error": e, "url": 'test_import_xml'}                

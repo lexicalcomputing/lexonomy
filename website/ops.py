@@ -1372,11 +1372,11 @@ def xml2nvh(input_xml):
 
     return nvh_entries
 
-def nvh_dict_schema(input_nvh):
+def nvh_dict_schema(input_nvh, skip_duplicities):
     """
     Creates dictionary and check dict according to generated schema
     """
-    dictionary = nvh.parse_file(input_nvh)
+    dictionary, nvh_pase_errors = nvh.parse_file(input_nvh, skip_duplicities)
 
     schema = {}
     dictionary.generate_schema(schema, tln=True)
@@ -1386,7 +1386,7 @@ def nvh_dict_schema(input_nvh):
 
     if schema_err:
         raise ValueError('\n'.join(schema_err))
-    return dictionary, schema
+    return dictionary, schema, nvh_pase_errors
     
 
 def importfile(dictID, filename, email, hwNode):
