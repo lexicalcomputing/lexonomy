@@ -63,9 +63,9 @@
          </div>
       </div>
 
-      <div class="firstRowContainer">
+      <div class="displayFlex dictContainer">
          <template if={dictData.public || dictData.userAccess}>
-            <div class="firstRowCol">
+            <div class="panel">
                <div class="search">
                   <h3 class="grey-text">Search</h3>
                   <dict-entry-filter search-func={search}/>
@@ -115,9 +115,25 @@
             </div>
          </template>
          <div class="sectionDivider"></div>
-         <div class="firstRowCol description">
-            <h3 class="grey-text">Description</h3>
-            <raw-html content={dictData.blurb}></raw-html>
+         <div class="panel">
+            <div if={state.showQueryBuilder}
+                  class="block pr-6">
+               <advanced-query-builder query={state.query}
+                     search-func={search}/>
+            </div>
+            <div if={!state.showQueryBuilder}
+                  class="description">
+               <h3 class="grey-text">Description</h3>
+               <div class="displayFlex"
+                     style="gap: 10px">
+                  <raw-html content={dictData.blurb}></raw-html>
+                  <a if={dictData.userAccess.canConfig}
+                        href="#/{dictData.dictId}/config/ident"
+                        class="grey-text mt-4">
+                     <i class="material-icons clickable">edit</i>
+                  </a>
+               </div>
+            </div>
          </div>
       </div>
 
@@ -133,11 +149,14 @@
       export default {
          bindings: [["store", "dictionaryChanged", "onDictionaryChanged"],
                     ["store", "isEntryLoadingChanged", "update"],
-                    ["store", "isDictionaryExamplesLoadingChanged", "isDictionaryExamplesLoadingChanged"]],
+                    ["store", "isDictionaryExamplesLoadingChanged", "isDictionaryExamplesLoadingChanged"],
+                    ["store", "toggleQueryBuilder", "onToggleQueryBuilder"]],
 
          state: {
             isLoading: false,
-            displayedEntryId: null
+            displayedEntryId: null,
+            showQueryBuilder: false,
+            query: ""
          },
 
          onBeforeMount(){
@@ -146,7 +165,8 @@
          },
 
          onMounted(){
-            this.dictData.searchtext = ""
+            this.dictData.search.advanced_query = ""
+            this.dictData.search.searchtext = ""
             if(!this.dictData.isDictionaryExamplesLoading){
                this.reloadDictionaryExamples()
             }
@@ -159,6 +179,10 @@
             this.state.displayedEntryId = this.dictData.dictionaryExamples && this.dictData.dictionaryExamples.length ? this.dictData.dictionaryExamples[0].id : null
             this.store.changeEntryId(this.state.displayedEntryId)
             this.update()
+         },
+
+         onToggleQueryBuilder(show){
+            this.update({showQueryBuilder: typeof show == "undefined" ? !this.state.showQueryBuilder : show})
          },
 
          onClone(){
@@ -182,8 +206,7 @@
          },
 
          search(){
-            this.store.loadEntryList()
-            route(`/${this.dictData.dictId}/edit?s=${this.dictData.searchtext}&m=${this.dictData.modifier}`)
+            route(`/${this.dictData.dictId}/edit${this.store.getEntrySearchUrlQueryString()}`)
          },
 
          onRandomEntryClick(entry){
@@ -230,8 +253,10 @@
             margin: 0;
          }
       }
-      h3{
-         margin-left: 0;
+      advanced-query-builder{
+         h3{
+            color: #9e9e9e;
+         }
       }
       .btnOpenInEditor{
          position: absolute;
@@ -243,26 +268,20 @@
          margin-top: 5px;
          align-items: center;
       }
-      .firstRowContainer{
-         display: flex;
-      }
       .sectionDivider{
          width: 1px;
          border-left: 1px solid #e0e0e0;
          margin-right: 30px;
       }
-      .firstRowCol{
+      .panel{
          flex: 1;
          padding-bottom: 30px;
       }
-      .firstRowCol .divider{
+      .panel .divider{
          margin-top: 30px;
       }
       .description{
          word-break: break-word;
-      }
-      dict-entry-filter{
-         max-width: 500px;
       }
       .search,
       .randomEntries{

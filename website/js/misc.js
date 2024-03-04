@@ -102,7 +102,11 @@ window.makeElementDraggable = (element, dragHandle) => {
    let diffY = 0
    let lastX = 0
    let lastY = 0
+   element = $(element)[0]
+   element.style.position = "fixed"
+   dragHandle = dragHandle ? $(dragHandle)[0] : element
    dragHandle.onmousedown = onMouseDown
+   dragHandle.style.cursor = "move"
 
    function onMouseDown(evt) {
       evt.preventDefault()
@@ -180,4 +184,13 @@ window.getFontSizeFromCookies = () => {
 
 window.trim = (str, max) => {
    return str.length > max ? (str.substr(0, max) + "…") : str
+}
+
+window.initFormSelects = (context, selector) => {
+   return $(selector || "select", context).formSelect({
+      dropdownOptions: {
+         coverTrigger: false,
+         constrainWidth: false
+      }
+   })
 }

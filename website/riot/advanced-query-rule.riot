@@ -1,0 +1,175 @@
+<advanced-query-rule>
+   <div class="ruleWrapper positionRelative">
+      <element-select show-empty-value={true}
+            riot-value={props.rule.attr}
+            name="element"
+            on-change={onElementChange}/>
+      <select id="operatorSelect"
+            onchange={onRowOperatorChange}>
+         <option selected={props.rule.operator == ""}
+               value="">-select condition-</option>
+         <option each={option in operatorList}
+               selected={option.value == props.rule.operator}
+               value={option.value}>
+            {option.label}
+         </option>
+      </select>
+      <template if={props.rule.attr != "" && !["", "exists", "not_exists"].includes(props.rule.operator)}>
+         <input if={!["", "count_is", "count_more", "count_less"].includes(props.rule.operator)}
+               type="text"
+               placeholder="value"
+               value={props.rule.value}
+               oninput={onValueInput}>
+         <input if={["count_is", "count_more", "count_less"].includes(props.rule.operator)}
+               type="number"
+               placeholder="count"
+               value={props.rule.value}
+               oninput={onValueInput}>
+      </template>
+      <i class="material-icons clickable grey-text"
+            onclick={onRemoveRuleClick}>delete</i>
+      <div class="addButtons">
+         <button if={!props.rule.where}
+               class="btn btn-secondary"
+               onclick={onAddWhereClick}>
+            where
+            <i class="material-icons left">add</i>
+         </button>
+         <button class="addRuleBtn btn btn-flat"
+               onclick={onConvertToGroupClick}>
+            <i class="material-icons left">add</i>
+            AND/OR
+         </button>
+      </div>
+   </div>
+
+   <div if={props.rule.where}
+         class="whereWrapper">
+      <div class="whereLabel grey-text">
+         WHERE
+      </div>
+      <advanced-query-group if={props.rule.where.type == "group"}
+            group={props.rule.where}
+            builder={props.builder}/>
+      <advanced-query-rule if={props.rule.where.type == "rule"}
+            rule={props.rule.where}
+            builder={props.builder}/>
+   </div>
+
+
+   <script>
+      export default{
+         onBeforeMount(){
+            this.operatorList = this.store.const.QUERY_OPERATORS.map(o => ({
+               value: o[0],
+               label: o[2]
+            }))
+         },
+
+         onMounted(){
+            window.initFormSelects(this.root)
+         },
+
+         onUpdated(){
+            window.initFormSelects(this.root)
+         },
+
+         onConvertToGroupClick(){
+            this.props.builder.convertRuleToGroup(this.props.rule)
+         },
+
+         onAddWhereClick(){
+            this.props.builder.addWhereToRule(this.props.rule)
+         },
+
+         onRemoveRuleClick(){
+            this.props.builder.removeRule(this.props.rule)
+         },
+
+         onElementChange(elementName){
+            this.props.rule.attr = elementName
+            if(!this.props.rule.attr){
+               this.props.rule.operator = ""
+            }
+            this.props.builder.onChange(this.props.rule)
+         },
+
+         onRowOperatorChange(evt){
+            let operator = evt.target.value
+            this.props.rule.operator = operator
+            if(!operator){
+               this.props.rule.value = ""
+            } else if(operator == "exists"){
+               this.props.rule.value = "0"
+            } else if(operator == "not_exists"){
+               this.props.rule.value = "1"
+            }
+            this.props.builder.onChange(this.props.rule)
+         },
+
+         onValueInput(evt){
+            this.props.rule.value = evt.target.value
+            this.props.builder.onChange(this.props.rule)
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      :host{
+         display: block;
+      }
+      .ruleWrapper{
+         display: inline-flex;
+         gap: 10px;
+         align-items: center;
+         margin-top: 10px;
+         padding: 5px 10px 5px 15px;
+         border-radius: 20px;
+         background-color: #eeeeee;
+         input[type="number"],
+         input[type="text"]{
+            width: auto;
+            height: 25px;
+            line-height: 25px;
+            margin-bottom: 0;
+            background-color: #fff;
+         }
+         .select-wrapper{
+            input{
+               padding-right: 20px;
+            }
+            .caret{
+               z-index: 1
+            }
+         }
+      }
+      .whereWrapper{
+         margin-left: 40px;
+         margin-top: 30px;
+         display: flex;
+         gap: 10px;
+         .whereLabel{
+            height: 35px;
+            line-height: 35px;
+            margin-top: 10px;
+         }
+      }
+      .addButtons{
+         position: absolute;
+         right: 0;
+         top: 32px;
+         .btn{
+            opacity: 0.5;
+            margin-top: 5px;
+            /*height: 24px;
+            line-height: 24px;*/
+            background-color: #fff;
+            &:hover{
+               //background-color: whitesmoke;
+               opacity: 1;
+            }
+         }
+      }
+   </style>
+</advanced-query-rule>

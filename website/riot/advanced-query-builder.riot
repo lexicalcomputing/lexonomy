@@ -1,0 +1,168 @@
+<advanced-query-builder>
+   <button class="btn btn-flat btn-floating right"
+         onclick={onCancelClick}>
+      <i class="material-icons">close</i>
+   </button>
+   <h3>Search query builder</h3>
+   <div if={state.error}
+         class="lighten-4 p-2 red">
+      {state.error}
+   </div>
+
+   <div if={state.stringifiedQuery}
+         class="monospace mb-2">
+      <span class="grey-text">Search query: </span>
+      {state.stringifiedQuery}
+   </div>
+   <div if={!state.stringifiedQuery}
+         class="mb-2">
+      Add at least one valid rule.
+   </div>
+
+   <advanced-query-group group={state.groups}
+         builder={this}/>
+
+   <div class="buttons mt-12 pt-6">
+      <button class="btn btn-secondary"
+            onclick={onCancelClick}>cancel</button>
+      <button class="btn btn-primary {!state.stringifiedQuery ? 'disabled' : ''}"
+            onclick={onSearchClick}>search</button>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            groups: [],
+            stringifiedQuery: "",
+            error: ""
+         },
+
+         onBeforeMount(){
+            try{
+               this.state.groups = this.store.advancedSearchParseQuery(this.dictData.search.advanced_query)
+            } catch (e) {
+               this.state.error = `Query could not be parsed: ${e}`
+            }
+            if(!this.state.groups.children || !this.state.groups.children.length){
+               this.state.groups = {
+                  type: "group",
+                  operator: "and",
+                  parent: null
+               }
+               this.state.groups.children = [{
+                  type: "rule",
+                  parent: this.state.groups,
+                  attr: "",
+                  operator: "",
+                  value: ""
+               }]
+            }
+            this.addParentReferences(this.state.groups)
+            this.state.stringifiedQuery = this.store.advancedSearchStringifyItem(this.state.groups)
+         },
+
+         onCancelClick(){
+            this.store.trigger("toggleQueryBuilder", false)
+         },
+
+         onSearchClick(){
+            this.store.changeSearchParams({
+               tab: "advanced",
+               advanced_query: this.state.stringifiedQuery
+            })
+            this.store.trigger("toggleQueryBuilder", false)
+            this.props.searchFunc && this.props.searchFunc()
+         },
+
+         addRule(group){
+            group.children.push({
+               type: "rule",
+               parent: group
+            })
+            this.onChange()
+         },
+
+         addGroup(group){
+            let childGroup = {
+               type: "group",
+               operator: "and",
+               parent: group,
+               children: []
+            }
+            childGroup.children.push({
+               type: "rule",
+               parent: childGroup
+            })
+            childGroup.children.push({
+               type: "rule",
+               parent: childGroup
+            })
+            group.children.push(childGroup)
+            this.onChange()
+         },
+
+         removeRule(rule){
+            let group = rule.parent
+            group.children = group.children.filter(c => c != rule)
+            if(group.parent){
+               if(group.parent.where){
+                  delete group.parent.where
+               } else if(group.children.length == 1){
+                  // only one rule left in group -> convert group to rule
+                  let idx = group.parent.children.findIndex(c => c == group)
+                  group.children[0].parent = group.parent
+                  group.parent.children.splice(idx, 1, group.children[0])
+               }
+            }
+            this.onChange()
+         },
+
+         convertRuleToGroup(rule){
+            let parentGroup = rule.parent
+            let idx = parentGroup.children.findIndex(c => c == rule)
+            let newGroup = {
+               type: "group",
+               operator: parentGroup.operator == "and" ? "or" : "and",
+               parent: parentGroup,
+               children: []
+            }
+            rule.parent = newGroup
+            newGroup.children = [rule, {
+               type: "rule",
+               parent: newGroup
+            }]
+            parentGroup.children.splice(idx, 1, newGroup)
+            this.onChange()
+         },
+
+         addWhereToRule(rule){
+            if(!rule.where){
+               rule.where = {
+                  type: "group",
+                  parent: rule,
+                  operator: "and",
+                  children: []
+               }
+            }
+            rule.where.children.push({
+               type: "rule",
+               parent: rule.where
+            })
+            this.onChange()
+         },
+
+         onChange(){
+            this.state.stringifiedQuery = this.store.advancedSearchStringifyItem(this.state.groups)
+            this.state.error = ""
+            this.update()
+         },
+
+         addParentReferences(group){
+            group.children && group.children.forEach(child => {
+               child.parent = group
+               this.addParentReferences(child)
+            })
+         }
+      }
+   </script>
+</advanced-query-builder>

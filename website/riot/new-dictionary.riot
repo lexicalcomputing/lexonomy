@@ -1,100 +1,206 @@
 <new-dictionary>
    <loading-overlay if={state.isLoading}/>
    <h1>
-      New dictionary
+      New dictionary <span class="step">Step {(state.step + "").substr(0, 1)} of 3</span>
    </h1>
-   <div class="row">
-      <div class="input-field">
-         <input id="title"
-               type="text"
-               class="validate inlineBlock"
-               required
-               oninput={onTitleInput}
-               style="max-width: 300px;"/>
-         <label for="title">Title</label>
-         <span class="helper-text">Enter a human-readable title such as "My Esperanto Dictionary". You will be able to change this later.</span>
-      </div>
-   </div>
-   <div>
-      <label for="url">URL</label>
-   </div>
-
-   <div class="row mb-8">
-      <div style="display: inline-flex; align-items: baseline; border: 1px solid black; position: relative; padding-left: 10px; height: 48px;"
-            onclick={onUrlWrapperClick}>
-         <span class="grey-text">{state.baseUrl}</span>
-         <span class="input-field"
-               style="margin-top: 0; margin-bottom: 0;">
-            <input id="url"
+   <div if={state.step == 1}>
+      <h5 class="grey-text mb-4">Basic information</h5>
+      <div class="row mt-8">
+         <div class="input-field">
+            <input id="title"
                   type="text"
                   class="validate inlineBlock"
-                  value={state.url}
                   required
-                  minlength="5"
-                  pattern="[a-zA-Z0-9\-_]*"
-                  oninput={onUrlInput}
-                  style="max-width: 300px;border: none;outline: none; padding-left: 5px;background-color: unset;"/>
-         </span>
+                  oninput={onTitleInput}
+                  value={state.title}
+                  style="max-width: 300px;"/>
+            <label for="title">Title</label>
+            <span class="helper-text">Enter a human-readable title such as "My Esperanto Dictionary". You will be able to change this later.</span>
+         </div>
       </div>
-      <div style="color: rgba(0,0,0,0.54);font-size: 0.7rem;">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
+      <div>
+         <label for="url">URL</label>
+      </div>
+
+      <div class="row mb-8">
+         <div style="display: inline-flex; align-items: baseline; border: 1px solid black; position: relative; padding-left: 10px; height: 48px;"
+               onclick={onUrlWrapperClick}>
+            <span class="grey-text">{state.baseUrl}</span>
+            <span class="input-field"
+                  style="margin-top: 0; margin-bottom: 0;">
+               <input id="url"
+                     type="text"
+                     class="validate inlineBlock"
+                     value={state.url}
+                     required
+                     minlength="5"
+                     pattern="[a-zA-Z0-9\-_]*"
+                     oninput={onUrlInput}
+                     style="max-width: 300px;border: none;outline: none; padding-left: 5px;background-color: unset;"/>
+            </span>
+         </div>
+         <div style="color: rgba(0,0,0,0.54);font-size: 0.7rem;">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
+      </div>
+
+      <br>
+      <div>
+         <label>Size limitation</label>
+         <div style="color: rgba(0,0,0,0.54)">
+            Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
+         </div>
+      </div>
+
+      <div class="mt-8">
+         <button id="btnNext"
+               class="btn btn-primary disabled"
+               onclick={onGoToStepTwoClick}>
+            next
+         </button>
+      </div>
    </div>
 
-   <div class="row mb-4">
-      <h4>Entry structure</h4>
-      <p class="grey-text">Chose modules you want to use in your dictionary. You can change this later.</p>
-      <nvh-schema selected-modules={state.selectedModules}
-            on-schema-loaded={onSchemaLoaded}
-            on-schema-change={onSchemaChange}
-            on-modules-change={onModulesChange}/>
+   <div if={state.step == 2}>
+      <h5 class="grey-text mb-4">Dictionary content</h5>
+      <div class="emptyOrUpload">
+         <div class="option"
+               onclick={onChangeStepClick.bind(this, "3_empty")}>
+            <i class="material-icons">insert_drive_file</i>
+            <div class="name">
+               Empty dictionary
+            </div>
+            <div class="description grey-text">
+               Define entry structure and create empty dictionary.
+            </div>
+         </div>
+         <div class="option"
+               onclick={onChangeStepClick.bind(this, "3_upload")}>
+            <i class="material-icons">upload</i>
+            <div class="name">
+               Upload entries
+            </div>
+            <div class="description grey-text">
+               Upload entries in NVH format to create new dictionary.
+            </div>
+         </div>
+      </div>
+      <div class="mt-8">
+         <button class="btn btn-secondary"
+               onclick={onChangeStepClick.bind(this, "1")}>
+            back
+         </button>
+      </div>
+   </div>
 
-      <div class="row">
-         <div class="input-field">
-            <label class="checkbox">
-               <input id="addExamples"
-                     type="checkbox"
-                     checked="checked">
-               <span>
-                  Add example entries
-               </span>
-            </label>
+   <div if={state.step == "3_empty"}>
+      <div class="row mb-4">
+         <h5 class="grey-text mb-4">Entry structure</h5>
+         <div class="grey-text">Chose modules you want to use in your dictionary. You can change this later.</div>
+         <nvh-schema selected-modules={state.selectedModules}
+               on-schema-loaded={onSchemaLoaded}
+               on-schema-change={onSchemaChange}
+               on-modules-change={onModulesChange}/>
+
+         <div class="row">
+            <div class="input-field">
+               <label class="checkbox">
+                  <input id="addExamples"
+                        type="checkbox"
+                        checked="checked">
+                  <span>
+                     Add example entries
+                  </span>
+               </label>
+            </div>
+         </div>
+      </div>
+      <div class="mt-8">
+         <div if={state.errorMessage != ""}
+               class="section">
+            <div class="message messageError">
+               { state.errorMessage }
+            </div>
+         </div>
+         <div class="buttons">
+            <button class="btn btn-secondary"
+                  onclick={onChangeStepClick.bind(this, "2")}>
+               back
+            </button>
+            <button class="btn btn-primary waves-effect waves-light"
+                  name="makeDict"
+                  id="makeEmptyDictButton"
+                  onclick={onCreateEmptyDictionaryClick}>Create dictionary
+               <i class="material-icons left">add</i>
+            </button>
          </div>
       </div>
    </div>
 
-   <div if={ state.errorMessage != ""}
-         class="section">
-      <div class="message messageError">
-         { state.errorMessage }
+   <div if={state.step == "3_upload"}>
+      <h5 class="grey-text mb-4">Upload entries</h5>
+      <div class="uploadWrapper">
+         <div class="row mt-8">
+            <div class="file-field input-field buttons">
+               <div class="btn">
+                  <span>Choose file</span>
+                  <input type="file"
+                        onchange={onUploadFileChange}
+                        id="file">
+               </div>
+               <label for="title">File with entries in NVH format</label>
+               <div class="file-path-wrapper">
+                  <input class="file-path validate"
+                        type="text">
+               </div>
+            </div>
+         </div>
+         <div class="row">
+            <div class="input-field">
+               <input id="Headword"
+                     type="text"
+                     class="validate"
+                     required
+                     oninput={onHeadwordInput}/>
+               <label for="title">Headword element</label>
+            </div>
+         </div>
+      </div>
+
+      <div class="mt-8">
+         <div if={state.errorMessage != ""}
+               class="section">
+            <div class="message messageError">
+               { state.errorMessage }
+            </div>
+         </div>
+         <div class="buttons">
+            <button class="btn btn-secondary"
+                  onclick={onChangeStepClick.bind(this, "2")}>
+               back
+            </button>
+            <button class="btn btn-primary waves-effect waves-light"
+                  name="makeDict"
+                  id="makeDictFromFileButton"
+                  onclick={onCreateDictionaryFromFileClick}>Create dictionary
+               <i class="material-icons left">add</i>
+            </button>
+         </div>
       </div>
    </div>
-   <div class="buttons">
-      <button class="btn waves-effect waves-light"
-            name="makeDict"
-            id="makeButton"
-            onclick={onCreateDictionaryClick}>Create dictionary
-         <i class="material-icons left">add</i>
-      </button>
-      <a href="#"
-            class="btn btn-flat">cancel</a>
-   </div>
-   <br><br>
-   <div>
-      <label>Size limitation</label>
-      <div style="color: rgba(0,0,0,0.54)">
-         Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
-      </div>
-   </div>
+
 
    <script>
       export default {
          state: {
+            step: 1,
             title: "",
             url: "",
             isLoading: true,
             errorMessage: "",
             baseUrl: "https://www.lexonomy.eu/",
             finalSchema: null,
-            selectedModules: []
+            selectedModules: [],
+            file: null,
+            headword: null
          },
 
          onMounted() {
@@ -106,15 +212,25 @@
                   .always(results => {
                      this.update({isLoading: false})
                      M.updateTextFields()
+                     $("#title").focus()
                   })
+         },
 
-            this.refreshMakeButtonDisabled()
+         onUpdated(){
+            if(this.state.step == 1){
+               $("#title").focus()
+               this.refreshBtnNextDisabled()
+            } else if(this.state.step == "3_empty"){
+               this.refreshMakeEmptyDictButtonDisabled()
+            } else if(this.state.step == "3_upload"){
+               this.refreshMakeDictFromFileButtonDisabled()
+            }
          },
 
          onModulesChange(modules){
             this.state.selectedModules = modules
             this.update()
-            this.refreshMakeButtonDisabled()
+            this.refreshMakeEmptyDictButtonDisabled()
          },
 
          onSchemaLoaded(schemas){
@@ -122,62 +238,159 @@
                this.state.selectedModules = schemas.filter(schema => schema.checked || schema.required)
                      .map(schema => schema.key.split(".").pop())
                this.update()
-               this.refreshMakeButtonDisabled()
+               this.refreshMakeEmptyDictButtonDisabled()
             }
          },
 
          onSchemaChange(schema){
             this.state.selectedModules = schema.filter(s => s.checked).map(s => s.key)
             this.update()
-            this.refreshMakeButtonDisabled()
+            this.refreshMakeEmptyDictButtonDisabled()
+         },
+
+         onGoToStepTwoClick(){
+            this.update({isLoading: true})
+            this.store.isDictIdTaken(this.state.url)
+                  .done(response => {
+                     if(response.success){
+                        M.toast({html: "This URL is already taken."})
+                        this.update({isLoading: false})
+                     } else {
+                        this.update({
+                           step: 2,
+                           isLoading: false
+                        })
+                     }
+                  })
+         },
+
+         onChangeStepClick(step){
+            this.update({step: step})
          },
 
          onTitleInput(evt){
             this.state.title = evt.target.value
-            this.refreshMakeButtonDisabled()
+            this.refreshBtnNextDisabled()
          },
 
          onUrlInput(evt){
             this.state.url = evt.target.value
-            this.refreshMakeButtonDisabled()
+            this.refreshBtnNextDisabled()
          },
 
          onUrlWrapperClick(){
             $("#id").focus()
          },
 
-         onCreateDictionaryClick(event) {
-            let title = $("#title").val()
-            if(title){
+         onUploadFileChange(evt){
+            this.state.file = evt.target.value
+            this.refreshMakeDictFromFileButtonDisabled()
+         },
+
+         onHeadwordInput(evt){
+            this.state.headword = evt.target.value
+            this.refreshMakeDictFromFileButtonDisabled()
+         },
+
+         onCreateEmptyDictionaryClick(event) {
+            if(this.state.title){
                this.update({isLoading: true})
                this.store.createDictionary({
-                  url: $("#url").val(),
+                  title: this.state.title,
+                  url: this.state.url,
                   schemaKeys: JSON.stringify(this.state.selectedModules),
-                  addExamples: $("#addExamples").is(":checked"),
-                  title: title
+                  addExamples: $("#addExamples").is(":checked")
                })
                      .done(response => {
                         if (response.success) {
                            route("/" + response.url)
                         } else {
-                           this.state.errorMessage = "Selected URL is already taken."
+                           this.state.errorMessage = response.error
+                           this.update({isLoading: false})
                         }
                      })
-                     //.always(this.update.bind(this, {isLoading: false}))
             }
          },
 
-         refreshMakeButtonDisabled(){
-            $("#makeButton", this.root).toggleClass("disabled", this.state.title == ""
-                  || this.state.url == ""
-                  || !this.state.selectedModules.length)
+         onCreateDictionaryFromFileClick(event) {
+            if(this.state.title){
+               this.update({isLoading: true})
+               this.store.createDictionary({
+                  title: this.state.title,
+                  url: this.state.url,
+                  file: this.state.file,
+                  headword: this.state.headword
+               })
+                     .done(response => {
+                        if (response.success) {
+                           route("/" + response.url)
+                        } else {
+                           this.state.errorMessage = response.error
+                           this.update({isLoading: false})
+                        }
+                     })
+            }
+         },
+
+         refreshBtnNextDisabled(){
+            $("#btnNext", this.root).toggleClass("disabled", this.state.title == ""
+                  || !this.state.url.match(/^[a-zA-Z0-9\-_]+$/))
+         },
+
+         refreshMakeEmptyDictButtonDisabled(){
+            $("#makeEmptyDictButton", this.root).toggleClass("disabled", !this.state.selectedModules.length)
+         },
+
+         refreshMakeDictFromFileButtonDisabled(){
+            $("#makeDictFromFileButton", this.root).toggleClass("disabled", !this.state.file || !this.state.headword)
          }
       }
    </script>
 
-   <style>
+   <style type="scss">
       nvh-schema{
          background-color: whitesmoke;
+         padding: 1.5rem;
+      }
+      .step{
+         font-size: 0.85rem;
+         color: #b8b8b8;
+         text-transform: none;
+      }
+      .emptyOrUpload{
+         display: inline-flex;
+         gap: 20px;
+         justify-content: center;
+         .option{
+            width: 300px;
+            text-align: center;
+            cursor: pointer;
+            padding: 1.5rem;
+            background-color: #f5f5f5;
+            &:hover{
+               background-color: #e6e6e6;
+            }
+            i{
+               font-size: 3rem;
+               opacity: 0.3;
+            }
+            .name{
+               font-size: 1.2rem;
+            }
+            .description{
+               font-size: 0.9rem;
+            }
+         }
+      }
+      .uploadWrapper{
+         max-width: 400px;
+      }
+      .file-field{
+         .file-path-wrapper,
+         .file-path{
+            display: block;
+            width: 100%;
+         }
       }
    </style>
 </new-dictionary>

@@ -7,12 +7,14 @@ class UrlClass {
       let queryStr = this.stringifyQuery(query)
       let url = `${parts[0]}${queryStr}`
 
-      if(addToHistory){
-          history.pushState(null, null, url)
-          route.base() // need to update route's "current" value in
-                       //order to browser back button works correctly
-      } else{
-          history.replaceState(null, null, url)
+      if(url != window.location.href){
+         if(addToHistory){
+             history.pushState(null, null, url)
+             route.base() // need to update route's "current" value in
+                          //order to browser back button works correctly
+         } else{
+             history.replaceState(null, null, url)
+         }
       }
    }
 

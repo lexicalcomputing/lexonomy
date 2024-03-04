@@ -53,54 +53,188 @@
             <structure-editor/>
          </div>
 
-         <div if={state.tab == "custom"}>
-            <div>
+         <div if={state.tab == "custom"}
+               class="tabCustom">
+            <div class="tabCustomForm">
                <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
                   Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
                </p>
-            </div>
-            <div class="mb-16">
+               <div class="mb-16">
+                  <div class="input-field">
+                     <span class="schemaSyntaxToggleBtn">
+                        <i class="material-icons tiny mr-2">help</i>
+                        <a href="javascript:void(0)"
+                              onclick={onToggleSchemaSyntaxClick}>
+                           Schema syntax
+                        </a>
+                     </span>
+                     <textarea id="custom_NVHSchema"
+                           class="materialize-textarea {state.custom_NVHSchemaError ? 'invalid' : ''}"
+                           oninput={onSchemaInput}>{structureStore.data.custom_NVHSchema}</textarea>
+                     <label for="custom_NVHSchema">Your NVH schema</label>
+                     <div class="textareaErrorMessage red-text">
+                        <small>
+                           {state.custom_NVHSchemaError}
+                        </small>
+                     </div>
+                     <div class="buttons">
+                        <button id="custom_importFromSimple"
+                              class="btn btn-secondary {!structureStore.data.basic_modules || !structureStore.data.basic_modules.length ? 'disabled' : ''}"
+                              onclick={onCustomImportFromSimpleClick}>Import from Simple settings</button>
+                        <!--button id="custom_importFromSimple"
+                              class="btn btn-secondary {!structureStore.data.advanced_structure.root ? 'disabled' : ''}"
+                              onclick={onCustomImportFromAdvancedClick}>Import from Advanced settings</button-->
+                        <button id="custom_importFromSimple"
+                              class="btn btn-secondary "
+                              onclick={onLoadSampleNVHSchemaClick}>Load sample NVH schema</button>
+                     </div>
+                  </div>
+               </div>
                <div class="input-field">
-                  <textarea id="custom_NVHSchema"
-                        class="materialize-textarea {state.custom_NVHSchemaError ? 'invalid' : ''}"
-                        oninput={onSchemaInput}>{structureStore.data.custom_NVHSchema}</textarea>
-                  <label for="custom_NVHSchema">Your NVH schema</label>
+                  <textarea id="custom_newEntryTemplate"
+                        class="materialize-textarea {state.custom_newEntryTemplateError ? 'invalid' : ''}"
+                        oninput={onNewEntryInput}>{structureStore.data.custom_newEntryTemplate}</textarea>
+                  <label for="custom_newEntryTemplate">NVH template for new entries</label>
                   <div class="textareaErrorMessage red-text">
                      <small>
-                        {state.custom_NVHSchemaError}
+                        {state.custom_newEntryTemplateError}
                      </small>
                   </div>
                   <div class="buttons">
-                     <button id="custom_importFromSimple"
-                           class="btn btn-secondary {!structureStore.data.basic_modules || !structureStore.data.basic_modules.length ? 'disabled' : ''}"
-                           onclick={onCustomImportFromSimpleClick}>Import from Simple settings</button>
-                     <!--button id="custom_importFromSimple"
-                           class="btn btn-secondary {!structureStore.data.advanced_structure.root ? 'disabled' : ''}"
-                           onclick={onCustomImportFromAdvancedClick}>Import from Advanced settings</button-->
-                     <button id="custom_importFromSimple"
-                           class="btn btn-secondary "
-                           onclick={onLoadSampleNVHSchemaClick}>Load sample NVH schema</button>
+                     <button id="custom_generateNewNVHBtn"
+                           class="btn btn-secondary {structureStore.data.custom_NVHSchema ? '' : 'disabled'}"
+                           onclick={onGenerateNewNVHClick}>Generate from NVH schema</button>
+                     <button id="custom_loadSampleNVHTemplateBtn"
+                           class="btn btn-secondary"
+                           onclick={onExampleNewEntryTemplateClick}>Load sample NVH template</button>
                   </div>
                </div>
             </div>
-            <div class="input-field">
-               <textarea id="custom_newEntryTemplate"
-                     class="materialize-textarea {state.custom_newEntryTemplateError ? 'invalid' : ''}"
-                     oninput={onNewEntryInput}>{structureStore.data.custom_newEntryTemplate}</textarea>
-               <label for="custom_newEntryTemplate">NVH template for new entries</label>
-               <div class="textareaErrorMessage red-text">
-                  <small>
-                     {state.custom_newEntryTemplateError}
-                  </small>
+            <div id="schemaSyntax"
+                  class="tabCustomLegend p-6 z-depth-2 grey lighten-5" style="display: none; top: min(4vh, 80px); right: 50px;">
+               <button class="btn btn-flat btn-floating right"
+                     onclick={onToggleSchemaSyntaxClick}>
+                  <i class="material-icons grey-text">close</i>
+               </button>
+               <h3 class="mt-0">NVH schema syntax</h3>
+               <div>
+                  Each row in NVH schema must be in the following form:
                </div>
-               <div class="buttons">
-                  <button id="custom_generateNewNVHBtn"
-                        class="btn btn-secondary {structureStore.data.custom_NVHSchema ? '' : 'disabled'}"
-                        onclick={onGenerateNewNVHClick}>Generate from NVH schema</button>
-                  <button id="custom_loadSampleNVHTemplateBtn"
-                        class="btn btn-secondary"
-                        onclick={onExampleNewEntryTemplateClick}>Load sample NVH template</button>
+               <div class="center-align grey lighten-4 monospace mt-2" style="font-size: 1.3em;">
+                  <span class="teal-text">INDENT </span>
+                  <span class="blue-text">NAME: </span>
+                  <span class="red-text">COUNT </span>
+                  <span class="green-text">TYPE </span>
+                  <span class="orange-text">[VALUES]</span>
+                  <span class="purple-text">~REGEX </span>
                </div>
+               <ul class="syntaxElementPartList">
+                  <li>
+                     <span class="teal-text">INDENT</span>
+                     <div class="ml-4">
+                        Each child element must be two spaces more indented than its parent element. Root element has no indentation.
+                     </div>
+                  </li>
+                  <li>
+                     <span class="blue-text">NAME</span>
+                     <small class="ml-2 grey-text">required</small>
+                     <div class="ml-4">
+                        Unique element name followed by a colon. Allowed characters are <span class="monospace">a-Z</span>, <span class="monospace">A-Z</span>, <span class="monospace">0-9</span>, <span class="monospace">-</span> and <span class="monospace">_</span>.
+                     </div>
+                  </li>
+                  <li class="syntaxCount">
+                     <span class="red-text">COUNT</span>
+                     <small class="ml-2 grey-text">optional</small>
+                     <div class="ml-4">
+                        Specifies the number of elements (with this name) in parent element.
+                        <ul class="ml-4">
+                           <li>
+                              <span class="syntaxValue monospace">?</span>
+                              <span class="grey-text ml-2">zero or one</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">*</span>
+                              <span class="grey-text ml-2">zero or more</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">+</span>
+                              <span class="grey-text ml-2">one or more</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">1</span>
+                              <span class="grey-text ml-2">exactly one</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">-5</span>
+                              <span class="grey-text ml-2">zero to five</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">2-</span>
+                              <span class="grey-text ml-2">two or more</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">3-4</span>
+                              <span class="grey-text ml-2">three to four</span>
+                           </li>
+                        </ul>
+                     </div>
+                  </li>
+                  <li class="syntaxType">
+                     <span class="green-text">TYPE</span>
+                     <small class="ml-2 grey-text">optional</small>
+                     <div class="ml-4">
+                        Specifies the element value type. If ommited, "string" is used.
+                        <ul class="ml-4">
+                           <li>
+                              <span class="syntaxValue monospace">string</span>
+                              <span class="grey-text ml-2">text value</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">int</span>
+                              <span class="grey-text ml-2">numeric value</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">image</span>
+                              <span class="grey-text ml-2">image URL</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">audio</span>
+                              <span class="grey-text ml-2">audio URL</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">url</span>
+                              <span class="grey-text ml-2">general URL</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">empty</span>
+                              <span class="grey-text ml-2">element without value, it may have child elements</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">bool</span>
+                              <span class="grey-text ml-2">Yes or No</span>
+                           </li>
+                           <li>
+                              <span class="syntaxValue monospace">list</span>
+                              <span class="grey-text ml-2">list of values</span>
+                           </li>
+                        </ul>
+                     </div>
+                  </li>
+                  <li>
+                     <span class="orange-text">VALUES</span>
+                     <small class="ml-2 grey-text">optional</small>
+                     <div class="ml-4">
+                        List of allowed values in double quotes, separated with comma, enclosed in square brackets (e.g. <span class="monospace">["red","blue","green"]</span>). Element with specified "values" will be displayed as dropdown select.
+                     </div>
+                  </li>
+                  <li>
+                     <span class="purple-text">REGEX</span>
+                     <small class="ml-2 grey-text">optional</small>
+                     <div class="ml-4">
+                        You can use a regular expression to restrict the value of an element. Regular expression must be preceded by <span class="monospace">~</span>.
+                     </div>
+                  </li>
+               </ul>
             </div>
          </div>
 
@@ -172,6 +306,7 @@
                      if(this.state.tab == "custom"){
                         $("#custom_generateNewNVHBtn").toggleClass("disabled", !this.structureStore.data.custom_NVHSchema || !!this.state.custom_NVHSchemaError)
                         this.refreshCustomTextFields()
+                        window.makeElementDraggable("#schemaSyntax", "#schemaSyntax h3")
                      }
                      this.refreshBtnSaveDisabled()
                   })
@@ -254,25 +389,30 @@
             })
          },
 
+         onToggleSchemaSyntaxClick(){
+            $("#schemaSyntax").toggle()
+         },
+
          save() {
             this.update({isBusy: true})
-            if(this.state.tab == "simple"){
-               this.store.schemaToJSON(this.structureStore.data.basic_finalSchema)
+            if (this.state.tab == "advanced"){
+               this.saveData(this.structureStore.getStructureToSave())
+            } else {
+               let schema = ""
+               if(this.state.tab == "simple"){
+                  schema =this.structureStore.data.basic_finalSchema
+               } else{
+                  schema = this.structureStore.data.custom_NVHSchema
+               }
+               this.store.schemaToJSON(schema)
                      .done(response => {
                         this.saveData({
                            elements: JSON.parse(response.schemajson),
                            root: response.schemajson.split(":", 1)[0].replace(/["{]/g, "")
                         })
                      })
-            } else if (this.state.tab == "advanced"){
-               this.saveData(this.structureStore.getStructureToSave())
-            } else if( this.state.tab == "custom"){
-               this.store.schemaToJSON(this.structureStore.data.custom_NVHSchema)
-                     .done(response => {
-                        this.saveData({
-                           elements: JSON.parse(response.schemajson),
-                           root: response.schemajson.split(":", 1)[0].replace(/["{]/g, "")
-                        })
+                     .fail(payload => {
+                        this.update({isBusy: false})
                      })
             }
          },
@@ -311,14 +451,27 @@
          },
 
          validateNVHSyntax(key){
-            let parseError = ""
-            try{
-               window.nvhStore.nvhToJson(this.structureStore.data[key])
-            } catch (e){
-               parseError = e
+            let error = ""
+            if(!this.structureStore.data[key].trim()){
+               if(key == "custom_NVHSchema"){
+                  error = "Please, enter valid schema."
+               }
+            } else {
+               try{
+                  let entry = window.nvhStore.nvhToJson(this.structureStore.data[key])
+                  let elementList = window.nvhStore.getElementList(entry)
+                  elementList.forEach(element => {
+                     this.structureStore.validateElementName(element.name)
+                     if(elementList.filter(element2 => element.name == element2.name).length > 1){
+                        throw `Duplicate element ${element.name}. Element name must be unique.`
+                     }
+                  })
+               } catch (e){
+                  error = e
+               }
             }
-            if(parseError != this.state[key + "Error"]){
-               this.update({[key + "Error"]: parseError})
+            if(error != this.state[key + "Error"]){
+               this.update({[key + "Error"]: error})
             }
          },
 
@@ -373,6 +526,46 @@
          border-bottom: none;
          a.active{
             background-color: #fafafa;
+         }
+      }
+      .tabCustom{
+         .schemaSyntaxToggleBtn{
+            position: absolute;
+            right: 0;
+            top: -22px;
+            display: flex;
+            align-items: center;
+         }
+         .tabCustomForm{
+            max-width: 760px;
+            flex: 1
+         }
+         .tabCustomLegend{
+            max-width: 580px;
+            min-width: 580px;
+            max-height: 95vh;
+            overflow: auto;
+            .syntaxElementPartList{
+               & > li{
+                  margin-top: 0.2rem;
+               }
+               ul li{
+                  line-height: 1.2rem;
+               }
+            }
+            .syntaxValue{
+               display: inline-block;
+            }
+            .syntaxType{
+               .syntaxValue{
+                  min-width: 60px;
+               }
+            }
+            .syntaxCount{
+               .syntaxValue{
+                  min-width: 30px;
+               }
+            }
          }
       }
    </style>

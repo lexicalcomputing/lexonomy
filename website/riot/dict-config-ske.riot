@@ -7,6 +7,10 @@
          please <a href="#/{dictData.dictId}/config/titling">select headword</a> in Config-Headword first
       </div>
    </div>
+   <div if={ !authData.ske_username || !authData.ske_apiKey || authData.ske_apiKey == "" || authData.ske_username == "" }
+         class="message messageInfo">
+      Please setup your Sketch Engine account in your <a href='#/user-profile'>profile</a> settings to be able to select a corpus.
+   </div>
    <template if={!state.showMissingHeadwordWarning}>
       <div class="row">
          <div class="input-field">
@@ -65,11 +69,6 @@
                <label for="kex_searchElements">Additional search elements</label>
                <span class="helper-text">You can select any textual elements here whose content you would like to search for in Sketch Engine. A menu will be displayed next to all these elements like for the root entry element.</span>
             </div>
-         </div>
-      </template>
-      <template if={ !authData.ske_username || !authData.ske_apiKey || authData.ske_apiKey == "" || authData.ske_username == "" }>
-         <div class="card-panel amber lighten-2">
-            Please setup your Sketch Engine account in your <a href='#/user-profile'>profile</a> settings to be able to select a corpus.
          </div>
       </template>
       <div class="row">
@@ -328,7 +327,7 @@
                      $('#thes_container').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
                   })
                }
-               $('select').formSelect({dropdownOptions:{constrainWidth: false}})/*.on("change", (evt) => {
+               window.initFormSelects(this.root)/*.on("change", (evt) => {
                   let template = evt.target.dataset.template
                   let element = evt.target.value
                   if(template){

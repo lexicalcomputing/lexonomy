@@ -1,37 +1,59 @@
 <dict-upload>
    <loading-overlay if={state.isUploading}/>
    <h1>Upload</h1>
-   <div class="file-field input-field buttons"
-         style="max-width: 700px;">
-      <div class="btn">
-         <span>Choose XML file</span>
-         <input type="file"
-               id="file">
+   <div if={!state.isImporting}
+         class="uploadForm">
+      <div class="file-field input-field">
+         <div class="btn">
+            <span>Choose file</span>
+            <input type="file"
+                  id="file"
+                  accept=".nvh,.xml"
+                  onchange={onFileChange}>
+            <div class="helper-text">Select file with entries. Supported types: .nvh, .xml</div>
+         </div>
+         <div class="file-path-wrapper">
+            <input class="file-path validate"
+                  type="text">
+         </div>
       </div>
-      <div class="file-path-wrapper">
-         <input class="file-path validate"
-               type="text">
+      <div class="mt-16 input-field">
+         <input class="hwNode"
+               type="text"
+               value={state.headwordElement}
+               oninput={onHeadwordElementInput}/>
+         <label>Headword element</label>
+         <div class="helper-text">Element name containing headword</div>
       </div>
-      <div>
-         <a class="waves-effect waves-light btn btn-primary {state.isUploading || state.isImporting ? 'disabled' : ''}"
+      <div class="mt-8">
+         <label>
+            <input type="checkbox"
+                  id="purge" />
+            <span>Purge dictionary before upload</span>
+         </label>
+      </div>
+      <div class="mt-12">
+         <button id="startImportBtn"
+               class="waves-effect waves-light btn btn-primary disabled"
                onclick={ doUpload }
                id="startButton">
-            <i class="material-icons left">file_upload</i>Upload file
-         </a>
+            <i class="material-icons left">file_upload</i>Start import
+         </button>
       </div>
    </div>
-   <div>
-      <label>
-         <input type="checkbox"
-               id="purge" />
-         <span>Purge dictionary before upload</span>
-      </label>
-   </div>
-   <br><br>
 
 
-   <template if={state.infoMessage || state.errorMessage}>
-      <h3>Progress</h3>
+   <div if={state.showProgress}>
+      <template if={state.isUploading}>
+         <h3>
+            Uploading file...
+         </h3>
+      </template>
+      <template if={state.isImporting}>
+         <h3>
+            Importing entries...
+         </h3>
+      </template>
       <div if={state.infoMessage}
             classs="message messageInfo">
          <raw-html content={state.infoMessage}></raw-html>
@@ -39,12 +61,18 @@
       <div if={state.errorMessage}
             class="message messageError">
          <raw-html content={state.errorMessage}></raw-html>
+         <button class="btn btn-primary"
+               onclick={onTryAgainClick}>
+            try again
+         </button>
       </div>
-   </template>
+   </div>
 
    <script>
       export default {
          state: {
+            file: null,
+            headwordElement: null,
             isUploading: false,
             isImporting: false,
             showProgress: false,
@@ -52,22 +80,46 @@
             infoMessage: ""
          },
 
+         onFileChange(evt){
+            this.state.file = evt.target.files[0]
+            this.refreshStartImportBtnDisabled()
+         },
+
+         onHeadwordElementInput(evt){
+            this.state.headwordElement = evt.target.value
+            this.refreshStartImportBtnDisabled()
+         },
+
+         onTryAgainClick(){
+            this.update({
+               file: null,
+               headwordElement: "",
+               showProgress: false,
+               isImporting: false,
+               isUploading: false,
+               infoMessage: "",
+               errorMessage: ""
+            })
+         },
+
          doUpload() {
             var fd = new FormData()
-            var files = $('#file')[0].files[0];
-            fd.append('myfile', files)
-            if ($('#purge').is(':checked')) fd.append('purge', 'on')
+            fd.append("myfile", this.state.file)
+            if ($("#purge").is(":checked")){
+               fd.append("purge", "on")
+            }
             this.update({
                isUploading: true,
+               showProgress: true,
                errorMessage: "",
                infoMessage: "Upload started, please keep the window open."
             })
             this.store.uploadXML(fd)
                   .done((response) => {
-                        if (response.success) {
+                        if(response.success){
                            this.startImport(response.file, response.uploadStart)
                         } else {
-                           this.update({infoMessage: 'Error while uploading file'})
+                           this.update({errorMessage: "Error while uploading file"})
                         }
                      })
                   .always(() => {
@@ -76,20 +128,25 @@
          },
 
          startImport(file, uploadStart) {
-            if (file != '') {
-               this.update({isImporting: true})
+            if(file) {
+               this.update({
+                  isImporting: true,
+                  showProgress: true,
+                  infoMessage: "Import started, please keep the window open."
+               })
                this.store.importXML({
                   filename: file,
-                  uploadStart: uploadStart
+                  uploadStart: uploadStart,
+                  hwNode: this.state.headwordElement
                })
                      .done(response => {
                         clearTimeout(this.state.timeutHandle)
                         this.state.infoMessage = response.progressMessage
                         if (response.finished) {
                            this.state.isImporting = false
-                           this.state.infoMessage += ' <br/>Dictionary import finished. <a href="#/' + this.dictData.dictId + '">See dictionary</a>'
+                           this.state.infoMessage += ` <br/>Dictionary import finished. <a href="#${this.dictData.dictId}">See dictionary</a>`
                         } else if (response.errors) {
-                           this.state.infoMessage = 'There were some errors during XML parsing'
+                           this.state.infoMessage = "There were some errors during processing the uploaded file"
                            this.store.importXML({
                               filename: file,
                               uploadStart: uploadStart,
@@ -106,7 +163,21 @@
                         this.update()
                      })
             }
+         },
+
+         refreshStartImportBtnDisabled(){
+            let disabled = !this.state.file
+                  || !this.state.headwordElement
+                  || this.state.isUploading
+                  || this.state.isImporting
+            $("#startImportBtn").toggleClass("disabled", disabled)
          }
       }
    </script>
+
+   <style type="scss">
+      .uploadForm{
+         max-width: 400px;
+      }
+   </style>
 </dict-upload>

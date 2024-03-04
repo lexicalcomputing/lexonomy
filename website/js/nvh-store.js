@@ -209,8 +209,12 @@ class NVHStoreClass {
    }
 
    parseNvhLine(line, idx, lastIndent){
-      if(!line.match(new RegExp("^(([ ]{2})*)([a-zA-Z0-9-_]+):(.*)$"))){
-         throw `Syntax error on line ${idx + 1}: '${line.trim()}'`
+      if(!line.match(/^(([ ]{2})*)([a-zA-Z0-9-_]+):(.*)$/)){
+         if(line.match(/^(([ ]{2})*)(((?!: ).)+):(.*)$/)){
+            throw `Invalid element name on line ${idx + 1}: '${line.trim()}. Allowed characters: a-z, A-Z, 0-9, _, -'`
+         } else {
+            throw `Syntax error on line ${idx + 1}: '${line.trim()}'`
+         }
       }
       let parts = line.split(/:(.*)/s) // split by first colon
       let match = parts[0].match(new RegExp(/  /g))
@@ -626,17 +630,17 @@ class NVHStoreClass {
          children: [],
          warnings: []
       }
-      Object.entries(element).forEach(obj => {
-         if(obj[0] == "children"){
-            obj[1].forEach(c => {
+      Object.entries(element).forEach(([key, data]) => {
+         if(key == "children"){
+            data.forEach(c => {
                copy.children.push(this.copyElementAndItsChildren(c, copy))
             })
-         } else if(obj[0] == "parent"){
+         } else if(key == "parent"){
 
-         } else if(["edit", "focused"].includes(obj[0])) {
-            copy[obj[0]] = false
+         } else if(["edit", "focused"].includes(key)) {
+            copy[key] = false
          } else {
-            copy[obj[0]] = obj[1]
+            copy[key] = data
          }
       })
       return copy
@@ -952,10 +956,10 @@ class NVHStoreClass {
             if(element.value){
                warnings.push(`Element "${element.name}" should not have any text.`)
             }
-         } else if(config.values.length){
+         } else if(config.type == "list"){
             if(!element.value){
                warnings.push(`Element "${element.name}" should not be empty.`)
-            } else if(!config.values.find(v => v.value == element.value)){
+            } else if(!config.values.includes(element.value)){
                warnings.push(`Element "${element.name}" should not have the value "${element.value}".`)
             }
          }
@@ -1067,8 +1071,8 @@ class NVHStoreClass {
             return null
          } else if(config.type == "bool"){
             return 0
-         } else if(config.values.length){
-            return config.values[0].value
+         } else if(config.type == "list" && config.values.length){
+            return config.values[0]
          }
       }
       return ""
@@ -1136,7 +1140,7 @@ class NVHStoreClass {
       let dictData = window.store.data
       let newUrl = `${window.location.href.split("#")[0]}#/${dictData.dictId}/edit/${dictData.doctype}/`
       if(dictData.entryId != null){
-         newUrl += `${dictData.entryId}/${this.data.editorMode}${url.stringifyQuery(route.query())}`
+         newUrl += `${dictData.entryId}/${this.data.editorMode}${window.store.getEntrySearchUrlQueryString()}`
       }
       if(newUrl != window.location.href){
          history.pushState(null, null, newUrl)

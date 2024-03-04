@@ -1,7 +1,31 @@
 class StoreClass {
    constructor(){
       observable(this);
-
+      this.const = {
+         QUERY_OPERATORS: [
+            ["is", "=", "is equal to"],
+            ["is_not", "!=", "is not equal to"],
+            ["regex", "~=", "match regular expression"],
+            ["contains", "~=", "contains"],
+            ["starts_with", "~=", "starts with"],
+            ["ends_with", "~=", "ends with"],
+            ["count_is", "#=", "count is"],
+            ["count_more", "#>", "count is more than"],
+            ["count_less", "#<", "count is less than"],
+            ["exists", "#>", "exists"],
+            ["not_exists", "#<", "not exists"]
+         ],
+         ENTRY_TYPES: {
+            string: "Text",
+            int: "Number",
+            image: "Image",
+            audio: "Audio",
+            url: "URL",
+            empty: "Empty", // no value, just child elements
+            bool: "Yes/No",
+            list: "List"
+         }
+      }
       this.data = {
          isSiteconfigLoading: false,
          isDictionaryListLoading: false,
@@ -14,7 +38,13 @@ class StoreClass {
          entryRevisions: [],
          isEntryRevisionsLoading: false,
          isEntryRevisionsLoaded: false,
-         actualPage: null
+         actualPage: null,
+         search: {
+            tab: localStorage.getItem("entryFilterTab") || "basic",
+            searchtext: '',
+            modifier: 'start',
+            advanced_query: ''
+         }
       }
 
       this.resetDictionary()
@@ -69,16 +99,15 @@ class StoreClass {
    }
 
    changeSearchParams(searchParams){
-      if(this.data.isDictionaryLoading){
-         this.one("dictionaryChanged", this.changeSearchParams.bind(this, searchParams))
-      } else {
-         let searchtext = searchParams.searchtext || ""
-         let modifier = searchParams.modifier || "start"
-         if(searchtext !== this.data.searchtext || modifier !== this.data.modifier){
-            this.data.searchtext = searchtext
-            this.data.modifier = modifier
-            this.loadEntryList()
-         }
+      Object.assign(this.data.search, {
+         tab: searchParams.tab || this.data.search.tab,
+         searchtext: searchParams.searchtext || "",
+         modifier: searchParams.modifier || "start",
+         advanced_query: searchParams.advanced_query || ""
+      })
+      this.trigger("searchParamsChanged")
+      if(!this.data.isDictionaryLoading){
+         this.loadEntryList()
       }
    }
 
@@ -94,12 +123,19 @@ class StoreClass {
       }
    }
 
-   searchEntryList(){
-      this.loadEntryList()
-      url.setQuery(this.data.searchtext ? {
-         s: this.data.searchtext,
-         m: this.data.modifier
-      } : {}, true)
+   updateURLSearchQuery(){
+      if(this.data.search.tab == "advanced"){
+         url.setQuery(this.data.search.advanced_query ? {
+            t: "advanced",
+            q: this.data.search.advanced_query
+         } : {}, true)
+      } else if(this.data.search.tab == "basic"){
+         url.setQuery(this.data.search.searchtext ? {
+            t: "basic",
+            s: this.data.search.searchtext,
+            m: this.data.search.modifier
+         } : {}, true)
+      }
    }
 
    setEntryFlag(entryId, flag){
@@ -173,19 +209,15 @@ class StoreClass {
    }
 
    isStructureValid(){
-      if(this.data.config
+      return this.data.config
             && this.data.config.structure
             && this.data.config.structure.root
             && this.data.config.structure.elements
             && Object.values(this.data.config.structure.elements).every(element => {
-               if(element.children && element.type){
-                  return true
-               }
+               return element.children
+                     && element.type
+                     && this.const.ENTRY_TYPES[element.type]
             })
-      ){
-         return true
-      }
-      return false
    }
 
    resetDictionary(){
@@ -204,8 +236,12 @@ class StoreClass {
          entry: null,
          dictId: null,
          entryId: null,
-         searchtext: '',
-         modifier: 'start',
+         search: {
+            tab: this.data.search.tab,
+            searchtext: '',
+            modifier: 'start',
+            advanced_query: ''
+         },
          mode: 'view',
          userAccess: {
             canView: false,
@@ -322,6 +358,7 @@ class StoreClass {
                   window.xema = this.data.config.structure  // global variable xema is used by some custom editors
                   this.data.isDictionaryLoaded = true
                   this.data.isDictionaryLoading = false
+                  document.title = `Lexonomy - ${this.data.title}`
                   this.trigger("dictionaryChanged")
                   this.loadEntryList()
                } else {
@@ -391,6 +428,7 @@ class StoreClass {
                   this.data.entryCount = 0
                }
                this.data.isEntryListLoaded = true
+               this.updateURLSearchQuery()
                this.trigger("entryListChanged")
             })
             .always(response => {
@@ -400,12 +438,16 @@ class StoreClass {
    }
 
    _loadEntries(howmany, offset){
-      let url;
+      let url
       let data = {
-         searchtext: this.data.searchtext,
-         modifier: this.data.modifier,
          howmany: howmany || this.data.dictConfigs.titling.numberEntries || 500,
          offset: offset || 0
+      }
+      if(this.data.search.tab == "basic"){
+         data.searchtext = this.data.search.searchtext
+         data.modifier = this.data.search.modifier
+      } else {
+         data.advance_query = this.data.search.advanced_query
       }
       if(window.auth.data.authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
          url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
@@ -458,11 +500,19 @@ class StoreClass {
          data: {
             nvh: nvh
          }
-      }).done(response => {
-         this.data.entry.nvh = response.content
-         this.data.entryId = response.id
-         this.loadEntryList()
       })
+            .done(response => {
+               this.data.entry = {
+                  id: response.id,
+                  nvh: response.content
+               }
+               this.data.entryId = response.id
+               this.data.entryRevisions = []
+               this.data.isEntryRevisionsLoaded = false
+               this.data.isEntryLoaded = true
+               this.loadEntryList()
+               this.trigger("entryChanged")
+            })
    }
 
    updateEntry(nvh){
@@ -663,6 +713,10 @@ class StoreClass {
             .always(response => {})
    }
 
+   isDictIdTaken(dictId){
+      return $.ajax(`${window.API_URL}${dictId}/config.json`)
+   }
+
    importDictionaryConfiguration(data){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/importconfigs.json`,
@@ -689,13 +743,11 @@ class StoreClass {
             .done(response => {
                if (response.success) {
                   this.loadDictionaryList()
+                  M.toast({html: "Dictionary was created."})
                }
             })
             .fail(response => {
                M.toast({html: "Could not create dictionary."})
-            })
-            .always(repsonse => {
-
             })
    }
 
@@ -1047,6 +1099,272 @@ class StoreClass {
             route(`${this.data.dictId}/config/structure`)
          })
       }, 400)
+   }
+
+   getEntrySearchUrlQueryString(){
+      if(this.data.search.tab == "basic"){
+         return this.data.search.searchtext ? url.stringifyQuery({
+            t: "basic",
+            s: this.data.search.searchtext,
+            m: this.data.search.modifier
+         }) : ""
+      } else {
+         return this.data.search.advanced_query ? url.stringifyQuery({
+            t: "advanced",
+            q: this.data.search.advanced_query
+         }) : ""
+      }
+   }
+
+   advancedSearchParseQuery(query){
+      let parseGroup = (groupArray) => {
+         let children = []
+         if(groupArray.includes("and") && groupArray.includes("or")){
+            throw `"AND" and "OR" operators should not be on the same level. Please, enclose parts of expression in brackets.`
+         }
+         let groupItems = groupArray.filter(group => {
+            return !["and", "or"].includes(group)
+         })
+         for(let i = 0; i < groupItems.length; i++){
+            let item = groupItems[i]
+            if(item != "where"){
+               if(i > 0 && groupItems[i - 1] == "where"){
+                  if(Array.isArray(item)){
+                     children.at(-1).where = parseGroup(item)
+                  } else {
+                     children.at(-1).where = {
+                        type: "group",
+                        operator: "and",
+                        children: [this.advancedSearchParseRule(item, groupArray)]
+                     }
+                  }
+               } else {
+                  if(Array.isArray(item)){
+                     children.push(parseGroup(item))
+                  } else {
+                     children.push(this.advancedSearchParseRule(item, groupArray))
+                  }
+               }
+            }
+         }
+         return {
+            type: "group",
+            operator: groupArray.includes("or") ? "or" : "and",
+            children: children
+         }
+      }
+
+      let getQueryParts = (query) => {
+         /*
+            copy of Lexonomy advance_searach.py get_query_parts()
+            example:
+            "(a and (b or c)) or d"
+               -> result is array:
+            [["a","and",["b","or","c"]],"or","d"]
+         */
+         let stack = [[]]
+         let queryParts = []
+         this.advancedSearchSplitQuery(query, queryParts)
+         queryParts.forEach(part => {
+            let right = '(?<right>\\\)*)?'
+            if(typeof part == "string" && part.match(new RegExp("[(]"))){
+               stack.at(-1).push([])
+               stack.push(stack.at(-1).at(-1))
+            } else if(typeof part == "string" && part.match(new RegExp("[)]"))){
+               stack.pop()
+               if(!stack.length){
+                  throw "Opening bracket is missing."
+               }
+            } else {
+               stack.at(-1).push(part)
+            }
+         })
+         if(stack.length > 1){
+            throw "Closing bracket is missing."
+         }
+         return stack.pop()
+      }
+
+      let queryParts = getQueryParts(query)
+      return parseGroup(queryParts)
+   }
+
+   advancedSearchStringifyItem(token){
+      if(token.children){
+         return token.children.filter(t => t.type == "group" || this.advancedSearchIsRuleValid(t))
+               .map(t => {
+                  let stringifiedGroup = this.advancedSearchStringifyItem(t)
+                  if(stringifiedGroup && t.type == "group"){
+                     return `(${stringifiedGroup})`
+                  } else {
+                     return stringifiedGroup
+                  }
+               })
+               .filter(t => t != "")
+               .join(` ${token.operator} `)
+      } else if(token.type == "rule"){
+         let ret = ""
+         let operator = this.advancedSearchStringToOperator(token.operator)
+         let value = token.value
+         if(token.operator == "exists"){
+            ret = `${token.attr}#>"0"`
+         } if(token.operator == "not_exists"){
+            ret = `${token.attr}#="1"`
+         } else {
+            if(token.operator == "contains"){
+               value = `.*${value}.*`
+            }
+            if(token.operator == "starts_with"){
+               value = `^${value}`
+            }
+            if(token.operator == "ends_with"){
+               value = `${value}$`
+            }
+            ret = `${token.attr}${operator}"${value}"`
+         }
+         if(token.where){
+            let where = token.where.children.filter(t => t.type == "group" || this.advancedSearchIsRuleValid(t))
+               .map(t => {
+                  let stringifiedGroup = this.advancedSearchStringifyItem(t)
+                  if(stringifiedGroup && t.type == "group"){
+                     return `(${stringifiedGroup})`
+                  } else {
+                     return stringifiedGroup
+                  }
+               })
+               .filter(t => t != "")
+               .join(` ${token.where.operator} `)
+            if(where){
+               ret += ` where (${where})`
+            }
+         }
+         return ret
+      } else {
+         return ""
+      }
+   }
+
+   advancedSearchParseRule(rule, groupArray){
+      if(!this.data.config.structure.elements[rule.attr]){
+         let suggestion = Object.keys(this.data.config.structure.elements).find(element =>  element.startsWith(rule.attr))
+         throw `Unknown element "${rule.attr}".${suggestion ? ' Did you mean "' + suggestion + '"?' : ''}`
+      }
+      if(!rule.operator){
+         throw `Missing operator for "${rule.attr}".`
+      }
+      if(!rule.value){
+         let missingQuotes = ""
+         if(groupArray.length){
+            let ruleIdx = groupArray.findIndex(g => g.attr = rule.attr)
+            let nextRule = groupArray[ruleIdx + 1]
+            if(nextRule && !this.data.config.structure.elements[nextRule.attr]){
+               missingQuotes = ` Did you forget to put "${nextRule.attr}" in quotes?`
+            }
+         }
+         throw `Missing value for "${rule.attr}${rule.operator}".${missingQuotes}`
+      }
+      let operator = this.advancedSearchOperatorToString(rule.operator)
+      let value = rule.value || ""
+      if(operator == "regex"){
+         if(rule.value.match(/^\.\*\w*\.\\*$/)){
+            operator = "contains"
+            value = rule.value.substr(2, rule.value.length - 2)
+         } else if(rule.value.match(/^\^\w*$/)){
+            operator = "starts_with"
+            value = rule.value.substr(1)
+         } else if(rule.value.match(/^\w*\$$/)){
+            operator = "ends_with"
+            value = rule.value.substr(0, rule.value.length - 1)
+         }
+      } else if(operator == "count_is" && value == "0"){
+         operator = "not_exists"
+      } else if(operator == "count_more" && value == "0"){
+         operator = "exists"
+      }
+      return {
+         type: "rule",
+         attr: rule.attr,
+         value: `${value.replaceAll("\"", "\\\"")}`,
+         operator: operator
+      }
+   }
+
+   advancedSearchSplitQuery(query, parts){
+      if(query){
+         let attr = '(\\\s*(?<attr>((?!=|!=|~=|#=|#>|#<| |\\\(|\\\)).)*)\\\s*)'
+         let operators ='(\\\s*(?<operator>=|!=|~=|#=|#>|#<)\\\s*)?'
+         let value = '("(?<value>((?!=|!=|~=|#=|#>|#<).)*)")?'
+         let and_or = '(\\\s*(?<lop>where|and|or)\\\s*)?'
+         let rest = '(?<rest>.*)?'
+         let left = '(?<left>\\\(*)?'
+         let right = '(?<right>\\\)*)?'
+         let querySplitRegex = new RegExp('^' + left + attr + operators + value + right + and_or + rest + '$')
+
+         let groups = querySplitRegex.exec(query).groups
+         //left bracket
+         if(groups.left){
+            groups.left.split("")
+                  .forEach(g => parts.push(g))
+         }
+         //attribute operator value
+         let condition = {};
+         ['attr', 'operator', 'value'].forEach(i => {
+            if(groups[i]){
+               condition[i] = groups[i] || null
+            }
+         })
+         parts.push(condition)
+         // right bracket
+         if(groups.right){
+            groups.right.split("")
+                  .forEach(g => parts.push(g))
+         }
+         // and/or operator
+         if(groups.lop){
+            parts.push(groups.lop)
+         }
+         // rest
+         if(groups.rest){
+            groups.rest = groups.rest.trim()
+            if(new RegExp('^[()]*$').test(groups.rest)){
+               parts.push(groups.rest)
+              } else{
+               this.advancedSearchSplitQuery(groups.rest, parts)
+            }
+         }
+      }
+   }
+
+   advancedSearchIsQueryValid(query){
+      try{
+         this.advancedSearchParseQuery(query)
+         return true
+      } catch(e){
+         return false
+      }
+   }
+
+   advancedSearchIsRuleValid(rule){
+      return !!rule.attr
+            && !!rule.operator
+            && typeof rule.value != "undefined"
+            && rule.value !== ""
+   }
+
+   advancedSearchOperatorToString(operator){
+      let o = this.const.QUERY_OPERATORS.find(o => o[1] == operator)
+      if(o){
+         return o[0]
+      }
+      throw "Unknown operator " + operator
+   }
+
+   advancedSearchStringToOperator(str){
+      let o = this.const.QUERY_OPERATORS.find(o => o[0] == str)
+      if(o){
+         return o[1]
+      }
+      throw "Unknown operator " + str
    }
 }
 

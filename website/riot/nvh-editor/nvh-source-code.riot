@@ -96,9 +96,9 @@
          editorOnKeyUp(evt){
             let lines = this.editor.beforeCursor().split("\n")
             let lastLine = lines[lines.length - 1]
-            if(Object.entries(this.state.warnings).filter(obj => {
+            if(Object.entries(this.state.warnings).filter(([lineNumber, error]) => {
                // do not try to autocomplete if there is an syntax error on some line, other then active line
-               return obj[0] != lines.length && obj[1].indexOf("Syntax error") != -1
+               return lineNumber != lines.length && error.indexOf("Syntax error") != -1
             }).length){
                this.hideAutocomplete()
                this.hideSuggestions()

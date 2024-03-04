@@ -17,14 +17,13 @@
                <nvh-item-media if={["image", "audio", "video", "url"].includes(state.config.type)}
                      type={state.config.type}
                      url={props.element.value}/>
-               <span if={["string", "int", "bool"].includes(state.config.type)}
+               <span if={["string", "int", "bool", "list"].includes(state.config.type)}
                      class="nvh-readonly-value pointer"
                      onclick={!props.readOnly && onEditClick}>
                   <raw-html content={getReadOnlyValue()}/>
                   <i if={!props.readOnly && state.config.type}
                         class="nvh-edit-icon material-icons tiny">edit</i>
                </span>
-
                <span if={state.outerPunc && state.outerPunc[1]}
                      class="nvh-outer-punc">{state.outerPunc[1]}</span>
             </span>
@@ -98,10 +97,7 @@
 
          getReadOnlyValue(){
             let value = this.props.element.value
-            if(this.state.config.values && this.state.config.values.length){
-               let option = this.state.config.values.find(v => v.value == this.props.element.value)
-               value = option ? option.label : value
-            } else if (this.state.config.type == "string"){
+            if (this.state.config.type == "string"){
                value = this.nvhStore.parseMarkDown(value)
             } else if(this.state.config.type == "bool"){
                value = value ? "yes" : "no"
@@ -119,6 +115,7 @@
                   "squareBrackets": ["[", "]"],
                   "curlyBrackets":  ["{", "}"],
                   "comma":          ["", ","],
+                  "dot":            ["", "."],
                   "semicolon":      ["", ";"],
                   "colon":          ["", ":"]
                }[punc]
@@ -188,7 +185,7 @@
          }
       }
       .nvh-editor-view-item{
-         margin-left: 0;
+/*         margin-left: 0;*/
          .nvh-children{
             padding: 0;
          }

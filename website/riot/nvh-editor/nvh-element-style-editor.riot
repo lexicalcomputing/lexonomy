@@ -5,11 +5,8 @@
          <i class="material-icons clickable mr-auto"
                onclick={onShowPrevElementClick}
                style={state.prevElementName ? '' : 'visibility:hidden'}>chevron_left</i>
-         <select onchange={onElementChange}>
-            <option each={elementName in Object.keys(nvhData.structure.elements)}
-                  selected={state.elementName == elementName}
-                  value={elementName}>{elementName}</option>
-         </select>
+         <element-select riot-value={state.elementName}
+               on-change={onElementChange}/>
          <i class="material-icons clickable ml-auto"
                onclick={onShowNextElementClick}
                style={state.nextElementName ? '' : 'visibility:hidden'}>chevron_right</i>
@@ -24,7 +21,8 @@
             </span>
             <span class="nvh-values">
                   <label>
-                     <input type="checkbox"
+                     <input id="hidden"
+                           type="checkbox"
                            checked={state.style.hidden ? 'checked' : ''}
                            onchange={onHideElementChange}/>
                      <span></span>
@@ -172,6 +170,8 @@
                         onclick={onOptionChangeClick.bind(this, "innerPunc", "colon")}>:</span>
                   <span class={state.style.innerPunc == 'comma' ? 'selected' : ''}
                         onclick={onOptionChangeClick.bind(this, "innerPunc", "comma")}>,</span>
+                  <span class={state.style.innerPunc == 'dot' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "innerPunc", "dot")}>.</span>
                   <span class={state.style.innerPunc == 'semicolon' ? 'selected' : ''}
                         onclick={onOptionChangeClick.bind(this, "innerPunc", "semicolon")}>;</span>
                </span>
@@ -196,6 +196,8 @@
                         onclick={onOptionChangeClick.bind(this, "outerPunc", "colon")}>:</span>
                   <span class={state.style.outerPunc == 'comma' ? 'selected' : ''}
                         onclick={onOptionChangeClick.bind(this, "outerPunc", "comma")}>,</span>
+                  <span class={state.style.outerPunc == 'dot' ? 'selected' : ''}
+                        onclick={onOptionChangeClick.bind(this, "outerPunc", "dot")}>.</span>
                   <span class={state.style.outerPunc == 'semicolon' ? 'selected' : ''}
                         onclick={onOptionChangeClick.bind(this, "outerPunc", "semicolon")}>;</span>
                </span>
@@ -286,12 +288,15 @@
 
          onUpdated(){
             if(this.state.show){
-               $("select", this.root).formSelect()
+               window.initFormSelects(this.root)
                let input = $(".nvh-header input")
                let width = window.getInputValueWidth(input[0])
                input.css("width", Math.min(width + 30, 300) + "px")
                //fixed riot bug/feature, if user changes value, then navigates to element without label, label is not updated
                $("#label").val(this.state.style.label)
+               if($("#hidden")[0]){
+                  $("#hidden")[0].checked = !!this.state.style.hidden
+               }
             }
          },
 
@@ -310,30 +315,18 @@
             this.close()
          },
 
-         onElementChange(evt){
-            this.update({
-               elementName: evt.target.value,
-               style: this.nvhStore.getElementStyle(evt.target.value) || {},
-               availableOptions: this.getAvailableOptions(evt.target.value)
-            })
+         onElementChange(elementName){
+            this.changeElement(elementName)
          },
 
          onShowPrevElementClick(evt){
             evt.stopPropagation()
-            this.update({
-               elementName: this.state.prevElementName,
-               style: this.nvhStore.getElementStyle(this.state.prevElementName) || {},
-               availableOptions: this.getAvailableOptions(this.state.prevElementName)
-            })
+            this.changeElement(this.state.prevElementName)
          },
 
          onShowNextElementClick(evt){
             evt.stopPropagation()
-            this.update({
-               elementName: this.state.nextElementName,
-               style: this.nvhStore.getElementStyle(this.state.nextElementName) || {},
-               availableOptions: this.getAvailableOptions(this.state.nextElementName)
-            })
+            this.changeElement(this.state.nextElementName)
          },
 
          onOptionChangeClick(option, value, evt){
@@ -343,6 +336,7 @@
 
          onSelectOptionChangeClick(option, evt){
             this.nvhStore.changeElementStyleOption(this.state.elementName, option, evt.target.value)
+            this.update()
          },
 
          onHideElementChange(evt){
@@ -357,6 +351,14 @@
 
          onLabelInput(evt){
             this.nvhStore.changeElementStyleOption(this.state.elementName, "label", evt.target.value)
+         },
+
+         changeElement(elementName){
+            this.update({
+               elementName: elementName,
+               style: Object.assign({}, this.nvhStore.getElementStyle(elementName) || {}),
+               availableOptions: this.getAvailableOptions(elementName)
+            })
          },
 
          open(){
@@ -422,7 +424,7 @@
                   options.push("hideValue")
                }
                options.push(...["layout", "separation", "gutter", "border", "background", "outerPunc", "label"])
-               if(config.type == "string"){
+               if(["string", "int", "bool", "list"].includes(config.type)){
                   options.push(...["colour", "slant", "weight", "textsize", "innerPunc"])
                }
                return options
