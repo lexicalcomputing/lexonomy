@@ -232,7 +232,7 @@
                   $(`#img_licence option[value="${this.state.data.image_licence}"]` ).attr('selected', 'selected')
                }
                $(`#voice_lang option[value="${this.state.data.voicelang}"]` ).attr('selected', 'selected')
-               $('select').formSelect({dropdownOptions: {coverTrigger: false, constrainWidth: false}})
+               window.initFormSelects(this.root)
             }
          },
 

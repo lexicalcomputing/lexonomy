@@ -62,8 +62,8 @@
          changeElem() {
             $("#children").find('option').remove()
             var elem = $("#elements").val()
-            this.dictData.config.structure.elements[elem].children.forEach(child => {
-               $("#children").append(`<option value="${child.ame}">${child.name}</option>`)
+            this.dictData.config.structure.elements[elem].children.forEach(childName => {
+               $("#children").append(`<option value="${childName}">${childName}</option>`)
             })
             var hasChildren = !!this.dictData.config.structure.elements[elem].children.length
             $("#submit_button").toggleClass("disabled", !hasChildren)

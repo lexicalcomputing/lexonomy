@@ -1,0 +1,100 @@
+<advanced-query-group>
+   <div each={(child, idx) in props.group.children}>
+      <template if={props.group.children.length > 1}>
+         <span if={idx == 1}
+               class="operatorButtons">
+            <button class="btn  {props.group.operator == 'or' ? 'btn-secondary' : ''}"
+                  onclick={onOperatorClick.bind(this, "and")}>
+               AND
+            </button>
+            <button class="btn {props.group.operator == 'and' ? 'btn-secondary' : ''}"
+                  onclick={onOperatorClick.bind(this, "or")}>
+               OR
+            </button>
+         </span>
+         <span if={idx > 1}
+               class="readOnlyOperator grey-text">
+            {props.group.operator.toUpperCase()}
+         </span>
+      </template>
+      <advanced-query-rule if={child.type == "rule"}
+            builder={props.builder}
+            rule={child}/>
+      <div if={child.type == "group"}
+            class="groupWrapper">
+         <advanced-query-group group={child}
+               builder={props.builder}/>
+      </div>
+   </div>
+
+   <button class="addRuleBtn btn btn-flat"
+         onclick={onAddRuleClick}>
+      <i class="material-icons left">add</i>
+      rule
+   </button>
+
+   <!--button class="addRuleBtn btn btn-flat"
+         onclick={onAddGroupClick}>
+      <i class="material-icons left">add</i>
+      AND/OR
+   </button-->
+
+
+   <script>
+      export default{
+         onAddRuleClick(){
+            this.props.builder.addRule(this.props.group)
+         },
+
+         onAddGroupClick(){
+            this.props.builder.addGroup(this.props.group)
+         },
+
+         onOperatorClick(operator){
+            this.props.group.operator = operator
+            this.props.builder.onChange()
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host {
+         display: block;
+         margin-bottom: 10px;
+      }
+      .operatorButtons{
+         display: inline-block;
+         overflow: hidden;
+         max-height: 30px;
+         z-index: 10;
+         button {
+            width: 65px;
+            height: 30px;
+            line-height: 30px;
+            z-index: 2;
+         }
+      }
+      .addRuleBtn{
+         opacity: 0.5;
+         margin-top: 2px;
+         margin: 2px 0 0 10px;
+         &:hover{
+            opacity: 1;
+         }
+      }
+      .operatorButtons{
+         margin: 15px 0 0 15px;
+         display: inline-block;
+      }
+      .readOnlyOperator{
+         margin: 10px 0 0 15px;
+         display: inline-block;
+      }
+      .groupWrapper{
+         /* child group*/
+         margin-left: 40px;
+         border-left: 3px solid #f5f5f5;
+         padding-left: 20px;
+      }
+   </style>
+</advanced-query-group>

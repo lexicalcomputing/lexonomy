@@ -19,6 +19,7 @@
                      required
                      minlength="5"
                      pattern="[a-zA-Z0-9\-_]*"
+                     oninput={onNewUrlInput}
                      style="max-width: 300px;"/>
             </span>
          </div>
@@ -29,6 +30,7 @@
       </div>
    </div>
    <dict-config-buttons save-data={saveData}
+         btn-class="disabled"
          label="Change"></dict-config-buttons>
    <br>
    <div>
@@ -56,6 +58,10 @@
             } else {
                M.toast({html: 'Please fix invalid URL.'});
             }
+         },
+
+         onNewUrlInput(evt){
+            $("#submit_button", this.root).toggleClass("disabled", !/^[a-zA-Z0-9-_]{5,}$/.test(evt.target.value))
          }
       }
    </script>

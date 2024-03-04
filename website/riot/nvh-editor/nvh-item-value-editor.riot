@@ -34,12 +34,12 @@
          <span>No</span>
       </label>
    </span>
-   <select if={state.config.values.length}
+   <select if={state.config.type == "list"}
          class="nvh-select"
          onchange={onSelectChange}>
-      <option each={option in state.config.values}
-            selected={option.value == props.element.value}
-            value={option.value}>{option.label}</option>
+      <option each={value in state.config.values}
+            selected={value == props.element.value}
+            value={value}>{value}</option>
    </select>
 
    <script>
@@ -49,15 +49,14 @@
             this.nvhData = this.nvhStore.data
             this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
             this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
-            this.state.showEditor = ["string", "image", "audio", "url"].includes(this.state.config.type) && !this.state.config.values.length
+            this.state.showEditor = ["string", "image", "audio", "url"].includes(this.state.config.type)
          },
 
          onMounted(){
             if(this.state.showEditor){
-               let actionList = ["undo", "redo", "bold", "italic", /*"underline", "createlink", "inserthorizontalrule",*/ "close"]
-               if(this.state.config.type == "string"){
-                  actionList = ["undo", "redo", "close"]
-               }
+               // TODO use this?
+               //let actionList = ["undo", "redo", "bold", "italic", /*"underline", "createlink", "inserthorizontalrule",*/ "close"]
+               let actionList = ["undo", "redo", "close"];
                $(".nvh-editable-div", this.root).html(this.nvhStore.parseMarkDown(this.props.element.value))
                this.state.editor = new Pen({
                   editor: $(".nvh-editable-div", this.root)[0],
@@ -141,13 +140,8 @@
          },
 
          initFormSelect(){
-            if(this.state.config.values.length){
-               $("select", this.root).formSelect({
-                  dropdownOptions: {
-                     coverTrigger: false,
-                     constrainWidth: false
-                  }
-               })
+            if(this.state.config.type == "list"){
+               window.initFormSelects(this.root)
             }
          },
 

@@ -58,6 +58,14 @@ nav ul a,
 .dropdown-content li>span{
    color: #000;/*#c62132;*/
 }
+.dropdown-content li{
+   min-height: 38px;
+}
+body .dropdown-content li>a,
+body .dropdown-content li>span{
+   padding: 0.7rem 1rem;
+   line-height: 1rem;
+}
 .dropdown-content a{
    text-decoration: none;
 }
@@ -84,27 +92,27 @@ nav ul a:hover,
 }
 h1{
    font-size: 2.9rem;
-   margin: 1.1rem 0 1rem -0.75rem;
+   margin: 1.1rem 0 1rem 0;
 }
 h2{
    font-size:2.35rem;
-   margin: 1rem  0 0.9rem -0.75rem;
+   margin: 1rem  0 0.9rem 0;
 }
 h3{
    font-size:1.9rem;
-   margin: 0.9rem  0 0.8rem -0.75rem;
+   margin: 0.9rem  0 0.8rem 0;
 }
 h4{
    font-size:1.6rem;
-   margin: 0.8rem  0 0.7rem -0.75rem;
+   margin: 0.8rem  0 0.7rem 0;
 }
 h5{
    font-size:1.3rem;
-   margin: 0.7rem  0 0.6rem -0.75rem;
+   margin: 0.7rem  0 0.6rem 0;
 }
 h6{
    font-size:1.15rem;
-   margin: 0.6rem  0 0.5rem -0.75rem;
+   margin: 0.6rem  0 0.5rem 0;
 }
 h1,
 h2,
@@ -124,6 +132,9 @@ h6{
 .btn-floating{
    width: 2.5rem;
    height: 2.5rem;
+}
+.btn-flat.btn-floating i{
+   color: #000;
 }
 .btn-floating i{
    line-height: 2.5rem;
@@ -387,9 +398,26 @@ textarea.materialize-textarea:focus:not([readonly])+label{
 .select-wrapper+label{
    font-size: 1rem;
 }
+.select-wrapper input[type=text]:not(.browser-default){
+   padding-right: 1.5rem;
+}
 .input-field .select-wrapper+label{
    transform: none;
    top: 0;
+}
+
+.file-field{
+   gap: 0;
+}
+.file-field .file-path-wrapper{
+   padding-left: 0;
+}
+.file-field > .btn{
+   width: 115px;
+}
+.file-field .helper-text{
+   left: -1rem;
+   text-transform: none
 }
 
 .rowForm .row{
@@ -482,28 +510,31 @@ table.striped thead tr{
    color: #F44336 !important;
 }
 
+.spin{
+   animation: container-rotate 800ms linear infinite;
+}
 
 .message{
    text-align: center;
    font-weight: bold;
    padding: 0.7rem 1rem;
-   color: #fff;
+   /*color: #fff;*/
 }
 
-.message a:not(.btn):hover{
+/*.message a:not(.btn):hover{
    color: #fff;
-}
+}*/
 
 .message.messageInfo{
-   background-color: #607d8b;
+   background-color: #e1f5fe;/*ffecb3;*/
 }
 
 .message.messageSuccess{
-   background-color: #388E3C;
+   background-color: #C8E6C9;
 }
 
 .message.messageError{
-   background-color: #D32F2F;
+   background-color: #FFCDD2;
 }
 
 .overflowVisible .modal{
@@ -545,32 +576,32 @@ table.striped thead tr{
 @media screen and (max-width: 900px){
    h1{
       font-size: 2.6rem;
-      margin: 0.9rem 0 0.8rem -0.5rem;
+      margin: 0.9rem 0 0.8rem 0;
    }
    h2{
       font-size: 2.1rem;
-      margin: 0.8rem 0 0.7rem -0.5rem;
+      margin: 0.8rem 0 0.7rem 0;
    }
    h3{
       font-size: 1.7rem;
-      margin: 0.7rem  0 0.6rem -0.5rem;
+      margin: 0.7rem  0 0.6rem 0;
    }
    h4{
       font-size: 1.5rem;
-      margin: 0.6rem  0 0.5rem -0.5rem;
+      margin: 0.6rem  0 0.5rem 0;
    }
    h5{
       font-size: 1.2rem;
-      margin: 0.5rem  0 0.4rem -0.5rem;
+      margin: 0.5rem  0 0.4rem 0;
    }
    h6{
       font-size: 1.1rem;
-      margin: 0.4rem  0 0.3rem -0.5rem;
+      margin: 0.4rem  0 0.3rem 0;
    }
    dict-list .dict-size{
       display: none;
    }
-   #root div[is="dict-public"] .firstRowContainer{
+   #root div[is="dict-public"] .dictContainer{
       flex-direction: column;
    }
    #root div[is="dict-public"] .description{
@@ -587,27 +618,27 @@ table.striped thead tr{
 @media screen and (max-width: 700px){
    h1{
       font-size: 2.3rem;
-      margin: 0.9rem 0 0.8rem -0.5rem;
+      margin: 0.9rem 0 0.8rem 0;
    }
    h2{
       font-size: 1.9rem;
-      margin: 0.8rem 0 0.7rem -0.5rem;
+      margin: 0.8rem 0 0.7rem 0;
    }
    h3{
       font-size: 1.5rem;
-      margin: 0.7rem  0 0.6rem -0.5rem;
+      margin: 0.7rem  0 0.6rem 0;
    }
    h4{
       font-size: 1.4rem;
-      margin: 0.6rem  0 0.5rem -0.5rem;
+      margin: 0.6rem  0 0.5rem 0;
    }
    h5{
       font-size: 1.2rem;
-      margin: 0.5rem  0 0.4rem -0.5rem;
+      margin: 0.5rem  0 0.4rem 0;
    }
    h6{
       font-size: 1.1rem;
-      margin: 0.4rem  0 0.3rem -0.5rem;
+      margin: 0.4rem  0 0.3rem 0;
    }
    #root .container{
       max-width: 96vw;

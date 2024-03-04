@@ -1,4 +1,4 @@
-<nvh-schema class="displayInlineFlex p-12">
+<nvh-schema class="displayInlineFlex">
    <div>
       <h6>Available modules</h6>
       <div if={state.schemas}
@@ -103,7 +103,7 @@
          loadFinalSchema(){
             let schemas = this.state.schemas.filter(s => s.checked).map(s => s.key)
             this.update({isLoading: true})
-            this.store.loadFinalSchema(schemas)
+            schemas.length && this.store.loadFinalSchema(schemas)
                   .done(response => {
                      this.state.finalSchema = response.schemafinal
                   })
@@ -116,6 +116,9 @@
    </script>
 
    <style type="scss">
+      :host{
+         min-height: 200px;
+      }
       .availableModules{
          gap: 40px;
       }

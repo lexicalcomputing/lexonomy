@@ -96,6 +96,11 @@ import structure_editor from './riot/structure-editor.riot'
 import structure_editor_item from './riot/structure-editor-item.riot'
 import structure_dnd_zone from './riot/structure-dnd-zone.riot'
 import trim_text from './riot/trim-text.riot'
+import entry_list from './riot/entry-list.riot'
+import advanced_query_builder from './riot/advanced-query-builder.riot'
+import advanced_query_group from './riot/advanced-query-group.riot'
+import advanced_query_rule from './riot/advanced-query-rule.riot'
+import element_select from './riot/element-select.riot'
 
 riot_register('api', api)
 riot_register('admin-dicts', admin_dicts)
@@ -174,5 +179,10 @@ riot_register('structure-editor', structure_editor)
 riot_register('structure-editor-item', structure_editor_item)
 riot_register('structure-dnd-zone', structure_dnd_zone)
 riot_register('trim-text', trim_text)
+riot_register('entry-list', entry_list)
+riot_register('advanced-query-builder', advanced_query_builder)
+riot_register('advanced-query-group', advanced_query_group)
+riot_register('advanced-query-rule', advanced_query_rule)
+riot_register('element-select', element_select)
 
 component(App)(document.getElementById('root'))

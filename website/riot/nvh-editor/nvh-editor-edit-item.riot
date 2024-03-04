@@ -142,10 +142,7 @@
 
          getReadOnlyValue(){
             let value = this.props.element.value
-            if(this.state.config.values && this.state.config.values.length){
-               let option = this.state.config.values.find(v => v.value == this.props.element.value)
-               return option ? option.label : value
-            } else if(this.state.config.type == "bool"){
+            if(this.state.config.type == "bool"){
                return value == 1 ? "yes" : "no"
             } else if(this.state.config.type == "string"){
                return this.nvhStore.parseMarkDown(value)

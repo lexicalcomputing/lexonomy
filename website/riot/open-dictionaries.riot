@@ -266,7 +266,8 @@
             if(this.state.query !== ""){
                let sortResult = FuzzySort.go(this.state.query, this.state.visibleDictionaries, {
                   key: "id",
-                  keys: ["title", "lang", "author", "licence"]
+                  keys: ["title", "lang", "author", "licence"],
+                  threshold: -10000
                })
                this.state.visibleDictionaries = sortResult.map(fs => {
                   fs.obj.h_title = FuzzySort.highlight(fs[0], '<b class="red-text">', "</b>")
@@ -332,12 +333,8 @@
          },
 
          initializeLanguageSelect(){
-             $("#languageSelect").formSelect({
-                  dropdownOptions: {
-                     constrainWidth: false
-                  }
-               })
-               .on("change", this.onLanguageChange)
+            window.initFormSelects(this.root, "#languageSelect")
+                  .on("change", this.onLanguageChange)
          },
 
          onUpdated(){

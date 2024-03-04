@@ -58,6 +58,7 @@
          onCheckboxClick(evt){
             this.state.data.useOwnEditor = evt.target.checked
             $("#editors").toggle(evt.target.checked)
+            this.checkJSCode()
          },
 
          exampleJS() {
@@ -221,19 +222,24 @@
          },
 
          checkJSCode(){
+            let isValid = false
             if(this.state.data.js){
-               let isOk = false
                let err = ""
                try{
-                  new Function("return " + this.state.data.js)()
-                  isOk = true
+                  let editorFn = new Function("return " + this.state.data.js)()
+                  ;["editor", "getValue", "update"].forEach(fnName => {
+                     if(typeof editorFn[fnName] != "function"){
+                        throw `Missing ${fnName}() function.`
+                     }
+                  })
+                  isValid = true
                } catch(e){
                   err = e.toString().split('\n')[0]
                }
-               $("#codeStatus .codeStatusMessage").html(isOk ? `<b class="green-text">valid</b>` : `<b class="red-text">${err}</b>`)
-               this.state.isJSValid = isOk
-               $("#submit_button").toggleClass("disabled", !isOk)
+               $("#codeStatus .codeStatusMessage").html(isValid ? `<b class="green-text">valid</b>` : `<b class="red-text">${err}</b>`)
+               this.state.isJSValid = isValid
             }
+            $("#submit_button").toggleClass("disabled", !isValid)
          },
 
          saveData() {

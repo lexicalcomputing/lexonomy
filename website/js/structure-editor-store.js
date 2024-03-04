@@ -35,9 +35,9 @@ class StructureEditorStoreClass {
 
    setConfigStructure(structure){
       this.data.structure = structure
-      Object.entries(structure.elements).forEach(obj => {
-         obj[1].name = obj[0]
-         obj[1].children = obj[1].children || []
+      Object.entries(structure.elements).forEach(([elementName, elementConfig]) => {
+         elementConfig.name = elementName
+         elementConfig.children = elementConfig.children || []
       })
       this.refreshAllElementsIndent()
    }
@@ -154,6 +154,8 @@ class StructureEditorStoreClass {
                count = " +"
             } else if (element.min > 1){
                count = ` ${element.min}+`
+            } else {
+               count = " *"
             }
          } else {
             if(element.max == 1 && !element.min){
@@ -169,7 +171,7 @@ class StructureEditorStoreClass {
          if(element.regex){
             regex = ` ~${element.regex}`
          }
-         if(element.values && element.values.length){
+         if(element.type == "list" && element.values && element.values.length){
             values = ` [${element.values.map(v => v.value).join(", ")}]`
          }
 
@@ -233,6 +235,16 @@ class StructureEditorStoreClass {
       }
       let rootElement = this.getRootElement()
       rootElement && addElementAndItsChildren(rootElement, 0)
+   }
+
+   validateElementName(elementName){
+      if(!elementName){
+         throw "Please, enter element name."
+      } else if(!/^[a-zA-Z10-9_-]+$/.test(elementName)){
+         throw `Invalid element name '${elementName}'. Allowed characters: a-Z, A-Z, 0-9, _ and -.`
+      } else if(["and", "or"].includes(elementName.toLowerCase())){
+         throw "'AND' and 'OR' are not allowed element names."
+      }
    }
 }
 

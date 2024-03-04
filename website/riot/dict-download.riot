@@ -1,11 +1,47 @@
 <dict-download>
    <h1>Download</h1>
+   <label>dictionary format</label>
+   <div class="displayFlex"
+         style="gap: 30px;">
+      <div>
+         <label>
+            <input name="format"
+                     checked={state.format == "nvh"}
+                     type="radio"
+                     value="nvh"
+                     onchange={onFormatChange}/>
+            <span>nvh</span>
+         </label>
+      </div>
+      <div>
+         <label>
+            <input name="format"
+                  checked={state.format == "xml"}
+                  type="radio"
+                  value="xml"
+                  onchange={onFormatChange}/>
+            <span>xml</span>
+         </label>
+      </div>
+   </div>
    <div class="input-field">
       <a class="waves-effect waves-light btn btn-primary download-link"
             target="_blank"
-            href="{window.API_URL}{ dictData.dictId }/download.xml">
+            href="{window.API_URL}{dictData.dictId}/download.json?format={state.format}">
          <i class="material-icons left">file_download</i>
-         Download { dictData.dictId }.xml
+         Download dictionary
       </a>
    </div>
+
+   <script>
+      export default{
+         state: {
+            format: "nvh"
+         },
+
+         onFormatChange(evt){
+            this.update({format: evt.target.value})
+         }
+      }
+   </script>
 </dict-download>

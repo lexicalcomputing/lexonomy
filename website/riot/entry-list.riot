@@ -1,0 +1,360 @@
+<entry-list>
+   <div id="entryListSidenav"
+         class="entryListContainer"
+         style="width: max({dictData.config.flagging.flags.length ? '25vw' : '20vw'}, 250px);">
+      <loading-overlay if={dictData.isEntryListLoading}/>
+      <dict-entry-filter search-func={onFilterChanged}/>
+      <template if={dictData.isEntryListLoaded}>
+         <div if={dictData.entryCount > dictData.entryList.length}
+               class="entriesCountInfo">
+            Showing {dictData.entryList.length} of {dictData.entryCount} entries.
+         </div>
+         <div class="entry-list collection"
+               onscroll={onEntryListScroll}>
+            <div each={ (entry, idx) in dictData.entryList }
+                  data-idx={idx}
+                  class="collection-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}"
+                  onclick={onHeadwordClick.bind(this, entry.id)}>
+               <span class="lineNum">{idx + 1}.</span>
+               <a href="#/{dictData.dictId}/edit/{dictData.doctype}/{entry.id}/{dictData.mode}{store.getEntrySearchUrlQueryString()}"
+                     class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
+                  <raw-html content={entry.title || "&nbsp;"}/>
+               </a>
+               <span if={dictData.config.flagging.flags.length}
+                     onclick={onOpenFlagMenuClick.bind(this, entry)}
+                     class="flag {entry.flag && entry.flag[0] ? 'badge' : 'noFlag'}"
+                     style={getFlagStyle(entry.flag ? entry.flag[0] : '')}>
+                  {store.getFlagLabel(entry.flag && entry.flag[0]) || "no flag"}
+               </span>
+            </div>
+            <div if={!dictData.entryList.length && !dictData.isEntryListLoading}
+                  class="noEntries">
+               <h2 class="grey-text center-align">No entries</h2>
+            </div>
+            <div if={dictData.isLoadingMoreEntries}
+                  class="loadingMoreEntries positionRelative">
+               <loading-overlay/>
+            </div>
+         </div>
+         <ul if={dictData.config.flagging.flags.length}
+               id="flagDropdown"
+               class="dropdown-content flagDropdown">
+            <li data-flag="">
+               <i class="material-icons"
+                     style="color: grey">label_outline</i>
+               <div>no flag</div>
+               <div class="right flagKey">delete</div>
+            </li>
+            <li each={flag in dictData.config.flagging.flags}
+                  data-flag={flag.name}>
+               <i class="material-icons"
+                     style="color: {flag.color}">label</i>
+               <div>{flag.label}</div>
+               <div class="right flagKey">{flag.key}</div>
+            </li>
+         </ul>
+      </template>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["store", "entryListChanged", "update"],
+                    ["store", "entryListLoadingChanged", "update"],
+                    ["store", "isLoadingMoreEntriesChanged", "update"],
+                    ["store", "entryIdChanged", "onEntryIdChanged"]],
+
+         state: {
+            focused: false,
+            size: 10,
+            cursorPosition: null
+         },
+
+         onMounted(){
+            document.addEventListener('click', this.onDocumentClick)
+            document.addEventListener('keydown', this.onDocumentKeyDown)
+            if(this.dictData.isEntryListLoaded){
+               this.setCursorByEntryId()
+            } else {
+               this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
+            }
+         },
+
+         onUpdated() {
+            this.updateCursor()
+         },
+
+         onBeforeUnmount(){
+            document.removeEventListener('click', this.onDocumentClick)
+            document.removeEventListener('keydown', this.onDocumentKeyDown)
+         },
+
+         onEntryIdChanged(){
+            this.update()
+            this.setCursorByEntryId()
+         },
+
+         onFilterChanged(){
+            this.store.one("entryListChanged", () => {
+               $(".entry-list").scrollTop(0)
+            })
+            this.store.loadEntryList()
+         },
+
+         onEntryListScroll(evt){
+            let list = $(".entry-list", this.root)[0]
+            if(list.scrollHeight - list.scrollTop <= list.clientHeight + 500){
+               this.store.loadMoreEntries()
+            }
+         },
+
+         onHeadwordClick(entryId, evt){
+            if(!window.nvhStore.editorNeedsSaving(evt)){
+               this.store.changeEntryId(entryId)
+               let sidenav = M.Sidenav.getInstance($('#entryListSidenav')[0])
+               sidenav && sidenav.close()
+            }
+         },
+
+         onOpenFlagMenuClick(entry, evt){
+            evt.stopPropagation()
+            let id = "ts_" + Date.now() + Math.floor((Math.random() * 10000))
+            // create copy of the list. Without copy, UL is moved as child of target node and after riot update is destroyed
+            let menuNode = $(evt.target)//.closest(".collection-item")
+            $("#flagDropdown").clone()
+                 .attr({id: id})
+                 .data("entryid", entry.id)
+                 .appendTo($("body"))
+                 .find("li").each(function(idx, elem){
+                     $(elem).click(this.store.setEntryFlag.bind(this.store, entry.id, $(elem).data("flag")))
+
+                 }.bind(this))
+             menuNode.attr("data-target", id)
+                 .dropdown({
+                     constrainWidth: false,
+                     coverTrigger: false,
+                     container: $("body")
+                 })
+                 .dropdown("open")
+         },
+
+         onDocumentClick(evt){
+            let entryList = $(".entryListContainer")[0]
+            if(entryList && evt.target.parentNode){ // no parent -> probably detached element by comoponent update()
+               let inComponent = entryList.contains(evt.target)
+               if(inComponent || inComponent != this.state.focused){
+                  this.state.focused = inComponent
+                  this.state.cursorPosition = inComponent ? $(evt.target).closest(".collection-item").data("idx") + 1 : null
+               }
+            }
+         },
+
+         onDocumentKeyDown(evt){
+            if(["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
+               return
+            }
+            if(this.state.focused){
+               if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
+                  if([38, 40, 33, 34, 13].includes(evt.keyCode)){
+                     evt.preventDefault()
+                     if(evt.keyCode == 38){
+                      this.moveCursorUp(1)
+                     } else if(evt.keyCode == 40){
+                         this.moveCursorDown(1)
+                     } else if(evt.keyCode == 33){
+                         this.moveCursorUp(this.state.size) //pgUp
+                     } else if(evt.keyCode == 34){
+                         this.moveCursorDown(this.state.size) // pgDown
+                     } else if(evt.keyCode == 13){
+                        if(this.state.cursorPosition){
+                           let entry = this.dictData.entryList[this.state.cursorPosition - 1]
+                           if(entry){
+                              this.store.changeEntryId(entry.id)
+                              this.updateCursor()
+                           }
+                        }
+                     }
+                  } else if(this.dictData.config.flagging.flags.length && this.state.cursorPosition){
+                     if(evt.keyCode == 46){ //delete
+                        this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, '')
+                     } else if(this.dictData.config.flagging.flags.map(f => f.key).includes(evt.key)){
+                        let flag = this.dictData.config.flagging.flags.find(f => f.key == evt.key)
+                        if(flag){
+                           this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, flag.name)
+                        }
+                     }
+                  }
+               }
+            }
+
+            if((evt.ctrlKey || evt.metaKey) && evt.altKey){
+               if(evt.keyCode == 37){  // left
+                  this.state.focused = true
+               } else if(evt.keyCode == 39){  // right
+                  this.state.focused = false
+               }
+            }
+         },
+
+         moveCursorDown(step){
+            if(!this.state.cursorPosition){
+               this.state.cursorPosition = 1
+            } else{
+               this.state.cursorPosition = Math.min(this.state.cursorPosition + (step || 1), this.dictData.entryList.length)
+            }
+            this.updateCursor()
+            this.scrollSelectedIntoView()
+         },
+
+         moveCursorUp(step){
+            if(!this.state.cursorPosition){
+              this.state.cursorPosition = this.dictData.entryList.length - 1
+            } else {
+               this.state.cursorPosition = Math.max(1,  this.state.cursorPosition - (step || 1))
+            }
+            this.updateCursor()
+            this.scrollSelectedIntoView()
+         },
+
+         updateCursor(){
+            $(".collection-item.focused", this.root).removeClass("focused")
+            if(this.state.cursorPosition){
+               const node = $(".collection-item:nth-child(" + this.state.cursorPosition + ")")
+               $(node).addClass("focused")
+            }
+         },
+
+         scrollSelectedIntoView(){
+            let list = $(".entry-list")[0]
+            if(!list){
+               return
+            }
+            let selectedItem = $(".entry-list .focused")[0]
+            if(selectedItem){
+               let offsetTop = selectedItem.offsetTop
+               let rowHeight = selectedItem.clientHeight
+               let min = list.scrollTop + (3 * rowHeight)
+               let max = list.scrollTop + list.clientHeight - (3 * rowHeight)
+               if(offsetTop < min){
+                  list.scrollTop = offsetTop - (2 * rowHeight)
+               } else if(offsetTop > max){
+                  list.scrollTop = offsetTop - list.clientHeight + (3 * rowHeight)
+               }
+            }
+         },
+
+         setCursorByEntryId(){
+            if(this.dictData.entryId){
+               let idx = this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId)
+               if(idx != -1){
+                  this.state.cursorPosition = idx + 1
+                  this.updateCursor()
+                  this.scrollSelectedIntoView()
+               }
+            }
+         },
+
+         getFlagStyle(flag){
+            let bgColor = this.store.getFlagColor(flag) || 'initial'
+            let color = this.store.getFlagTextColor(bgColor)
+            return `color: ${color}; background-color: ${bgColor}`
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      li > span {
+         white-space: nowrap;
+      }
+      .entry-list {
+         max-height: 80vh;
+         overflow-y: auto;
+         max-height: max(100vh - 260px);
+      }
+      .entriesCountInfo{
+         font-size: 0.85rem;
+         color: #b8b8b8;
+      }
+      .collection-item{
+         position: relative;
+         display: flex;
+         border-left: 5px solid white;
+         padding-left: 0.2rem;
+         &.selected{
+            border-left-color: #000;
+         }
+         &.saving{
+            &::before{
+               content: '';
+               position: absolute;
+               left: 0;
+               right: 0;
+               top: 0;
+               bottom: 0;
+               background-color: #ffffffe8;
+               line-height: 100%;
+               z-index: 500;
+            }
+            &::after{
+               content: 'saving...';
+               position: absolute;
+               transform: translateX(-50%) translateY(-50%);
+               left: 50%;
+               top: 50%;
+               color: #6e6e6e;
+               z-index: 501;
+               font-size: 1.3rem;
+               text-transform: uppercase;
+            }
+         }
+         &.focused{
+            background-color: #eceff1;
+         }
+         .headword-link{
+            text-decoration: none;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            margin-right: auto;
+         }
+         .flag{
+            cursor: pointer;
+         }
+         .flagKey{
+            font-family: monospace;
+         }
+         .badge{
+            font-weight: bold;
+            font-size: 1rem;
+            color: #fff;
+            white-space: nowrap;
+            min-width: auto;
+            border-radius: 2px;
+            box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%),
+               0 3px 1px -2px rgb(0 0 0 / 12%),
+               0 1px 5px 0 rgb(0 0 0 / 20%);
+         }
+         .noFlag{
+            font-size: 1rem;
+            color: grey;
+         }
+      }
+      .loadingMoreEntries{
+         height: 130px;
+      }
+      .lineNum{
+         font-size: 0.8rem;
+         color: #b8b8b8;
+         margin-right: 10px;
+         min-width: 30px;
+         text-align: right;
+      }
+      .entryListContainer{
+         min-height: 50vh;
+         transition: width 0.2s;
+      }
+      .noEntries{
+         padding-top: 10vh;
+      }
+   </style>
+
+</entry-list>

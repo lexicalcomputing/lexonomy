@@ -4,7 +4,7 @@
       Back
    </a>
    <button if={typeof props.showSave == "undefined" ? true : props.showSave}
-         class="btn btn-primary waves-effect waves-light"
+         class="btn btn-primary waves-effect waves-light {props.btnClass || ''}"
          onclick={props.saveData}
          id="submit_button">
       {props.label || "Save"}
