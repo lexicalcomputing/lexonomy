@@ -22,7 +22,6 @@ BuildRequires:	sqlite-devel
 BuildRequires:	libicu-devel
 BuildRequires:	wget
 BuildRequires:	gcc
-BuildRequires:	sqlite >= 3.40
 
 Requires:	python3 >= 3.5
 Requires:	python3-jwt
@@ -31,6 +30,7 @@ Requires:	python3-paste
 Requires:	python3-pyicu
 Requires:	python3-requests
 Requires:	python3-bottle
+Requires:	sqlite >= 3.40
 
 
 %description
