@@ -572,6 +572,15 @@ class nvh:
         for c in self.children:
             c.build_json(schema_dict)
 
+    def dump_xml(self, result_xml):
+        if self.value and self.name:
+            result_xml.append(self.indent + '<' + self.name + '>' + self.value + '</' + self.name + '>')
+        elif self.name:
+            result_xml.append(self.indent + '<' + self.name + '>')
+
+        for c in self.children:
+            c.dump_xml(result_xml)
+
 
 if __name__ == "__main__":
     def err(s):
