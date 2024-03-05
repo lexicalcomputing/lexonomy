@@ -705,17 +705,21 @@ def importconfigs(dictID, user, dictDB, configs):
         except:
             return {"success": False}
 
-@get(siteconfig["rootPath"]+"<dictID>/download.xml") # TODO check funkcinality
+@get(siteconfig["rootPath"]+"<dictID>/download.json") # OK
 @authDict(["canDownload"], True)
-def downloadxml(dictID, user, dictDB, configs):
-    clean = False
-    if request.query.clean and request.query.clean == "true":
-        clean = True
-    response.content_type = "text/xml; charset=utf-8"
-    response.set_header("Content-Disposition", "attachment; filename="+dictID+".xml")
-    return ops.download(dictDB, dictID, configs, clean)
+def download(dictID, user, dictDB, configs):
+    if request.query.type == 'xml':
+        response.content_type = "text/xml; charset=utf-8"
+        response.set_header("Content-Disposition", "attachment; filename="+dictID+".xml")
+        return ops.download(dictDB, dictID, configs, 'xml')
+    elif request.query.type == 'nvh':
+        response.content_type = "text/xml; charset=utf-8"
+        response.set_header("Content-Disposition", "attachment; filename="+dictID+".nvh")
+        return ops.download(dictDB, dictID, configs, 'nvh')
+    else:
+        return {'error': 'Unsupported export type.'}
 
-@post(siteconfig["rootPath"]+"<dictID>/upload.html")
+@post(siteconfig["rootPath"]+"<dictID>/upload.html") # OK
 @authDict(["canUpload"])
 def uploadhtml(dictID, user, dictDB, configs):
     import tempfile

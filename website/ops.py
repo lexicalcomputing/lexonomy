@@ -1246,28 +1246,25 @@ def download_xslt(configs):
     return transform
 
 
-def download(dictDB, dictID, configs, cleanXML=False):
-    rootname = dictID.lstrip(" 0123456789")
-    if rootname == "":
-        rootname = "lexonomy"
-    yield "<"+rootname+">\n"
-    c = dictDB.execute("select id, xml from entries")
+def download(dictDB, dictID, configs, export_type):
+    if export_type == 'nvh':
+        c = dictDB.execute("select id, nvh from entries")
+        for r in c.fetchall():
+            yield r['nvh']
+            yield "\n"
 
-    transform = download_xslt(configs)
+    elif export_type == 'xml':
+        yield "<"+dictID+">\n"
+        c = dictDB.execute("select id, nvh from entries")
 
-    for r in c.fetchall():
-        if cleanXML:
-            xml = cleanHousekeeping(r["xml"])
-        else:
-            xml = setHousekeepingAttributes(r["id"], r["xml"], configs["subbing"])
-        xml_xsl, success = transform(xml)
-        if not success:
-            return xml_xsl, 400
+        for r in c.fetchall():
+            result_xml = []
+            entry_nvh = nvh.parse_string(r['nvh'])
+            entry_nvh.dump_xml(result_xml)
+            yield '\n'.join(result_xml)
+            yield "\n"
 
-        yield xml_xsl
-        yield "\n"
-
-    yield "</"+rootname+">\n"
+        yield "</"+dictID+">\n"
 
 def purge(dictDB, email, historiography):
     dictDB.execute("insert into history(entry_id, action, [when], email, xml, historiography) select id, 'purge', ?, ?, xml, ? from entries", (str(datetime.datetime.utcnow()), email, json.dumps(historiography)))
