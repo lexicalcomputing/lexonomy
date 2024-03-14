@@ -20,7 +20,7 @@ def condition2sql(condition, all_json_trees, queried_trees=[]):
     if '_' in key:
         valkey = f'"{key}"'
 
-    path = f'$.%.{valkey}[_]."_value"' # TODO resolve support for 0-9 items
+    path = f'%.{valkey}[_]."_value"' # TODO resolve support for 0-9 items
 
     sql = ''
     json_tree = all_json_trees.pop(0)
