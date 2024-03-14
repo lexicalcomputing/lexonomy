@@ -474,27 +474,12 @@ def makedict(user):
 def makedictjson(user):
     if request.query.filename and request.query.hwNode:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-
         if supported_formats.match(request.query.filename):
-            try:
-                if request.query.filename.endswith('.xml'):
-                    # XML file transforamtion
-                    input_nvh = ops.xml2nvh(request.query.filename)
-                    dictionary, schema, nvh_pase_errors = ops.nvh_dict_schema(input_nvh) # TODO
-                    with open(request.query.filename + ".xml2nvh.nvh", 'w') as f:
-                        dictionary.dump(f)
-
-                elif request.query.filename.endswith('.nvh'):
-                    dictionary, schema, nvh_pase_errors = ops.nvh_dict_schema(fileinput.input([request.query.filename])) # TODO
-
-            except ValueError as e:
-                return {"msg": "", "success": False, "error": e, "url": request.forms.url}
+            res, msg, error = ops.makeDict(request.forms.url, None, request.forms.title, "", user["email"], 
+                                           None, request.query.filename, request.query.hwNode)
         else:
             return{"success": False, "url": request.forms.url, 
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
-        
-        res, msg, error = ops.makeDict(request.forms.url, None, request.forms.title, "", user["email"], 
-                                       None, request.query.filename + ".xml2nvh.nvh", request.query.hwNode, schema)
     else:
         res, msg, error = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, 
                                        "", user["email"], request.forms.addExamples == "true")
@@ -735,7 +720,7 @@ def uploadhtml(dictID, user, dictDB, configs):
             ops.purge(dictDB, user["email"], { "uploadStart": uploadStart, "filename": filepath })
         return {"file": filepath,  "uploadStart": uploadStart, "success": True}
 
-@get(siteconfig["rootPath"]+"<dictID>/import.json")
+@get(siteconfig["rootPath"]+"<dictID>/import.json") # OK
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
     truncate = 0
@@ -748,26 +733,12 @@ def importjson(dictID, user, dictDB, configs):
     else:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
         # XML file transforamtion
-        if request.query.filename.endswith('.xml'):
-            input_nvh = ops.xml2nvh(request.query.filename)
-
-            try:
-                dictionary, _, nvh_pase_errors = ops.nvh_dict_schema(input_nvh) # TODO
-            except ValueError as e:
-                return {"finished": False, "progressMessage": "", "error": e}
-            
-            with open(request.query.filename + ".xml2nvh.nvh", 'w') as f:
-                dictionary.dump(f)
-
-            progress, finished, err = ops.importfile(dictID, request.query.filename + ".xml2nvh.nvh", user["email"])
-            return{"finished": finished, "progressMessage": progress, "error": err}
-        
-        elif not supported_formats.match(request.query.filename):
+        if not supported_formats.match(request.query.filename):
             return{"finished": False, "progressMessage": "",
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.'}
         else:
-            progress, finished, err = ops.importfile(dictID, request.query.filename, user["email"])
-            return{"finished": finished, "progressMessage": progress, "error": err}
+            progress, finished, err, msg = ops.importfile(dictID, request.query.filename, user["email"], json.loads(configs['structure'])['root'])
+            return{"finished": finished, "progress": progress, "error": err, 'msg': msg}
 
 @post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
 @authDict(["canEdit"])

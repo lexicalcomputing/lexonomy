@@ -21,9 +21,6 @@ from icu import Locale, Collator
 import requests
 from nvh import nvh
 from bottle import request
-import fileinput
-import xml.sax
-import xml.dom.minidom
 import sys
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -530,26 +527,26 @@ def suggestDictId():
         dictid = generateDictId()
     return dictid
 
-def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filename=None, hwNode=None, schema_from_import=None):
-    def get_gen_schema_elements(schema, schema_elements):
-        for k in schema:
-            schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None), 
-                                  'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
-                                  're': schema[k].get('re', ''), 'children': schema[k].get('children', [])}
-            get_gen_schema_elements(schema[k]["schema"], schema_elements)
+def get_gen_schema_elements(schema, schema_elements):
+    for k in schema:
+        schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None), 
+                                'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
+                                're': schema[k].get('re', ''), 'children': schema[k].get('children', [])}
+        get_gen_schema_elements(schema[k]["schema"], schema_elements)
 
-    def get_schema_elements(nvh_node, elements):
-        elements[nvh_node.name] = {
-            "type": "string",
-            "min": 0,
-            "max": 0,
-            "values": [],
-            "re": "",
-            "children": [child.name for child in nvh_node.children]
-        }
-        for child in nvh_node.children:
-            get_schema_elements(child, elements)
+def get_schema_elements(nvh_node, elements):
+    elements[nvh_node.name] = {
+        "type": "string",
+        "min": 0,
+        "max": 0,
+        "values": [],
+        "re": "",
+        "children": [child.name for child in nvh_node.children]
+    }
+    for child in nvh_node.children:
+        get_schema_elements(child, elements)
 
+def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filename=None, hwNode=None):
     if not import_filename:
         final_schema = mergeSchemaItems(schema_keys)
         schema_elements = []
@@ -588,10 +585,6 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
 
         structure = {"root": nvh_structure.name, "elements": elements}
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
-    else:
-        get_gen_schema_elements(schema_from_import, elements)
-        structure = {"root": hwNode, "elements": elements}
-        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
     xemplate = {}
     with open(currdir + "/dictTemplates/styles.json", 'r') as f:
@@ -620,8 +613,8 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
     attachDict(dictDB, dictID)
 
     if import_filename:
-        progress_msg, _, err = importfile(dictID, import_filename, email, hwNode)
-        return True, progress_msg, err
+        progress, _, err, _ = importfile(dictID, import_filename, email, hwNode)
+        return True, progress, err
     
     return True, "", ""
 
@@ -1283,125 +1276,43 @@ def showImportErrors(filename, truncate):
     else:
         return content
 
-rootTag = ''
-entryTag = ''
-entryCount = 0
-class handlerFirst(xml.sax.ContentHandler):
-    def startElement(self, name, attrs):
-        global rootTag
-        global entryTag
-        if rootTag == "":
-            rootTag = name
-        elif entryTag == "":
-            entryTag = name
-        else:
-            pass
 
-    def endElement(self, name):
-        global entryCount
-        global entryTag
-        if name == entryTag:
-            entryCount += 1
-
-def xml_entry2nvh_entry(dom, nvh_entry, indent=0):
-    """
-    Transforming the XML entry into NVH entry
-    """
-    for ch in dom.childNodes:
-        if not isinstance(ch, xml.dom.minidom.Text):
-            if isinstance(ch.firstChild, xml.dom.minidom.Text):
-                # content in tag value
-                nvh_element = '{}{}: {}'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.firstChild.nodeValue.strip()))
-            elif ch.attributes.length > 0:
-                # content in tag attribute
-                if ch.attributes.length > 1:
-                    print('The XML node has more than one attribute.')
-                nvh_element = '{}{}: {}'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.attributes.items()[0][1].strip()))
-            else:
-                # wrapper without value
-                nvh_element = '{}{}:'.format('  '*indent if indent else '', ch.tagName)
-            nvh_entry.append(nvh_element)
-        xml_entry2nvh_entry(ch, nvh_entry, indent + 1)
-
-
-def xml2nvh(input_xml):
-    global rootTag
-    global entryTag
-    global entryCount
-    with open(input_xml, 'rb') as f:
-        xmldata = f.read().decode('utf-8-sig')
-    xmldata = re.sub(r'<\?xml[^?]*\?>', '', xmldata)
-    xmldata = re.sub(r'<!DOCTYPE[^>]*>', '', xmldata)
-    xmldata = re.sub(r'</?b>', '', xmldata)
-    xmldata = re.sub(r'</?p>', '', xmldata)
-    xmldata = re.sub(r'</?i>', '', xmldata)
-
-    # Parsing xml and finding the root tag and the entry tag
-    try:
-        xml.sax.parseString("<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata, handlerFirst())
-        xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata
-    except xml.sax._exceptions.SAXParseException as e:
-        if "junk after document element" in str(e):
-            xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n<fakeroot>"+xmldata+"</fakeroot>"
-            rootTag = ""
-            entryTag = ""
-            entryCount = 0
-            xml.sax.parseString(xmldata, handlerFirst())
-        else:
-            if entryTag == "":
-                print("Not possible to detect element name for entry, please fix errors:")
-                print(e, file=sys.stderr)
-                sys.exit()
-
-    re_entry = re.compile(r'<'+entryTag+'[^>]*>.*?</'+entryTag+'>', re.MULTILINE|re.DOTALL|re.UNICODE)
-    nvh_entries = []
-    for entry in re.findall(re_entry, xmldata):
-        try:
-            # Check if the entry is ok
-            xml.sax.parseString(entry, xml.sax.handler.ContentHandler())
-        except xml.sax._exceptions.SAXParseException as e:
-            print("Skipping entry, XML parsing error: " + str(e), file=sys.stderr)
-            print("Skipping entry, XML parsing error: " + str(e))
-            print("Entry with error: " + entry, file=sys.stderr)
-            entryInserted += 1
-
-        xml_entry2nvh_entry(xml.dom.minidom.parseString(entry), nvh_entries)
-
-    return nvh_entries
-
-def nvh_dict_schema(input_nvh, skip_duplicities):
-    """
-    Creates dictionary and check dict according to generated schema
-    """
-    dictionary, nvh_pase_errors = nvh.parse_file(input_nvh, skip_duplicities)
-
-    schema = {}
-    dictionary.generate_schema(schema, tln=True)
-
-    schema_err = []
-    dictionary.check_schema(schema, outfile=schema_err)
-
-    if schema_err:
-        raise ValueError('\n'.join(schema_err))
-    return dictionary, schema, nvh_pase_errors
-    
-
+done_re = re.compile(r'^INFO:\s*DONE:\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
+waring_re = re.compile(r'^WARNING:\s*(.+)$')
+err_re = re.compile(r'^ERROR:\s*(.*?)$')
 def importfile(dictID, filename, email, hwNode):
     """
     return progress, finished status, error messages
     """
     import subprocess
-    pidfile = filename + ".pid"
-    errfile = filename + ".err"
-    try:
-        pidfile_f = open(pidfile, "x")
-    except FileExistsError:
-        return checkImportStatus(pidfile, errfile)
-    
-    errfile_f = open(errfile, "w")
-    dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
-    p = subprocess.Popen([currdir + "/import_nvh.py", dbpath, filename, email, hwNode], stdout=pidfile_f, stderr=errfile_f, start_new_session=True, close_fds=True)
-    return "Import started. You may close the window, import will run in the background. Please wait...", False, ""
+
+    if os.path.isfile(filename + ".log"):
+        errors = []
+        progress = {}
+        finished = False
+        with open(filename + ".log", "r") as log_f:
+            for line in log_f:
+                prg = done_re.match(line)
+                warn = waring_re.match(line)
+                err = err_re.match(line)
+                if prg:
+                    progress = {'per': int(prg.group(1)), 'done': int(prg.group(2)), 'total': int(prg.group(3))}
+                elif warn:
+                    errors.append(warn.group(1))
+                elif err:
+                    errors.append(err.group(1))
+
+        if progress.get('per', 0) == 100:
+            finished = True
+
+        return progress, finished, errors, 'ERRORS and WARNING' if errors else ''
+
+    else:
+        logfile_f = open(filename + ".log", "w")
+        dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
+        p = subprocess.Popen([currdir + "/import.py", dbpath, filename, email, hwNode],
+                             stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+        return {'per': 0, 'done': 0, 'total': 0}, False, [], "Import started. You may close the window, import will run in the background. Please wait..."
 
 def checkImportStatus(pidfile, errfile):
     content = ''
@@ -2765,7 +2676,7 @@ def nvh2json(entryNvh):
     if type(entryNvh) == str:
         jsonEntry = nvh2jsonNode(nvh.parse_string(entryNvh))
     else:
-        jsonEntry = nvh2jsonNode(nvh)
+        jsonEntry = nvh2jsonNode(entryNvh)
     return json.dumps(jsonEntry)
 
 def nvh2jsonNode(nvhNode):

@@ -69,6 +69,7 @@ url_re = re.compile(r'^(https?://|www\.).*?', re.IGNORECASE)
 audio_re = re.compile(r'.*?('+ '|'.join([re.escape(x) for x in audio_extensions]) + ')$', re.IGNORECASE)
 image_re = re.compile(r'.*?('+ '|'.join([re.escape(x) for x in image_extensions]) + ')$', re.IGNORECASE)
 
+xtag_re = re.compile(r'xtag\((.*?)\)')
 
 def get_filename(value, extension='.nvh'):
     enc_value = quote_plus(value)
@@ -327,9 +328,9 @@ class nvh:
             elif not firstInThisParent[c.name]:
                 schema[c.name]['max'] += 1
 
-                # type
-                if schema[c.name]['type'] != curr_value_type:
-                    schema[c.name]['type'] = 'string'
+            # type
+            if schema[c.name]['type'] != curr_value_type:
+                schema[c.name]['type'] = 'string'
 
             schema[c.name]['min'] = 0
             schema[c.name]['children'] = list(set([x.name for x in c.children]))
@@ -343,13 +344,7 @@ class nvh:
 
     def check_schema(self, schema, parent="ROOT", ancestor=None, outfile=sys.stdout):
         def report(s):
-            if isinstance(outfile, io.IOBase):
-                outfile.write("ERROR: %s (%s)\n" % (s, ancestor))
-            elif isinstance(outfile, list):
-                outfile.append("ERROR: %s (%s)\n" % (s, ancestor))
-            else:
-                sys.stderr.write('Outfile has to be list or file descriptor.')
-                sys.exit()
+            outfile.write("ERROR: %s (%s)\n" % (s, ancestor))
 
         from collections import Counter
         keyval_freqs = Counter((c.name, c.value) for c in self.children if c.value) # not count nodes with "empty" type 
@@ -506,8 +501,7 @@ class nvh:
         return indent, n.strip(), v.strip()
 
     @staticmethod
-    def parse_file (infile, skip_duplicities=False):
-        errors = []
+    def parse_file (infile):
         dictionary = nvh(None)
         curr_parent = dictionary
         line_nr = 0
@@ -523,17 +517,9 @@ class nvh:
                 while indent != curr_parent.indent:
                     curr_parent = curr_parent.parent
                 curr_parent = curr_parent.parent
-            # remove duplicities - for imported nvh    
-            if (name, value) in [(x.name, x.value) for x in curr_parent.children]:
-                if not skip_duplicities:
-                    curr_parent.children.append(nvh(curr_parent, indent, name, value))
-                else:
-                    errors.append('Duplicate key, value: (%s, %s)' % (name, value))
-            else:
-                curr_parent.children.append(nvh(curr_parent, indent, name, value))
-
+            curr_parent.children.append(nvh(curr_parent, indent, name, value))
             last_indent = indent
-        return dictionary, errors
+        return dictionary
 
     @staticmethod
     def parse_string (instring):
@@ -573,13 +559,74 @@ class nvh:
             c.build_json(schema_dict)
 
     def dump_xml(self, result_xml):
+        def get_xml_atts(node_children):
+            result = ''
+            idx = 0
+            while idx < len(node_children):
+                node = node_children[idx]
+                attr = xtag_re.match(node.name)
+                if attr:
+                    result += ' ' + re.sub('~', ':', attr.group(1)) + '="' + node.value + '"'
+                    del node_children[idx]
+                else:
+                    idx += 1
+            return result
+
         if self.value and self.name:
-            result_xml.append(self.indent + '<' + self.name + '>' + self.value + '</' + self.name + '>')
+            if not [x.name for x in self.children if xtag_re.match(x.name)]:
+                result_xml.append(self.indent + '<' + self.name + '>' + self.value + '</' + self.name + '>')
+            else:
+                result_xml.append(self.indent + '<' + self.name + get_xml_atts(self.children) + '>' + self.value + '</' + self.name + '>')
         elif self.name:
-            result_xml.append(self.indent + '<' + self.name + '>')
+            if not [x.name for x in self.children if xtag_re.match(x.name)]:
+                result_xml.append(self.indent + '<' + self.name + '>')
+            else:
+                result_xml.append(self.indent + '<' + self.name + get_xml_atts(self.children) + '>')
 
         for c in self.children:
             c.dump_xml(result_xml)
+
+    def clean_duplicate_nodes(self, out=sys.stderr, reported=set()):
+        curr_pos = 0
+        while curr_pos < len(self.children):
+            c = self.children[curr_pos]
+            same_nodes = [same_idx for same_idx, x in enumerate(self.children) if (x.name, x.value) == (c.name, c.value)]
+            if c.value and len(same_nodes) > 1:
+                for s_idx in sorted(same_nodes, reverse=True):
+                    if s_idx != curr_pos:
+                        out.write('WARNING: removing duplicate node %s\n' % (self.children[s_idx])) 
+                        del self.children[s_idx]
+            elif not c.value and (len(same_nodes) > 1) and (c.name not in reported):
+                out.write('WARNING: repeating node with empty value %s\n' % (c.name)) 
+                reported.add(c.name)
+
+            c.clean_duplicate_nodes(out=out, reported=reported)
+            curr_pos += 1
+
+    def rename_nodes(self, rename_dict, out=sys.stderr, reported=set()):
+        # rename nodes with same name but under different parent
+        # entry: 0001
+        #   hw: test_1
+        #   lemma: test_1
+        #   sense: test_1.1
+        #     lemma: to_rename <--
+        for c in self.children:
+            if rename_dict.get(c.name, False):
+                if c.parent.name not in [x[0] for x in rename_dict[c.name]]:
+                    rename_dict[c.name].append((c.parent.name, f'{c.parent.name}_{c.name}'))
+                    if not f'{c.parent.name}_{c.name}' in reported:
+                        out.write('WARNING: renaming node name to preserve uniqueness %s -> %s\n' % (c.name, f'{c.parent.name}_{c.name}')) 
+                        reported.add(f'{c.parent.name}_{c.name}')
+                    c.name = f'{c.parent.name}_{c.name}'
+                else:
+                    for x in rename_dict[c.name]:
+                        if x[0] == c.parent.name:
+                            c.name = x[1]
+            else:
+                rename_dict[c.name] = [(c.parent.name, c.name)]
+
+        for c in self.children:
+            c.rename_nodes(rename_dict, out=out, reported=reported)
 
 
 if __name__ == "__main__":
@@ -613,7 +660,7 @@ if __name__ == "__main__":
 
     try:
         infile = fileinput.input([sys.argv[2]])
-        dictionary, parse_err = nvh.parse_file(infile)
+        dictionary = nvh.parse_file(infile)
         if sys.argv[1].startswith("get"):
             select_filters = []
             project_filters = []
@@ -631,7 +678,7 @@ if __name__ == "__main__":
             if len(sys.argv) < 4:
                 usage()
             infile = fileinput.input([sys.argv[3]])
-            patch, parse_err = nvh.parse_file(infile)
+            patch = nvh.parse_file(infile)
             if len(sys.argv) > 4:
                 replace_filters = sys.argv[4].split(",")
             else:
@@ -654,7 +701,7 @@ if __name__ == "__main__":
             if len(sys.argv) < 4:
                 usage()
             infile = fileinput.input([sys.argv[3]])
-            schema, parse_err = nvh.parse_file(infile)
+            schema = nvh.parse_file(infile)
             schema = schema.nvh2schema()
             dictionary.check_schema(schema)
         elif sys.argv[1] == "schema2json":
