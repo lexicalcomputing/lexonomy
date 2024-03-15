@@ -605,7 +605,7 @@ def dictconfig(dictID):
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
         doctypes = [configs["structure"]["root"]]
         doctypes = list(set(doctypes))
-        res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]}, "userAccess": user["dictAccess"], "configs": {"structure": configs["structure"] if "structure" in configs else configs["structure"], "formatting": configs["formatting"], "kex": configs["kex"], "kontext": configs["kontext"], "xampl": configs["xampl"], "thes": configs["thes"], "collx": configs["collx"], "defo": configs["defo"], "titling": configs["titling"], "flagging": configs["flagging"], "linking": configs["links"], "editing": configs["editing"], "metadata": configs["metadata"], "gapi": configs["gapi"], "limits": configs["limits"]}, "doctype": configs["structure"]["root"], "doctypes": doctypes}
+        res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]}, "userAccess": user["dictAccess"], "configs": {"structure": configs["structure"] if "structure" in configs else configs["structure"], "formatting": configs["formatting"], "kontext": configs["kontext"], "xampl": configs["xampl"], "thes": configs["thes"], "collx": configs["collx"], "defo": configs["defo"], "titling": configs["titling"], "flagging": configs["flagging"], "linking": configs["links"], "editing": configs["editing"], "metadata": configs["metadata"], "gapi": configs["gapi"], "limits": configs["limits"]}, "doctype": configs["structure"]["root"], "doctypes": doctypes}
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
 
@@ -657,7 +657,7 @@ def exportconfigs(dictID, user, dictDB, configs):
     output = {}
     for configid in request.forms.configs.split(','):
         if configid == 'ske':
-            output['ske'] = {'kex': configs['kex'], 'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
+            output['ske'] = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
         else:
             output[configid] = configs[configid]
     response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
@@ -676,7 +676,6 @@ def importconfigs(dictID, user, dictDB, configs):
             for key in data:
                 if key == 'ske':
                     adjustedJson = {}
-                    adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', data['ske']['kex'])
                     adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', data['ske']['xampl'])
                     adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', data['ske']['collx'])
                     adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', data['ske']['defo'])
@@ -775,7 +774,7 @@ def publicsearch(dictID):
 @authDict(["canConfig"])
 def configread(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
-        config_data = {'kex': configs['kex'], 'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
+        config_data = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
     else:
         if request.forms.id == 'structure' and 'structure' not in configs:
             config_data = configs['structure']
@@ -793,7 +792,6 @@ def configupdate(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
         adjustedJson = {}
         jsonData = json.loads(request.forms.content)
-        adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', jsonData['kex'])
         adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', jsonData['xampl'])
         adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', jsonData['collx'])
         adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', jsonData['defo'])
