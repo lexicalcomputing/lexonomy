@@ -80,7 +80,7 @@ def readDictConfigs(dictDB):
         configs[r["id"]] = json.loads(r["json"])
     for conf in ["ident", "publico", "users", "kex", "kontext", "titling", "flagging",
                  "searchability", "xampl", "thes", "collx", "defo", "structure", "limits",
-                 "xemplate", "editing", "download", "links", "autonumber", "gapi", "metadata"]:
+                 "formatting", "editing", "download", "links", "autonumber", "gapi", "metadata"]:
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
 
@@ -586,15 +586,15 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
         structure = {"root": nvh_structure.name, "elements": elements}
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
-    xemplate = {}
+    formatting = {}
     with open(currdir + "/dictTemplates/styles.json", 'r') as f:
         styles = json.loads(f.read())
         for key in elements.keys():
             if styles.get(key):
-                xemplate[key] = styles[key]
+                formatting[key] = styles[key]
             else:
-                xemplate[key] = styles['__other__']
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("xemplate", json.dumps(xemplate)))
+                formatting[key] = styles['__other__']
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
 
     # add examples
     if addExamples and not import_filename:
