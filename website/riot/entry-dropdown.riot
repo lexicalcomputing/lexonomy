@@ -1,0 +1,51 @@
+<entry-dropdown>
+   <loading-overlay if={state.isBusy}/>
+   <lazy-dropdown load-data={loadEntries}
+         riot-value={props.riotValue}
+         placeholder="entry search"
+         on-change={onChange}
+         on-submit={onSubmit}></lazy-dropdown>
+
+   <script>
+      export default{
+         state: {
+            isBusy: false
+         },
+
+         loadEntries(query, onDone){
+            return this.store.loadEntries({
+               howmany: 100,
+               offset: 0,
+               searchtext: query,
+               modifier: "start"
+            })
+                  .done(payload => {
+                     if(payload.entries){
+                        onDone(payload.entries.map(entry => ({
+                           html: entry.title,
+                           entry: entry,
+                           value: entry.username,
+                           label: entry.username
+                        })
+                        ))
+                     }
+                  })
+         },
+
+         onChange(item){
+            item && this.props.onChange(item.entry)
+         },
+
+         onSubmit(item){
+            item && this.props.onChange(item.entry)
+         }
+      }
+   </script>
+
+   <style>
+      lazy-dropdown .dropdown-content li,
+      lazy-dropdown .dropdown-content li div{
+         line-height: 1.1em;
+      }
+   </style>
+</entry-dropdown>

@@ -3,9 +3,6 @@
    <loading-overlay if={state.isLoading}/>
    <div if={!state.isLoading}>
       <div>
-         link list
-         {JSON.stringify(state.links)}
-
          <button if={!state.showNewLinkForm}
                class="btn"
                onclick={onNewLinkClick}>

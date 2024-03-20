@@ -41,7 +41,7 @@ window.nvhPlugins.ske = {
    hasSkeConnectionSettings: function() {
       let config = window.store.data.config
       let authData = window.auth.data
-      return config.kex.apiurl
+      return window.store.data.siteconfig.api_url
             && config.kex.corpus
             && authData.ske_username
             && authData.ske_apiKey
@@ -52,7 +52,7 @@ window.nvhPlugins.ske = {
          tag: "nvh-ske-dialog",
          fixedFooter: true,
          tall: true,
-         opts: {
+         props: {
             method: method,
             searchWord: searchWord
          }
@@ -128,9 +128,9 @@ window.nvhPlugins.ske = {
       if(searchWord && this.hasSearchOptions(element)){
          let corpus = encodeURIComponent(config.kex.corpus)
          let concordanceOperations = encodeURIComponent(JSON.stringify(this.getConcordanceOperations(element, searchWord)))
-         dropdownContent.append($(`<li><a href="${config.kex.url}/#wordsketch?corpname=${corpus}&lemma=${searchWord}&showresults=1" target="_blank">Show Word Sketch<i class="material-icons left">open_in_new</i></a></li>`))
-         dropdownContent.append($(`<li><a href="${config.kex.url}/#concordance?corpname=${corpus}&operations=${concordanceOperations}&showresults=1" target="_blank">Show Concordance<i class="material-icons left">open_in_new</i></a></li>`))
-         dropdownContent.append($(`<li><a href="${config.kex.url}/#thesaurus?corpname=${corpus}&lemma=${searchWord}&showresults=1" target="_blank">Show Thesaurus<i class="material-icons left">open_in_new</i></a></li>`))
+         dropdownContent.append($(`<li><a href="${window.store.data.siteconfig.ske_url}/#wordsketch?corpname=${corpus}&lemma=${searchWord}&showresults=1" target="_blank">Show Word Sketch<i class="material-icons left">open_in_new</i></a></li>`))
+         dropdownContent.append($(`<li><a href="${window.store.data.siteconfig.ske_url}/#concordance?corpname=${corpus}&operations=${concordanceOperations}&showresults=1" target="_blank">Show Concordance<i class="material-icons left">open_in_new</i></a></li>`))
+         dropdownContent.append($(`<li><a href="${window.store.data.siteconfig.ske_url}/#thesaurus?corpname=${corpus}&lemma=${searchWord}&showresults=1" target="_blank">Show Thesaurus<i class="material-icons left">open_in_new</i></a></li>`))
       }
 
       $(evt.currentTarget).after(dropdownContent)

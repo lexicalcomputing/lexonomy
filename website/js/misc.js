@@ -182,6 +182,11 @@ window.getFontSizeFromCookies = () => {
    return ""
 }
 
+
+window.capitalize = (str) => {
+   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 window.trim = (str, max) => {
    return str.length > max ? (str.substr(0, max) + "…") : str
 }
@@ -193,4 +198,14 @@ window.initFormSelects = (context, selector) => {
          constrainWidth: false
       }
    })
+}
+
+window.getProgressColorClass = progress => {
+   if(progress == 1){
+      return "green"
+   }
+   if(progress < 0.5){
+      return "red"
+   }
+   return "orange"
 }

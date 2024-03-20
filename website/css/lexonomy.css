@@ -375,6 +375,9 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    cursor: default;
 }
 
+.checkbox{
+   position: relative;
+}
 .select-wrapper input.select-dropdown:focus{
    border-bottom-color: #000;
    outline: 1px solid #000;
@@ -404,6 +407,16 @@ textarea.materialize-textarea:focus:not([readonly])+label{
 .input-field .select-wrapper+label{
    transform: none;
    top: 0;
+}
+
+.inputFieldWithProgressBar{
+   position: relative;
+   .progress{
+      position: absolute;
+      bottom: 7px;
+      height: 2px;
+      margin: 0;
+   }
 }
 
 .file-field{
@@ -506,6 +519,22 @@ table.striped thead tr{
    border-bottom: 2px solid #000;
 }
 
+.autocomplete-content li{
+   box-sizing: border-box;
+   display: flex;
+   gap: 20px;
+   padding: 10px 16px;;
+}
+.autocomplete-content li > span{
+   padding: 0!important;
+   display: flex;
+   align-items: center;
+}
+.autocomplete-content .info{
+   color: #9e9e9e !important;
+   white-space: nowrap;
+   margin-left: auto;
+}
 .autocomplete-content .highlight{
    color: #F44336 !important;
 }
@@ -520,6 +549,16 @@ table.striped thead tr{
    padding: 0.7rem 1rem;
    /*color: #fff;*/
 }
+.progress{
+   background-color: #d3d3d3;
+}
+.progress .determinate,
+.progress .indeterminate{
+   background-color: #4a4a4a;
+}
+/*.progress .indeterminate{
+   background-color: #000;
+}*/
 
 /*.message a:not(.btn):hover{
    color: #fff;

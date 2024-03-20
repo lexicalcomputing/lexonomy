@@ -17,6 +17,7 @@ import './js/nvh-plugins/voice-rss.js'
 import './js/nvh-plugins/links.js'
 import './js/extendmaterialize.js'
 import './js/structure-editor-store.js'
+import './js/formatter.js'
 
 import App from './riot/main.riot'
 import api from './riot/api.riot'
@@ -42,6 +43,7 @@ import dict_config_url from './riot/dict-config-url.riot'
 import dict_config_users from './riot/dict-config-users.riot'
 import dict_config_structure from './riot/dict-config-structure.riot'
 import dict_config_limits from './riot/dict-config-limits.riot'
+import dict_config_formatting from './riot/dict-config-formatting.riot'
 import dict_download from './riot/dict-download.riot'
 import dict_edit from './riot/dict-edit.riot'
 import dictionaries from './riot/dictionaries.riot'
@@ -101,6 +103,16 @@ import advanced_query_builder from './riot/advanced-query-builder.riot'
 import advanced_query_group from './riot/advanced-query-group.riot'
 import advanced_query_rule from './riot/advanced-query-rule.riot'
 import element_select from './riot/element-select.riot'
+import element_style_options from './riot/element-style-options.riot'
+import lazy_dropdown from './riot/lazy-dropdown.riot'
+import entry_dropdown from './riot/entry-dropdown.riot'
+import user_dropdown from './riot/user-dropdown.riot'
+import projects_dashboard from './riot/projects/projects-dashboard.riot'
+import projects_new from './riot/projects/projects-new.riot'
+import projects_view from './riot/projects/projects-view.riot'
+import projects_edit from './riot/projects/projects-edit.riot'
+import project_dict_name from './riot/projects/project-dict-name.riot'
+import project_batches from './riot/projects/project-batches.riot'
 
 riot_register('api', api)
 riot_register('admin-dicts', admin_dicts)
@@ -184,5 +196,17 @@ riot_register('advanced-query-builder', advanced_query_builder)
 riot_register('advanced-query-group', advanced_query_group)
 riot_register('advanced-query-rule', advanced_query_rule)
 riot_register('element-select', element_select)
+riot_register('dict-config-formatting', dict_config_formatting)
+riot_register('element-style-options', element_style_options)
+riot_register('lazy-dropdown', lazy_dropdown)
+riot_register('entry-dropdown', entry_dropdown)
+riot_register('user-dropdown', user_dropdown)
+riot_register('projects-dashboard', projects_dashboard)
+riot_register('projects-new', projects_new)
+riot_register('projects-view', projects_view)
+riot_register('projects-edit', projects_edit)
+riot_register('project-dict-name', project_dict_name)
+riot_register('project-batches', project_batches)
+
 
 component(App)(document.getElementById('root'))

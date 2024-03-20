@@ -1,0 +1,52 @@
+<project-dict-name>
+   <h5 class="projectDictName dictName_{props.dict.id} inlineBlock"
+         onmouseover={onMouseOver}
+         onmouseout={onMouseOut}>
+      {props.dict.name}
+      <a href="#{props.dict.id}"
+            target="_blank"
+            class="clickable">
+         <i class="material-icons ml-2">open_in_new</i>
+      </a>
+   </h5>
+   <div class="grey-text projectDictSize">
+      {props.dict.size ? window.Formatter.num(props.dict.size) + ' entries' : 'empty'}
+   </div>
+
+
+   <script>
+      export default{
+         onMouseOver(){
+            let dictNames = $(`.dictName_${this.props.dict.id}`)
+            if(dictNames.length > 1){
+               dictNames.addClass("highlightDictName")
+               dictNames.closest(".card-panel").addClass("highlightDictPanel")
+            }
+         },
+
+         onMouseOut(){
+            $(".highlightDictName").removeClass("highlightDictName")
+            $(".highlightDictPanel").closest(".card-panel").removeClass("highlightDictPanel")
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      :host{
+         display: block
+      }
+      .projectDictName{
+         font-size: 1.2rem;
+         margin-bottom: 0;
+         cursor: default;
+         i{
+            font-size: 1rem;
+         }
+      }
+      .projectDictSize{
+         font-size: 0.8rem;
+         margin-bottom: 15px;
+      }
+   </style>
+</project-dict-name>

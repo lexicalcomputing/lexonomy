@@ -112,15 +112,15 @@ class NVHStoreClass {
          url: `${window.API_URL}${window.store.data.dictId}/configupdate.json`,
          method: 'POST',
          data: {
-            id: "xemplate",
-            content: JSON.stringify(this.data.xemplate)
+            id: "formatting",
+            content: JSON.stringify(this.data.formatting)
          }
       })
    }
 
    onDictionaryChanged(){
       this.data.structure = window.store.data.config.structure
-      this.data.xemplate = window.store.data.config.xemplate
+      this.data.formatting = window.store.data.config.formatting
       this.data.editing = window.store.data.config.editing
       this.data.rootElement = this.data.structure.root
       this.data.customEditor = null
@@ -511,7 +511,7 @@ class NVHStoreClass {
    }
 
    getElementStyle(elementName){
-      return this.data.xemplate[elementName] || {}
+      return this.data.formatting[elementName] || {}
    }
 
    getAvailableChildElements(element){
@@ -570,15 +570,14 @@ class NVHStoreClass {
    changeElementStyleOption(elementName, option, value){
       if(this.getElementStyle(elementName)[option] != value){
          // TODO temporary fix
-         if(!this.data.xemplate[elementName]){
-            this.data.xemplate[elementName] = {}
+         if(!this.data.formatting[elementName]){
+            this.data.formatting[elementName] = {}
          }
          if(!value){
-            delete this.data.xemplate[elementName][option]
+            delete this.data.formatting[elementName][option]
          } else {
-            this.data.xemplate[elementName][option] = value
+            this.data.formatting[elementName][option] = value
          }
-         this.saveStyle()
          this.trigger("updateElements", this.findElements(e => e.name == elementName))
       }
    }
@@ -1163,6 +1162,21 @@ class NVHStoreClass {
            .replace(/&lt;/g, "<")
            .replace(/&gt;/g, ">")
            .replace(/&amp;/g, "&")
+   }
+
+   getElementTreeList(elementName, indent=0){
+      let list = []
+      elementName = elementName || this.data.rootElement
+      let elementConfig = this.data.structure.elements[elementName]
+      list.push({
+         elementName: elementName,
+         color: this.getElementColor(elementName),
+         indent: indent
+      })
+      elementConfig.children.forEach(childName => {
+         list.push(...this.getElementTreeList(childName, indent + 1))
+      })
+      return list
    }
 
    getElementColor(elementName){

@@ -1,10 +1,11 @@
 <element-select>
-   <select onchange={onChange}>
+   <select onchange={onChange}
+         multiple={props.multiple}>
       <option if={props.showEmptyValue}
             selected={props.riotValue == ""}
-            value="">-select element-</option>
+            value="">{props.emptyValue || '-select element-'}</option>
       <option each={option in elementOptionList}
-            selected={option.elementName == props.riotValue}
+            selected={props.multiple ? props.riotValue.includes(option.elementName) : option.elementName == props.riotValue}
             value={option.elementName}>
          <span style="{option.style}">
             {option.elementName}
@@ -15,7 +16,12 @@
    <script>
       export default{
          onBeforeMount(){
-            this.elementOptionList = this.addElementAndItsChildren(this.dictData.config.structure.root)
+            this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
+               return {
+                  elementName: element.elementName,
+                  style: `color: ${element.color}; margin-left: ${element.indent * 15}px`
+               }
+            })
          },
 
 
@@ -29,21 +35,13 @@
 
          onChange(evt){
             this.props.onChange && this.props.onChange(evt.target.value, this.props.name)
-         },
-
-         addElementAndItsChildren(elementName, indent=0){
-            let list = []
-            let elementConfig = this.dictData.config.structure.elements[elementName]
-            let style = `color: ${window.nvhStore.getElementColor(elementName)}; margin-left: ${indent * 15}px`
-            list.push({
-               elementName: elementName,
-               style: style
-            })
-            elementConfig.children.forEach(childName => {
-               list.push(...this.addElementAndItsChildren(childName, indent + 1))
-            })
-            return list
          }
       }
    </script>
+
+   <style type="scss">
+      li span{
+         box-sizing: border-box;
+      }
+   </style>
 </element-select>

@@ -39,7 +39,6 @@
       <div class="section">
          { dictData.licence }
       </div>
-      <div id="xemplateStyle"></div>
    </template>
 
    <style>
@@ -92,7 +91,7 @@
       export default {
          bindings: [["store", "entryIdChanged", "entryIdChanged"],
                     ["store", "isDictionaryLoadingChanged", "update"],
-                    ["store", "entryListLoadingChanged", "update"],
+                    ["store", "isEntryListLoadingChanged", "update"],
                     ["store", "isEntryLoadingChanged", "update"]],
 
          entryIdChanged(){

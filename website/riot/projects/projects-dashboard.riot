@@ -1,0 +1,204 @@
+<projects-dashboard>
+   <loading-overlay if={state.isBusy}/>
+   <a href="#projects/new"
+         class="btn right">
+      create project
+      <i class="material-icons left">add</i>
+   </a>
+   <h1>
+      Projects
+   </h1>
+   <template if={state.projectsLoaded}>
+      <table class="projectTable highlight">
+         <thead>
+            <tr>
+               <th>
+                  Name
+               </th>
+               <th>
+                  Central Dictionary
+               </th>
+               <th>
+                  Tasks
+               </th>
+               <th>
+                  Managers
+               </th>
+               <th>
+                  Editors
+               </th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr each={project in state.projects}
+                  onclick={onProjectClick.bind(this, project.id)}>
+               <td>
+                  {project.name}
+               </td>
+               <td>
+                  {project.centralDictionary}
+               </td>
+               <td>
+                  <table class="workflowTable">
+                     <tr each={workflow in project.workflow}>
+                        <td>
+                           {workflow.name}
+                        </td>
+                        <td>
+                           <div class="workflowProgressBar progress">
+                              <div class="determinate {window.getProgressColorClass(workflow.progress)}"
+                                    style="width: {workflow.progress * 100}%"></div>
+                           </div>
+                        </td>
+                        <td>
+                           <span class="workflowProgressPercentage">
+                              {workflow.progress * 100}%
+                           </span>
+                        </td>
+                     </tr>
+                  </table>
+               </td>
+               <td>
+                  {project.team.filter(m =>  m.role == "manager").map(m => m.email).join(", ")}
+               </td>
+               <td>
+                  {project.team.filter(m =>  m.role == "editor").length}
+               </td>
+            </tr>
+         </tbody>
+      </table>
+
+      <div if={!state.projects.length}
+            class="noProjects grey-text">
+         <div class="noProjects-title mb-2">
+            No projects
+         </div>
+         <div>
+            Create a <a href="#projects/new">new project</a>.
+         </div>
+      </div>
+   </template>
+
+
+   <script>
+      export default{
+         bindings: [["store", "isProjectsLoadingChanged", "update"]],
+
+         state:{
+            isBusy: true,
+            projectsLoaded: false,
+            projects: []
+         },
+
+         onBeforeMount(){
+            this.reloadProjects()
+         },
+
+         onProjectClick(projectID){
+            route(`projects/view/${projectID}`)
+         },
+
+         reloadProjects(){
+            this.store.loadProjects()
+
+
+            // TODO
+                  .fail(response => {
+                     this.state.projects = response.projects
+                     this.state.projectsLoaded = true
+                     this.state.projects = [{
+                        id: "en_nep",
+                        name: "English-Nepali dictionary",
+                        team: [{email: "asda@asdad.asd", role: "manager"}, {email: "aaaaa@asdad.com", role: "editor"}],
+                        workflow: [{
+                           status: "active",
+                           name: "review",
+                           inputDict: "entry dict",
+                           outputDict: "output dict",
+                           progress: 0.6,
+                           batches: [{
+                              editor: "bbbbb@asdad.com",
+                              progress: 0.6
+                           }]
+
+                        }, {
+                           status: "active",
+                           name: "headword annotation",
+                           inputDict: "entry dict",
+                           outputDict: "output dict",
+                           progress: 1,
+                           batches: [{
+                              editor: "bbbbb@asdad.com",
+                              progress: 1
+                           }]
+
+                        }],
+                        centralDictionary: "someDictionary",
+                        referenceCorpus: "bnc"
+                     }, {
+                        id: "test",
+                        name: "Test dictionary",
+                        team: [{email: "john@asdad.com", role: "manager"}, {email: "bbbbb@asdad.com", role: "editor"}, {email: "cccc@asdad.com", role: "editor"}],
+                        workflow: [{
+                           status: "active",
+                           name: "headword annotation",
+                           inputDict: "entry dict",
+                           outputDict: "output dict",
+                           progress: 0.1,
+                           batches: [{
+                              editor: "bbbbb@asdad.com",
+                              progress: 0.1
+                           }, {
+                              editor: "cccc@asdad.com",
+                              progress: 0.1
+                           }]
+
+                        }],
+                        centralDictionary: "another dictionary",
+                        referenceCorpus: "bnc"
+                     }]
+                  })
+                  .always(response => {
+                     this.update({isBusy: false})
+                  })
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      .noProject{
+         min-height: 50vh;
+         text-align: center;
+         padding-top: 20vh;
+      }
+      .noProjectTitle{
+         margin-top: -30px;
+         font-size: 30px;
+      }
+      .workflowTable{
+         width: auto;
+         tr{
+            border-bottom: 0;
+         }
+         td{
+            padding: 0 5px;
+         }
+         .workflowProgressBar{
+            width: 70px;
+            margin: 0;
+         }
+         .workflowProgressPercentage{
+            font-size: 0.8rem;
+            color: grey;
+         }
+      }
+      .projectTable{
+         tbody{
+            tr{
+               cursor: pointer;
+            }
+         }
+      }
+   </style>
+</projects-dashboard>

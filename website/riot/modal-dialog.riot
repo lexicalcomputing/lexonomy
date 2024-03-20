@@ -17,7 +17,7 @@
                <div class="clearfix dialogContent">
                   <div if={dialog.tag}
                         is={dialog.tag}
-                        {...dialog.opts}></div>
+                        {...dialog.props}></div>
                   <div if={dialog.content}>
                      {dialog.content}
                   </div>
@@ -195,7 +195,7 @@
                id: string - optional, used for closing dialog
                title: string - optional
                tag: string - name of tag to use for dialog content, optional
-               opts: Object - opts for content tag - optional
+               props: Object - props for content tag - optional
                content: string - alternative to tag for simple content
                showCloseButton: Bool -
                buttons: array [{label: string, class: string, href: string, onClick: function},...]

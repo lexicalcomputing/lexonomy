@@ -1,0 +1,268 @@
+<projects-new>
+   <loading-overlay if={state.isBusy || dictData.isDictionaryListLoading}/>
+   <h1>
+      <a href="#projects/dashboard"
+            class="clickable mr-2 tooltipped"
+            data-tooltip="Back to projects">
+         <i class="material-icons grey-text">
+            arrow_back
+         </i>
+      </a><!--
+   -->New project
+   </h1>
+   <div class="displayFlex">
+      <div>
+         <h3>Project</h3>
+         <div class="input-field mb-12">
+            <input type="text"
+                  id="name"
+                  oninput={onNameInput}>
+            <label>Name</label>
+         </div>
+
+         <div class="input-field mb-12">
+            <select id="centralDictionary"
+                  onchange={onCentralDictionaryChange}>
+               <option value="" selected>-select-</option>
+               <option each={dict in dictData.dictionaryList}
+                     value={dict.id}
+                     selected={dict.id == state.project.centralDictionary}>{dict.title}</option>
+            </select>
+            <label>Central dictionary</label>
+         </div>
+
+         <div class="input-field inputFieldWithProgressBar mb-12">
+            <input if={auth.data.ske_apiKey}
+                  type="text"
+                  id="referenceCorpus"
+                  placeholder="Type to search in the list of corpora"
+                  disabled={state.isCorporaLoading}
+                  placeholder="Retrieving available corpora from Sketch Engine, please wait..."/>
+            <label>Reference corpus</label>
+            <div if={state.isCorporaLoading}
+                  class="progress">
+               <div class="indeterminate"></div>
+            </div>
+         </div>
+         <div if={!auth.data.ske_apiKey}
+               class="warning">
+            To select reference corpus you need to set up Sketch Engine connection first. You can do it on your <a href="#/member-profile">profile page</a>.
+         </div>
+
+         <div class="input-field mb-12">
+            <select id="workflow"
+                  onchange={onWorkflowChange}>
+               <option each={workflow in workflowOptionList}
+                     value={workflow.value}>{workflow.label}</option>
+            </select>
+            <label>Workflow</label>
+         </div>
+      </div>
+
+      <div class="columnTeam">
+         <h3>Team</h3>
+         <div class="teamRole displayFlex mb-12">
+            <label>Managers</label>
+            <div>
+               <div>
+                  <div if={!state.project.team.filter(u => u.role == "manager").length}
+                        class="noTeamMember grey-text">
+                     No manager selected.
+                  </div>
+                  <span if={member.role == "manager"}
+                        each={member in state.project.team}
+                        class="chip">
+                     {member.email}
+                     <i class="close material-icons"
+                           onclick={onRemoveMemberClick.bind(this, member)}>close</i>
+                  </span>
+               </div>
+               <div class="input-field mt-2">
+                  <user-dropdown id="managerMemberDropdown"
+                        on-change={onAddMember.bind(this, "manager")}
+                        filter={filterMembers}/>
+                  <span class="helper-text">
+                     Enter email address to add a new manager.
+                  </span>
+               </div>
+            </div>
+         </div>
+         <div class="teamRole displayFlex">
+            <label>Editors</label>
+            <div>
+               <div>
+                  <div if={!state.project.team.filter(u => u.role == "editor").length}
+                        class="noTeamMember grey-text">
+                     No editor selected.
+                  </div>
+                  <span if={member.role == "editor"}
+                        each={member in state.project.team}
+                        class="chip">
+                     {member.email}
+                     <i class="close material-icons"
+                           onclick={onRemoveMemberClick.bind(this, member)}>close</i>
+                  </span>
+               </div>
+               <div class="input-field mt-2">
+                  <user-dropdown id="editorMemberDropdown"
+                        on-change={onAddMember.bind(this, "editor")}
+                        filter={filterMembers}/>
+                  <span class="helper-text">
+                     Enter email address to add a new editor.
+                  </span>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <div class="buttons mt-6">
+      <a href="#projects/dashboard"
+            class="btn btn-secondary">
+         back
+      </a>
+      <button id="btnCreateProject"
+            class="btn btn-primary disabled"
+            onclick={onCreateProjectClick}>
+         create
+      </button>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["store", "dictionaryListLoadingChanged", "update"]],
+
+         state: {
+            project: null,
+            isCorporaLoading: true
+         },
+
+         onBeforeMount(){
+            this.workflowOptionList = [{
+               label: "headword annotation",
+               value: "hw_an"
+            }, {
+               label: "review",
+               value: "review"
+            }]
+            this.state.project = {
+               name: null,
+               team: [{
+                  email: this.authData.email,
+                  role: "manager"
+               }],
+               workflow: null,
+               centralDictionary: null,
+               referenceCorpus: null
+            }
+         },
+
+         onMounted(){
+            window.initFormSelects(this.root)
+
+            this.store.skeLoadCorpora()
+                  .done(response => {
+                     $("#referenceCorpus").autocomplete({
+                        data: response.data.map(corpus => {
+                        return {
+                              value: corpus.corpname,
+                              label: corpus.name,
+                              info: corpus.language_name
+                           }
+                        }),
+                        onAutocomplete: corpus => {
+                           this.state.project.referenceCorpus = corpus.value
+                           this.refreshCreateBtnDisabled()
+                        },
+                        dropdownOptions: {
+                           constrainWidth: false
+                        }
+                     })
+                  })
+                  .always(() => {
+                     this.update({isCorporaLoading: false})
+                  })
+            $("#name", this.root).focus()
+         },
+
+         onUpdated(){
+            window.initFormSelects(this.root)
+         },
+
+         onNameInput(evt){
+            this.state.project.name = evt.target.value
+            this.refreshCreateBtnDisabled()
+         },
+
+         onAddMember(role, member){
+            this.state.project.team.push({
+               email: member.email,
+               role: role
+            })
+            this.update()
+            $(`#${role}MemberDropdown input`).val("")
+         },
+
+         onRemoveMemberClick(member, evt){
+            evt.stopPropagation()
+            this.state.project.team = this.state.project.team.filter(u => u.email != member.email)
+            this.update()
+         },
+
+         onCentralDictionaryChange(evt){
+            this.state.project.centralDictionary = evt.target.value
+            this.refreshCreateBtnDisabled()
+         },
+
+         onWorkflowChange(evt){
+            this.state.project.workflow = evt.target.value
+            this.refreshCreateBtnDisabled()
+         },
+
+         onCreateProjectClick(){
+            this.update({isBusy: true})
+            this.store.createProject(this.state.project)
+                  .done(() => {
+                     route("projects/dashboard")
+                  })
+                  .always(() => {
+                     this.update({isBusy: false})
+                  })
+         },
+
+         filterMembers(members){
+            let takenEmails = this.state.project.team.map(member => member.email)
+            return members.filter(member => !takenEmails.includes(member.value))
+         },
+
+         refreshCreateBtnDisabled(){
+            let disabled = !this.state.project.name
+                  || !this.state.project.team.filter(member => member.role == "manager").length
+                  || !this.state.project.team.filter(member => member.role == "editor").length
+                  || !this.state.project.centralDictionary
+                  || !this.state.project.referenceCorpus
+            $("#btnCreateProject").toggleClass("disabled", disabled)
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .input-field{
+         width: 400px;
+      }
+      .columnTeam{
+         margin-left: 30px;
+         padding-left: 30px;
+         border-left: 1px solid lightgrey;
+         label{
+            min-width: 90px;
+         }
+         .teamRole{
+            gap: 20px;
+         }
+         .noTeamMember{
+            min-height: 37px;
+         }
+      }
+   </style>
+</projects-new>

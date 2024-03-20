@@ -196,7 +196,7 @@
             let dialog = window.modal.open({
                title: dict.title.length > 150 ? (dict.title.substr(0, 150) + "…") : dict.title,
                tag: "dict-description-dialog",
-               opts: {
+               props: {
                   dictId: dict.id
                }
             })

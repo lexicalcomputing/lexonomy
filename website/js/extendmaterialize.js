@@ -1,4 +1,26 @@
 let autocompleteExtension = {
+   // added dropdownOptions
+   _setupDropdown: function(){
+      var _this38 = this;
+      this.container = document.createElement('ul');
+      this.container.id = "autocomplete-options-" + M.guid();
+      $(this.container).addClass('autocomplete-content dropdown-content');
+      this.$inputField.append(this.container);
+      this.el.setAttribute('data-target', this.container.id);
+
+      this.dropdown = M.Dropdown.init(this.el, Object.assign({
+         autoFocus: false,
+         closeOnClick: false,
+         coverTrigger: false,
+         onItemClick: function (itemEl) {
+            _this38.selectOption($(itemEl));
+         }
+      }, this.options.dropdownOptions || {}));
+
+      // Sketchy removal of dropdown click handler
+      this.el.removeEventListener('click', this.dropdown._handleClickBound);
+   },
+
    _renderDropdown: function(data, val) {
       var _this39 = this;
       this._resetAutocomplete();
@@ -33,7 +55,7 @@ let autocompleteExtension = {
       this.filteredData.forEach((option, idx) => {
          var $autocompleteOption = $(`<li value="${option.value}" idx="${idx}"></li>`);
          option.img && $autocompleteOption.append("<img src=\"" + option.img + "\" class=\"right circle\">");
-         $autocompleteOption.append(`<span style="padding: 10px 16px;">${option.label}<small class="grey-text right">${option.info || ""}</small></span>`);
+         $autocompleteOption.append(`<span>${option.label}</span><small class="info">${option.info || ""}</small>`);
 
          $(this.container).append($autocompleteOption);
          !this.options.customFilter && this._highlight(val, option, $autocompleteOption);
@@ -49,7 +71,7 @@ let autocompleteExtension = {
          afterMatch = option.label.slice(matchEnd + 1);
       $el.empty()
       option.img && $el.append("<img src=\"" + option.img + "\" class=\"right circle\">");
-      $el.append(`<span style="padding: 10px 16px;">${beforeMatch}<span class="highlight">${matchText}</span>${afterMatch}<small class="grey-text right">${option.info || ""}</small></span>`);
+      $el.append(`<span>${beforeMatch}<span class="highlight">${matchText}</span>${afterMatch}</span><small class="info">${option.info || ""}</small>`);
    },
 
    selectOption: function(el) {

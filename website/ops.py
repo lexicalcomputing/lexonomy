@@ -123,7 +123,7 @@ def removeSubentryParentTags(xml):
 
 # auth
 def verifyLogin(email, sessionkey):
-    if "httpAuth" in siteconfig and siteconfig["httpAuth"] and request.auth[0]:
+    if "httpAuth" in siteconfig and siteconfig["httpAuth"] and request.auth and request.auth[0]:
         login_res = httpAuthLogin(request.auth[0])
         if login_res["success"]:
             email = request.auth[0]
@@ -529,7 +529,7 @@ def suggestDictId():
 
 def get_gen_schema_elements(schema, schema_elements):
     for k in schema:
-        schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None), 
+        schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None),
                                 'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
                                 're': schema[k].get('re', ''), 'children': schema[k].get('children', [])}
         get_gen_schema_elements(schema[k]["schema"], schema_elements)
@@ -564,8 +564,8 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
     #init db schema
     with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
         sql_schema = f.read()
-        
-    conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], 
+
+    conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"],
                                                   "dicts/" + dictID + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/")), uri=True)
     conn.executescript(sql_schema)
     conn.commit()
@@ -615,7 +615,7 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
     if import_filename:
         progress, _, err, _ = importfile(dictID, import_filename, email, hwNode)
         return True, progress, err
-    
+
     return True, "", ""
 
 def attachDict(dictDB, dictID):
