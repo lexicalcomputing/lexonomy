@@ -4,7 +4,6 @@
       "name": "Entry",
       "nvh": [
                "entry:",
-               "  headword:",
                "  partOfSpeech:"
              ],
       "description": "",
@@ -17,7 +16,7 @@
       "nvh": [
                "entry:",
                "  flag:"
-             ],        
+             ],
       "description": "",
       "checked": false,
       "required": false
@@ -27,8 +26,7 @@
       "name": "Sense",
       "nvh": [
               "entry:",
-              "  sense:",
-              "    definition:"
+              "  sense:"
              ],
       "description": "",
       "checked": true,
@@ -40,8 +38,7 @@
       "nvh": [
                "entry:",
                "  sense:",
-               "    example:",
-               "       text:"
+               "    example:"
              ],
       "description": "",
       "checked": false,
@@ -54,9 +51,8 @@
               "entry:",
               "  sense:",
               "    example:",
-              "      example_translations:",
-              "        example_lang:",
-              "        example_translation:"
+              "      example_translation:",
+              "        example_lang:"
              ],
       "description": "",
       "checked": false,
@@ -68,9 +64,8 @@
       "nvh": [
               "entry:",
               "  sense:",
-              "    translations:",
-              "      lang:",
-              "      translation:"
+              "    translation:",
+              "      lang:"
              ],
       "description": "Sense translations into one or more languages",
       "checked": false,
