@@ -1,9 +1,6 @@
 {
     "entry": {
-        "layout": "block"
-    },
-    "headword": {
-        "layout": "inline",
+        "layout": "block",
         "separation": "space",
         "gutter": "",
         "weight": "bold",
@@ -32,55 +29,35 @@
         "layout": "block",
         "separation": "space",
         "gutter": "None",
-        "weight": "",
+        "weight": "bold",
         "slant": "",
         "colour": "",
         "border": "solid",
         "background": "yellow"
     },
-    "definition": {
-        "layout": "block",
-        "separation": "space",
-        "gutter": "",
-        "weight": "bold",
-        "slant": "",
-        "colour": ""
-    },
     "example": {
         "layout": "block",
-        "gutter": "indent"
-    },
-    "text": {
-        "layout": "block",
-        "gutter": "None",
+        "gutter": "indent",
         "slant": "italic"
     },
-    "example_translations": {
-        "layout": "block"
+    "example_translation": {
+        "layout": "block",
+        "slant": "italic",
+        "colour": "blue"
     },
     "example_lang": {
         "layout": "block",
         "innerPunc": "colon"
     },
-    "example_translation": {
+    "translation": {
         "layout": "block",
-        "slant": "italic",
-        "colour": "blue",
-        "gutter": ""
-    },
-    "translations": {
-        "layout": "block"
+        "colour": "blue"
     },
     "lang": {
         "layout": "block",
         "innerPunc": "colon",
         "colour": "grey",
         "textsize": "smaller"
-    },
-    "translation": {
-        "layout": "block",
-        "colour": "blue",
-        "gutter": ""
     },
     "__other__": {
         "layout": "block"
