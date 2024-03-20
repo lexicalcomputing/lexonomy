@@ -1,0 +1,45 @@
+<user-dropdown>
+   <loading-overlay if={state.isBusy}/>
+   <lazy-dropdown load-data={loadUsers}
+         riot-value={props.riotValue}
+         filter={props.filter}
+         placeholder={props.placeholder}
+         on-change={onChange}
+         on-submit={onSubmit}></lazy-dropdown>
+
+   <script>
+      export default{
+         state: {
+            isBusy: false
+         },
+
+         loadUsers(query, onDone){
+            return this.store.loadUsers(query, 100)
+                  .done(payload => {
+                     if(payload.entries){
+                        onDone(payload.entries.map(user => ({
+                           user: user,
+                           value: user.email,
+                           label: user.email
+                        })))
+                     }
+                  })
+         },
+
+         onChange(item){
+            item && this.props.onChange(item.user)
+         },
+
+         onSubmit(item){
+            item && this.props.onChange(item.user)
+         }
+      }
+   </script>
+
+   <style>
+      lazy-dropdown .dropdown-content li,
+      lazy-dropdown .dropdown-content li div{
+         line-height: 1.1em;
+      }
+   </style>
+</user-dropdown>

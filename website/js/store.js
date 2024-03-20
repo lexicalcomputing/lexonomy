@@ -329,6 +329,9 @@ class StoreClass {
                   // TODO: backward compatibility, may be removed in future
                   //response.configs.structure = response.configs.structure || response.configs.xema
                   let elements = response.configs.structure.elements
+                  if(!response.configs.formatting){
+                     response.configs.formatting = response.configs.xemplate
+                  }
                   if(elements){
                      Object.values(elements).forEach(element => {
                         if(typeof element.children == "undefined"){
@@ -398,7 +401,7 @@ class StoreClass {
       if(!this.data.isLoadingMoreEntries && (this.data.entryCount > this.data.entryList.length)){
          this.data.isLoadingMoreEntries = true
          this.trigger("isLoadingMoreEntriesChanged")
-         this._loadEntries(null, this.data.entryList.length)
+         this.loadEntries(this.getEntrySearchParams(null, this.data.entryList.length))
                .done(response => {
                   if(response.entries){
                      this.data.entryList = this.data.entryList.concat(response.entries)
@@ -417,8 +420,8 @@ class StoreClass {
          return
       }
       this.data.isEntryListLoading = true
-      this.trigger("entryListLoadingChanged")
-      return this._loadEntries(howmany)
+      this.trigger("isEntryListLoadingChanged")
+      return this.loadEntries(this.getEntrySearchParams(howmany))
             .done(response => {
                if(response.entries){
                   this.data.entryList = response.entries
@@ -433,22 +436,12 @@ class StoreClass {
             })
             .always(response => {
                this.data.isEntryListLoading = false
-               this.trigger("entryListLoadingChanged")
+               this.trigger("isEntryListLoadingChanged")
             })
    }
 
-   _loadEntries(howmany, offset){
+   loadEntries(data){
       let url
-      let data = {
-         howmany: howmany || this.data.dictConfigs.titling.numberEntries || 500,
-         offset: offset || 0
-      }
-      if(this.data.search.tab == "basic"){
-         data.searchtext = this.data.search.searchtext
-         data.modifier = this.data.search.modifier
-      } else {
-         data.advance_query = this.data.search.advanced_query
-      }
       if(window.auth.data.authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
          url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
       } else {
@@ -886,6 +879,30 @@ class StoreClass {
             })
    }
 
+   loadUsers(searchtext, howmany){
+      return $.ajax({
+         url: `${window.API_URL}users/userlist.json`,
+         method: 'POST',
+         data: {
+            searchtext: searchtext,
+            howmany: howmany
+         }
+      })
+            .fail(response => {
+               M.toast({html: "Could not load users."})
+            })
+   }
+
+   getUser(email){
+      return $.ajax({
+         url: `${window.API_URL}users/userread.json`,
+         method: 'POST',
+         data: {
+            id: email
+         }
+      })
+   }
+
    deleteUser(email){
       return $.ajax({
          url: `${window.API_URL}users/userdelete.json`,
@@ -958,9 +975,83 @@ class StoreClass {
             })
    }
 
+   loadRandomEntry(){
+      if(!this.data.dictId){
+         return
+      }
+      this.data.isEntryLoading = true
+      this.trigger("isEntryLoadingChanged")
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/randomone.json`,
+         method: 'POST'
+      })
+            .done(response => {
+               this.data.entryId = response.id
+               this.data.entry = response
+               this.data.entryRevisions = []
+               this.data.isEntryRevisionsLoaded = false
+               this.data.isEntryLoaded = true
+               this.trigger("entryIdChanged")
+               this.trigger("entryChanged")
+            })
+            .fail(response => {
+               M.toast({html: "Could not load the example."})
+            })
+            .always(response => {
+               this.data.isEntryLoading = false
+               this.trigger("isEntryLoadingChanged")
+            })
+   }
+
+   loadProjects(){
+      return $.ajax({
+         url: `${window.API_URL}/projects`
+      })
+            .fail(response => {
+               M.toast({html: "Could not load projects."})
+            })
+   }
+
+   loadProject(projectID){
+      return $.ajax({
+         url: `${window.API_URL}/projects/${projectID}`
+      })
+            .fail(response => {
+               M.toast({html: "Could not load the project."})
+            })
+   }
+
+   createProject(project){
+      return $.ajax({
+         url: `${window.API_URL}/projects/new`,
+         method: "POST",
+         data: project
+      })
+            .done(response => {
+               M.toast({html: "Project was created."})
+            })
+            .fail(response => {
+               M.toast({html: "Could not create the project."})
+            })
+   }
+
+   updateProject(project){
+      return $.ajax({
+         url: `${window.API_URL}/projects/update`,
+         method: "POST",
+         data: project
+      })
+            .done(response => {
+               M.toast({html: "Project was updated."})
+            })
+            .fail(response => {
+               M.toast({html: "Could not update the project."})
+            })
+   }
+
    skeLoadCorpora(){
       return $.ajax({
-         url: `${window.API_URL}${this.data.dictId}/skeget/corpora`
+         url: `${window.API_URL}/user_corpora.json`
       })
             .fail(response => {
                M.toast({html: "Could not load Sketch Engine corpora."})
@@ -1114,6 +1205,20 @@ class StoreClass {
             q: this.data.search.advanced_query
          }) : ""
       }
+   }
+
+   getEntrySearchParams(howmany, offset){
+      let data = {
+         howmany: howmany || this.data.dictConfigs.titling.numberEntries || 500,
+         offset: offset || 0
+      }
+      if(this.data.search.tab == "basic"){
+         data.searchtext = this.data.search.searchtext
+         data.modifier = this.data.search.modifier
+      } else {
+         data.advance_query = this.data.search.advanced_query
+      }
+      return data
    }
 
    advancedSearchParseQuery(query){

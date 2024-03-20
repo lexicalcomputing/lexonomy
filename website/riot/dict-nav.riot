@@ -39,6 +39,9 @@
             if(this.props.page.indexOf("-config-") != - 1){
                this.state.links.push([`${dictId}/config`, "Configure"])
             }
+            if(this.props.page.startsWith("projects-")){
+               this.state.links.push(["projects/dashboard", "Projects"])
+            }
             let link = {
                "api": ["api", "API"],
                "e404": ["e404", "Page not found"],
@@ -76,7 +79,12 @@
 
                "admin-users": ["admin/users", "Administered users"],
                "admin-users-add": ["admin/users/add", "Add user"],
-               "admin-dicts": ["admin/dicts", "Administered dictionaries"]
+               "admin-dicts": ["admin/dicts", "Administered dictionaries"],
+
+               //"projects-dashboard": ["projects/dashboard", "Projects"],
+               "projects-new": ["projects/new", "New"],
+               "projects-view": ["projects/view", "View"],
+               "projects-edit": ["projects/edit", "Edit"]
             }[this.props.page]
             if(link){
                this.state.links.push(link)

@@ -11,7 +11,7 @@ window.nvhPlugins.links = {
          class: "overflowVisible",
          small: true,
          showCloseButton: false,
-         opts: {
+         props: {
             element: element
          }
       })

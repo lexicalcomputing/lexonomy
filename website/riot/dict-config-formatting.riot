@@ -1,0 +1,181 @@
+<dict-config-formatting>
+   <loading-overlay if={state.isBusy}/>
+   <h1>Entry formatting</h1>
+   <div class="formattingContainer displayFlex mb-8">
+      <div>
+         <h3>Element</h3>
+         <div each={element in elementOptionList}
+               class="element pointer {element.elementName == state.elementName ? 'selectedElement' : ''}"
+               onclick={onElementClick.bind(this, element.elementName)}
+               onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
+               onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
+               style="{element.style}">
+            {element.elementName}
+            <i if={element.elementName == state.elementName}
+                  class="selectedElementArrow grey-text material-icons">chevron_right</i>
+         </div>
+      </div>
+      <div class="styleColumn">
+         <h3>Style</h3>
+         <element-style-options element-name={state.elementName}/>
+      </div>
+      <div class="exampleColumn positionRelative">
+         <h3>Example</h3>
+         <div class="exampleBar grey lighten-4 displayFlex">
+            <entry-dropdown on-change={onExampleEntryChanged}/>
+            <i class="material-icons grey-text">search</i>
+            <button class="btn btn-flat  tooltipped ml-auto"
+                  onclick={onReloadRandomEntryClick}
+                  data-tooltip="Load random entry.">
+               <i class="material-icons">autorenew</i>
+            </button>
+         </div>
+         <div class="exampleWrapper positionRelative">
+            <loading-overlay if={dictData.isEntryListLoading || dictData.isEntryLoading}/>
+            <nvh-editor-view-item if={nvhStore.data.entry}
+                  onclick={onExampleClick}
+                  element={nvhStore.data.entry}
+                  read-only={true}/>
+         </div>
+      </div>
+   </div>
+   <dict-config-buttons save-data={save}/>
+
+   <script>
+      export default{
+         bindings: [["store", "entryListChanged", "update"],
+                    ["store", "isEntryListLoadingChanged", "update"],
+                    ["store", "isEntryLoadingChanged", "update"]],
+
+         state: {
+            isBusy: false,
+            elementName: null,
+            exampleElement: ""
+         },
+
+         onBeforeMount(){
+            this.state.savedConfig = JSON.stringify(nvhStore.data.formatting)
+            this.nvhStore = window.nvhStore
+             this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
+               return {
+                  elementName: element.elementName,
+                  style: `color: ${element.color}; padding-left: ${element.indent * 15 + 25}px`
+               }
+            })
+            this.state.elementName = this.elementOptionList[0].elementName
+            const changeEntryId = () => {
+               let entryId = this.dictData.entryList[Math.floor(Math.random() * this.dictData.entryList.length)].id
+               this.store.changeEntryId(entryId)
+            }
+            if(this.dictData.isEntryListLoaded){
+               changeEntryId()
+            } else {
+               this.store.one("entryListChanged", changeEntryId.bind(this))
+            }
+         },
+
+         onBeforeUnmount(){
+            this.nvhStore.data.formatting = JSON.parse(this.state.savedConfig)
+         },
+
+         onElementClick(elementName){
+            this.update({elementName: elementName})
+         },
+
+         onExampleClick(evt){
+            let nvhEditorViewItem = $(evt.target).closest("nvh-editor-view-item")
+            if(nvhEditorViewItem.length){
+               let elementName = this.nvhStore.getElementById(nvhEditorViewItem.attr("id").split("-")[2]).name
+               this.update({elementName: elementName})
+            }
+         },
+
+         onExampleEntryChanged(entry){
+            this.store.changeEntryId(entry.id)
+         },
+
+         onElementMouseEnter(elementName){
+            if(this.nvhStore.data.entry){
+               $(".highlighted", this.root).removeClass("highlighted")
+               let selector = this.nvhStore.findElements(e => e.name == elementName).map(e => `#nvh-item-${e.id}`).join(",")
+               $(selector, this.root).addClass("highlighted")
+            }
+         },
+
+         onElementMouseLeave(elementName){
+            $(".highlighted", this.root).removeClass("highlighted")
+         },
+
+         onReloadRandomEntryClick(){
+            this.store.loadRandomEntry()
+         },
+
+         save(){
+            this.update({isBusy: true})
+            this.state.savedConfig = JSON.stringify(this.nvhStore.data.formatting)
+            this.store.updateDictionaryConfig("formatting", this.nvhStore.data.formatting)
+                  .always(response => {
+                     this.update({isBusy: false})
+                  })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .formattingContainer{
+         align-items: stretch;
+         & > div{
+            min-width: 150px;
+         }
+      }
+      .element{
+         padding: 0px 15px;
+         position: relative;
+         .selectedElementArrow{
+            position: absolute;
+            left: 0px;
+            top: 0px;
+         }
+         &:hover{
+            background-color: whitesmoke;
+         }
+      }
+      .selectedElement{
+         background-color: whitesmoke;
+      }
+      element-style-options{
+         display: block;
+      }
+      .styleColumn{
+         padding: 0 20px;
+         margin: 0 20px;
+         border-left: 1px solid lightgray;
+         border-right: 1px solid lightgray;
+      }
+      .exampleColumn{
+         flex: 1;
+         .exampleWrapper{
+            min-height: 350px;
+         }
+      }
+      .nvh-readonly-value-wrapper,
+      .nvh-readonly-value{
+         cursor: pointer!important
+      }
+      .highlighted{
+         box-shadow: 0 4px 5px 0 rgb(0 0 0 / 14%), 0 1px 10px 0 rgb(0 0 0 / 12%), 0 2px 4px -1px rgb(0 0 0 / 30%);
+      }
+      .exampleBar{
+         align-items: center;
+         gap: 15px;
+         padding: 4px 5px 4px 15px;
+         .input-field,
+         input{
+            margin: 0!important
+         }
+         input{
+            height: 2rem;
+         }
+      }
+   </style>
+</dict-config-formatting>

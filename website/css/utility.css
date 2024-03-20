@@ -4,6 +4,12 @@
 .displayInlineFlex{
     display: inline-flex;
 }
+.displayBlock{
+    display: block;
+}
+.displayInlineBlock{
+    display: inline-block;
+}
 .alignCenter{
     align-items: center;
 }

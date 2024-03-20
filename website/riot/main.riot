@@ -7,7 +7,7 @@
       <div if={!state.isLoading }
             is={ state.page }
             class="container content wideContainer row"
-            token={state.token}></div>
+            {...state.pageProps}></div>
    </div>
    <app-footer/>
 
@@ -30,7 +30,7 @@
          state: {
             isLoading: true,
             page: '',
-            token: ''
+            pageProps: {}
          },
          bindings: [["auth", "authChanged", "onAuthChanged"],
                     ["auth", "checkingAuthChanged", "onCheckingAuthChange"],
@@ -90,6 +90,18 @@
             route('/make', () => {
                this.goTo('new-dictionary')
             })
+            route('projects/dashboard', () => {
+               this.goTo('projects-dashboard')
+            })
+            route('projects/new', () => {
+               this.goTo('projects-new')
+            })
+            route('projects/view/*', (projectID) => {
+               this.goTo('projects-view', null, {projectID: projectID})
+            })
+            route('projects/edit/*', (projectID) => {
+               this.goTo('projects-edit', null, {projectID: projectID})
+            })
             route('/*/edit(\?*){0,1}', (dictId) => {
                this.goTo('dict-edit', [dictId])
             })
@@ -129,13 +141,13 @@
             route('/*/upload', (dictId) => {
                this.goTo('dict-upload', [dictId])
             })
-            route('/admin/users/add', (dictId) => {
+            route('/admin/users/add', () => {
                this.goTo('admin-users-add')
             })
-            route('/admin/users', (dictId) => {
+            route('/admin/users', () => {
                this.goTo('admin-users')
             })
-            route('/admin/dicts', (dictId) => {
+            route('/admin/dicts', () => {
                this.goTo('admin-dicts')
             })
             route('/*', (dictId) => {
@@ -177,16 +189,17 @@
             route.exec()
          },
 
-         goTo(page, storeParams, updateParams){
+         goTo(page, storeParams, pageProps){
             if(!this.authData.authorized && this.needAuthorization(page)){
                this.update({
                   page: 'unauthorized'
                })
             } else {
                if(!storeParams){
-                  this.update(Object.assign({
-                     page: page
-                  }, updateParams || {}))
+                  this.update({
+                     page: page,
+                     pageProps: pageProps || {}
+                  })
                } else {
                   this.store.open(...storeParams)
                   let query = route.query()
@@ -197,19 +210,20 @@
                      advanced_query: decodeURIComponent(query.q || "")
                   })
                   if(this.store.data.isDictionaryLoading){
-                     this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, updateParams))
+                     this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, pageProps))
                   } else{
-                     this.checkAccessAndOpenPage(page, updateParams)
+                     this.checkAccessAndOpenPage(page, pageProps)
                   }
                }
             }
          },
 
-         checkAccessAndOpenPage(page, updateParams){
+         checkAccessAndOpenPage(page, pageProps){
             if(this.hasUserAccessToThePage(page)){
-               this.update(Object.assign({
-                  page: page
-               }, updateParams || {}))
+               this.update({
+                  page: page,
+                  pageProps: pageProps || {}
+               })
             } else {
                this.update({
                   page: "unauthorized"

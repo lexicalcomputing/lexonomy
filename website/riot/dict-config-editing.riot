@@ -181,7 +181,7 @@
             window.modal.open({
                title: "Custom editor",
                tag: "raw-html",
-               opts: {
+               props: {
                   content: `Your custom editor should be JavaScript object with these functions:<br>
                   <b class="monospace">editor(options)</b><br>
                   <div class="pl-4">
@@ -194,7 +194,7 @@
                         onValidChange: method to be called every time the entry valid status changes (entry is in valid or invalid state)<br><br>
                      </div>
                   </div>
-                  <b class="monospace">update()</b><br>
+                  <b class="monospace">update(entry)</b><br>
                   <div class="pl-4">
                      Redraw the editor after data change (e.g. user navigates to another entry, uses undo/redo commands...).<br><br>
                   </div>
