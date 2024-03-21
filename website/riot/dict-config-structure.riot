@@ -306,10 +306,15 @@
                      if(this.state.tab == "custom"){
                         $("#custom_generateNewNVHBtn").toggleClass("disabled", !this.structureStore.data.custom_NVHSchema || !!this.state.custom_NVHSchemaError)
                         this.refreshCustomTextFields()
-                        window.makeElementDraggable("#schemaSyntax", "#schemaSyntax h3")
                      }
                      this.refreshBtnSaveDisabled()
                   })
+         },
+
+         onUpdated(){
+            if(this.state.tab == "custom"){
+               window.makeElementDraggable("#schemaSyntax", "#schemaSyntax h3")
+            }
          },
 
          onSchemaInput(evt){
