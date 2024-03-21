@@ -88,6 +88,8 @@
                }
             } else if(evt.keyCode == 8){
                this.handleBackspaceCharacter(evt)
+            } else if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
+               evt.preventDefault()
             } else if(this.state.suggestions.length && [13, 32, 38, 40].includes(evt.keyCode)){
                evt.preventDefault()
             }
@@ -339,7 +341,7 @@
          border-top: none;
          position: sticky;
          display: flex;
-         align-items: center;
+         align-items: start;
          width: 100%;
          bottom: 0;
          left: 0;
