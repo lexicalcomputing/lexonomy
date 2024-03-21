@@ -967,28 +967,25 @@ class NVHStoreClass {
                warnings.push(`Element "${element.name}" should have some text.`)
             }
          }
-         //if(["chd", "inl"].includes(config.type)){
-            let counts = element.children.reduce((counts, e) => {
-               counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
-               return counts
-            }, {})
-            config.children.forEach(childName => {
-               let childConfig = this.getElementConfig(childName)
-               if(childConfig){
-                  if (childConfig.max && (counts[childName] || 0) > childConfig.max){
-                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childName}"`)
-                  }
-                  if (childConfig.min && (counts[childName] || 0) < childConfig.min){
-                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childName}"`)
-                  }
+         let counts = element.children.reduce((counts, e) => {
+            counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
+            return counts
+         }, {})
+         config.children.forEach(childName => {
+            let childConfig = this.getElementConfig(childName)
+            if(childConfig){
+               if (childConfig.max && (counts[childName] || 0) > childConfig.max){
+                  warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childName}"`)
                }
-            })
-         //}
+               if (childConfig.min && (counts[childName] || 0) < childConfig.min){
+                  warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childName}"`)
+               }
+            }
+         })
          element.children.forEach(child => {
             if(!window.store.data.config.structure.elements[child.name]){
                warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
-            }
-            if(!config.children.includes(child.name)){
+            } else if(!config.children.includes(child.name)){
                warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
             }
          })
