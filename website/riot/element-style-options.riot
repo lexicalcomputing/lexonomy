@@ -262,6 +262,10 @@
             this.state.availableOptions = this.getAvailableOptions(this.props.elementName)
          },
 
+         onMounted(){
+            window.initFormSelects(this.root)
+         },
+
          onBeforeUpdate(){
             this.state.style = this.nvhStore.getElementStyle(this.props.elementName) || {},
             this.state.availableOptions = this.getAvailableOptions(this.props.elementName)
