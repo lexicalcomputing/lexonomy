@@ -774,7 +774,7 @@ class StoreClass {
                M.toast({html: "Dictionary was deleted."})
             })
             .fail(response => {
-               M.toast({html: "Dictionary clone creation failed."})
+               M.toast({html: "Could not delete the dictionary."})
             })
             .always(repsonse => {
 
