@@ -41,7 +41,7 @@ if not cgi and len(sys.argv) > 1:
     my_url = sys.argv[1]
 
 # serve static files
-@route('/<path:re:(widgets|furniture|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.css|riot|img|js|css|docs|version\.txt).*>')
+@route('/<path:re:(furniture|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.css|riot|img|js|css|docs|version\.txt).*>')
 def server_static(path):
     return static_file(path, root="./")
 
@@ -475,13 +475,13 @@ def makedictjson(user):
     if request.query.filename and request.query.hwNode:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
         if supported_formats.match(request.query.filename):
-            res, msg, error = ops.makeDict(request.forms.url, None, request.forms.title, "", user["email"], 
+            res, msg, error = ops.makeDict(request.forms.url, None, request.forms.title, "", user["email"],
                                            None, request.query.filename, request.query.hwNode)
         else:
-            return{"success": False, "url": request.forms.url, 
+            return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
     else:
-        res, msg, error = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, 
+        res, msg, error = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title,
                                        "", user["email"], request.forms.addExamples == "true")
     return {"success": res, "url": request.forms.url, "error": error, 'msg': msg}
 
@@ -1174,7 +1174,7 @@ def getentryjson(dictID, user, dictDB, configs, entryID):
         abort(404, "No Entry Available")
     else:
         return entry
-    
+
 @get(siteconfig["rootPath"] + "api/<dictID>/<entryID>.nvh") # OK
 def getentryapinvh(dictID, entryID):
     apikey = request.headers["X-API-KEY"]

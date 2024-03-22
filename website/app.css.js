@@ -1,4 +1,3 @@
-import "./widgets/xema-designer.css"
 import "./libs/materialize/css/materialize.min.css"
 import "./libs/materialize/css/materialize-colorpicker.min.css"
 import "./libs/jquery/css/jquery-ui.css"
