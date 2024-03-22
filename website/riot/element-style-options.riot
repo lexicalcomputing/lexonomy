@@ -1,5 +1,30 @@
 <element-style-options>
    <div class="nvh-options">
+      <div class="nvh-option nvh">
+         <span class="nvh-label">
+            Element
+         </span>
+         <span class="nvh-values">
+            {props.elementName}
+         </span>
+      </div>
+      <div class="nvh-option nvh">
+         <span class="nvh-label hint tooltipped"
+               data-tooltip="The name that will be displayed in most cases. It must be different from other elements and their displayed names.">
+            Displayed name
+           <i class="material-icons">help</i>
+         </span>
+         <span class="nvh-values nvh-name">
+            <input id="name"
+                  type="text"
+                  class="input-field"
+                  value={state.style.name}
+                  oninput={onNameInput}/>
+            <small id="nameWarining"
+                  class="invalidNameWaring red-text"
+                  style="display: none;">name already taken</small>
+         </span>
+      </div>
       <div if={state.availableOptions.includes("hidden")}
             class="nvh-option">
          <span class="nvh-label">
@@ -292,8 +317,21 @@
             this.changeElementStyle(evt.target.name, evt.target.checked)
          },
 
+         onNameInput(evt){
+            let name = evt.target.value
+            let isNameValid = !this.nvhStore.findElement(el => {
+               return el.name != this.props.elementName
+                     && (el.name.toLowerCase() == name.toLowerCase()
+                           || this.store.getElementDisplayedName(el.name.toLowerCase()) == name.toLowerCase())
+            })
+            if(isNameValid){
+               this.changeElementStyle("name", name)
+            }
+            $("#nameWarining").toggle(!isNameValid)
+         },
+
          onLabelInput(evt){
-            this.nvhStore.changeElementStyleOption(this.props.elementName, "label", evt.target.value)
+            this.changeElementStyle("label", evt.target.value)
          },
 
          changeElementStyle(option, value){
@@ -392,6 +430,15 @@
             i{
                line-height: 20px;
             }
+         }
+      }
+      .nvh-name{
+         position: relative;
+         padding-bottom: 10px;
+         .invalidNameWaring{
+            position: absolute;
+            left: 4px;
+            bottom: -6px;
          }
       }
       .nvh-border{

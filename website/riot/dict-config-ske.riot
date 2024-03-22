@@ -188,6 +188,7 @@
                this.store.loadDictionaryConfig("ske")
                      .done(response => {
                         this.state.data = response.content
+                        this.state.data.kex = this.state.data.kex || {}
                         this.state.data.kex.concsampling = this.state.data.kex.concsampling || 0
                         this.state.data.kex.searchElements = this.state.data.kex.searchElements || []
                         this.store.skeLoadCorpora()

@@ -93,9 +93,6 @@
                request && request.done(() => {
                      if(this.dictData.entryList.length){
                         this.store.changeEntryId(this.dictData.entryList[0].id)
-                     } else {
-                        $("#container").html("").addClass("empty")
-                        Screenful.Editor.updateToolbar()
                      }
                   })
                this.update()

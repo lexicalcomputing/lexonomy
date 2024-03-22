@@ -4,26 +4,27 @@
    <div class="row">
       <p>If you need to number some of entry elements automatically, Lexonomy can do that for you. First, go to Entry structure and add element where you want to store the number. Eg. in element <tt>sense</tt> add child element <tt>number</tt>. When you're ready, select element to number (eg. <tt>sense</tt>) and element to store numbering (eg. <tt>number</tt>). Lexonomy will fill the numbers where missing.</p>
    </div>
-   <div class="row">
-      <div class="input-field col s4">
-         <select id="elements"
-               onchange={ changeElem }></select>
+   <div class="formWrapper displayFlex">
+      <div class="input-field">
+         <element-select on-change={onElementChange}/>
          <label for="elements">Element to number</label>
       </div>
-      <div id="hasChildren"
-            class="input-field col s4">
-         <select id="children"></select>
+      <div if={state.storeElementList.length}
+            class="input-field">
+         <select onchange={onStoreElementChange}>
+            <option each={element in state.storeElementList}
+                  value={element}>{store.getElementDisplayedName(element)}</option>
+         </select>
          <label for="children">Add numbers to</label>
       </div>
-      <div id="hasNoChildren"
-            class="input-field col s4 grey-text"
-            style="display: none; padding-top: 10px;">
+      <div if={!state.storeElementList.length}
+            class="input-field grey-text"
+            style="padding-top: 10px;">
          element has no children
       </div>
-      <div class="input-field col s3">
-         <a class="btn waves-effect waves-light"
-               onclick={ addNumbers }
-               id="submit_button">
+      <div class="input-field">
+         <a class="btn waves-effect waves-light {state.storeElement ? '' : 'disabled'}"
+               onclick={addNumbers}>
             <i class="material-icons right">send</i>Start auto-numbering
          </a>
       </div>
@@ -41,50 +42,49 @@
       export default {
          state: {
             isSaving: false,
-            data: null,
-            info: ""
+            info: "",
+            countElement: null,
+            storeElement: null,
+            storeElementList: []
+         },
+
+         onBeforeMount(){
+            this.state.countElement = this.dictData.config.structure.root
+            this.state.storeElementList = this.dictData.config.structure.elements[this.state.countElement].children
+            this.state.storeElement = this.state.storeElementList[0]
          },
 
          onMounted() {
-            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
-               if ($('#elements option').length == 0) {
-                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
-                     $('#elements').append('<option value="' + key + '">' + key + '</option>')
-                  })
-                  this.changeElem()
-               } else {
-                  $('select').formSelect()
-               }
-               M.updateTextFields()
-            }
+            window.initFormSelects(this.root)
          },
 
-         changeElem() {
-            $("#children").find('option').remove()
-            var elem = $("#elements").val()
-            this.dictData.config.structure.elements[elem].children.forEach(childName => {
-               $("#children").append(`<option value="${childName}">${childName}</option>`)
-            })
-            var hasChildren = !!this.dictData.config.structure.elements[elem].children.length
-            $("#submit_button").toggleClass("disabled", !hasChildren)
-            $("#hasChildren").toggle(hasChildren)
-            $("#hasNoChildren").toggle(!hasChildren)
+         onUpdated(){
+            window.initFormSelects(this.root)
+         },
 
-            $('select').formSelect()
+         onElementChange(elementName) {
+            let children = this.dictData.config.structure.elements[elementName].children
+            this.update({
+               countElement: elementName,
+               storeElementList: children,
+               storeElement: children[0]
+            })
+         },
+
+         onStoreElementChange(element){
+            this.update({storeElement: element})
          },
 
          addNumbers() {
-            var countElem = $("#elements").val()
-            var storeElem = $("#children").val()
-            if (countElem && storeElem) {
+            if(this.state.countElement && this.state.storeElement) {
                this.update({
                   isSaving: true,
-                  info: ''
+                  info: ""
                })
-               this.store.autonumberElements(countElem, storeElem)
+               this.store.autonumberElements(this.state.countElement, this.state.storeElement)
                      .done(response => {
                         if(response.success) {
-                           this.update({info: 'Auto-numbering finished, ' + response.processed + ' entries updated.'})
+                           this.update({info: `Auto-numbering finished, ${response.processed} entries updated.`})
                         }
                      })
                      .always(() => this.update({isSaving: false}))
@@ -93,4 +93,13 @@
       }
    </script>
 
+   <style type="scss">
+      .formWrapper{
+         gap: 30px;
+         &>*{
+            max-width: 250px;
+            width: 250px;
+         }
+      }
+   </style>
 </dict-config-autonumber>

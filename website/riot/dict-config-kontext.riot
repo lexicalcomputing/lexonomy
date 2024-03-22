@@ -15,13 +15,14 @@
             <input data-selected-corpus={ state.data.corpus }
                   type="text"
                   id="corpus"
+                  placeholder="Type to search in the list of corpora"
                   class="autocomplete"
-                  placeholder="Retrieving available corpora from KonText, please wait...">
+                  placeholder="Retrieving available corpora from Sketch Engine, please wait...">
             <label for="corpus">Corpus name</label>
             <span class="helper-text">Select a Sketch Engine corpus from the list of corpora available to you.</span>
             <span class="helper-text"
                   id="corpusInfo"
-                  hide={ true }></span>
+                  style="display: none"></span>
          </div>
       </div>
       <div class="row">
@@ -35,7 +36,9 @@
       </div>
       <div class="row">
          <div class="input-field">
-            <select id="searchElements" multiple></select>
+            <element-select id="searchElements"
+                  riot-value={state.data.searchElements}
+                  multiple={true}/>
             <label for="searchElements">Additional search elements</label>
             <span class="helper-text">You can select any textual elements here whose content you would like to search for in KonText. A menu will be displayed next to all these elements like for the root entry element.</span>
          </div>
@@ -45,38 +48,16 @@
    </div>
    <div class="row">
       <div class="input-field">
-         <select id="container" data-template="template">
-            <option value="">(not set)</option>
-         </select>
+         <element-select id="container"
+               riot-value={state.data.container}
+               show-empty-value={true}
+               empty-value="(not set)"/>
          <label for="container">Example container</label>
          <span class="helper-text">Select the element which should wrap each individual example. When you pull example sentences automatically from a corpus, Lexonomy will insert one of these elements for each example sentence.</span>
       </div>
    </div>
-   <div class="row">
-      <div class="input-field">
-         <textarea id="template"
-               class="materialize-textarea"
-               placeholder="XML template">{ state.data.template }</textarea>
-         <label for="template">XML template</label>
-         <span class="helper-text">This is the XML that will be inserted into your entries with each corpus example. The actual text will be where the placeholder <tt>$text</tt> is.</span>
-      </div>
-   </div>
-   <div class="row">
-      <div class="input-field">
-         <select id="markup">
-            <option value="">(not set)</option>
-         </select>
-         <label for="markup">Headword mark-up</label>
-         <span class="helper-text">Select the element which should mark up the headword in inserted corpus examples. This setting is optional: if you make no selection, corpus examples will be inserted without mark-up.</span>
-      </div>
-   </div>
    <dict-config-buttons save-data={saveData}></dict-config-buttons>
 
-   <style>
-      #searchElements {
-         width: 10em;
-      }
-   </style>
 
    <script>
       export default {
@@ -84,125 +65,84 @@
             isLoading: true,
             isSaving: false,
             data: {
-               url: 'https://www.clarin.si/kontext/', searchElements: [],
-               container: '', template: '', markup: ''
+               url: "https://www.clarin.si/kontext/",
+               container: "",
+               searchElements: []
             }
          },
 
          onMounted() {
             this.store.loadDictionaryConfig("kontext")
-                  .done(response => {
-                     this.state.data = response.content
-                     if (!response.url || response.url == '') {
-                        this.state.data.url = 'https://www.clarin.si/kontext/'
-                     }
-                     if (!response.searchElements) {
-                        this.state.data.searchElements = []
-                     }
+                  .done(function(response) {
+                     Object.assign(this.state.data, response.content)
                      M.updateTextFields()
-                     M.textareaAutoResize($('#template'))
-                     $('#corpus').autocomplete({data: {}})
-                     $('#corpus').data('corpora', {})
-                     if (this.state.data.corpus != '') {
-                        $('#corpus').data('selected-corpora', this.state.data.corpus)
+                     $("#corpus").autocomplete({data: {}})
+                     $("#corpus").data("corpora", {})
+                     if (this.state.data.corpus != "") {
+                        $("#corpus").data("selected-corpora", this.state.data.corpus)
                      }
                      this.store.loadKontextCorpora()
-                           .done(function(res) {
-                              var corporaList = {}
-                              var corporaData = {}
-                              var selected = ''
-                              res.corpus_list.forEach(e => {
-                                 var eInfo = e.name + " (" + e.desc + "; " + e.size_info + ")"
-                                 corporaData[eInfo] = e.corpus_id
-                                 corporaList[eInfo] = null
-                                 if ($('#corpus').data('selected-corpus') == e.corpus_id) {
-                                    selected = eInfo
-                                    $('#corpusInfo').html('Currently selected corpus: ' + e.name + ".")
-                                    $('#corpusInfo').show()
+                           .done(function(response) {
+                              let corpusList = response.corpus_list.map(corpus => {
+                                 return {
+                                    value: corpus.corpus_id,
+                                    label: corpus.name,
+                                    info: corpus.size_info
                                  }
                               })
-                              $('#corpus').autocomplete({data: corporaList})
-                              $('#corpus').data('corpora', corporaData)
-                              $('#corpus').attr('placeholder', 'Type to search in the list of corpora')
-                              if (selected != '') {
-                                 $('#corpus').val(selected)
+                              $("#corpus").autocomplete({
+                                 data: corpusList,
+                                 onAutocomplete: corpus => {
+                                    $("#corpus").attr("corpname", corpus.value)
+                                    this.refreshCorpusNote(corpus)
+                                 }
+                              })
+                              let selectedCorpus = this.state.data.corpus && corpusList.find(corpus => corpus.value == this.state.data.corpus)
+                              if(selectedCorpus){
+                                 $("#corpus").val(selectedCorpus.label)
+                                       .attr("corpname", selectedCorpus.value)
+                                 this.refreshCorpusNote(selectedCorpus)
                               }
-                           })
-                     $('#corpus').on('change', function() {
-                        var corporaData = $(this).data('corpora')
-                        $(this).data('selected-corpus', corporaData[$(this).val()])
-                        $('#corpusInfo').html('Currently selected corpus: ' + $(this).val() + ".")
-                        $('#corpusInfo').show()
-                     })
-
-                     this.state.data.searchElements.forEach(el => {
-                        $('#searchElements option[value='+el+']').attr('selected','selected')
-                     })
-                     if (this.state.data.container != '') {
-                        $('#container option[value='+this.state.data.container+']').attr('selected','selected')
-                     }
-                     if (this.state.data.markup != '') {
-                        $('#markup option[value='+this.state.data.markup+']').attr('selected','selected')
-                     }
-                  })
+                           }.bind(this))
+                  }.bind(this))
                   .always(() => {
                      this.update({isLoading: false})
-                     $('select').formSelect()
+                     $("select").formSelect()
                      M.updateTextFields()
                   })
-         },
-
-         onUpdated() {
-            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
-               if ($('#searchElements option').length == 0) {
-                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
-                     if (info.type == 'txt' || info.type == 'lst') {
-                        var selected = this.state.data.searchElements.includes(key)? 'selected':''
-                        $('#searchElements').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
-                     }
-                  })
-               }
-               if ($('#container option').length == 1) {
-                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
-                        var selected = (this.state.data.container == key)? 'selected':''
-                        $('#container').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
-                  })
-               }
-               if ($('#markup option').length == 1) {
-                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
-                        var selected = (this.state.data.markup == key)? 'selected':''
-                        $('#markup').append('<option value="' + key + '" ' + selected + '>' + key + '</option>')
-                  })
-               }
-               $('select').formSelect().on("change", (evt) => {
-                  let template = evt.target.dataset.template
-                  let element = evt.target.value
-                  if(template){
-                     $(`#${template}`).val(`<${element}>$text</${element}>`)
-                  }
-               })
-            }
          },
 
          getConfigData() {
-            var newData = {
-               url: $('#kontext_url').val(),
-               corpus: $('#corpus').data('selected-corpus'),
-               concquery: $('#concquery').val(),
-               searchElements: $('#searchElements').val(),
-               container: $('#container').val(),
-               template: $('#template').val(),
-               markup: $('#markup').val(),
+            return {
+               url: $("#kontext_url").val(),
+               corpus: $("#corpus").attr("corpname"),
+               concquery: $("#concquery").val(),
+               searchElements: $("#searchElements select").val(),
+               container: $("#container select").val()
             }
-            return newData
          },
 
          saveData() {
             this.update({isSaving: true})
             this.store.updateDictionaryConfig("kontext", this.getConfigData())
                   .always(() => this.update({isSaving: false}))
+         },
+
+         refreshCorpusNote(corpus){
+            if(!corpus){
+               $("#corpusInfo").hide()
+            } else {
+               $("#corpusInfo").html(`Currently selected corpus: ${corpus.value}`)
+                     .show()
+            }
          }
       }
    </script>
 
+
+   <style>
+      .input-field{
+         max-width: 700px;
+      }
+   </style>
 </dict-config-kontext>

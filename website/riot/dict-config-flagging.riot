@@ -71,9 +71,10 @@
          </div>
          <br>
          <br>
-         <div class="input-field"
-               style="max-width: 400px;">
-            <select id="flag-element"></select>
+         <div id="flag-element"
+               class="input-field">
+            <element-select include-root-element={false}
+                  riot-value={state.data.flag_element}/>
             <label for="flag-element">Flag element</label>
             <span class="helper-text">Select the element which the flags should be put into.</span>
          </div>
@@ -82,15 +83,6 @@
    <br><br>
    <dict-config-buttons save-data={saveData}
          show-save={state.data.flags.length}></dict-config-buttons>
-
-   <style>
-      tr{
-         border-bottom: none;
-      }
-      th, td{
-         padding: 3px 10px 3px 0;
-      }
-   </style>
 
    <script>
       export default {
@@ -112,14 +104,14 @@
          },
 
          addColor() {
-            $('.flag-color').each(function(idx, elem) {
+            $(".flag-color").each(function(idx, elem) {
                var cid = $(elem)[0].id
-               $('#' + cid).colorpicker().on('changeColor', function(ev) {
+               $("#" + cid).colorpicker().on("changeColor", function(ev) {
                   let bgColor = ev.color.toHex()
                   let color = this.store.getFlagTextColor(bgColor)
                   $(elem).css({
-                     'background-color': bgColor,
-                     'color': color
+                     "background-color": bgColor,
+                     "color": color
                   })
                }.bind(this))
             }.bind(this))
@@ -138,28 +130,21 @@
          },
 
          onUpdated() {
-            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
-               if ($('#flag-element option').length == 0) {
-                  Object.entries(this.dictData.config.structure.elements).forEach(([key, info]) => {
-                     if(key != this.dictData.config.structure.root){
-                        $('#flag-element').append('<option value="' + key + '"' + (key == this.state.data.flag_element ? 'selected' : '') +  '>' + key + '</option>')
-                     }
-                  })
-               }
-               $('select').formSelect()
-            }
             M.updateTextFields()
             this.addColor()
          },
 
          getConfigData() {
-            var newData = {flag_element: $('#flag-element').val(), flags: []}
-            $('.flag-info').each(function() {
+            var newData = {
+               flag_element: $("#flag-element select").val(),
+               flags: []
+            }
+            $(".flag-info").each(function() {
                newData.flags.push({
-                  key: $(this).find('.flag-key').val(),
-                  name: $(this).find('.flag-name').val(),
-                  label: $(this).find('.flag-label').val(),
-                  color: $(this).find('.flag-color').val()
+                  key: $(this).find(".flag-key").val(),
+                  name: $(this).find(".flag-name").val(),
+                  label: $(this).find(".flag-label").val(),
+                  color: $(this).find(".flag-color").val()
                })
             })
             return newData
@@ -173,4 +158,19 @@
       }
    </script>
 
+
+   <style>
+      table{
+         width: auto;
+      }
+      tr{
+         border-bottom: none;
+      }
+      th, td{
+         padding: 3px 10px 3px 0;
+      }
+      #flag-element {
+         max-width: 250px;
+      }
+   </style>
 </dict-config-flagging>

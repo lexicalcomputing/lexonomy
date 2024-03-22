@@ -2,29 +2,34 @@
    <loading-overlay if={state.isLoading || state.isSaving}/>
    <h1>Headword</h1>
    <div class="row">
-      <div class="input-field col s6">
-         <select id="headword">
-            <option value="">(not set)</option>
-         </select>
+      <div id="headword"
+            class="input-field col s6">
+         <element-select show-empty-value={true}
+               empty-value="(not set)"
+               riot-value={state.data.headword}/>
          <label for="headword">Headword</label>
          <span class="helper-text">Select the element which contains the entry's headword. If you make no selection here Lexonomy will try to guess what the headword of each entry is.</span>
       </div>
    </div>
    <div class="row">
-      <div class="input-field col s6">
-         <select id="headwordSorting">
-            <option value="">(not set)</option>
-         </select>
+      <div class="col input-field">
+         <div class="displayFlex">
+            <div id="headwordSorting">
+               <element-select show-empty-value={true}
+                     empty-value="(not set)"
+                     riot-value={state.data.headwordSorting}/>
+            </div>
+            <label class="ml-8 mt-2">
+               <input type="checkbox"
+                     id="sortDesc"
+                     checked={ state.data.sortDesc }/>
+               <span>Sort in descending order</span>
+            </label>
+         </div>
          <label for="headwordSorting">Headword sorting</label>
-         <span class="helper-text">Select the element which will be used for sorting of headwords in the entry list. If you make no selection here Lexonomy will use the element you chose for headword.</span>
-      </div>
-      <div class="input-field col s6">
-         <label style="padding-top: 30px;">
-            <input type="checkbox"
-                  id="sortDesc"
-                  checked={ state.data.sortDesc }/>
-            <span>Sort in descending order</span>
-         </label>
+         <div>
+            <span class="helper-text">Select the element which will be used for sorting of headwords in the entry list. If you make no selection here Lexonomy will use the element you chose for headword.</span>
+         </div>
       </div>
    </div>
    <div class="row">
@@ -41,11 +46,11 @@
             <span>simple</span>
          </label>
          <br/>
-         <div class="input-field">
-            <select id="headwordAnnotations"
-                  multiple
-                  disabled={ state.data.headwordAnnotationsType == "advanced" }>
-            </select>
+         <div id="headwordAnnotations"
+               class="input-field">
+            <element-select multiple={true}
+                  riot-value={state.data.headwordAnnotations}
+                  disabled={state.data.headwordAnnotationsType == "advanced"}/>
             <span class="helper-text">You can select any elements here whose content you want displayed beside the headword in the entry list, such as homograph numbers or part-of-speech labels.</span>
          </div>
       </div>
@@ -88,7 +93,7 @@
          <span class="helper-text">High number may reduce Lexonomy performance.</span>
       </div>
    </div>
-   <dict-config-buttons save-data={saveData}></dict-config-buttons>
+   <dict-config-buttons save-data={saveData}/>
 
    <script>
       export default {
@@ -103,13 +108,12 @@
 
          changeAnnotation() {
             if ($("[name=hwannotype][value=advanced]").is(":checked")) {
-               $("#headwordAnnotations").attr("disabled", "disabled")
+               $("#headwordAnnotations select").attr("disabled", "disabled")
                $("#advancedAnnotations").removeAttr("disabled")
             } else {
-               $("#advancedAnnotations").attr("disabled", "disabled")
+               $("#advancedAnnotations select").attr("disabled", "disabled")
                $("#headwordAnnotations").removeAttr("disabled")
             }
-            $("#headwordAnnotations").formSelect()
          },
 
          onMounted() {
@@ -135,33 +139,13 @@
                      this.update({isLoading: false})
                      M.updateTextFields()
                      M.textareaAutoResize($("#advancedAnnotations"))
-                     if (this.dictData.dictConfigs.structure && this.dictData.dictConfigs.structure.elements) {
-                        Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
-                           $("#headword").append(`<option value="${key}">${key}</option>`)
-                        })
-                        Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
-                           $("#headwordSorting").append(`<option value="${key}">${key}</option>`)
-                        })
-                        Object.entries(this.dictData.dictConfigs.structure.elements).forEach(([key, info]) => {
-                           if (key != this.state.data.headword) {
-                              $("#headwordAnnotations").append(`<option value="${key}">${key}</option>`)
-                           }
-                        })
-                        $(`#headword option[value="${this.state.data.headword}"]`).attr("selected", "selected")
-                        $(`#headwordSorting option[value="${this.state.data.headwordSorting}"]`).attr("selected", "selected")
-                        this.state.data.headwordAnnotations.forEach(el => {
-                           $(`#headwordAnnotations option[value="${el}"]`).attr("selected", "selected")
-                        })
-
-                        $("select").formSelect()
-                     }
                   })
          },
 
          getConfigData() {
             let newData = {
-               headword: $("#headword").val(),
-               headwordSorting: $("#headwordSorting").val(),
+               headword: $("#headword select").val(),
+               headwordSorting: $("#headwordSorting select").val(),
                sortDesc: $("#sortDesc").is(":checked"),
                numberEntries: $("#numberEntries").val(),
                locale: this.store.getLanguageCode($("#locale").val())
@@ -171,7 +155,7 @@
                newData.headwordAnnotationsAdvanced = $("#advancedAnnotations").val()
             } else {
                newData.headwordAnnotationsType = "simple"
-               newData.headwordAnnotations = $("#headwordAnnotations").val()
+               newData.headwordAnnotations = $("#headwordAnnotations select").val()
             }
             return newData
          },
@@ -184,4 +168,15 @@
       }
    </script>
 
+
+   <style type="scss">
+      #headword element-select,
+      #headwordSorting element-select,
+      #locale,
+      #numberEntries{
+         display: block;
+         max-width: 300px;
+         width: 300px;
+      }
+   </style>
 </dict-config-titling>

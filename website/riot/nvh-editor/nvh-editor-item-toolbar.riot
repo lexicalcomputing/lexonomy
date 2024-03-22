@@ -2,7 +2,7 @@
    <div if={state.show}
          class="nvh-toolbar-wrapper">
       <div class="nvh-element-name">
-         {state.element && state.element.name}
+         {state.element && store.getElementDisplayedName(state.element.name)}
       </div>
       <span class="nvh-value-icons">
          <i class="nvh-icon-drag material-icons tooltipped {state.isDragDisabled ? 'disabled' : ''}"
@@ -31,7 +31,7 @@
          <i if={dictData.userAccess.canConfig}
                class="nvh-icon-style material-icons tiny tooltipped {state.isStyleDisabled ? 'disabled' : ''}"
                onclick={onEditStyleClick}
-               data-tooltip="Change appearance of '{state.element.name}'">palette</i>
+               data-tooltip="Change element appearance">palette</i>
       </span>
    </div>
 

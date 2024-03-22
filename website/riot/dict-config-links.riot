@@ -152,7 +152,7 @@
                   var key = $select.attr("linkelement")
                   $select.append(`<option value="${key}" selected}>${key}</option>`)
                   this.state.unusedElements.forEach(key => {
-                     $select.append(`<option value="${key}">${key}</option>`)
+                     $select.append(`<option value="${key}">${this.store.getElementDisplayedName(key)}</option>`)
                   })
                   $('.linkTable select').formSelect()
                      .on("change", this.onElementChange)

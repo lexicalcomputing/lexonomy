@@ -8,7 +8,7 @@
             selected={props.multiple ? props.riotValue.includes(option.elementName) : option.elementName == props.riotValue}
             value={option.elementName}>
          <span style="{option.style}">
-            {option.elementName}
+            {store.getElementDisplayedName(option.elementName)}
          </span>
       </option>
    </select>
@@ -16,7 +16,12 @@
    <script>
       export default{
          onBeforeMount(){
-            this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
+            let elements = window.nvhStore.getElementTreeList(this.props.rootElement)
+            if(typeof this.props.includeRootElement == "boolean" && !this.props.includeRootElement){
+               elements.shift()
+               elements.forEach(element => {element.indent -= 1})
+            }
+            this.elementOptionList = elements.map(element => {
                return {
                   elementName: element.elementName,
                   style: `color: ${element.color}; margin-left: ${element.indent * 15}px`
