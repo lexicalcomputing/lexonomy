@@ -11,13 +11,13 @@
          The contents of elements you select here will be searchable (in addition to each entry's headword).
       </div>
       <br>
-      <div each={element in Object.keys(dictData.config.structure.elements)}>
+      <div each={obj in elementOptionList}>
          <label>
             <input type="checkbox"
-                  value={element}
-                  checked={state.data.searchableElements && state.data.searchableElements.includes(element)}
-                  disabled={element == dictData.config.titling.headword}/>
-            <span>{element}</span>
+                  value={obj.elementName}
+                  checked={state.data.searchableElements && state.data.searchableElements.includes(obj.elementName)}
+                  disabled={obj.elementName == dictData.config.titling.headword}/>
+            <span style="{obj.style}">{store.getElementDisplayedName(obj.elementName)}</span>
          </label>
       </div>
    </div>
@@ -38,6 +38,14 @@
             this.state.hasElements = this.dictData.config.structure
                   && this.dictData.config.structure.elements
                   && Object.keys(this.dictData.config.structure.elements).length
+            if(this.state.hasElements){
+               this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
+                  return {
+                     elementName: element.elementName,
+                     style: `color: ${element.color}; padding-left: ${element.indent * 15 + 35}px`
+                  }
+               })
+            }
          },
 
          onMounted() {

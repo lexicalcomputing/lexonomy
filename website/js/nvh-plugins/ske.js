@@ -42,6 +42,7 @@ window.nvhPlugins.ske = {
       let config = window.store.data.config
       let authData = window.auth.data
       return window.store.data.siteconfig.api_url
+            && config.kex
             && config.kex.corpus
             && authData.ske_username
             && authData.ske_apiKey

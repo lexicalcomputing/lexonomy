@@ -4,7 +4,7 @@
          <li class="nvh-header grey lighten-2">
             <div>
                <div>
-                  {state.element.name}
+                  {store.getElementDisplayedName(state.element.name)}
                </div>
                <div if={state.actualOptions[0].parentItem}
                      class="nvh-breadcrumbs">
@@ -267,7 +267,7 @@
                      id: "addChild",
                      label: "Child",
                      options: availAbleChildElements.map(c => ({
-                        label: c,
+                        label: this.store.getElementDisplayedName(c),
                         action: this.nvhStore.addChildElement.bind(this.nvhStore, element, c)
                      }))
                   })
@@ -277,14 +277,14 @@
                      id: "addSiblingBefore",
                      label: "Sibling before",
                      options: availSiblingsElements.map(c => ({
-                        label: c,
+                        label: this.store.getElementDisplayedName(c),
                         action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, c, 'before')
                      }))
                   }, {
                      id: "addSiblingAfter",
                      label: "Sibling after",
                      options: availSiblingsElements.map(c => ({
-                        label: c,
+                        label: this.store.getElementDisplayedName(c),
                         action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, c, 'after')
                      }))
                   })

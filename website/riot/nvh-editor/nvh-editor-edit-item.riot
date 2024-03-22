@@ -18,7 +18,7 @@
                   class="nvh-warning pulse tooltipped"
                   data-tooltip={props.element.warnings.join("<br>")}
                   style="background-color: {state.labelColor};">!</span>
-            {props.element.name}{props.element.value ? ": " : ""}
+            {store.getElementDisplayedName(props.element.name)}{props.element.value ? ": " : ""}
             <nvh-plugin-buttons if={!props.readOnly && state.config.type}
                   element={props.element}/>
             <i if={props.element.children.length && !props.readOnly}

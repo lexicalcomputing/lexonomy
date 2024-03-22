@@ -10,7 +10,7 @@
                onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
                onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
                style="{element.style}">
-            {element.elementName}
+            {store.getElementDisplayedName(element.elementName)}
             <i if={element.elementName == state.elementName}
                   class="selectedElementArrow grey-text material-icons">chevron_right</i>
          </div>
@@ -45,7 +45,8 @@
       export default{
          bindings: [["store", "entryListChanged", "update"],
                     ["store", "isEntryListLoadingChanged", "update"],
-                    ["store", "isEntryLoadingChanged", "update"]],
+                    ["store", "isEntryLoadingChanged", "update"],
+                    ["nvhStore", "updateElements", "update"]],
 
          state: {
             isBusy: false,

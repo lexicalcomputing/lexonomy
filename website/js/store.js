@@ -180,6 +180,14 @@ class StoreClass {
       return ""
    }
 
+   getElementDisplayedName(elementName){
+      let formatting = this.data.config.formatting
+      if(formatting && formatting[elementName] && formatting[elementName].name){
+         return formatting[elementName].name
+      }
+      return elementName
+   }
+
    getFlag(flagName){
       if(flagName){
          return this.data.config.flagging.flags.find(f => f.name == flagName)
