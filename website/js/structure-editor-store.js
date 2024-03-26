@@ -104,20 +104,16 @@ class StructureEditorStoreClass {
       this.trigger("elementChanged")
    }
 
-   moveElementToAnotherParent(draggedElement, droppedToElement, indent){
-      let actualParent = this.getParentElement(draggedElement.name)
-      actualParent.children = actualParent.children.filter(childName => childName != draggedElement.name)
+   moveElementToAnotherParent(childElementName, newParentElement, position=0){
+      let actualParent = this.getParentElement(childElementName)
+      actualParent.children = actualParent.children.filter(child => child != childElementName)
       this.forEachElement(e => {
-         e.children = e.children.filter(child => child != draggedElement.name)
+         e.children = e.children.filter(c => c != childElementName)
       })
-      if(droppedToElement.indent < indent){
-         // adding as child
-         droppedToElement.children.unshift(draggedElement.name)
-      } else if(droppedToElement.indent == indent){
-         // adding as sibling
-         let newParentElement = this.getParentElement(droppedToElement.name)
-         let position = newParentElement.children.indexOf(droppedToElement.name)
-         newParentElement.children.splice(position + 1, 0, draggedElement.name)
+      if(position === null){
+         newParentElement.children.push(childElementName)
+      } else {
+         newParentElement.children.splice(position, 0, childElementName)
       }
       this.refreshAllElementsIndent()
       this.trigger("elementChanged")
@@ -200,6 +196,10 @@ class StructureEditorStoreClass {
          elements: elements,
          root: this.data.structure.root
       }
+   }
+
+   getAllAncestors(elementName){
+      return this.getAllAncestorNames(elementName).map(ancestorName => this.data.structure.elements[ancestorName])
    }
 
    getAllAncestorNames(elementName){
