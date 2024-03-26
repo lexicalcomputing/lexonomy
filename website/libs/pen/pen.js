@@ -230,7 +230,7 @@
     }
 
     addListener(ctx, editor, 'keyup', function(e) {
-      if (e.which === 8 && ctx.isEmpty()) return lineBreak(ctx, true);
+      //if (e.which === 8 && ctx.isEmpty()) return lineBreak(ctx, true);
       // toggle toolbar on key select
       if (e.which !== 13 || e.shiftKey) return updateStatus(400);
       var node = getNode(ctx, true);
@@ -315,7 +315,7 @@
 
     // listen for placeholder
     addListener(ctx, editor, 'focus', function() {
-      if (ctx.isEmpty()) lineBreak(ctx, true);
+      //if (ctx.isEmpty()) lineBreak(ctx, true);
       addListener(ctx, doc, 'click', outsideClick);
     });
 
