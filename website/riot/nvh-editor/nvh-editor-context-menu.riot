@@ -239,8 +239,7 @@
             let wrapperOffset = this.state.elementNode.offset()
             let wrapperBR = this.state.elementNode[0].getBoundingClientRect()
             let top = (wrapperOffset.top - editorOffset.top)
-            // TODO do not allow to show menu above window top
-            if(wrapperBR.top  < windowHeight / 2){
+            if(wrapperBR.top < windowHeight / 2){
                top += this.state.elementNode.height() + 8
             } else {
                top -= menuHeight + 8
