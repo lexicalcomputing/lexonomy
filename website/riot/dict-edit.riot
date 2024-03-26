@@ -53,15 +53,16 @@
             isMobile: false,
             mousePos: null,
             timer: null,
-            showQueryBuilder: false
+            showQueryBuilder: false,
+            focus: null
          },
 
          onMounted(){
             document.addEventListener('keydown', this.onDocumentKeyDown)
+            document.addEventListener('mousedown', this.onDocumentMouseDown)
             window.addEventListener('resize', this.onResizeDebounced)
             this.refreshEntryListMenu()
             setTimeout(() => {$(".sidenav-trigger").removeClass("pulse")}, 3000)
-
          },
 
          onUpdated() {
@@ -72,6 +73,7 @@
 
          onBeforeUnmount(){
             document.removeEventListener('keydown', this.onDocumentKeyDown)
+            document.removeEventListener('mousedown', this.onDocumentMouseDown)
             window.removeEventListener('resize', this.onResizeDebounced)
          },
 
@@ -103,20 +105,54 @@
             $("#dictEditContainer", this.root).toggleClass("hideSideMenu")
          },
 
+         onDocumentMouseDown(evt){
+            let entryList = $("entry-list")
+            let entryEditor = $("nvh-editor")
+            if(entryList[0] && entryList[0].contains(evt.target)){
+               this.focusEntryList()
+            } else if(entryEditor[0] && entryEditor[0].contains(evt.target)){
+               this.focusEntryEditor()
+               let classList = evt.target.classList
+               if(!classList.contains("nvh-readonly-value-wrapper") && !classList.contains("nvh-label")){
+                  let itemNode = $(evt.target).closest(".nvh-editor-item")
+                  if(itemNode.length){
+                     let id = itemNode.attr("id").split("nvh-item-")[1]
+                     window.nvhStore.focusElement(window.nvhStore.getElementById(id))
+                  }
+               }
+            }
+         },
+
          onDocumentKeyDown(evt){
+            if(["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
+               return
+            }
             if((evt.ctrlKey || evt.metaKey) && evt.altKey){
                if(evt.keyCode == 37){  // left
+                  evt.stopPropagation()
                   this.state.isMobile && this.openSidenav()
-                  document.getElementById("container").blur()
+                  this.focusEntryList(evt)
                } else if(evt.keyCode == 39){  // right
+                  evt.stopPropagation()
                   this.state.isMobile && this.closeSidenav()
-                  $("#container").focus()
+                  this.focusEntryEditor()
+                  if(this.dictData.editorMode == "edit"){
+                     if(!window.nvhStore.getFocusedElement()){
+                        window.nvhStore.focusElement(window.nvhStore.data.entry)
+                     }
+                  } else if(this.dictData.editorMode == "code"){
+                     $(".nvh-code-editor").focus()
+                  }
                } else if(evt.keyCode == 38){  // up
-                  let previousEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) - 1]
-                  previousEntry && this.store.changeEntryId(previousEntry.id)
+                  if(!window.nvhStore.editorNeedsSaving()){
+                     let previousEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) - 1]
+                     previousEntry && this.store.changeEntryId(previousEntry.id)
+                  }
                } else if(evt.keyCode == 40){  // down
-                  let nextEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) + 1]
-                  nextEntry && this.store.changeEntryId(nextEntry.id)
+                  if(!window.nvhStore.editorNeedsSaving()){
+                     let nextEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) + 1]
+                     nextEntry && this.store.changeEntryId(nextEntry.id)
+                  }
                }
             }
          },
@@ -134,6 +170,23 @@
             document.addEventListener("mousemove", this.resizeColumn, false)
             $("body").css("user-select", "none")
             $(".entryListContainer").css("transition", "unset")
+         },
+
+         focusEntryList(){
+            if(this.state.focus != "entryList"){
+               this.state.focus = "entryList"
+               $("entry-list", this.root).addClass("focused")
+               $("nvh-editor").removeClass("focused")
+               window.nvhStore.trigger("closeContextMenu")
+            }
+         },
+
+         focusEntryEditor(){
+            if(this.state.focus != "entryEditor"){
+               this.state.focus = "entryEditor"
+               $("entry-list", this.root).removeClass("focused")
+               $("nvh-editor").addClass("focused")
+            }
          },
 
          resizeColumn(evt){
@@ -234,6 +287,26 @@
       .advancedQueryBuilderWrapper{
          background-color: #fafafa;
          padding: 20px 30px;
+      }
+      entry-list{
+         .collection-item.focused {
+            background-color: #eceff1;
+         }
+         &.focused{
+            .collection-item.focused{
+               background-color: #fff59d;
+            }
+         }
+      }
+      nvh-editor{
+         .nvh-focused > .nvh-wrapper{
+            background-color: #eceff1;
+         }
+         &.focused{
+            .nvh-focused > .nvh-wrapper{
+               background-color: #fff59d;
+            }
+         }
       }
       :host:not(.isMobile){
          .hideSideMenu{

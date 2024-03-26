@@ -1,4 +1,4 @@
-<nvh-editor-edit-item id="nvh-{props.element.id}"
+<nvh-editor-edit-item id="nvh-item-{props.element.id}"
       class="nvh-editor-item {state.style.layout == 'inline' ? 'nvh-inline' : 'nvh-block'} {props.readOnly ? 'nvh-read-only' : ''} {!props.readOnly || props.allowDnd ? 'nvh-allow-dnd' : ''}"
       draggable="true"
       ondragstart={onDragStart}
@@ -156,7 +156,7 @@
                   .map(child => child.value)
                   .filter(v => !!v)
                   .map(v => {return window.shortenText(v, 20)})
-                  .join(" "), 100)
+                  .join(" | "), 100)
          }
       }
    </script>
@@ -209,7 +209,6 @@
          }
       }
       .nvh-focused > .nvh-wrapper{
-         background-color: #fff59d;
          &:hover{
             background-color: #f8ed86;
          }
@@ -222,7 +221,11 @@
          border-radius: 10px;
          transition: 0.2s;
          white-space: nowrap;
-         align-items: baseline;
+         align-items: flex-start;
+         & > * {
+            min-height: 24px;
+            line-height: 24px;
+         }
       }
       .nvh-item-value-editor{
          padding: 5px;
@@ -272,7 +275,7 @@
             text-decoration: none;
          }
          &:hover{
-            i{
+            i.material-icon{
                opacity: 0.5;
                &:hover{
                   opacity: 1;
