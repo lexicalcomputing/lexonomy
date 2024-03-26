@@ -1,11 +1,15 @@
 <dict-entry-filter>
-   <ul class="tabs">
+   <ul class="tabs displayFlex alignCenter">
       <li class="tab {dictData.search.tab == "basic" ? "active" : ""}">
          <a onclick={onTabClick.bind(this, "basic")}>simple</a>
       </li>
       <li class="tab {dictData.search.tab == "advanced" ? "active" : ""}">
          <a onclick={onTabClick.bind(this, "advanced")}>advanced</a>
       </li>
+      <span class="borderLeft ml-auto pl-2 pr-2 hint">
+         <i class="material-icons tooltipped grey-text"
+               data-tooltip="In basic tab you can start search with '#' to search by entry ID (e.g. '#17').">help_outline</i>
+      </span>
    </ul>
    <div class="filterForm">
       <div if={dictData.search.tab == "basic"}>
@@ -19,11 +23,13 @@
             <i onclick={onClearFilterClick}
                class="material-icons clearFilterIcon grey-text clickable">close</i>
          </span>
+
          <select id="modifier">
             <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
             <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
             <option value="wordstart" selected={dictData.search.modifier == "wordstart"}>contains a word that starts like this</option>
             <option value="substring" selected={dictData.search.modifier == "substring"}>contains this sequence of characters</option>
+            <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
          </select>
       </div>
       <div if={dictData.search.tab == "advanced"}>
@@ -128,6 +134,8 @@
             if (evt.keyCode == 13) {
                evt.preventDefault()
                this.search()
+            } else if(evt.keyCode == 27){
+               evt.target.blur()
             }
          },
 
@@ -135,6 +143,8 @@
             if (evt.keyCode == 13) {
                evt.preventDefault()
                this.state.isValid && this.search()
+            } else if(evt.keyCode == 27){
+               evt.target.blur()
             }
          },
 

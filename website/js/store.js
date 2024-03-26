@@ -1221,8 +1221,14 @@ class StoreClass {
          offset: offset || 0
       }
       if(this.data.search.tab == "basic"){
-         data.searchtext = this.data.search.searchtext
-         data.modifier = this.data.search.modifier
+         if(this.data.search.searchtext.startsWith("#")){
+            data.id = this.data.search.searchtext.substring(1)
+         } else if(this.data.search.modifier == "id"){
+            data.id = this.data.search.searchtext
+         } else {
+            data.searchtext = this.data.search.searchtext
+            data.modifier = this.data.search.modifier
+         }
       } else {
          data.advance_query = this.data.search.advanced_query
       }
