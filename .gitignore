@@ -11,3 +11,4 @@ website/config.js
 website/bundle.js
 website/bundle.static.js
 website/bundle.css
+.vscode/

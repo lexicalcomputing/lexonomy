@@ -151,7 +151,9 @@ def home():
 def lexonomyconfig():
     configData = {
         "licences": siteconfig['licences'],
-        "baseUrl": siteconfig['baseUrl']
+        "baseUrl": siteconfig['baseUrl'],
+        "ske_url": siteconfig['ske_url'],
+        "api_url": siteconfig['api_url']
     }
     if 'sketchengineLoginPage' in siteconfig:
         configData['sketchengineLoginPage'] = siteconfig['sketchengineLoginPage']
@@ -250,7 +252,7 @@ def getmedia(dictID, query, user, dictDB, configs):
     res = media.get_images(configs, query)
     return {"images": res}
 
-@get(siteconfig["rootPath"] + "<dictID>/skeget/corpora")
+@get(siteconfig["rootPath"] + "<dictID>/skeget/corpora") # TODO fix for referene corpora for projects
 @authDict([])
 def skeget_corpora(dictID, user, dictDB, configs):
     import base64
@@ -576,7 +578,7 @@ def userupdate(user):
     res = ops.updateUser(request.forms.email, request.forms.password)
     return {"success": True, "id": res["email"], "content": res["info"]}
 
-@post(siteconfig["rootPath"] + "users/usercreate.json") # OK
+@post(siteconfig["rootPath"] + "users/usercreate.json") # TODO frontend create user add option for manager
 @authAdmin
 def usercreate(user):
     res = ops.createUser(request.forms.id, user, manager=request.forms.manager)
@@ -682,7 +684,6 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        #doctypes = [configs["structure"]["root"]] + list(configs["subbing"].keys())
         doctypes = [configs["structure"]["root"]]
         doctypes = list(set(doctypes))
         res = {"success": True, "doctype": configs["structure"]["root"], "doctypes": doctypes, "userAccess": user["dictAccess"]}
@@ -695,21 +696,6 @@ def publicentrynabes(dictID, entryID):
     nabes = ops.readNabesByEntryID(dictDB, dictID, entryID, configs)
     return {"nabes": nabes}
 
-@get(siteconfig["rootPath"]+"<dictID>/<entryID:re:\d+>.xml") # TODO check funkcioanalyty
-def publicentryxml(dictID, entryID):
-    if not ops.dictExists(dictID):
-        return redirect("/")
-    dictDB = ops.getDB(dictID)
-    user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, dictDB)
-    if not configs["publico"]["public"]:
-        return redirect("/"+dictID)
-    if not "licence" in configs["publico"] or not siteconfig["licences"][configs["publico"]["licence"]]["canDownloadXml"]:
-        return redirect("/"+dictID)
-    res = ops.exportEntryXml(dictDB, dictID, entryID, configs, siteconfig["baseUrl"])
-    if res["entryID"] == 0:
-        return redirect("/"+dictID)
-    response.content_type = "text/xml; charset=utf-8"
-    return res["xml"]
 
 @post(siteconfig["rootPath"]+"<dictID>/random.json") # OK
 def publicrandom(dictID):
