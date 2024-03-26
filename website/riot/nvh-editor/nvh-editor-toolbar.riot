@@ -77,26 +77,30 @@
       </button>
 
       <span class="ml-auto"></span>
+      <small class="grey-text mr-4">
+         {dictData.entryId == "new" ? 'new entry' : 'ID: ' + dictData.entryId}
+      </small>
+      <div class="nvh-separator"></div>
       <template if={nvhData.customEditor}>
-         <button class="btn btn-flat tooltipped {nvhData.editorMode == "edit" ? 'btn-primary white-text' : ''}"
+         <button class="btn btn-flat tooltipped {dictData.editorMode == "edit" ? 'btn-primary white-text' : ''}"
                data-tooltip="Edit entry"
                onclick={onModeChangeClick.bind(this, "edit")}>
             <i class="material-icons">edit</i>
          </button>
       </template>
       <template if={!nvhData.customEditor}>
-         <button class="btn btn-flat tooltipped {nvhData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
+         <button class="btn btn-flat tooltipped {dictData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
                data-tooltip="Preview entry"
                onclick={onModeChangeClick.bind(this, "view")}>
             <i class="material-icons">visibility</i>
          </button>
-         <button class="btn btn-flat tooltipped {nvhData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
+         <button class="btn btn-flat tooltipped {dictData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
                data-tooltip="Edit entry"
                onclick={onModeChangeClick.bind(this, "edit")}>
             <i class="material-icons">edit</i>
          </button>
       </template>
-      <button class="btn btn-flat tooltipped {nvhData.editorMode == "code" ? 'btn-primary white-text' : ''} {!state.actions.code ? 'disabled' : ''}"
+      <button class="btn btn-flat tooltipped {dictData.editorMode == "code" ? 'btn-primary white-text' : ''} {!state.actions.code ? 'disabled' : ''}"
             data-tooltip="View source code"
             onclick={onModeChangeClick.bind(this, "code")}>
          <i class="material-icons">code</i>
@@ -238,6 +242,7 @@
       }
       .nvh-buttons{
          display: flex;
+         align-items: center
       }
       .btnSave:not(.disabled),
       .redBtn{

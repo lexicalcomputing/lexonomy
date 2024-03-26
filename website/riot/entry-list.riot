@@ -16,7 +16,7 @@
                   class="collection-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}"
                   onclick={onHeadwordClick.bind(this, entry.id)}>
                <span class="lineNum">{idx + 1}.</span>
-               <a href="#/{dictData.dictId}/edit/{dictData.doctype}/{entry.id}/{dictData.mode}{store.getEntrySearchUrlQueryString()}"
+               <a href="#/{dictData.dictId}/edit/{dictData.doctype}/{entry.id}/{dictData.editorMode}{store.getEntrySearchUrlQueryString()}"
                      class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
                   <raw-html content={entry.title || "&nbsp;"}/>
                </a>
@@ -274,6 +274,9 @@
       .entriesCountInfo{
          font-size: 0.85rem;
          color: #b8b8b8;
+      }
+      .collection{
+         border-radius: 0;
       }
       .collection-item{
          position: relative;

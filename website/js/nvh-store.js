@@ -14,8 +14,7 @@ class NVHStoreClass {
          isContextMenuOpen: false,
          isRevisionsOpen: false,
          draggedElement: null,
-         rootElement: null,
-         editorMode: "edit",
+         rootElement: null
       }
       observable(this)
       window.store.on("dictionaryChanged", this.onDictionaryChanged.bind(this))
@@ -32,7 +31,7 @@ class NVHStoreClass {
       this.validateAllElements()
       this.history.reset()
       this.history.addState()
-      this.data.editorMode == "view" && this.changeEditorMode("edit")
+      window.store.data.editorMode == "view" && this.changeEditorMode("edit")
       this.trigger("entryChanged")
       this.updateUrl()
    }
@@ -40,7 +39,7 @@ class NVHStoreClass {
    saveEntry(){
       this.data.isSaving = true
       this.trigger("isSavingChanged")
-      if(this.data.customEditor && this.data.editorMode != "code"){
+      if(this.data.customEditor && window.store.data.editorMode != "code"){
          this.setEntryFromCustomEditor()
       }
       let nvh = this.jsonToNvh(this.data.entry)
@@ -134,7 +133,7 @@ class NVHStoreClass {
             } else if(customEditor.editor && customEditor.getValue){
                this.data.customEditor = customEditor
             } else{
-               M.toast({html: "Invalid custom editor."})
+               M.toast({html: "Invalid custom editor. Methods editor() and getValue() are required."})
             }
          } catch(e){
             M.toast({html: "Invalid custom editor code."})
@@ -155,7 +154,6 @@ class NVHStoreClass {
       this.validateAllElements()
       this.data.storedEntry = null
       this.data.revision = null
-      this.data.editorMode = window.store.data.mode // TODO better initialization
       this.history.reset()
       this.history.addState()
       this.trigger("entryChanged")
@@ -400,16 +398,14 @@ class NVHStoreClass {
             }, this)
    }
 
-   changeEditorMode(mode){
-      if(this.data.editorMode != mode){
-         if(this.data.editorMode != "code" && this.data.customEditor){
+   changeEditorMode(editorMode){
+      if(window.store.data.editorMode != editorMode){
+         if(window.store.data.editorMode != "code" && this.data.customEditor){
             this.setEntryFromCustomEditor()
             this.history.addState()
             this.validateAllElements()
          }
-         // TODO merge and use only one mode
-         this.data.editorMode = mode
-         window.store.data.mode = mode
+         window.store.data.editorMode = editorMode
          this.trigger("editorModeChanged")
          this.updateUrl()
       }
@@ -449,8 +445,8 @@ class NVHStoreClass {
                && this.data.isValid
                && (this.history.actualIdx != this.history.lastSavedIdx
                         || window.store.data.entryId == "new"
-                        || this.data.editorMode == "code"
-                        || this.data.customEditor
+                        || window.store.data.editorMode == "code"
+                        || (this.data.customEditor && this.data.legacyCustomEditor)
                   )
                && !revisions,
          undo: this.history.actualIdx > 0
@@ -582,18 +578,6 @@ class NVHStoreClass {
       }
    }
 
-   _moveChildToAnotherParent(child, newParent, position=null){
-      // TODO opravit nazvy funkci aby byly konzistentni
-      let idx = child.parent.children.indexOf(child)
-      child.parent.children.splice(idx, 1)
-      child.parent = newParent
-      if(position === null){
-         newParent.children.push(child)
-      } else {
-         newParent.children.splice(position, 0, child)
-      }
-   }
-
    isElementVisible(element){
       let el = element
       while (el.parent && !el.parent.collapsed){
@@ -715,10 +699,12 @@ class NVHStoreClass {
 
    goToPrevElement(){
       this.focusElement(this.getPrevElement(this.getFocusedElement(), true))
+      this.scrollElementIntoViewDebounced()
    }
 
    goToNextElement(){
       this.focusElement(this.getNextElement(this.getFocusedElement(), true))
+      this.scrollElementIntoViewDebounced()
    }
 
    openElementToolbar(element){
@@ -781,7 +767,14 @@ class NVHStoreClass {
 
    moveChildToAnotherParent(element, newParent, position=0){
       let oldParentReference = element.parent
-      this._moveChildToAnotherParent(element, newParent, position)
+      let idx = element.parent.children.indexOf(element)
+      element.parent.children.splice(idx, 1)
+      element.parent = newParent
+      if(position === null){
+         newParent.children.push(element)
+      } else {
+         newParent.children.splice(position, 0, element)
+      }
       this.trigger("updateElements", [oldParentReference, newParent])
       this.history.addState()
    }
@@ -811,7 +804,6 @@ class NVHStoreClass {
    }
 
    moveElementWithinSiblings(element, direction){
-      //TODO scroll into view
       let childIdx = element.parent.children.indexOf(element)
       let newChildIdx = childIdx + direction
       if(newChildIdx >= 0 && newChildIdx < element.parent.children.length){
@@ -819,18 +811,15 @@ class NVHStoreClass {
          element.parent.children.splice(childIdx + direction, 0, element)
          this.trigger("updateElements", [element.parent])
          this.history.addState()
+         this.scrollElementIntoViewDebounced()
       }
    }
 
    moveElementToParentInDirection(element, direction){
-      //TODO scroll into view
       let newParent = this.getNextAvailableParentInDirection(element, direction)
       if(newParent){
-         let oldParentReference = element.parent
-         this._moveChildToAnotherParent(element, newParent, direction == 1 ? 0 : null)
-         this.makeElementVisible(element)
-         this.trigger("updateElements", [oldParentReference, newParent])
-         this.history.addState()
+         this.moveChildToAnotherParent(element, newParent, direction == 1 ? 0 : null)
+         this.scrollElementIntoViewDebounced()
       }
    }
 
@@ -924,6 +913,29 @@ class NVHStoreClass {
       element.children = []
       this.trigger("updateElements", [element])
       this.history.addState()
+   }
+
+   scrollElementIntoViewDebounced(){
+      this.scrollDebounceTimer && clearTimeout(this.scrollDebounceTimer)
+      this.scrollDebounceTimer = setTimeout(() => {
+         clearTimeout(this.scrollDebounceTimer)
+         let focusedElement = this.getFocusedElement()
+         focusedElement && this.scrollElementIntoView(focusedElement)
+      }, 200)
+   }
+
+   scrollElementIntoView(element){
+      let node = this.getElementHTMLTag(element)
+      let elementTop = node.offset().top
+      let elementBottom = elementTop + node.outerHeight()
+      let viewportTop = $(window).scrollTop()
+      let windowHeight = $(window).height()
+      let viewportBottom = viewportTop + windowHeight
+      if(elementTop < viewportTop + 100){
+         $("html, body").animate({scrollTop: elementTop - 100}, 200)
+      } else if(elementBottom > viewportBottom - 100){
+         $("html, body").animate({scrollTop: elementBottom - windowHeight + 100}, 200)
+      }
    }
 
    isElementDuplicationAllowed(element){
@@ -1100,7 +1112,7 @@ class NVHStoreClass {
          if(!this.history.records.length ||
             (this.jsonToNvh(this.data.entry) != this.jsonToNvh(this.history.records[this.history.actualIdx]))){
             if(this.history.actualIdx < this.history.records.length - 1){
-               this.history.records.splice(this.history.actualIdx)
+               this.history.records.splice(this.history.actualIdx + 1)
             }
             this.history.records.push(this.copyElementAndItsChildren(this.data.entry))
             this.history.actualIdx = this.history.records.length - 1
@@ -1136,7 +1148,7 @@ class NVHStoreClass {
       let dictData = window.store.data
       let newUrl = `${window.location.href.split("#")[0]}#/${dictData.dictId}/edit/${dictData.doctype}/`
       if(dictData.entryId != null){
-         newUrl += `${dictData.entryId}/${this.data.editorMode}${window.store.getEntrySearchUrlQueryString()}`
+         newUrl += `${dictData.entryId}/${window.store.data.editorMode}${window.store.getEntrySearchUrlQueryString()}`
       }
       if(newUrl != window.location.href){
          history.pushState(null, null, newUrl)

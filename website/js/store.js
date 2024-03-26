@@ -63,12 +63,12 @@ class StoreClass {
       return this.data.dictionaryList.find(d => d.id == dictId)
    }
 
-   open(dictId, doctype, entryId, mode){
+   open(dictId, doctype, entryId, editorMode){
       this.changeDictionary(dictId)
       this.changeDoctype(doctype)
       entryId && this.changeEntryId(entryId)
-      if(mode){
-         this.data.mode = mode
+      if(editorMode){
+         this.data.editorMode = editorMode
       }
    }
 
@@ -250,7 +250,7 @@ class StoreClass {
             modifier: 'start',
             advanced_query: ''
          },
-         mode: 'view',
+         editorMode: 'view',
          userAccess: {
             canView: false,
             canEdit: false,
