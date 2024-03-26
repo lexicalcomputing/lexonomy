@@ -44,14 +44,14 @@ class TestQueries(unittest.TestCase):
         API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/project.json"
         r2 = requests.get(url=API_ENDPOINT_2, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r2.json()['description'], 'This is a testing project')
-        self.assertEqual(set(json.loads(r2.json()['managers'])) - set(["marek.medved3@gmail.com", "marek.medved@sketchengine.co.uk", "marek.medved@sketchengine.eu"]), set())
-        self.assertEqual(set(json.loads(r2.json()['annotators'])) - set(["marek.medved3@gmail.com", "marek.medved@sketchengine.co.uk", "marek.medved@sketchengine.eu"]), set())
+        self.assertEqual(set(r2.json()['managers']) - set(["marek.medved3@gmail.com", "marek.medved@sketchengine.co.uk", "marek.medved@sketchengine.eu"]), set())
+        self.assertEqual(set(r2.json()['annotators']) - set(["marek.medved3@gmail.com", "marek.medved@sketchengine.co.uk", "marek.medved@sketchengine.eu"]), set())
 
         # test if created in user_projects
         API_ENDPOINT_3 = self.website + "/projects/list.json"
         r3 = requests.get(url=API_ENDPOINT_3, headers=self.headers, cookies=self.cookies)
         found = False
-        for x in json.loads(r3.json()['projects_active']):
+        for x in r3.json()['projects_active']:
             if x['id'] == self.new_project_id:
                 found = True
         self.assertEqual(found, True)
@@ -71,8 +71,8 @@ class TestQueries(unittest.TestCase):
         API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/project.json"
         r2 = requests.get(url=API_ENDPOINT_2, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r2.json()['description'], 'This is a testing project updated')
-        self.assertEqual(set(json.loads(r2.json()['managers'])) - set(["marek.medved@sketchengine.eu"]), set())
-        self.assertEqual(set(json.loads(r2.json()['annotators'])) - set(['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'marek.medved@sketchengine.eu', 'xmedved1.fi.muni.cz']), set())
+        self.assertEqual(set(r2.json()['managers']) - set(["marek.medved@sketchengine.eu"]), set())
+        self.assertEqual(set(r2.json()['annotators']) - set(['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'marek.medved@sketchengine.eu', 'xmedved1.fi.muni.cz']), set())
 
     # DELETE PROJECT
     def test_3(self):
@@ -85,7 +85,7 @@ class TestQueries(unittest.TestCase):
         API_ENDPOINT_2 = self.website + "/projects/list.json"
         r = requests.get(url=API_ENDPOINT_2, headers=self.headers, cookies=self.cookies)
         found = False
-        for x in json.loads(r.json()['projects_archived']):
+        for x in r.json()['projects_archived']:
             if x['id'] == self.new_project_id:
                 found = True
         self.assertEqual(found, True)
