@@ -103,13 +103,15 @@
                         open in editor
                      </a>
                      <loading-overlay if={dictData.isEntryLoading}/>
-                     <div if={!nvhData.customEditor && nvhData.entry}
-                           class="nvh-editor-view-items">
-                        <nvh-editor-view-item element={nvhData.entry}
+                     <template if={nvhData.entry}>
+                        <div if={!nvhData.customEditor}
+                              class="nvh-editor-view-items">
+                           <nvh-editor-view-item element={nvhData.entry}
+                                 read-only={true}/>
+                        </div>
+                        <nvh-custom-editor if={nvhData.customEditor}
                               read-only={true}/>
-                     </div>
-                     <nvh-custom-editor if={nvhData.customEditor}
-                           read-only={true}/>
+                     </template>
                   </div>
                </div>
             </div>
