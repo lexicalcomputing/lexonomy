@@ -4,9 +4,9 @@
    <template if={nvhData.entry}>
       <nvh-editor-context-menu/>
       <nvh-revisions/>
-      <nvh-custom-editor if={nvhData.customEditor && nvhData.editorMode != "code"}/>
+      <nvh-custom-editor if={nvhData.customEditor && dictData.editorMode != "code"}/>
       <template if={!nvhData.customEditor}>
-         <template if={nvhData.editorMode == "view"}>
+         <template if={dictData.editorMode == "view"}>
             <nvh-element-style-editor if={dictData.userAccess.canEdit}/>
             <nvh-editor-item-toolbar if={dictData.userAccess.canEdit}/>
             <div class="nvh-editor-view-items {nvhData.revision ? 'pointerEventsNone' : ''}">
@@ -14,7 +14,7 @@
                      read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
             </div>
          </template>
-         <template if={nvhData.editorMode == "edit"}>
+         <template if={dictData.editorMode == "edit"}>
             <nvh-custom-editor if={nvhData.customEditor}/>
             <nvh-side-dnd-panel if={dictData.userAccess.canEdit}/>
             <nvh-widget-panel/>
@@ -25,7 +25,7 @@
             </div>
          </template>
       </template>
-      <nvh-source-code if={nvhData.editorMode == "code"}
+      <nvh-source-code if={dictData.editorMode == "code"}
             read-only={!dictData.userAccess.canEdit}/>
    </template>
    <template if={!dictData.isEntryLoading && !nvhData.entry}>
@@ -83,6 +83,10 @@
          },
 
          handleClickOutside(evt){
+            if(this.root.contains(evt.target)){
+               $(this.root).addClass("focused")
+               $("dict-edit").removeClass("focused")
+            }
             if (!evt.nvhStartEditing && !this.root.contains(evt.target)){
                this.nvhStore.blurElement()
                this.nvhStore.trigger("closeContextMenu")
@@ -107,40 +111,49 @@
          onKeyUp(evt){
             let focused = this.nvhStore.getFocusedElement()
             if(focused
+                  && $(this.root).hasClass("focused")
                   && !this.nvhData.isContextMenuOpen
                   && !focused.edit
                   && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
                if(evt.keyCode == 38){ // arrow up
                   if(evt.ctrlKey || evt.metaKey){
-                     if(evt.shiftKey){
-                        this.nvhStore.moveElementToPreviousParent(focused)
-                     } else {
-                        this.nvhStore.moveElementUp(focused)
+                     if(!evt.altKey){ //  ctrl+alt+up = go to previous entry
+                        if(evt.shiftKey){
+                           this.nvhStore.moveElementToPreviousParent(focused)
+                        } else {
+                           this.nvhStore.moveElementUp(focused)
+                        }
                      }
                   } else {
                      this.nvhStore.goToPrevElement()
                   }
                } else if(evt.keyCode == 40){ // arrow down
                   if(evt.ctrlKey || evt.metaKey){
-                     if(evt.shiftKey){
-                        this.nvhStore.moveElementToNextParent(focused)
-                     } else {
-                        this.nvhStore.moveElementDown(focused)
+                     if(!evt.altKey){ //  ctrl+alt+down = go to next entry
+                        if(evt.shiftKey){
+                           this.nvhStore.moveElementToNextParent(focused)
+                        } else {
+                           this.nvhStore.moveElementDown(focused)
+                        }
                      }
                   } else {
                      this.nvhStore.goToNextElement()
                   }
                } else if(evt.keyCode == 39){ // arrow right
-                  if(focused.children.length && focused.collapsed){
-                     this.nvhStore.expandElement()
-                  } else {
-                     this.nvhStore.goToNextElement()
+                  if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
+                     if(focused.children.length && focused.collapsed){
+                        this.nvhStore.expandElement()
+                     } else {
+                        this.nvhStore.goToNextElement()
+                     }
                   }
                } else if(evt.keyCode == 37){ // arrow left
-                  if((focused.collapsed || !focused.children.length) && focused.parent){
-                     this.nvhStore.focusElement(focused.parent)
-                  } else {
-                     this.nvhStore.collapseElement()
+                  if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
+                     if((focused.collapsed || !focused.children.length) && focused.parent){
+                        this.nvhStore.focusElement(focused.parent)
+                     } else {
+                        this.nvhStore.collapseElement()
+                     }
                   }
                } else if (evt.keyCode == 13){
                   if(evt.ctrlKey || evt.metaKey){
@@ -157,7 +170,7 @@
          },
 
          refreshListeners(){
-            if(this.nvhData.entry && this.nvhData.editorMode == "edit"){
+            if(this.nvhData.entry && this.dictData.editorMode == "edit"){
                this.addEventListeners()
             } else {
                this.removeEventListeners()
