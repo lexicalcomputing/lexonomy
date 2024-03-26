@@ -85,10 +85,10 @@
    getValue: function() {
       return {
          name: "entry",
-         value: "",
+         value: this.contentNode.find("input.headword").val(),
          children: [{
-            name: "headword",
-            value: this.contentNode.find("input.headword").val()
+            name: "partOfSpeech",
+            value: this.contentNode.find("input.partOfSpeech").val()
          }]
       }
    },
@@ -101,9 +101,17 @@
 
    _render: function() {
       this.contentNode.empty()
+      $(\`<label>headword</label>\`).appendTo(this.contentNode)
       $(\`<input class="headword"
             \$\{this.options.readOnly? "disabled" : ""}
-            value="\$\{this.entry.children[0].value}"/>\`)
+            value="\$\{this.entry.value}"/>\`)
+            .appendTo(this.contentNode)
+            .on("input", this._onInput.bind(this))
+            .on("change", this.options.onChange)
+      $(\`<label>Part of speech</label>\`).appendTo(this.contentNode)
+      $(\`<input class="partOfSpeech"
+            \$\{this.options.readOnly? "disabled" : ""}
+            value="\$\{window.nvhStore.findElement(e => e.name == "partOfSpeech").value}"/>\`)
             .appendTo(this.contentNode)
             .on("input", this._onInput.bind(this))
             .on("change", this.options.onChange)
@@ -116,6 +124,7 @@
    _validate: function() {
       let wasValid = this.isValid
       this.isValid = this.contentNode.find("input.headword").val() !== ""
+            && this.contentNode.find("input.partOfSpeech").val() !== ""
       if (wasValid != this.isValid) {
          this.options.onValidChange(this.isValid)
       }
@@ -171,9 +180,9 @@
          },
 
          onKeyDown(evt){
-            if(this.state.isJSValid && evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
+            if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
                evt.preventDefault()
-               this.saveData()
+               this.state.isJSValid && this.saveData()
             }
          },
 
