@@ -29,6 +29,7 @@
                   id: window.store.data.entryId
                }, this.readOnly)
             } else{
+               this.nvhData.customEditor.isValid = null
                this.nvhData.customEditor.update(this.nvhData.entry)
             }
          },
