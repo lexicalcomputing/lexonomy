@@ -1142,7 +1142,7 @@ def getProjectsByUser(user):
             archived_projects.append({"id": r["id"], "name": r["project_name"], "description": r["description"], "language": r["language"]})
 
     total = len(active_projects) + len(archived_projects)
-    return {"projects_active": json.dumps(active_projects), "projects_archived": json.dumps(archived_projects), "total": total}
+    return {"projects_active": active_projects, "projects_archived": archived_projects, "total": total}
 
 
 def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict, worflow, langauge, user):
@@ -1195,7 +1195,7 @@ def getProject(projectID):
             raise Exception('problem in user_projects databse')
 
     return {"projectID": projectID, 'project_name': r1['project_name'], 'description': r1['description'],
-            'annotators': json.dumps(annotators), 'managers': json.dumps(managers), 'workflow': r1['workflow'],
+            'annotators': annotators, 'managers': managers, 'workflow': r1['workflow'],
             'language': r1['language'], 'source_dict': json.loads(r1['dictionaries']).get('src_dict', 'NONE')}
 
 
