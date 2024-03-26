@@ -114,6 +114,21 @@ def auth(func):
         return func(*args, **kwargs)
     return wrapper_verifyLogin
 
+# authentication decorator
+# use @authProject to check that user is authenticated and have access to certain projects
+# assumes that the decorated function has a "user" parameter which is used to pass the user info
+def authProject(func):
+    @functools.wraps(func)
+    def wrapper_verifyProject(*args, **kwargs):
+        res, configs = ops.verifyLoginAndProjectAccess(request.cookies.email, request.cookies.sessionkey)
+        if not res["loggedin"]:
+            redirect("/")
+        kwargs["user"] = res
+        kwargs["configs"] = configs
+        return func(*args, **kwargs)
+    return wrapper_verifyProject
+
+
 # admin authentication decorator
 # use @auth to check that user is authenticated and admin
 # assumes that the decorated function has a "user" parameter which is used to pass the user info
@@ -407,10 +422,10 @@ def check_login():
             #response.set_cookie("sessionkey", res["key"], path="/")
             response.add_header('Set-Cookie', "email=\""+res["email"]+"\"; Path=/; SameSite=None; Secure")
             response.add_header('Set-Cookie', "sessionkey="+res["key"]+"; Path=/; SameSite=None; Secure")
-            return {"success": True, "email": res["email"], "sessionkey": res["key"], "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"]}
+            return {"success": True, "email": res["email"], "sessionkey": res["key"], "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"], "isProjectManager": res["isProjectManager"]}
     res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
     if res["loggedin"]:
-        return {"success": True, "email": res["email"], "sessionkey": request.cookies.sessionkey, "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"]}
+        return {"success": True, "email": res["email"], "sessionkey": request.cookies.sessionkey, "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"], "isProjectManager": res["isProjectManager"]}
     return {"success": False}
 
 @post(siteconfig["rootPath"] + "logout.json")
@@ -564,7 +579,7 @@ def userupdate(user):
 @post(siteconfig["rootPath"] + "users/usercreate.json") # OK
 @authAdmin
 def usercreate(user):
-    res = ops.createUser(request.forms.id, user)
+    res = ops.createUser(request.forms.id, user, manager=request.forms.manager)
     return {"success": True, "id": res["entryID"]}
 
 @post(siteconfig["rootPath"] + "users/userdelete.json") # OK
@@ -581,6 +596,58 @@ def userread(user):
         return {"success": False}
     else:
         return {"success": True, "id": res["email"], "content": res["info"]}
+
+# TODO project logging
+
+@get(siteconfig["rootPath"] + "projects/suggestid.json") # OK
+@auth
+def project_suggestid(user):
+    return {"suggested": ops.suggestProjectId()}
+
+@get(siteconfig["rootPath"] + "projects/list.json") # OK
+@auth
+def project_list(user):
+    return ops.getProjectsByUser(user)
+
+@post(siteconfig["rootPath"] + "projects/create.json") # OK
+@auth
+def project_create(user):
+    if user['isProjectManager']:
+        res = ops.createProject(request.forms.id, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
+                                json.loads(request.forms.managers), request.forms.ref_corpus, request.forms.source_dict,
+                                request.forms.worflow, request.forms.language, user)
+        return res
+    return {"success": False, "projectID": request.forms.id, 'error': 'User is not a manager. Can not create project.'}
+
+@get(siteconfig["rootPath"] + "projects/<projectID>/project.json") # OK
+@authProject
+def project_get(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = ops.getProject(projectID)
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'} # TODO
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/update.json") # OK
+@authProject
+def project_update(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = ops.editProject(projectID, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
+                             json.loads(request.forms.managers), user)
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/archive.json") # OK
+@authProject
+def project_archive(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = ops.archiveProject(projectID)
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+
+@get(siteconfig["rootPath"] + "wokflows/list.json") # TODO
+@auth
+def workflow_list(user):
+    return ops.getWokflows()
 
 @post(siteconfig["rootPath"] + "dicts/dictlist.json")
 @authAdmin

@@ -39,6 +39,8 @@ defaultDictConfig = {"editing": {},
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
+phases_re = re.compile('^#\s+phases\s*:\s*(.*?)$')
+
 # db management
 def getDB(dictID):
     if os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")):
@@ -134,15 +136,17 @@ def verifyLogin(email, sessionkey):
     now = datetime.datetime.utcnow()
     yesterday = now - datetime.timedelta(days=1)
     email = email.lower()
-    c = conn.execute("select email, ske_apiKey, ske_username, apiKey, consent from users where email=? and sessionKey=? and sessionLast>=?", (email, sessionkey, yesterday))
+    c = conn.execute("select email, ske_apiKey, ske_username, apiKey, consent, is_manager from users where email=? and sessionKey=? and sessionLast>=?", 
+                     (email, sessionkey, yesterday))
     user = c.fetchone()
     if not user:
         return {"loggedin": False, "email": None}
     conn.execute("update users set sessionLast=? where email=?", (now, email))
     conn.commit()
     return {"loggedin": True, "email": email, "isAdmin": email in siteconfig["admins"],
-           "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"],
-           "apiKey": user["apiKey"], "consent": user["consent"] == 1}
+            "isProjectManager": user['is_manager'],
+            "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"],
+            "apiKey": user["apiKey"], "consent": user["consent"] == 1}
 
 def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     ret = verifyLogin(email, sessionkey)
@@ -154,6 +158,21 @@ def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     for r in ["canEdit", "canConfig", "canDownload", "canUpload"]:
         ret[r] = ret.get("isAdmin") or (dictAccess and dictAccess[r])
         ret["dictAccess"][r] = ret[r]
+    return ret, configs
+
+def verifyLoginAndProjectAccess(email, sessionkey):
+    ret = verifyLogin(email, sessionkey)
+    if ret["loggedin"] == False or not ret["isAdmin"]:
+        return {"loggedin": ret["loggedin"], "email": email, "isAdmin": False}
+
+    configs = {'manager_of': [], 'annotator_of': []}
+    conn = getMainDB()
+    c = conn.execute('SELECT project_id, role FROM user_projects WHERE user_email=?', (email,))
+    for r in c.fetchall():
+        if r['role'] == 'manager':
+            configs['manager_of'].append(r['project_id'])
+        elif r['role'] == 'annotator':
+            configs['annotator_of'].append(r['project_id'])
     return ret, configs
 
 def getSchemaItems():
@@ -306,7 +325,7 @@ def login(email, password):
         return {"success": False}
     conn = getMainDB()
     passhash = hashlib.sha1(password.encode("utf-8")).hexdigest();
-    c = conn.execute("select email, apiKey, ske_username, ske_apiKey, consent from users where email=? and passwordHash=?", (email.lower(), passhash))
+    c = conn.execute("select email, apiKey, ske_username, ske_apiKey, consent, is_manager from users where email=? and passwordHash=?", (email.lower(), passhash))
     user = c.fetchone()
     if not user:
         return {"success": False}
@@ -314,11 +333,11 @@ def login(email, password):
     now = datetime.datetime.utcnow()
     conn.execute("update users set sessionKey=?, sessionLast=? where email=?", (key, now, email))
     conn.commit()
-    return {"success": True, "email": user["email"], "key": key, "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"], "apiKey": user["apiKey"], "consent": user["consent"] == 1, "isAdmin": user["email"] in siteconfig["admins"]}
+    return {"success": True, "email": user["email"], "key": key, "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"], "apiKey": user["apiKey"], "consent": user["consent"] == 1, "isAdmin": user["email"] in siteconfig["admins"], "isProjectManager": user["is_manager"]}
 
 def httpAuthLogin(email):
     conn = getMainDB()
-    c = conn.execute("select email, apiKey, ske_username, ske_apiKey, consent from users where email=?", (email.lower(), ))
+    c = conn.execute("select email, apiKey, ske_username, ske_apiKey, consent, is_manager from users where email=?", (email.lower(), ))
     user = c.fetchone()
     if not user:
         return {"success": False}
@@ -326,7 +345,7 @@ def httpAuthLogin(email):
     now = datetime.datetime.utcnow()
     conn.execute("update users set sessionKey=?, sessionLast=? where email=?", (key, now, email))
     conn.commit()
-    return {"success": True, "email": user["email"], "key": key, "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"], "apiKey": user["apiKey"], "consent": user["consent"] == 1, "isAdmin": user["email"] in siteconfig["admins"]}
+    return {"success": True, "email": user["email"], "key": key, "ske_username": user["ske_username"], "ske_apiKey": user["ske_apiKey"], "apiKey": user["apiKey"], "consent": user["consent"] == 1, "isAdmin": user["email"] in siteconfig["admins"], "isProjectManager": user["is_manager"]}
 
 def logout(user):
     conn = getMainDB()
@@ -1017,12 +1036,13 @@ def listUsers(searchtext, howmany):
             user["dictionaries"].append({"id": r["dict_id"], "title": r["title"]})
     return {"entries":users, "total": total}
 
-def createUser(email, user=""):
+def createUser(email, user, manager=0):
+    # TODO add manager and anotattor values to table and expand form in frontend
     import secrets
     passwd = secrets.token_urlsafe(8)
     passhash = hashlib.sha1(passwd.encode('utf-8')).hexdigest();
     conn = getMainDB()
-    conn.execute("insert into users(email, passwordHash) values(?, ?)", (email.lower(), passhash))
+    conn.execute("INSERT INTO users(email, passwordHash, created_by, is_manager) VALUES (?, ?, ?, ?)", (email.lower(), passhash, user['email'], manager))
     conn.commit()
     mailSubject = "New Lexonomy account"
     mailText = "Dear Lexonomy user,\n\n"
@@ -1076,6 +1096,136 @@ def readUser(email): # TODO load info about each dictionary, such as language, n
         return {"email": r["email"], "info": json.dumps(user_info)}
     else:
         return {"email":"", "info":""}
+
+
+def projectExists(projectID):
+    return os.path.isdir(os.path.join(siteconfig["dataDir"], "projects", projectID))
+
+
+def suggestProjectId():
+    projectid = generateDictId()
+    while projectid in prohibitedDictIDs or projectExists(projectid):
+        projectid = generateDictId()
+    return projectid
+
+
+def add_project_staff(conn, project_id, project_name, project_staff, role, user):
+    c = conn.execute("SELECT email FROM users")
+    all_users = set()
+    for r in c.fetchall():
+        all_users.add(r['email'])
+
+    # Adding annotators
+    for annotator in project_staff:
+        if not annotator in all_users:
+            if role == 'manager':
+                createUser(annotator, user, manager=1)
+            else:
+                createUser(annotator, user)
+
+        conn.execute("INSERT INTO user_projects (project_id, project_name, user_email, role)"\
+                     " VALUES (?,?,?,?)", (project_id, project_name, annotator, role))
+        conn.commit()
+
+
+def getProjectsByUser(user):
+    active_projects = []
+    archived_projects = []
+    conn = getMainDB()
+    c = conn.execute("SELECT DISTINCT p.id, p.project_name, p.description, p.language, p.active FROM projects AS p INNER JOIN user_projects AS up ON p.id=up.project_id WHERE up.user_email=? ORDER BY p.project_name",
+                     (user["email"],))
+
+    for r in c.fetchall():
+        if r["active"] == 1:
+            active_projects.append({"id": r["id"], "name": r["project_name"], "description": r["description"], "language": r["language"]})
+        else:
+            archived_projects.append({"id": r["id"], "name": r["project_name"], "description": r["description"], "language": r["language"]})
+
+    total = len(active_projects) + len(archived_projects)
+    return {"projects_active": json.dumps(active_projects), "projects_archived": json.dumps(archived_projects), "total": total}
+
+
+def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict, worflow, langauge, user):
+    if projectExists(project_id):
+        return {'success': False, "projectID": project_id, "error": "The dict with the entered name already exists"}
+
+    os.makedirs(os.path.join(siteconfig["dataDir"], "projects", project_id))
+    shutil.copytree(os.path.join(currdir, 'workflows', worflow),
+                    os.path.join(siteconfig["dataDir"], "projects", project_id), dirs_exist_ok=True)
+
+    # get all phases of the project
+    all_phases = []
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'r') as f:
+        for line in f:
+            res = phases_re.match(line)
+            if res:
+                all_phases = [x.strip() for x in res.group(1).split(',')]
+
+    dicts = {"src_dict": src_dict}
+    # for each phase create list of dictionaries
+    for p in all_phases:
+        dicts[p] = []
+
+    conn = getMainDB()
+    conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, dictionaries, workflow, language, active)"\
+                 " VALUES (?,?,?,?,?,?,?,?)", (project_id, project_name, project_description, ref_corpus, json.dumps(dicts), worflow, langauge, 1))
+    conn.commit()
+
+    add_project_staff(conn, project_id, project_name, project_annotators, 'annotator', user)
+    add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
+
+    return {'success': True , "projectID": project_id}
+
+
+def getProject(projectID):
+    annotators = []
+    managers = []
+
+    conn = getMainDB()
+    c1 = conn.execute("SELECT project_name, description, ref_corpus, workflow, language, dictionaries FROM projects WHERE id=?", (projectID,))
+    r1 = c1.fetchone()
+
+    c2 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
+    for r in c2.fetchall():
+        if r['role'] == 'annotator':
+            annotators.append(r['user_email'])
+        elif r['role'] == 'manager':
+            managers.append(r['user_email'])
+        else:
+            raise Exception('problem in user_projects databse')
+
+    return {"projectID": projectID, 'project_name': r1['project_name'], 'description': r1['description'],
+            'annotators': json.dumps(annotators), 'managers': json.dumps(managers), 'workflow': r1['workflow'],
+            'language': r1['language'], 'source_dict': json.loads(r1['dictionaries']).get('src_dict', 'NONE')}
+
+
+def editProject(project_id, project_name, project_description, project_annotators, project_managers, user):
+    conn = getMainDB()
+    conn.execute("UPDATE projects SET description=?, project_name=? where id=?",
+                 (project_description, project_name, project_id))
+    conn.execute("DELETE FROM user_projects WHERE project_id=?", (project_id,))
+    conn.commit()
+
+    add_project_staff(conn, project_id, project_name, project_annotators, 'annotator', user)
+    add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
+    return {"success": True, "projectID": project_name}
+
+
+def archiveProject(project_id):
+    conn = getMainDB()
+    conn.execute("UPDATE projects SET active=? WHERE id=?", (0, project_id))
+    conn.commit()
+    return {"success": True, "projectID": project_id}
+
+def getWokflows():
+    workflows = []
+    conn = getMainDB()
+    c = conn.execute("SELECT name, description FROM workflows ORDER BY name")
+
+    for r in c.fetchall():
+        workflows.append({"name": r["name"], "description": r["description"]})
+    total = len(workflows)
+    return {"workflows": workflows, "total": total}
 
 def listDicts(searchtext, howmany):
     conn = getMainDB()
