@@ -12,6 +12,7 @@
                   class="validate inlineBlock"
                   required
                   oninput={onTitleInput}
+                  onkeyup={onKeyUp}
                   value={state.title}
                   style="max-width: 300px;"/>
             <label for="title">Title</label>
@@ -36,6 +37,7 @@
                      minlength="5"
                      pattern="[a-zA-Z0-9\-_]*"
                      oninput={onUrlInput}
+                     onkeyup={onKeyUp}
                      style="max-width: 300px;border: none;outline: none; padding-left: 5px;background-color: unset;"/>
             </span>
          </div>
@@ -200,7 +202,8 @@
             finalSchema: null,
             selectedModules: [],
             file: null,
-            headword: null
+            headword: null,
+            isNextBtnEnable: false
          },
 
          onMounted() {
@@ -224,6 +227,12 @@
                this.refreshMakeEmptyDictButtonDisabled()
             } else if(this.state.step == "3_upload"){
                this.refreshMakeDictFromFileButtonDisabled()
+            }
+         },
+
+         onKeyUp(evt){
+            if(evt.keyCode == 13 && this.state.isNextBtnEnable){
+               this.onGoToStepTwoClick()
             }
          },
 
@@ -333,8 +342,9 @@
          },
 
          refreshBtnNextDisabled(){
-            $("#btnNext", this.root).toggleClass("disabled", this.state.title == ""
-                  || !this.state.url.match(/^[a-zA-Z0-9\-_]+$/))
+            this.state.isNextBtnEnable = this.state.title != ""
+                  && this.state.url.match(/^[a-zA-Z0-9\-_]+$/)
+            $("#btnNext", this.root).toggleClass("disabled", !this.state.isNextBtnEnable)
          },
 
          refreshMakeEmptyDictButtonDisabled(){
