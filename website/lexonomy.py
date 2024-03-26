@@ -265,6 +265,17 @@ def skeget_corpora(dictID, user, dictDB, configs):
     response.headers['Content-Type'] = ske_response.getheader('Content-Type')
     return ske_response
 
+@get(siteconfig["rootPath"] + "user_corpora.json")
+@auth
+def user_corpora(user):
+    import base64
+    apiurl = siteconfig["api_url"].replace("bonito/run.cgi", "")
+    req = urllib.request.Request(apiurl + "/ca/api/corpora",
+                                  headers = {"Authorization": "Basic " + base64.b64encode(str.encode(str(user['ske_username'])+':'+str(user['ske_apiKey']))).decode('ascii')})
+    ske_response = urllib.request.urlopen(req)
+    response.headers['Content-Type'] = ske_response.getheader('Content-Type')
+    return ske_response
+
 @get(siteconfig["rootPath"] + "<dictID>/skeget/xampl")
 @authDict(["canEdit"])
 def skeget_xampl(dictID, user, dictDB, configs):
