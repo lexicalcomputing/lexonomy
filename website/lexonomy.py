@@ -635,10 +635,13 @@ def project_create(user):
 @get(siteconfig["rootPath"] + "projects/<projectID>/project.json") # OK
 @authProject
 def project_get(projectID, user, configs):
-    if projectID in configs["manager_of"]:
-        res = ops.getProject(projectID)
-        return res
-    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'} # TODO
+    if ops.projectExists(projectID):
+        if projectID in configs["manager_of"]:
+            res = ops.getProject(projectID)
+            return res
+        return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+    return {"success": False, "projectID": projectID, 'error': 'Project does not exists'}
+    
 
 @post(siteconfig["rootPath"] + "projects/<projectID>/update.json") # OK
 @authProject
