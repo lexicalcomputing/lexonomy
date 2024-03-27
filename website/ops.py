@@ -1150,16 +1150,22 @@ def createProject(project_id, project_name, project_description, project_annotat
         return {'success': False, "projectID": project_id, "error": "The dict with the entered name already exists"}
 
     os.makedirs(os.path.join(siteconfig["dataDir"], "projects", project_id))
+    if not worflow:
+        return {'success': False, "projectID": project_id, "error": "Workflow not specified."}
+
     shutil.copytree(os.path.join(currdir, 'workflows', worflow),
                     os.path.join(siteconfig["dataDir"], "projects", project_id), dirs_exist_ok=True)
 
     # get all phases of the project
     all_phases = []
-    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'r') as f:
-        for line in f:
-            res = phases_re.match(line)
-            if res:
-                all_phases = [x.strip() for x in res.group(1).split(',')]
+    try:
+        with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'r') as f:
+            for line in f:
+                res = phases_re.match(line)
+                if res:
+                    all_phases = [x.strip() for x in res.group(1).split(',')]
+    except FileNotFoundError:
+        return {'success': False, "projectID": project_id, "error": "Workflow for project not created correctly."}
 
     dicts = {"src_dict": src_dict}
     # for each phase create list of dictionaries
