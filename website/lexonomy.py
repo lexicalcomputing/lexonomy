@@ -628,7 +628,7 @@ def project_create(user):
     if user['isProjectManager']:
         res = ops.createProject(request.forms.id, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
                                 json.loads(request.forms.managers), request.forms.ref_corpus, request.forms.source_dict,
-                                request.forms.worflow, request.forms.language, user)
+                                request.forms.workflow, request.forms.language, user)
         return res
     return {"success": False, "projectID": request.forms.id, 'error': 'User is not a manager. Can not create project.'}
 
