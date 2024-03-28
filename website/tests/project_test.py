@@ -24,6 +24,10 @@ class TestQueries(unittest.TestCase):
                           headers=cls.headers, cookies=cls.cookies)
         cls.new_project_id = r2.json()['suggested']
 
+        r3 = requests.get(url=cls.website + "/wokflows/list.json",
+                          headers=cls.headers, cookies=cls.cookies)
+        cls.workflow = r3.json()['workflows'][0]['name']
+
     # CREATE PROJECT
     def test_1(self):
         API_ENDPOINT_1 = self.website + "/projects/create.json"
@@ -34,7 +38,7 @@ class TestQueries(unittest.TestCase):
                 'managers': json.dumps(['marek.medved3@gmail.com', 'marek.medved@sketchengine.eu', 'marek.medved@sketchengine.co.uk']),
                 'ref_corpus': 'test_ref_corpus',
                 'source_dict': 'test_source_corpus',
-                'worflow': 'test_workflow',
+                'workflow': self.workflow,
                 'language': 'cs'}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
