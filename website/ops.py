@@ -77,19 +77,23 @@ def sendmail(mailTo, mailSubject, mailText):
 # config
 def readDictConfigs(dictDB):
     configs = {"siteconfig": siteconfig}
+
     c = dictDB.execute("select * from configs")
     for r in c.fetchall():
-        configs[r["id"]] = json.loads(r["json"])
-    for conf in ["ident", "publico", "users", "kontext", "titling", "flagging",
+        if r["id"] == "users":
+            users = {}
+            for email, value in json.loads(r["json"]).items():
+                users[email.lower()] = value
+            configs["users"] = users
+        else:
+            configs[r["id"]] = json.loads(r["json"])
+
+    add_items = ["ident", "publico", "users", "kontext", "titling", "flagging",
                  "searchability", "xampl", "thes", "collx", "defo", "structure", "limits",
-                 "formatting", "editing", "download", "links", "autonumber", "gapi", "metadata"]:
+                 "formatting", "editing", "download", "links", "autonumber", "gapi", "metadata"]
+    for conf in set(add_items):
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
-
-    users = {}
-    for email in configs["users"]:
-        users[email.lower()] = configs["users"][email]
-    configs["users"] = users
 
     for key in configs.keys():
         if type(configs[key]) is dict:
