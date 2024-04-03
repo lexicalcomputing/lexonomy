@@ -688,7 +688,15 @@ def dictconfig(dictID):
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
         doctypes = [configs["structure"]["root"]]
         doctypes = list(set(doctypes))
-        res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]}, "userAccess": user["dictAccess"], "configs": {"structure": configs["structure"] if "structure" in configs else configs["structure"], "formatting": configs["formatting"], "kontext": configs["kontext"], "xampl": configs["xampl"], "thes": configs["thes"], "collx": configs["collx"], "defo": configs["defo"], "titling": configs["titling"], "flagging": configs["flagging"], "linking": configs["links"], "editing": configs["editing"], "metadata": configs["metadata"], "gapi": configs["gapi"], "limits": configs["limits"]}, "doctype": configs["structure"]["root"], "doctypes": doctypes}
+
+        hide_items = ["siteconfig", "searchability", "download", "links", "autonumber", "users"]
+        for item in hide_items:
+            configs.pop(item)
+
+        res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]},
+               "userAccess": user["dictAccess"], "configs": configs,
+               "doctype": configs["structure"]["root"], "doctypes": doctypes}
+
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
 
