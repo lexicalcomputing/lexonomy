@@ -24,6 +24,7 @@ class TestQueries(unittest.TestCase):
                           headers=cls.headers, cookies=cls.cookies)
         cls.new_project_id = r2.json()['suggested']
 
+        # get workflow name
         r3 = requests.get(url=cls.website + "/wokflows/list.json",
                           headers=cls.headers, cookies=cls.cookies)
         cls.workflow = r3.json()['workflows'][0]['name']
