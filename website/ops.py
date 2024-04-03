@@ -542,7 +542,12 @@ def processJWT(user, jwtdata):
 
 
 def dictExists(dictID):
-    return os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts/" + dictID + ".sqlite"))
+    has_sql = os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts/" + dictID + ".sqlite"))
+
+    conn = getMainDB()
+    c = conn.execute("SELECT id FROM dicts WHERE id=?", (dictID,))
+
+    return has_sql or c.fetchone()
 
 def suggestDictId():
     dictid = generateDictId()
@@ -568,6 +573,11 @@ def get_schema_elements(nvh_node, elements):
     }
     for child in nvh_node.children:
         get_schema_elements(child, elements)
+
+def checkDictExists(dictID):
+    if dictID in prohibitedDictIDs or dictExists(dictID):
+        return True
+    return False
 
 def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filename=None, hwNode=None):
     if not import_filename:
