@@ -49,14 +49,13 @@ class TestQueries(unittest.TestCase):
                           headers=self.headers, cookies=self.cookies)
         self.assertEqual(r.json()['success'], True)
 
-    # DICT EXISTS
+    # DICT REMOVE
     def test_4(self):
         data = {'url': 'test_create_dict'}
         
         r = requests.post(url=self.website + '/' + data['url'] + "/destroy.json", 
                           data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r.json()['success'], True)
-
 
     # DICT EXISTS
     def test_5(self):
