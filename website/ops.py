@@ -1529,7 +1529,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         for rf in cf.fetchall():
             item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
             if "flag_element" in configs["flagging"]:
-                item["flag"] = extractText(nvh2json(rf["json"]), configs["flagging"]["flag_element"])
+                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), configs["flagging"]["flag_element"])
             entries.append(item)
         return rc["total"], entries, True
 
@@ -1575,7 +1575,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
         if "flag_element" in configs["flagging"] and configs["flagging"]["flag_element"] != "":
-            item["flag"] = extractText(nvh2json(r1["nvh"]), configs["flagging"]["flag_element"])
+            item["flag"] = extractText(nvh.parse_string(r1["nvh"]), configs["flagging"]["flag_element"])
         if fullNVH:
             item["nvh"] = r1["nvh"]
         if r1["level"] > 1:
