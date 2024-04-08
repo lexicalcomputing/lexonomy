@@ -22,6 +22,7 @@ import requests
 from nvh import nvh
 from bottle import request
 import sys
+import version
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
@@ -607,6 +608,8 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
 
     users = {email: {"canEdit": True, "canConfig": True, "canDownload": True, "canUpload": True}}
     dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("users", json.dumps(users)))
+
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version.version})))
 
     ident = {"title": title, "blurb": blurb}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))

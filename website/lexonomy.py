@@ -15,6 +15,7 @@ import urllib.request
 from ops import siteconfig
 import media
 import bottle
+import version
 from bottle import (hook, route, get, post, run, template, error, request,
                     response, static_file, abort, redirect, install)
 
@@ -153,13 +154,14 @@ def lexonomyconfig():
         "licences": siteconfig['licences'],
         "baseUrl": siteconfig['baseUrl'],
         "ske_url": siteconfig['ske_url'],
-        "api_url": siteconfig['api_url']
+        "api_url": siteconfig['api_url'],
+        "langs": ops.get_iso639_1(),
+        "version": version.version
     }
     if 'sketchengineLoginPage' in siteconfig:
         configData['sketchengineLoginPage'] = siteconfig['sketchengineLoginPage']
     if "consent" in siteconfig and siteconfig["consent"].get("terms") != "":
         configData["consent"] = siteconfig["consent"]
-    configData['langs'] = ops.get_iso639_1()
     return configData
 
 @get(siteconfig["rootPath"] + "schemaitems.json") # OK
