@@ -1,4 +1,5 @@
-VERSION=$(shell git describe --tags --always)
+DIST_VERSION=$(shell git describe --tags --always)
+VERSION=$(shell git describe --tags --abbrev=0)
 INSTALLDIR=/opt/lexonomy
 SOURCE_RIOT=$(wildcard website/riot/)
 SOURCE_JS=website/app.js website/app.static.js website/app.css.js $(SOURCE_RIOT)
@@ -18,8 +19,9 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
 	mv $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json.template $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json
 	mv $(DESTDIR)$(INSTALLDIR)/website/config.js.template $(DESTDIR)$(INSTALLDIR)/website/config.js
+	echo "version = \"$(VERSION)\"" > $(DESTDIR)$(INSTALLDIR)/website/version.py
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
-	tar czvf lexonomy-$(VERSION).tar.gz --transform 's,^,lexonomy-$(VERSION)/,' $^
+	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
 libSqliteIcu.so: release.tar.gz
 	rm -rf sqlite-release
 	tar xzf $<
