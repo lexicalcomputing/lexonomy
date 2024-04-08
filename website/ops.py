@@ -609,7 +609,7 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
     users = {email: {"canEdit": True, "canConfig": True, "canDownload": True, "canUpload": True}}
     dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("users", json.dumps(users)))
 
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version.version})))
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version.version, "creator": email})))
 
     ident = {"title": title, "blurb": blurb}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
@@ -663,7 +663,7 @@ def attachDict(dictDB, dictID):
     title = configs["ident"]["title"]
     if configs["ident"].get("lang"):
         lang = configs["ident"]["lang"]
-    conn.execute("insert into dicts (id, title, language) values (?, ?, ?)", (dictID, title, lang))
+    conn.execute("insert into dicts (id, title, language, creator) values (?, ?, ?, ?)", (dictID, title, lang, configs["metadata"]["creator"]))
     for email in configs["users"]:
         conn.execute("insert into user_dict (dict_id, user_email) values (?, ?)", (dictID, email.lower()))
     conn.commit()
@@ -1254,14 +1254,14 @@ def listDicts(searchtext, howmany):
     if searchtext and searchtext != "":
         c = conn.execute("select * from dicts where id like ? or title like ? order by id limit ?", ("%"+searchtext+"%", "%"+searchtext+"%", howmany))
         for r in c.fetchall():
-            dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or "")})
+            dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or ""), "creator": str(r["creator"] or "")})
         c = conn.execute("select count(*) as total from dicts where id like ? or title like ?", ("%"+searchtext+"%", "%"+searchtext+"%"))
         r = c.fetchone()
         total = r["total"]
     else:
         c = conn.execute("select * from dicts order by id")
         for r in c.fetchall():
-            dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or "")})
+            dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or ""), "creator": str(r["creator"] or "")})
         total = len(dicts)
     return {"entries": dicts, "total": total}
 
