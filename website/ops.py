@@ -2598,23 +2598,23 @@ def elexisGetLemma(dictID, headword, limit=None, offset=0):
     else:
         return None
 
-def elexisGuessPOS(xml):
-    # try to guess frequent PoS element
-    pos = ""
-    if "</pos>" in xml:
-        arr = extractText(xml, "pos")
-        if arr[0] and arr[0] != "":
-            pos = arr[0]
-    if "<partOfSpeech>" in xml:
-        arr = extractText(xml, "partOfSpeech")
-        if arr[0] and arr[0] != "":
-            pos = arr[0]
-    if 'type="pos"' in xml:
-        pat = r'<gram[^>]*type="pos"[^>]*>([^<]*)</gram>'
-        arr = re.findall(pat, xml)
-        if arr and arr[0] and arr[0] != "":
-            pos = arr[0]
-    return pos
+# def elexisGuessPOS(xml):
+#     # try to guess frequent PoS element
+#     pos = ""
+#     if "</pos>" in xml:
+#         arr = extractText(xml, "pos")
+#         if arr[0] and arr[0] != "":
+#             pos = arr[0]
+#     if "<partOfSpeech>" in xml:
+#         arr = extractText(xml, "partOfSpeech")
+#         if arr[0] and arr[0] != "":
+#             pos = arr[0]
+#     if 'type="pos"' in xml:
+#         pat = r'<gram[^>]*type="pos"[^>]*>([^<]*)</gram>'
+#         arr = re.findall(pat, xml)
+#         if arr and arr[0] and arr[0] != "":
+#             pos = arr[0]
+#     return pos
 
 def getEntry(dictID, entryID, out_format):
     dictDB = getDB(dictID)
