@@ -516,7 +516,7 @@ def makedictjson(user):
     return {"success": res, "url": request.forms.url, "error": error, 'msg': msg}
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
-@authDict(["canConfig"])
+@authDict(["canView"])
 def clonedict(dictID, user, dictDB, configs):
     res = ops.cloneDict(dictID, user["email"])
     res["dicts"] = ops.getDictsByUser(user["email"])
@@ -743,7 +743,7 @@ def exportconfigs(dictID, user, dictDB, configs):
         if configid == 'ske':
             output['ske'] = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo'], 'kex': configs['kex']}
         elif configid == 'users':
-            output['users'] = json.dumps(ops.listDictUsers(dictID))
+            output['users'] = ops.listDictUsers(dictID)
         else:
             output[configid] = configs[configid]
     response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
@@ -756,23 +756,34 @@ def importconfigs(dictID, user, dictDB, configs):
         return {"success": False}
     else:
         upload = request.files.get("myfile")
-        try:
-            data = json.loads(upload.file.read().decode())
-            resaveNeeded = False
-            for key in data:
-                if key == 'ske':
-                    adjustedJson = {}
-                    adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', data['ske']['kex'])
-                    adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', data['ske']['xampl'])
-                    adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', data['ske']['collx'])
-                    adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', data['ske']['defo'])
-                    adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', data['ske']['thes'])
-                    resaveNeeded = False
-                else:
-                    adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
-            return {"success": True}
-        except:
-            return {"success": False}
+        # try:
+        data = json.loads(upload.file.read().decode())
+        resaveNeeded = False
+        for key in data:
+            if key == 'ske':
+                adjustedJson = {}
+                adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', data['ske']['kex'])
+                adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', data['ske']['xampl'])
+                adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', data['ske']['collx'])
+                adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', data['ske']['defo'])
+                adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', data['ske']['thes'])
+                resaveNeeded = False
+            elif key == 'users':
+                # raise Exception(type(data[key]))
+                old_users = ops.updateDictAccess(dictID, data[key])
+                ops.notifyUsers(old_users, data[key], configs['ident'], dictID)
+            elif key == 'dict_settings':
+                ops.updateDictSettings(dictID, json.dumps(data[key]))
+            else:
+                adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
+
+        if resaveNeeded:
+            configs = ops.readDictConfigs(dictDB)
+            ops.resave(dictDB, dictID, configs)
+
+        return {"success": True}
+        # except:
+            # return {"success": False}
 
 @get(siteconfig["rootPath"]+"<dictID>/download.json") # OK
 @authDict(["canDownload"], True)
@@ -873,7 +884,7 @@ def configread(dictID, user, dictDB, configs):
         config_data['locales'] = ops.get_locales()
     return {"success": True, "id": request.forms.id, "content": config_data}
 
-@post(siteconfig["rootPath"]+"<dictID>/configupdate.json")
+@post(siteconfig["rootPath"]+"<dictID>/dictconfigupdate.json")
 @authDict(["canConfig"])
 def configupdate(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
@@ -887,12 +898,25 @@ def configupdate(dictID, user, dictDB, configs):
         resaveNeeded = False
     else:
         adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, request.forms.id, json.loads(request.forms.content))
-    if request.forms.id == 'users':
-        ops.notifyUsers(configs['users'], adjustedJson, configs['ident'], dictID)
+
     if resaveNeeded:
         configs = ops.readDictConfigs(dictDB)
         ops.resave(dictDB, dictID, configs)
+
     return {"success": True, "id": request.forms.id, "content": adjustedJson}
+
+@post(siteconfig["rootPath"]+"<dictID>/dictaccessupdate.json")
+@authDict(["canConfig"])
+def dict_access_update(dictID, user, dictDB, configs):
+    old_users = ops.updateDictAccess(dictID, json.loads(request.forms.users))
+    ops.notifyUsers(old_users, json.loads(request.forms.users), configs['ident'], dictID)
+    return {"success": True}
+
+@post(siteconfig["rootPath"]+"<dictID>/dictsettingsupdate.json")
+@authAdmin
+def dict_settings_update(dictID, user):
+    ops.updateDictSettings(dictID, request.forms.configs)
+    return {"success": True}
 
 @post(siteconfig["rootPath"]+"<dictID>/autonumber.json")
 @authDict(["canConfig"])

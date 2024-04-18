@@ -31,12 +31,12 @@ for datadir in ["dicts", "uploads", "sqlite_tmp"]:
     pathlib.Path(os.path.join(siteconfig["dataDir"], datadir)).mkdir(parents=True, exist_ok=True)
 os.environ["SQLITE_TMPDIR"] = os.path.join(siteconfig["dataDir"], "sqlite_tmp")
 
+DEFAULT_ENTRY_LIMIT = 5000
 defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
                      "structure": {"elements": {}},
                      "titling": {"headwordAnnotations": []},
-                     "flagging": {"flag_element": "", "flags": []},
-                     "limits": {"entries": 5000}}
+                     "flagging": {"flag_element": "", "flags": []}}
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
@@ -81,21 +81,39 @@ def readDictConfigs(dictDB):
 
     c = dictDB.execute("select * from configs")
     for r in c.fetchall():
-        if r["id"] == "users":
-            users = {}
-            for email, value in json.loads(r["json"]).items():
-                users[email.lower()] = value
-            configs["users"] = users
-        else:
-            configs[r["id"]] = json.loads(r["json"])
+        configs[r["id"]] = json.loads(r["json"])
 
-    add_items = ["ident", "publico", "users", "kontext", "titling", "flagging",
-                 "searchability", "xampl", "thes", "collx", "defo", "structure", "limits",
+    # user access rights form 'user_dict' table
+    configs['users'] = {}
+    c1 = dictDB.execute("PRAGMA database_list")
+    dictID = c1.fetchone()['file'].strip().split('/')[-1][:-7]
+
+    conn = getMainDB()
+    c2 = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (dictID,))
+    for r in c2.fetchall():
+        configs['users'][r['user_email']] = {"canEdit": 1 if r['can_edit'] else 0,
+                                             "canView": 1 if r['can_view'] else 0,
+                                             "canConfig": 1 if r['can_config'] else 0,
+                                             "canDownload": 1 if r['can_download'] else 0,
+                                             "canUpload": 1 if r['can_upload'] else 0}
+
+    # admin configs like dict limit form 'dicts' table
+    c3 = conn.execute("SELECT configs FROM dicts WHERE id=?", (dictID,))
+    r = c3.fetchone()
+    if r:
+        configs['dict_settings'] = json.loads(r["configs"])
+    # if r:
+    #     for key, value in json.loads(r["configs"]).items():
+    #         configs[key] = value
+
+    add_items = ["ident", "publico", "kontext", "titling", "flagging", "styles",
+                 "searchability", "xampl", "thes", "collx", "defo", "structure",
                  "formatting", "editing", "download", "links", "autonumber", "gapi", "metadata"]
     for conf in set(add_items):
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
 
+    # Default dict: return value for items not present in dict
     for key in configs.keys():
         if type(configs[key]) is dict:
             configs[key] = defaultdict(lambda: None, configs[key])
@@ -160,7 +178,7 @@ def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     if ret["loggedin"] == False or (not dictAccess and not ret["isAdmin"]):
         return {"loggedin": ret["loggedin"], "email": email, "dictAccess": False, "isAdmin": False}, configs
     ret["dictAccess"] = dictAccess or {}
-    for r in ["canEdit", "canConfig", "canDownload", "canUpload"]:
+    for r in ["canEdit", "canConfig", "canDownload", "canUpload", "canView"]:
         ret[r] = ret.get("isAdmin") or (dictAccess and dictAccess[r])
         ret["dictAccess"][r] = ret[r]
     return ret, configs
@@ -603,12 +621,9 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
                                                   "dicts/" + dictID + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/")), uri=True)
     conn.executescript(sql_schema)
     conn.commit()
+
     #update dictionary info
     dictDB = getDB(dictID)
-
-    users = {email: {"canEdit": True, "canConfig": True, "canDownload": True, "canUpload": True}}
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("users", json.dumps(users)))
-
     dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version.version, "creator": email})))
 
     ident = {"title": title, "blurb": blurb}
@@ -646,7 +661,10 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
             dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
     dictDB.commit()
-    attachDict(dictDB, dictID)
+
+    users = {email: {"canEdit": 1, "canConfig": 1, "canDownload": 1, "canUpload": 1, "canView": 1}}
+    dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
+    attachDict(dictDB, dictID, users, dict_config)
 
     if import_filename:
         progress, _, err, _ = importfile(dictID, import_filename, email, hwNode)
@@ -654,24 +672,56 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
 
     return True, "", ""
 
-def attachDict(dictDB, dictID):
+def attachDict(dictDB, dictID, users, dict_config):
     configs = readDictConfigs(dictDB)
+
     conn = getMainDB()
     conn.execute("delete from dicts where id=?", (dictID,))
     conn.execute("delete from user_dict where dict_id=?", (dictID,))
+
     lang = ''
     title = configs["ident"]["title"]
+
     if configs["ident"].get("lang"):
         lang = configs["ident"]["lang"]
-    conn.execute("insert into dicts (id, title, language, creator) values (?, ?, ?, ?)", (dictID, title, lang, configs["metadata"]["creator"]))
-    for email in configs["users"]:
-        conn.execute("insert into user_dict (dict_id, user_email) values (?, ?)", (dictID, email.lower()))
+    conn.execute("insert into dicts (id, title, language, creator, configs) values (?, ?, ?, ?, ?)", (dictID, title, lang, configs["metadata"]["creator"], json.dumps(dict_config)))
+
+    for email, access_rights in users.items():
+        conn.execute("insert into user_dict (dict_id, user_email, can_view, can_edit, can_config, can_download, can_upload) values (?,?,?,?,?,?,?)",
+                     (dictID, email.lower(), access_rights['canView'], access_rights['canEdit'], access_rights['canConfig'],
+                      access_rights['canDownload'], access_rights['canUpload']))
     conn.commit()
+
+def listDictUsers(dictID):
+    users = {}
+    conn = getMainDB()
+    c = conn.execute("SELECT * FROM user_dict where dict_id=?", (dictID,))
+    for r in c.fetchall():
+        users[r['user_email']] = {"canEdit": bool(r['can_edit']), "canConfig": bool(r['can_config']),
+                                  "canDownload": bool(r['can_download']), "canUpload": bool(r['can_upload']),
+                                  "canView": bool(r['can_view'])}
+    return users
+
+def updateDictIdent(dictDB, dictID):
+    configs = readDictConfigs(dictDB)
+
+    conn = getMainDB()
+    lang = configs["ident"].get("lang", '')
+    title = configs["ident"].get("title", '')
+    # blurb = data.get('blurb', configs["ident"].get("blurb", ''))
+
+    conn.execute("UPDATE dicts SET title=?, language=? WHERE id=?", (title, lang, dictID))
+    conn.commit()
+
+    # dictDB.execute("UPDATE configs SET json=? WHERE id=ident", (json.dumps({"title": title, "blurb": blurb, "lang": lang})))
+    # dictDB.commit()
 
 def cloneDict(dictID, email):
     newID = suggestDictId()
     shutil.copy(os.path.join(siteconfig["dataDir"], "dicts/" + dictID + ".sqlite"), os.path.join(siteconfig["dataDir"], "dicts/" + newID + ".sqlite"))
     newDB = getDB(newID)
+    cc = newDB.execute("select count(*) as total from entries")
+    size = cc.fetchone()["total"]
 
     # Update tables for old dictionaries
     c = newDB.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='linkables'")
@@ -686,16 +736,12 @@ def cloneDict(dictID, email):
         ident = json.loads(row["json"])
         ident["title"] = "Clone of " + ident["title"]
     newDB.execute("update configs set json=? where id='ident'", (json.dumps(ident),))
-    res = newDB.execute("select json from configs where id='users'")
-    row = res.fetchone()
-    users = json.loads(row["json"])
-    if users.get(email):
-        users[email]['canConfig'] = True
-    else:
-        users[email] = {'canConfig': True, 'canEdit': True, 'canDownload': True, 'canUpload': True}
-    newDB.execute("update configs set json=? where id='users'", (json.dumps(users),))
     newDB.commit()
-    attachDict(newDB, newID)
+
+    users = {email: {"canEdit": 1, "canConfig": 1, "canDownload": 1, "canUpload": 1, "canView": 1}}
+    dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT if size < DEFAULT_ENTRY_LIMIT else size}}
+    attachDict(newDB, newID,users, dict_config)
+
     return {"success": True, "dictID": newID, "title": ident["title"]}
 
 def destroyDict(dictID):
@@ -718,11 +764,24 @@ def moveDict(oldID, newID):
         os.remove(os.path.join(siteconfig["dataDir"], "dicts/" + oldID + ".sqlite-wal"))
     if os.path.exists(os.path.join(siteconfig["dataDir"], "dicts/" + oldID + ".sqlite-shm")):
         os.remove(os.path.join(siteconfig["dataDir"], "dicts/" + oldID + ".sqlite-shm"))
+
     conn = getMainDB()
-    conn.execute("delete from dicts where id=?", (oldID,))
+    c = conn.execute("SELECT configs FROM dicts WHERE id=?", (oldID,))
+    dict_config = json.loads(c.fetchone()['configs'])
+
+    conn.execute("DELETE FROM dicts WHERE id=?", (oldID,))
+    c2 = conn.execute("SELECT user_email, can_view, can_edit, can_config, can_download, can_upload FROM user_dict WHERE dict_id=?", (oldID,))
+
+    users = {}
+    for r in c2.fetchall():
+        users[r['user_email']] = {"canEdit": r['can_edit'], "canConfig": r['can_config'], "canDownload": r['can_download'], "canUpload": r['can_upload'], "canView": r['can_view']}
+
+    conn.execute("DELETE FROM user_dict WHERE dict_id=?", (oldID,))
     conn.commit()
+
     dictDB = getDB(newID)
-    attachDict(dictDB, newID)
+    attachDict(dictDB, newID, users, dict_config)
+
     return True
 
 def getDoc(docID):
@@ -1653,20 +1712,12 @@ def getDictStats(dictDB):
     return res
 
 def updateDictConfig(dictDB, dictID, configID, content):
-    dictDB.execute("delete from configs where id=?", (configID, ))
-    dictDB.execute("insert into configs(id, json) values(?, ?)", (configID, json.dumps(content)))
+    dictDB.execute("DELETE FROM configs WHERE id=?", (configID, ))
+    dictDB.execute("INSERT INTO configs(id, json) VALUES (?, ?)", (configID, json.dumps(content)))
     dictDB.commit()
 
     if configID == "ident":
-        attachDict(dictDB, dictID)
-        if content.get('lang'):
-            lang = content.get('lang')
-            conn = getMainDB()
-            conn.execute("UPDATE dicts SET language=? WHERE id=?", (lang, dictID))
-            conn.commit()
-        return content, False
-    elif configID == 'users':
-        attachDict(dictDB, dictID)
+        updateDictIdent(dictDB, dictID)
         return content, False
     elif configID == "titling" or configID == "searchability":
         resaveNeeded = flagForResave(dictDB)
@@ -1678,11 +1729,31 @@ def updateDictConfig(dictDB, dictID, configID, content):
             dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
         return content, resaveNeeded
-    #elif configID == "subbing":
-    #    refacNeeded = flagForRefac(dictDB)
-    #    return content, refacNeeded
     else:
         return content, False
+
+def updateDictAccess(dictID, users):
+    conn = getMainDB()
+    c = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (dictID,))
+    old_users = {}
+    for r in c.fetchall():
+        old_users[r['user_email']] = {'canView': r['can_view'], 'canEdit': r['can_edit'],
+                                      'canConfig': r['can_config'], 'canDownload': r['can_download'],
+                                      'canUpload': r['can_upload']}
+
+    conn.execute("DELETE FROM user_dict WHERE dict_id=?", (dictID,))
+
+    for user, rights in users.items():
+        conn.execute("INSERT INTO user_dict(dict_id, user_email, can_view, can_edit, can_config, can_download, can_upload) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                     (dictID, user, rights['canView'], rights['canEdit'], rights['canConfig'], rights['canDownload'], rights['canUpload']))
+    conn.commit()
+
+    return old_users
+
+def updateDictSettings(dictID, settings_config):
+    conn = getMainDB()
+    conn.execute("UPDATE dicts SET configs=? WHERE id=?", (settings_config, dictID))
+    conn.commit()
 
 def flagForResave(dictDB):
     c = dictDB.execute("update entries set needs_resave=1")
@@ -2289,7 +2360,7 @@ def addAutoNumbers(dictDB, dictID, countElem, storeElem):
 
 def notifyUsers(configOld, configNew, dictInfo, dictID):
     for user in configNew:
-        if not configOld[user]:
+        if not configOld.get(user, ''):
             mailSubject = "Lexonomy, added to the dictionary"
             mailText = "Dear Lexonomy user,\n\n"
             mailText += "you are now able to access the following dictionary:\n"
