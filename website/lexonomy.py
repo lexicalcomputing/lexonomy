@@ -698,7 +698,7 @@ def dictconfig(dictID):
         doctypes = list(set(doctypes))
 
         # WARNING consider if new config item does show personal data, than add to this list
-        hide_items = ["siteconfig", "searchability", "download", "links", "autonumber", "users"]
+        hide_items = ["siteconfig", "searchability", "download", "autonumber", "users"]
         for item in hide_items:
             configs.pop(item)
 
@@ -741,7 +741,9 @@ def exportconfigs(dictID, user, dictDB, configs):
     output = {}
     for configid in request.forms.configs.split(','):
         if configid == 'ske':
-            output['ske'] = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
+            output['ske'] = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo'], 'kex': configs['kex']}
+        elif configid == 'users':
+            output['users'] = json.dumps(ops.listDictUsers(dictID))
         else:
             output[configid] = configs[configid]
     response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
@@ -760,6 +762,7 @@ def importconfigs(dictID, user, dictDB, configs):
             for key in data:
                 if key == 'ske':
                     adjustedJson = {}
+                    adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', data['ske']['kex'])
                     adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', data['ske']['xampl'])
                     adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', data['ske']['collx'])
                     adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', data['ske']['defo'])
@@ -858,7 +861,7 @@ def publicsearch(dictID):
 @authDict(["canConfig"])
 def configread(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
-        config_data = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo']}
+        config_data = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo'], 'kex': configs['kex']}
     else:
         if request.forms.id == 'structure' and 'structure' not in configs:
             config_data = configs['structure']
@@ -876,6 +879,7 @@ def configupdate(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
         adjustedJson = {}
         jsonData = json.loads(request.forms.content)
+        adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', jsonData['kex'])
         adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', jsonData['xampl'])
         adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', jsonData['collx'])
         adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', jsonData['defo'])
