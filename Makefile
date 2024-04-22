@@ -6,10 +6,10 @@ SOURCE_JS=website/app.js website/app.static.js website/app.css.js $(SOURCE_RIOT)
 INSTALL_JS=bundle.js bundle.css bundle.static.js
 SOURCE_PY=lexonomy.py ops.py media.py nvh.py advance_search.py import.py
 SOURCE_CONF=siteconfig.json.template package.json rollup.config.js config.js.template lexonomy.sqlite.schema crossref.sqlite.schema
-SOURCE_WEBDIRS=adminscripts css dictTemplates docs furniture img js libs
+SOURCE_WEBDIRS=adminscripts css dictTemplates docs furniture img js libs workflows
 SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
 INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
-SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md
+SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md make_instance.sh
 
 build: website/bundle.js
 website/bundle.js: $(SOURCE_RIOT)
@@ -17,9 +17,8 @@ website/bundle.js: $(SOURCE_RIOT)
 install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
-	mv $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json.template $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json
-	mv $(DESTDIR)$(INSTALLDIR)/website/config.js.template $(DESTDIR)$(INSTALLDIR)/website/config.js
-	echo "version = \"$(VERSION)\"" > $(DESTDIR)$(INSTALLDIR)/website/version.py
+	cat $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json.template | sed "s#%{path}#$(DESTDIR)$(INSTALLDIR)/website#g" > $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json
+	cp $(DESTDIR)$(INSTALLDIR)/website/config.js.template $(DESTDIR)$(INSTALLDIR)/website/config.js
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
 libSqliteIcu.so: release.tar.gz
