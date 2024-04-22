@@ -110,7 +110,7 @@ class NVHStoreClass {
 
    saveStyle(){
       return $.ajax({
-         url: `${window.API_URL}${window.store.data.dictId}/configupdate.json`,
+         url: `${window.API_URL}${window.store.data.dictId}/dictconfigupdate.json`,
          method: 'POST',
          data: {
             id: "formatting",
