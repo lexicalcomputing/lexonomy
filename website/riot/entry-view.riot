@@ -29,7 +29,7 @@
             if(this.dictData.entry && this.dictData.entry.content){
                let html = '';
                if (this.dictData.entry.contentHtml.length == 0) {
-                  html = Xemplatron.xml2html(this.dictData.entry.content, this.dictData.config.formatting, this.dictData.config.structure)
+                  html = Xemplatron.xml2html(this.dictData.entry.content, this.dictData.config.formatting.elements, this.dictData.config.structure)
                } else {
                   html = this.dictData.entry.contentHtml;
                }
