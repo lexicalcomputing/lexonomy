@@ -1,5 +1,5 @@
 <dict-entry-filter>
-   <ul class="tabs displayFlex alignCenter">
+   <ul class="tabs alignCenter">
       <li class="tab {dictData.search.tab == "basic" ? "active" : ""}">
          <a onclick={onTabClick.bind(this, "basic")}>simple</a>
       </li>
@@ -13,18 +13,20 @@
    </ul>
    <div class="filterForm">
       <div if={dictData.search.tab == "basic"}>
-         <span class="searchBox">
+         <span class="searchBox inputWithRightIcon">
             <input type="text"
                   id="searchtext"
                   placeholder="search"
                   class="input-field"
                   value={dictData.search.searchtext}
+                  oninput={onSearchtextInput}
                   onkeyup={onSearchtextKeyUp}/>
             <i onclick={onClearFilterClick}
-               class="material-icons clearFilterIcon grey-text clickable">close</i>
+               class="material-icons rightIcon grey-text clickable">close</i>
          </span>
 
-         <select id="modifier">
+         <select id="modifier"
+               onchange={onModifierChange}>
             <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
             <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
             <option value="wordstart" selected={dictData.search.modifier == "wordstart"}>contains a word that starts like this</option>
@@ -33,7 +35,7 @@
          </select>
       </div>
       <div if={dictData.search.tab == "advanced"}>
-         <span class="searchBox">
+         <span class="searchBox inputWithRightIcon">
             <span class="textareaWrapper">
                <textarea id="advanced_query"
                      class="materialize-textarea monospace"
@@ -45,7 +47,7 @@
                </textarea>
             </span>
             <i onclick={onClearFilterClick}
-               class="material-icons clearFilterIcon grey-text clickable">close</i>
+               class="material-icons rightIcon grey-text clickable">close</i>
             <div if={!state.isValid}
                   class="red-text" style="font-size: 0.8em;">{state.parseError}</div>
          </span>
@@ -67,7 +69,9 @@
 
          state: {
             isValid: null,
-            parseError: ""
+            parseError: "",
+            searchDebounceTimer: null,
+            searchRequest: null
          },
 
          onMounted(){
@@ -76,6 +80,10 @@
 
          onUpdated(){
             this.initSelect()
+         },
+
+         onBeforeUnmount(){
+            this.state.searchRequest && this.state.searchRequest.abort()
          },
 
          onSearchParamsChanged(){
@@ -108,7 +116,7 @@
             } else {
                this.dictData.search.advanced_query = $("#advanced_query").val()
             }
-            this.props.searchFunc()
+            this.state.searchRequest = this.props.searchFunc()
             this.update()
          },
 
@@ -131,11 +139,22 @@
          },
 
          onSearchtextKeyUp(evt){
-            if (evt.keyCode == 13) {
+            if (evt.keyCode == 13 && !this.props.basicSearchOnInput) {
                evt.preventDefault()
                this.search()
             } else if(evt.keyCode == 27){
                evt.target.blur()
+            }
+         },
+
+         onSearchtextInput(evt){
+            if(this.props.basicSearchOnInput){
+               this.searchDebounceTimer && clearTimeout(this.searchDebounceTimer)
+               this.searchDebounceTimer = setTimeout(() => {
+                  this.state.searchRequest && this.state.searchRequest.abort()
+                  clearTimeout(this.searchDebounceTimer)
+                  this.search()
+               }, 300)
             }
          },
 
@@ -171,16 +190,16 @@
             this.store.trigger("toggleQueryBuilder")
          },
 
+         onModifierChange(){
+            $("input", this.root).val() && this.search()
+         },
+
          initSelect(){
-            $("select").off("change")
-                  .formSelect({
+            $("select", this.root).formSelect({
                      dropdownOptions: {
                         coverTrigger: false,
                         constrainWidth: false
                      }
-                  })
-                  .on("change", () => {
-                     $("input", this.root).val() && this.search()
                   })
          }
       }
@@ -215,13 +234,11 @@
             position: relative;
             flex: 2;
             input{
-               padding-right: 27px;
                margin-bottom: 0;
                background-color: #fff;
             }
             textarea{
                margin-bottom: 0;
-               padding-right: 27px;
                border: 0px!important;
                outline: none!important;
                background-color: #fff;
@@ -254,11 +271,6 @@
             input{
                margin-bottom: 0;
             }
-         }
-         .clearFilterIcon{
-            position: absolute;
-            right: 5px;
-            top: 11px;
          }
       }
       .tabs{
