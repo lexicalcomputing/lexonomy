@@ -2,31 +2,32 @@
    <div id="entryListSidenav"
          class="entryListContainer"
          style="width: max({dictData.config.flagging.flags.length ? '25vw' : '20vw'}, 250px);">
-      <loading-overlay if={dictData.isEntryListLoading}/>
-      <dict-entry-filter search-func={onFilterChanged}/>
-      <template if={dictData.isEntryListLoaded}>
+      <dict-entry-filter search-func={onFilterChanged}
+            basic-search-on-input={true}/>
+      <div if={dictData.isEntryListLoaded}
+            class="positionRelative listWrapper">
+         <loading-overlay if={dictData.isEntryListLoading}/>
          <div if={dictData.entryCount > dictData.entryList.length}
                class="entriesCountInfo">
             Showing {dictData.entryList.length} of {dictData.entryCount} entries.
          </div>
-         <div class="entry-list collection"
+         <div class="entry-list"
                onscroll={onEntryListScroll}>
-            <div each={ (entry, idx) in dictData.entryList }
+            <a each={ (entry, idx) in dictData.entryList }
+                  href="#/{dictData.dictId}/edit/{dictData.doctype}/{entry.id}/{dictData.editorMode}{store.getEntrySearchUrlQueryString()}"
                   data-idx={idx}
-                  class="collection-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}"
-                  onclick={onHeadwordClick.bind(this, entry.id)}>
+                  class="entry-list-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}">
                <span class="lineNum">{idx + 1}.</span>
-               <a href="#/{dictData.dictId}/edit/{dictData.doctype}/{entry.id}/{dictData.editorMode}{store.getEntrySearchUrlQueryString()}"
-                     class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
+               <span class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
                   <raw-html content={entry.title || "&nbsp;"}/>
-               </a>
+               </span>
                <span if={dictData.config.flagging.flags.length}
                      onclick={onOpenFlagMenuClick.bind(this, entry)}
                      class="flag {entry.flag && entry.flag[0] ? 'badge' : 'noFlag'}"
                      style={getFlagStyle(entry.flag ? entry.flag[0] : '')}>
                   {store.getFlagLabel(entry.flag && entry.flag[0]) || "no flag"}
                </span>
-            </div>
+            </a>
             <div if={!dictData.entryList.length && !dictData.isEntryListLoading}
                   class="noEntries">
                <h2 class="grey-text center-align">No entries</h2>
@@ -53,7 +54,7 @@
                <div class="right flagKey">{flag.key}</div>
             </li>
          </ul>
-      </template>
+      </div>
    </div>
 
    <script>
@@ -107,19 +108,11 @@
             }
          },
 
-         onHeadwordClick(entryId, evt){
-            if(!window.nvhStore.editorNeedsSaving(evt)){
-               this.store.changeEntryId(entryId)
-               let sidenav = M.Sidenav.getInstance($('#entryListSidenav')[0])
-               sidenav && sidenav.close()
-            }
-         },
-
          onOpenFlagMenuClick(entry, evt){
             evt.stopPropagation()
             let id = "ts_" + Date.now() + Math.floor((Math.random() * 10000))
             // create copy of the list. Without copy, UL is moved as child of target node and after riot update is destroyed
-            let menuNode = $(evt.target)//.closest(".collection-item")
+            let menuNode = $(evt.target)//.closest(".entry-list-item")
             $("#flagDropdown").clone()
                  .attr({id: id})
                  .data("entryid", entry.id)
@@ -143,7 +136,7 @@
                let inComponent = entryList.contains(evt.target)
                if(inComponent || inComponent != this.state.focused){
                   this.state.focused = inComponent
-                  this.state.cursorPosition = inComponent ? $(evt.target).closest(".collection-item").data("idx") + 1 : null
+                  this.state.cursorPosition = inComponent ? $(evt.target).closest(".entry-list-item").data("idx") + 1 : null
                }
             }
          },
@@ -216,9 +209,9 @@
          },
 
          updateCursor(){
-            $(".collection-item.focused", this.root).removeClass("focused")
+            $(".entry-list-item.focused", this.root).removeClass("focused")
             if(this.state.cursorPosition){
-               const node = $(".collection-item:nth-child(" + this.state.cursorPosition + ")")
+               const node = $(".entry-list-item:nth-child(" + this.state.cursorPosition + ")")
                $(node).addClass("focused")
             }
          },
@@ -266,6 +259,9 @@
       li > span {
          white-space: nowrap;
       }
+      .listWrapper{
+         min-height: 50vh;
+      }
       .entry-list {
          max-height: 80vh;
          overflow-y: auto;
@@ -275,14 +271,18 @@
          font-size: 0.85rem;
          color: #b8b8b8;
       }
-      .collection{
-         border-radius: 0;
-      }
-      .collection-item{
+      .entry-list-item{
          position: relative;
          display: flex;
          border-left: 5px solid white;
          padding-left: 0.2rem;
+         text-decoration: none;
+         border-bottom: 1px solid #e0e0e0;
+         line-height: 1.5rem;
+         padding: 0.5rem 1.1rem;
+         &:hover{
+            background-color: #eee;
+         }
          &.selected{
             border-left-color: #000;
          }
@@ -315,6 +315,9 @@
             font-size: 1.2rem;
             letter-spacing: 1px;
             margin-right: auto;
+            &:hover{
+               color: #F44336;
+            }
          }
          .flag{
             cursor: pointer;
@@ -323,6 +326,7 @@
             font-family: monospace;
          }
          .badge{
+            margin-top: 0;
             font-weight: bold;
             font-size: 1rem;
             color: #fff;
