@@ -1194,38 +1194,6 @@ class StoreClass {
 
    }
 
-   startLinking(otherDictID){
-      return $.ajax({
-         url: `${window.API_URL}${this.data.dictId}/linknaisc.json`,
-         data: {otherdictID: otherDictID}
-      })
-            .fail(response => {
-               M.toast({html: "Could not initiate linking process."})
-            })
-   }
-
-   linkingCheckIfRunning(){
-      return $.ajax({
-         url: `${window.API_URL}${this.data.dictId}/linking.json`
-      })
-            .fail(response => {
-               M.toast({html: "Could not check linking process."})
-            })
-   }
-
-   linkingGetProgress(otherDictID, jobID){
-      return $.ajax({
-         url: `${window.API_URL}${this.data.dictId}/naiscprogress.json`,
-         data: {
-            otherdictID: otherDictID,
-            jobid: jobID
-         }
-      })
-            .fail(response => {
-               M.toast({html: "Could not check the linking progress."})
-            })
-   }
-
    autonumberElements(countElem, storeElem){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/autonumber.json`,
