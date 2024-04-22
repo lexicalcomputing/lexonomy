@@ -40,11 +40,12 @@
             <nvh-editor if={!state.showQueryBuilder}/>
          </div>
       </div>
-
-      <div class="divider"></div>
-      <div class="section grey-text">
-         Licence: { dictData.licence }
-      </div>
+      <template if={dictData.config.publico.public}>
+         <div class="divider"></div>
+         <div class="section grey-text">
+            Licence: { dictData.licence }
+         </div>
+      </template>
    </template>
 
 
