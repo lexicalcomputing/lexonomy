@@ -6,7 +6,7 @@
                <div>
                   {store.getElementDisplayedName(state.element.name)}
                </div>
-               <div if={state.actualOptions[0].parentItem}
+               <div if={state.parentItem}
                      class="nvh-breadcrumbs">
                   {getOptionPath()}
                </div>
@@ -33,7 +33,7 @@
                <i class="ml-auto material-icons">chevron_right</i>
             </li>
          </template>
-         <template if={state.actualOptions[0].parentItem}>
+         <template if={state.parentItem}>
             <li class="divider"></li>
             <li class="nvh-back nvh-focusable-option"
                   onclick={onBackClick}>
@@ -97,7 +97,8 @@
                   if(!element){
                      return
                   }
-                  let item = this.state.actualOptions[0].parentItem
+                  let parentItem = actualOptions && actualOptions[0] ? actualOptions[0].parentItem : null
+                  let item = parentItem
                   let path = []
                   let oldOptionText = $(".nvh-highlight", this.root).html()
                   while (item){
@@ -124,7 +125,8 @@
                      element: element,
                      elementNode: $(".nvh-focused").find(".nvh-wrapper").first(),
                      options: options,
-                     actualOptions: actualOptions
+                     actualOptions: actualOptions,
+                     parentItem: parentItem
                   })
                   this.updatePosition()
                   let optionToFocus = $(".nvh-focusable-option:contains(\"" + oldOptionText + "\")", this.root)
@@ -154,7 +156,7 @@
             } else if(evt.keyCode == 40){
                 this.moveCursorDown()
             } else if(evt.keyCode == 27 || evt.keyCode == 37){ //esc, left arrow
-               let parentMenu = this.state.actualOptions[0].parentMenu
+               let parentMenu = this.state.actualOptions[0] && this.state.actualOptions[0].parentMenu
                if(parentMenu){
                   this.changeActualOptions(parentMenu)
                } else if(evt.keyCode == 27){
@@ -384,7 +386,7 @@
 
          getOptionPath(){
             path = []
-            let item = this.state.actualOptions[0].parentItem
+            let item = this.state.parentItem
             while (item){
                path.push(item.label)
                item = item.parentItem
