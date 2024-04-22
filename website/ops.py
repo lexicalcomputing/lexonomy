@@ -600,9 +600,14 @@ def checkDictExists(dictID):
         return True
     return False
 
-def makeDict(dictID, schema_keys, title, lang, blurb, email, addExamples, import_filename=None, hwNode=None):
+def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, addExamples, import_filename=None, hwNode=None):
     if not import_filename:
-        final_schema = mergeSchemaItems(schema_keys)
+        if nvh_schema_string:
+            final_schema = nvh_schema_string
+        elif schema_keys:
+            final_schema = mergeSchemaItems(schema_keys)
+        else:
+            raise Exception('No schema provided')
         schema_elements = []
         schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
         schema_elements = list(filter(None, schema_elements))  #filter out empty strings
