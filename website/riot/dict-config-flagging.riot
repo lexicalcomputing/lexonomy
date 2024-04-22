@@ -82,7 +82,7 @@
    </template>
    <br><br>
    <dict-config-buttons save-data={saveData}
-         show-save={state.data.flags.length}></dict-config-buttons>
+         show-save={state.data.flags.length || state.hadFlags}></dict-config-buttons>
 
    <script>
       export default {
@@ -120,8 +120,10 @@
          onMounted() {
             this.store.loadDictionaryConfig("flagging")
                   .done(response => {
+                     this.state.hadFlags = false
                      if (response.content.flag_element) {
                         this.state.data = response.content
+                        this.state.hadFlags = true
                      }
                   })
                   .always(() => {
