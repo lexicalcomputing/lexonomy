@@ -217,9 +217,13 @@ class NVHStoreClass {
 
    parseNvhLine(line, idx, lastIndent){
       if(!line.match(/^(([ ]{2})*)([a-zA-Z0-9-_]+):(.*)$/)){
-         if(line.match(/^(([ ]{2})*)(((?!: ).)+):(.*)$/)){
+         if(line.match(/^([ ]([  ]{2})*)[^ ]*$/)){
+            throw `Invalid indent on line ${idx + 1}: '${line.trim()}'.`
+         } else if(line.match(/^[^:]*$/)){
+            throw `Missing colon on line ${idx + 1}: '${line.trim()}.`
+         } else if(line.match(/^(([ ]{2})*)(((?!: ).)+):(.*)$/)){
             throw `Invalid element name on line ${idx + 1}: '${line.trim()}. Allowed characters: a-z, A-Z, 0-9, _, -'`
-         } else {
+         } else{
             throw `Syntax error on line ${idx + 1}: '${line.trim()}'`
          }
       }
@@ -356,45 +360,26 @@ class NVHStoreClass {
    }
 
    nvhSchemaToJSON(nvhSchema){
-      let addElementAndChildren = (element) => {
-         if(!ret[element.name]){
-            ret[element.name] = {
-               name: element.name,
-               children: [],
-               type: "inl",
-               warnings: []
-            }
-         }
-         if(element.parent){
-            ret[element.parent.name].type = "chd"
-            ret[element.parent.name].children.push({
-               name: element.name,
-               min: ["", "+"].includes(element.value) ? 1 : 0, // * ? +
-               max: ["", "?"].includes(element.value) ? 1 : 0
-            })
-         }
-         element.children.forEach(addElementAndChildren)
-      }
-      let ret = {}
-      addElementAndChildren(this.nvhToJson(nvhSchema))
-      return ret
+      let json = this.nvhToJson(nvhSchema)
+      this.getElementList(json).forEach(el => {
+         Object.assign(el, this.parseNvhSchemaOptionsValue(el.value))
+      })
+      return json
    }
 
-   nvhSchemaToNvh(nvhSchema){
+   nvhSchemaToNewEntryTemplate(nvhSchema){
       let nvh = ""
-      let json = this.nvhSchemaToJSON(nvhSchema)
-      let addElementAndChildren = (element, indent) => {
-         nvh += `${" ".repeat(indent * 2)}${element.name}:\n`
+      let addElementAndChildren = (element) => {
+         nvh += `${" ".repeat(element.indent * 2)}${element.name}:\n`
          element.children.forEach(child => {
             if(child.min){
                for(let i = 0; i < child.min; i++){
-                  addElementAndChildren(json[child.name], indent + 1)
+                  addElementAndChildren(child)
                }
             }
          })
       }
-      addElementAndChildren(json[nvhSchema.split(":", 1)[0]], 0)
-
+      addElementAndChildren(this.nvhSchemaToJSON(nvhSchema))
       return nvh
    }
 
@@ -476,10 +461,12 @@ class NVHStoreClass {
 
    getElementList(element, list=[]){
       element = element || this.data.entry
-      list.push(element)
-      element.children.forEach(child => {
-         this.getElementList(child, list)
-      }, this)
+      if(element){
+         list.push(element)
+         element.children.forEach(child => {
+            this.getElementList(child, list)
+         }, this)
+      }
       return list
    }
 
@@ -1034,6 +1021,70 @@ class NVHStoreClass {
 
    validateAllElements(){
       this.forEachElement(this.validateElement.bind(this))
+   }
+
+   validateNVHSchema(schema){
+      if(schema && schema.trim()){
+         try{
+            let entry = this.nvhToJson(schema)
+            let elementList = this.getElementList(entry)
+            elementList.forEach(element => {
+               window.structureEditorStore.validateElementName(element.name)
+               if(elementList.filter(element2 => element.name == element2.name).length > 1){
+                  throw `Duplicate element "${element.name}". Element name must be unique.`
+               }
+
+               if(!this.parseNvhSchemaOptionsValue(element.value)){
+                  throw `Element "${element.name}"" has invalid options: ${element.value}.`
+               }
+            })
+         } catch (e){
+            return {
+               isValid: false,
+               error: e
+            }
+         }
+      }
+      return {isValid: true}
+   }
+
+   parseNvhSchemaOptionsValue(value){
+      //let re = new RegExp(/^(?<count>([\*\?\+]|\d+\+|\d+-\d+|\d+)?)\s*(?<type>(int|image|bool|audio|empty|url|string|list)?)\s*(?<values>(\[\s*"[^"]*"(\s*,\s*"[^"]*")*\s*\])?)\s*(?<regex>(~.*?)?)$/gm)
+      let num = "\\d+"
+      let space = "\\s*"
+      let re = new RegExp(`^${space}(?<count>([\\*\\?\\+]|${num}\\+|${num}-${num}|${num})?)${space}`
+                   + `(?<type>(int|image|bool|audio|empty|url|string|list)?)${space}`
+                   + `(?<values>(\\[${space}"[^"]*"(${space},${space}"[^"]*")*${space}\\])?)${space}`
+                   + `(?<regex>(~.*?)?)${space}$`)
+      let parsed = re.exec(value)
+      if(!parsed){
+         return null
+      } else {
+         let min = 0
+         let max = null
+         if(parsed.groups.count == "?"){
+            max = 1
+         } else if(parsed.groups.count == "+"){
+            min = 1
+         } else if(parsed.groups.count.indexOf("-") != -1){
+            let tmp = parsed.groups.count.split("-")
+            min = tmp[0]
+            max = tmp[2]
+         } else{
+            let num = parseInt(parsed.groups.count)
+            if(!isNaN(num)){
+               min = num
+               max = num
+            }
+         }
+         return {
+            min: min,
+            max: max,
+            type: parsed.groups.type,
+            values: parsed.groups.values.split(","),
+            regex: parsed.groups.regex
+         }
+      }
    }
 
    parseMarkDown(md){
