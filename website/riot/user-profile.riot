@@ -16,7 +16,6 @@
          </p>
       </div>
       <div if={ !dictData.siteconfig.sketchengineLoginPage }>
-         <p if={ state.skeuserMessage != '' }>{ state.skeuserMessage }</p>
          <div class="input-field">
             <div>
                <input id="skeusername"
@@ -25,7 +24,7 @@
                      value={ authData.ske_username }
                      style="width: 350px;" />
                <button class="btn waves-effect waves-light"
-                     onclick={ doChangeUser }>Change username
+                     onclick={ onChangeSkeUsernameClick }>Change username
                   <i class="material-icons right">send</i>
                </button>
             </div>
@@ -37,7 +36,6 @@
    <!-- Sketch Engine API key -->
    <div class="row">
       <label>Sketch Engine API key</label>
-      <p if={ state.skeapiMessage}>{ state.skeapiMessage }</p>
       <p if={ dictData.siteconfig.sketchengineLoginPage}>
          Unless you need special setup, Please, <a href={ dictData.siteconfig.sketchengineLoginPage }>login via Sketch Engine</a> to set API key automatically.
       </p>
@@ -49,7 +47,7 @@
                   value={ authData.ske_apiKey }
                   style="width: 350px;"/>
             <button class="btn waves-effect waves-light"
-                  onclick={ doChangeKey }>Change API key
+                  onclick={ onChangeSkeApiKeyClick }>Change API key
                <i class="material-icons right">send</i>
             </button>
          </div>
@@ -59,7 +57,6 @@
 
    <!-- Lexonomy API key -->
    <div class="row">
-      <p>{ state.apiMessage }</p>
       <label>Lexonomy API key</label>
       <div class="input-field">
          <div>
@@ -68,12 +65,12 @@
                   disabled
                   style="width: 350px;">
             <button class="btn waves-effect waves-light"
-                  onclick={ doNewKey }>
+                  onclick={ onGenerateNewApiKeyClick }>
                Generate new API key
                <i class="material-icons right">autorenew</i>
             </button>
             <button class="btn waves-effect waves-light"
-                  onclick={ doDeleteKey }>
+                  onclick={ onDeleteApiKeyClick }>
                Remove API key
                <i class="material-icons right">delete</i>
             </button>
@@ -84,7 +81,6 @@
 
    <!-- set new password -->
    <div class="passwords row">
-      <p>{ state.passMessage }</p>
       <div class="displayFlex">
          <div>
             <label>New password</label>
@@ -114,7 +110,7 @@
          </div>
          <button id="setPasswordButton"
                class="btn waves-effect waves-light disabled"
-               onclick={ doChangePass }>Change password
+               onclick={ onChangePasswordClick }>Change password
             <i class="material-icons right">send</i>
          </button>
       </div>
@@ -141,17 +137,13 @@
 
    <div>
       <a class="btn"
-            href="#/"
+            href="javascript:window.history.back()"
             onclick="window.history.back()">Back</a>
    </div>
 
    <script>
       export default {
          state: {
-            passMessage: '',
-            apiMessage: '',
-            skeuserMessage: '',
-            skeapiMessage: '',
             fontSize: 16
          },
 
@@ -174,76 +166,43 @@
             bothFilled && passwordsEqual && evt.keyCode == 13 && this.setPassword()
          },
 
-         doChangePass(event) {
-            if ($('#password').val() != '') {
-               $.post(window.API_URL + "changepwd.json", {password: $('#password').val()}, (response) => {
-                  if (response.success) {
-                     this.state.passMessage = 'Password changed.'
-                  } else {
-                     this.state.passMessage = 'There was an error saving the password.'
-                  }
-                  this.update()
-               })
+         onChangePasswordClick(event) {
+            this.store.changePassword($("#password1").val())
+         },
+
+         onChangeSkeUsernameClick(event) {
+            if($("#skeusername").val()) {
+               this.store.changeSketchEngineUsername($("#skeusername").val())
             }
          },
 
-         doChangeUser(event) {
-            if ($('#skeusername').val() != '') {
-               $.post(window.API_URL + "changeskeusername.json", {ske_userName: $('#skeusername').val()}, (response) => {
-                  if (response.success) {
-                     this.state.skeuserMessage = 'Username changed.'
-                  } else {
-                     this.state.skeuserMessage = 'There was an error saving the username.'
-                  }
-                  this.update()
-               })
+         onChangeSkeApiKeyClick(event) {
+            if($("#skeapi").val()) {
+               this.store.changeSketchEngineApiKey($("#skeapi").val())
             }
          },
 
-         doChangeKey(event) {
-            if ($('#skeapi').val() != '') {
-               $.post(window.API_URL + "changeskeapi.json", {ske_apiKey: $('#skeapi').val()}, (response) => {
-                  if (response.success) {
-                     this.state.skeapiMessage = 'API key changed.'
-                  } else {
-                     this.state.skeapiMessage = 'There was an error saving the API key.'
-                  }
-                  this.update()
-               })
-            }
+         onGenerateNewApiKeyClick(event) {
+            let apiKey = this.generateKey()
+            this.store.changeLexonomyApiKey(apiKey)
+                  .always(response => {
+                     this.update(this)
+                  })
          },
 
-         doNewKey(event) {
-            var newkey = this.generateKey()
-            $.post(window.API_URL + "changeoneclickapi.json", {apiKey: newkey}, (response) => {
-               if (response.success) {
-                  this.state.apiMessage = 'API key changed.'
-                  this.authData.apiKey = newkey
-               } else {
-                  this.state.apiMessage = 'There was an error saving the API key.'
-               }
-               this.update()
-            })
-         },
-
-         doDeleteKey(event) {
-            $.post(window.API_URL + "changeoneclickapi.json", {apiKey: ""}, (response) => {
-               if (response.success) {
-                  this.state.apiMessage = 'API key deleted.'
-                  this.authData.apiKey = ""
-               } else {
-                  this.state.apiMessage = 'There was an error saving the API key.'
-               }
-               this.update()
-            })
+         onDeleteApiKeyClick(event) {
+            this.store.changeLexonomyApiKey("")
+                  .always(response => {
+                     this.update(this)
+                  })
          },
 
          generateKey() {
             var alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
             var key=""
-            while(key.length<32) {
-               var i=Math.floor(Math.random() * alphabet.length)
-               key+=alphabet[i]
+            while(key.length < 32) {
+               var i = Math.floor(Math.random() * alphabet.length)
+               key += alphabet[i]
             }
             return key
          },
