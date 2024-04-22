@@ -148,7 +148,7 @@
          },
 
          getOuterWrapperStyleClasses(){
-            let classes = this.getStyleClasses(["border", "background"])
+            let classes = this.getStyleClasses(["border", "borderRadius", "background"])
             if(this.state.style.gutter == "indent"){
                classes += " nvh_s_gutter_indent"
             }
@@ -304,6 +304,15 @@
       }
       .nvh_s_border_dotted{
          border: 1px dotted grey;
+      }
+      .nvh_s_borderRadius_small{
+         border-radius: 5px;
+      }
+      .nvh_s_borderRadius_medium{
+         border-radius: 10px;
+      }
+      .nvh_s_borderRadius_large{
+         border-radius: 15px;
       }
       .nvh_s_colour_red .nvh-readonly-value{
          color: #c62132;
