@@ -39,17 +39,10 @@ install(function(component) {
    }
 
    component.destroyTooltips = destroyTooltips
+   component.hideTooltips = hideTooltips
 
    return component
 })
-
-function destroyTooltips(){
-   $('.tooltipped', this.root).each((idx, el) => {
-      if(M.Tooltip.getInstance(el)){
-         M.Tooltip.getInstance(el).destroy()
-      }
-   })
-}
 
 function initTooltipDebounced(){
    this.tooltipDebounceTimer && clearTimeout(this.tooltipDebounceTimer)
@@ -60,3 +53,20 @@ function initTooltipDebounced(){
        })
    }, 100)
 }
+
+function hideTooltips(){
+   $('.tooltipped', this.root).each((idx, el) => {
+      if(M.Tooltip.getInstance(el)){
+         M.Tooltip.getInstance(el).close()
+      }
+   })
+}
+
+function destroyTooltips(){
+   $('.tooltipped', this.root).each((idx, el) => {
+      if(M.Tooltip.getInstance(el)){
+         M.Tooltip.getInstance(el).destroy()
+      }
+   })
+}
+
