@@ -760,6 +760,7 @@ class NVHStoreClass {
 
    startElementDragging(element){
       this.data.draggedElement = element
+      element.focused = false
       this.trigger("onDndStart")
    }
 
