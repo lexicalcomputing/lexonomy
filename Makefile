@@ -17,7 +17,7 @@ website/bundle.js: $(SOURCE_RIOT)
 install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
-	cat $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json.template | sed "s#%{path}#$(DESTDIR)$(INSTALLDIR)/website#g" > $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json
+	cat $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json.template | sed "s#%{path}#$(INSTALLDIR)/website#g" > $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json
 	cp $(DESTDIR)$(INSTALLDIR)/website/config.js.template $(DESTDIR)$(INSTALLDIR)/website/config.js
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
