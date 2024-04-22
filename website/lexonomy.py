@@ -508,13 +508,13 @@ def makedictjson(user):
     if request.query.filename and request.query.hwNode:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
         if supported_formats.match(request.query.filename):
-            res, msg, error = ops.makeDict(request.forms.url, None, request.forms.title, request.forms.language, "", user["email"],
+            res, msg, error = ops.makeDict(request.forms.url, None, None, request.forms.title, request.forms.language, "", user["email"],
                                            None, request.query.filename, request.query.hwNode)
         else:
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
     else:
-        res, msg, error = ops.makeDict(request.forms.url, json.loads(request.forms.schemaKeys), request.forms.title, request.forms.language,
+        res, msg, error = ops.makeDict(request.forms.url, request.forms.nvhSchema, json.loads(request.forms.schemaKeys), request.forms.title, request.forms.language,
                                        "", user["email"], request.forms.addExamples == "true")
     return {"success": res, "url": request.forms.url, "error": error, 'msg': msg}
 
