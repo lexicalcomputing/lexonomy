@@ -34,7 +34,7 @@
             No entry selected.
          </div>
          <div class="nvh-no-entry-desc">
-            Select an entry from side menu or create a <a href="javascript:void(0);" onclick={onCreateNewEntryClick}>new one</a>.
+            Select an entry from the side menu or create a <a href="javascript:void(0);" onclick={onCreateNewEntryClick}>new one</a>.
          </div>
       </div>
    </template>
@@ -98,6 +98,13 @@
          },
 
          onKeyDown(evt){
+            if (evt.altKey && evt.keyCode == 49 && this.nvhStore.getAvailableActions().view){
+               this.nvhStore.changeEditorMode("view")
+            } else if (evt.altKey && evt.keyCode == 50 && this.nvhStore.getAvailableActions().edit){
+               this.nvhStore.changeEditorMode("edit")
+            } else if (evt.altKey && evt.keyCode == 51 && this.nvhStore.getAvailableActions().code){
+               this.nvhStore.changeEditorMode("code")
+            }
             if((evt.keyCode == 38 || evt.keyCode == 40)
                && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)
                && evt.target.contentEditable != 'true'){
@@ -174,23 +181,24 @@
          },
 
          refreshListeners(){
-            if(this.nvhData.entry && this.dictData.editorMode == "edit"){
-               this.addEventListeners()
-            } else {
-               this.removeEventListeners()
-            }
+            this.removeEventListeners()
+            this.addEventListeners()
          },
 
          addEventListeners(){
-            document.addEventListener('click', this.handleClickOutside)
-            document.addEventListener('keydown', this.onKeyDown)
-            document.addEventListener('keyup', this.onKeyUp)
+            if(this.nvhData.entry){
+               document.addEventListener('keydown', this.onKeyDown)
+               if(this.dictData.editorMode == "edit"){
+                  document.addEventListener('click', this.handleClickOutside)
+                  document.addEventListener('keyup', this.onKeyUp)
+               }
+            }
          },
 
          removeEventListeners(){
+            document.removeEventListener('keyup', this.onKeyUp)
             document.removeEventListener('click', this.handleClickOutside)
             document.removeEventListener('keydown', this.onKeyDown)
-            document.removeEventListener('keyup', this.onKeyUp)
          }
       }
    </script>
