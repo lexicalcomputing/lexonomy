@@ -10,7 +10,6 @@ class AuthClass {
 
    resetUser(){
       Object.assign(this.data, {
-         username: null,
          apiKey: null,
          consent: null,
          email: null,
@@ -21,7 +20,7 @@ class AuthClass {
    }
 
    checkAuthCookie(){
-      if (!this.data.username) {
+      if (!this.data.email) {
          this.data.isCheckingAuth = true
          this.trigger("checkingAuthChanged")
          return $.ajax({
@@ -30,7 +29,7 @@ class AuthClass {
          })
                .done(response => {
                   if (response.success) {
-                     Object.assign(this.data, response, {username: response.email})
+                     Object.assign(this.data, response)
                      this.data.authorized = true;
                      this.trigger("authChanged")
                   }
@@ -56,11 +55,11 @@ class AuthClass {
          })
                .done(response => {
                   if (response.success) {
-                     Object.assign(this.data, response, {username: response.email})
+                     Object.assign(this.data, response)
                      this.data.authorized = true;
                      this.trigger("authChanged")
                   } else {
-                     M.toast({html: "You have entered an invalid username or password."})
+                     M.toast({html: "You have entered an invalid email or password."})
                   }
                })
                .fail(response => {})
