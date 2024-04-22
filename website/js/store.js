@@ -342,7 +342,7 @@ class StoreClass {
                      }
                   }
                   if(!response.configs.formatting.elements){
-                     response.configs.formatting.elements = {}
+                     response.configs.formatting = {elements: response.configs.formatting}
                   }
                   if(elements){
                      Object.keys(elements).forEach(elementName => {
