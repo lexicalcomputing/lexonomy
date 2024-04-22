@@ -23,7 +23,7 @@
             <div>
                <h3 class="title">Outgoing links</h3>
                <div if={!dict.to.length}>
-                  <h4 class="grey-text">No links</h4>
+                  <h3 class="grey-text">No links</h3>
                </div>
                <table if={dict.to.length}>
                   <tr each={link in dict.to}>
@@ -53,7 +53,7 @@
             <div>
                <h3 class="title">Incoming links</h3>
                <div if={!dict.from.length}>
-                     <h4 class="grey-text">No links</h4>
+                     <h3 class="grey-text">No links</h3>
                   </div>
                <table if={dict.from.length}>
                   <tr each={link in dict.from}>
@@ -83,35 +83,6 @@
          </div>
       </div>
    </template>
-   <div id="modalDictionary"
-         class="modal">
-      <div class="modal-content">
-         <h2 id="modalTitle"></h2>
-         <div id="modalContent">
-         </div>
-      </div>
-      <div class="modal-footer">
-         <a class="btn modal-close waves-effect waves-green">Close</a>
-      </div>
-   </div>
-
-   <style>
-      .dictName{
-         border-bottom: 1px solid #d9d9d8;
-      }
-      .dictName i{
-         margin-left: 10px;
-      }
-      .dictLinks{
-         display: flex;
-         column-gap: 6vw;
-         padding-left: 10px;
-      }
-      .arrowCell{
-         color: #cbcbcb ;
-         padding: 0 20px;
-      }
-   </style>
 
    <script>
       export default {
@@ -135,10 +106,10 @@
          },
 
          openDictInfo(dict){
-            $("#modalTitle").html(dict.title)
-            $("#modalContent").html(dict.blurb)
-            let instance = M.Modal.getInstance($("#modalDictionary"))
-            instance.open()
+            window.modal.open({
+               title: dict.title,
+               content: dict.blurb
+            })
          },
 
          checkAllLoaded(){
@@ -149,7 +120,6 @@
          },
 
          onMounted() {
-            $('.modal').modal()
             this.state.dictionaries = {}
             this.store.loadDictionaryLinks()
                   .done(response => {
@@ -185,4 +155,22 @@
          }
       }
    </script>
+
+   <style type="scss">
+      .dictName{
+         border-bottom: 1px solid #d9d9d8;
+         i{
+            margin-left: 10px;
+         }
+      }
+      .dictLinks{
+         display: flex;
+         column-gap: 6vw;
+         padding-left: 10px;
+      }
+      .arrowCell{
+         color: #cbcbcb ;
+         padding: 0 20px;
+      }
+   </style>
 </dict-links>

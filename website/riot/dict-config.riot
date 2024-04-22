@@ -61,7 +61,7 @@
                   type="text">
          </div>
          <div>
-            <a class="waves-effect waves-light btn btn-primary {!state.isImportFileSelected || state.isImporting ? 'disabled' : ''}"
+            <a class="importBtn waves-effect waves-light btn btn-primary {!state.isImportFileSelected || state.isImporting ? 'disabled' : ''}"
                   onclick={ importDictionaryConfiguration }
                   id="startButton">
                <i class="material-icons left">file_upload</i>
@@ -73,7 +73,7 @@
 
    <div class="columnContainer">
       <div>
-         <h3 class="header">Manage dictionary</h3>
+         <h2 class="header">Manage dictionary</h2>
          <ul>
             <li each={config in state.configs.dictionary}>
                <label if={state.export && !config[2]}
@@ -90,7 +90,7 @@
          </ul>
       </div>
       <div>
-         <h3 class="header">Entry settings</h3>
+         <h2 class="header">Entry settings</h2>
          <ul>
             <li each={config in state.configs.entry}>
                <label if={state.export}
@@ -107,7 +107,7 @@
          </ul>
       </div>
       <div>
-         <h3 class="header">Expert settings</h3>
+         <h2 class="header">Expert settings</h2>
          <ul>
             <li each={config in state.configs.expert}>
                <label if={state.export}
@@ -124,7 +124,7 @@
          </ul>
       </div>
       <div>
-         <h3 class="header">Editor plugins</h3>
+         <h2 class="header">Editor plugins</h2>
          <ul>
             <li each={config in state.configs.plugins}>
                <label if={state.export}
@@ -140,12 +140,12 @@
             </li>
          </ul>
       </div>
-      <div>
-         <h3 class="header">Admin settings</h3>
+      <div if={authData.isAdmin}>
+         <h2 class="header">Admin settings</h2>
          <ul>
             <li each={config in state.configs.admin}>
                <label if={state.export}
-                     name={config[0]}
+                     name={config[2]}
                      class="checkbox">
                   <input type="checkbox"
                         class="exportChb"
@@ -280,7 +280,6 @@
          gap: 2vw;
          justify-content: space-between;
          margin: auto;
-         margin-left: 20px;
       }
       li{
          padding: 0 0 0.7rem 0.7rem;
@@ -304,6 +303,10 @@
       .selectNote{
          min-height: 36px;
          line-height: 36px;
+      }
+      .importBtn{
+         line-height: 2.5rem;
+         height: 2.5rem;
       }
       .closeBtn{
          position: absolute;

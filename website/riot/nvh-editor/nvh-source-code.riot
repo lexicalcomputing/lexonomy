@@ -70,6 +70,7 @@
             if(this.nvhData.entry && this.state.oldSourceCode != this.nvhStore.jsonToNvh(this.nvhData.entry)){
                this.nvhStore.history.addState()
             }
+            this.state.debounceHandle && clearTimeout(this.state.debounceHandle)
          },
 
          updateSourceCode(){
@@ -194,8 +195,8 @@
             $(".nvh-suggestions").html(this.state.suggestions.map(s => `<div>${s}</div>`))
                   .show()
                   .css({
-                     top: `${(21 * (row + 2)) + 3}px`,
-                     left: `calc(42px + ${col}ch)`
+                     top: `calc(${1.3125 * (row + 2)}rem + 0px)`,
+                     left: `calc(2.625rem + ${col}ch)`
                   })
             this.refreshSuggestionCursor()
          },
@@ -233,10 +234,11 @@
          },
 
          showAutocomplete(elementName, row, col){
+            let magicNumber = (22 - (window.getFontSizeFromCookies() || 16)) * 0.5 //different interface font size correction
             $(".nvh-autocomplete").show()
                   .css({
-                     top: `${(21 * (row + 1)) + 2}px`,
-                     left: `calc(45px + ${col}ch)`
+                     top: `calc(${1.3125 * (row + 1)}rem + ${magicNumber}px)`,
+                     left: `calc(2.625rem + 5px + ${col}ch)`
                   })
             this.updateAutocomplete(elementName)
          },
@@ -347,7 +349,7 @@
          left: 0;
          right: 0;
          padding-left: 10px;
-         max-height: 15vh;
+         max-height: 20vh;
          overflow-y: auto;
          .nvh-validation-row{
             display: flex;
@@ -365,33 +367,33 @@
          display: flex;
          overflow: hidden;
          overflow-wrap: break-word;
-         line-height: 21px;
+         line-height: 1.3125rem;
          white-space: pre-wrap;
          border: 1px solid grey;
          background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.025) 50%, rgba(0, 0, 0, 0.025));
-         background-size: 100% 42px;
+         background-size: 100% 2.625rem;
          .nvh-line-numbers{
             display: flex;
             flex-direction: column;
             border-right: 1px solid lightgray;
             background-color: #fff;
-            width: 40px;
+            width: 2.625rem;
             &::before{
                content: ' ';
-               width: 42px;
+               width: 2.625rem;
                position: absolute;
                top: 0;
                left: 0;
                bottom: 0;
                background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.025) 50%, rgba(0, 0, 0, 0.025));
-               background-size: 100% 42px;
+               background-size: 100% 2.625rem;
             }
             &>div{
                position: relative;
                color: #fff;
                color: grey;
-               font-size: 12px;
-               padding-right: 5px;
+               font-size: 0.75rem;
+               padding-right: 0.3rem;
                text-align: right;
             }
          }
@@ -399,7 +401,7 @@
             font-family: monospace;
             flex: 1;
             outline: none;
-            padding-right: 20px;
+            padding-right: 1.25rem;
             white-space: pre;
             overflow: auto;
             margin-left: 5px;
@@ -407,11 +409,11 @@
          }
          .nvh-code-error{
             position: relative;
-            height: 21px;
+            height: 1.3125rem;
             &::before{
                content: '●';
                position: absolute;
-               left: 3px;
+               left: 0.18rem;
                top: 0px;
                color: #F44336;
             }
@@ -430,8 +432,8 @@
          color: grey;
          pointer-events: none;
          font-family: monospace;
-         height: 21px;
-         line-height: 21px;
+         height: 1.3125rem;
+         line-height: 1.3125rem;
       }
       .nvh-suggestions{
          position: absolute;
