@@ -75,7 +75,7 @@
                   Licence<i class="material-icons order_licence">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
                </span>
             </th>
-            <th></th>
+            <th style="width: 1%;"></th>
          </thead>
          <tbody>
             <tr each={(row, idx) in state.visibleDictionaries}
@@ -126,53 +126,6 @@
          </tbody>
       </table>
    </div>
-
-   <style>
-      .onlyFavoritesChbWrapper{
-         margin-left: 2.5rem;
-      }
-      table td:nth-child(5){
-         white-space: nowrap;
-      }
-      th{
-         white-space: nowrap;
-         cursor: pointer;
-      }
-      th span{
-         line-height: 24px;
-      }
-      th span:hover{
-         text-decoration: underline;
-      }
-      th span i{
-         opacity: 0;
-         margin-left: 0.5rem;
-         vertical-align: middle;
-      }
-      th span:hover i{
-         opacity: 0.5;
-      }
-      th span i:hover{
-         opacity: 1;
-      }
-      .activeOrder_title .order_title,
-      .activeOrder_language .order_language,
-      .activeOrder_size .order_size,
-      .activeOrder_author .order_author,
-      .activeOrder_licence .order_licenc{
-         opacity: 1;
-      }
-      .btns{
-         white-space: nowrap;
-         vertical-align: middle;
-      }
-      .btns > a{
-         vertical-align: middle;
-      }
-      .btns > *:not(:first-child){
-         margin-left: 0.4rem;
-      }
-   </style>
 
    <script>
       export default {
@@ -360,5 +313,52 @@
          }
       }
    </script>
+
+   <style type="scss">
+      .onlyFavoritesChbWrapper{
+         margin-left: 2.5rem;
+      }
+      table td:nth-child(5){
+         white-space: nowrap;
+      }
+      th{
+         white-space: nowrap;
+         cursor: pointer;
+         span{
+            line-height: 24px;
+            &:hover{
+               text-decoration: underline;
+               i{
+                  opacity: 0.5;
+               }
+            }
+            i{
+               opacity: 0;
+               margin-left: 0.5rem;
+               vertical-align: middle;
+               &:hover{
+                  opacity: 1;
+               }
+            }
+         }
+      }
+      .activeOrder_title .order_title,
+      .activeOrder_language .order_language,
+      .activeOrder_size .order_size,
+      .activeOrder_author .order_author,
+      .activeOrder_licence .order_licenc{
+         opacity: 1;
+      }
+      .btns{
+         white-space: nowrap;
+         vertical-align: middle;
+         & > a{
+            vertical-align: middle;
+         }
+         & > *:not(:first-child){
+            margin-left: 0.4rem;
+         }
+      }
+   </style>
 </open-dictionaries>
 
