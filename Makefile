@@ -1,6 +1,6 @@
 DIST_VERSION=$(shell git describe --tags --always)
 VERSION=$(shell git describe --tags --abbrev=0)
-INSTALLDIR=/opt/lexonomy
+INSTALLDIR=/usr/share/lexonomy
 SOURCE_RIOT=$(wildcard website/riot/)
 SOURCE_JS=website/app.js website/app.static.js website/app.css.js $(SOURCE_RIOT)
 INSTALL_JS=bundle.js bundle.css bundle.static.js
@@ -9,18 +9,36 @@ SOURCE_CONF=siteconfig.json.template package.json rollup.config.js config.js.tem
 SOURCE_WEBDIRS=adminscripts css dictTemplates docs furniture img js libs workflows
 SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
 INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
-SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md make_instance.sh
+SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md Makefile
 
 build: website/bundle.js
+
 website/bundle.js: $(SOURCE_RIOT)
 	make -C website
+
 install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
-	cat $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json.template | sed "s#%{path}#$(INSTALLDIR)/website#g" > $(DESTDIR)$(INSTALLDIR)/website/siteconfig.json
-	cp $(DESTDIR)$(INSTALLDIR)/website/config.js.template $(DESTDIR)$(INSTALLDIR)/website/config.js
+
+deploy:
+	mkdir -p $(DEPLOYDIR)
+	mkdir -p $(DEPLOYDIR)/data
+	chmod -R o+rwX $(DEPLOYDIR)/data
+	cp -p libSqliteIcu.so $(DEPLOYDIR)/
+	cp -a website $(DEPLOYDIR)/
+
+	# If new instance create siteconfig.json and config.js
+	if [ ! -f "$(DEPLOYDIR)/website/siteconfig.json" ]; then\
+		cat website/siteconfig.json.template | sed "s#%{path}#$(DEPLOYDIR)/website#g" > $(DEPLOYDIR)/website/siteconfig.json; \
+		cp website/config.js.template $(DEPLOYDIR)/website/config.js; \
+	fi
+
+	# Init or update DB
+	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
+
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
+
 libSqliteIcu.so: release.tar.gz
 	rm -rf sqlite-release
 	tar xzf $<
@@ -28,6 +46,7 @@ libSqliteIcu.so: release.tar.gz
 	gcc -fPIC -shared icu.c `pkg-config --libs --cflags icu-uc icu-io` -o libSqliteIcu.so
 	cp sqlite-release/ext/icu/libSqliteIcu.so .
 	rm -rf sqlite-release
+
 release.tar.gz:
 	wget https://github.com/sqlite/sqlite/archive/refs/tags/release.tar.gz
 

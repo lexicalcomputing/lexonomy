@@ -45,22 +45,15 @@ make
 make libSqliteIcu.so
 
 %install
-make DESTDIR=$RPM_BUILD_ROOT INSTALLDIR=/opt/lexonomy/ install
-echo %{version} > $RPM_BUILD_ROOT/opt/lexonomy/website/version.txt
-sed -i -e 's/@VERSION@/%{version}/g' $RPM_BUILD_ROOT/opt/lexonomy/website/index*html
-mkdir -p $RPM_BUILD_ROOT/opt/lexonomy/data
-cp -p libSqliteIcu.so $RPM_BUILD_ROOT/opt/lexonomy/
+make DESTDIR=$RPM_BUILD_ROOT INSTALLDIR=/usr/share/lexonomy/ install
+echo %{version} > $RPM_BUILD_ROOT/usr/share/lexonomy/website/version.txt
+sed -i -e 's/@VERSION@/%{version}/g' $RPM_BUILD_ROOT/usr/share/lexonomy/website/index*html
+cp -p libSqliteIcu.so $RPM_BUILD_ROOT/usr/share/lexonomy/
 
 %post
-/opt/lexonomy/website/adminscripts/init_or_update.py
-chown -R apache: /opt/lexonomy/data
-chmod -R g+rwX /opt/lexonomy/data
-
+make deploy DEPLOYDIR=/opt/lexonomy/
 
 %files
-/opt/lexonomy/
-%config(noreplace) /opt/lexonomy/data
-%config(noreplace) /opt/lexonomy/website/siteconfig.json
-%config(noreplace) /opt/lexonomy/website/config.js
+/usr/share/lexonomy/
 
 %changelog
