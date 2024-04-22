@@ -393,7 +393,7 @@ class StoreClass {
             })
             .always(response => {
                this.trigger("isDictionaryLoadingChanged")
-               if(this.data.actualPage != "dict-config-structure"
+               if(!["dict-config-structure", "unauthorized"].includes(this.data.actualPage)
                      && (!this.data.doctypes
                               || !this.data.doctypes.length
                               || !this.data.doctypes[0]
