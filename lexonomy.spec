@@ -52,9 +52,9 @@ mkdir -p $RPM_BUILD_ROOT/opt/lexonomy/data
 cp -p libSqliteIcu.so $RPM_BUILD_ROOT/opt/lexonomy/
 
 %post
+/opt/lexonomy/website/adminscripts/init_or_update.py
 chown -R apache: /opt/lexonomy/data
 chmod -R g+rwX /opt/lexonomy/data
-/opt/lexonomy/website/adminscripts/updates.py
 
 
 %files

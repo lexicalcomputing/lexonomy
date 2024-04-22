@@ -23,4 +23,6 @@ else
     cat ./website/siteconfig.json.template | sed "s#%{path}#$1/website#g" > $1/website/siteconfig.json
 	cp ./website/config.js.template $1/website/config.js
     $1/website/adminscripts/init_or_update.py
+    chown -R apache: $1/data
+    chmod -R g+rwX $1/data
 fi
