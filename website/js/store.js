@@ -932,6 +932,77 @@ class StoreClass {
             })
    }
 
+   changeSketchEngineUsername(ske_username){
+      return $.ajax({
+         url: `${window.API_URL}changeskeusername.json`,
+         method: 'POST',
+         data: {
+            ske_userName: ske_username
+         }
+      })
+            .done(response => {
+               M.toast({html: "Sketch Engine username was changed."})
+            })
+            .fail(response => {
+               M.toast({html: "Sketch Engine username could not be changed."})
+            })
+   }
+
+   changeSketchEngineApiKey(ske_apiKey){
+      return $.ajax({
+         url: `${window.API_URL}changeskeapi.json`,
+         method: 'POST',
+         data: {
+            ske_apiKey: ske_apiKey
+         }
+      })
+            .done(response => {
+               M.toast({html: "Sketch Engine API key was changed."})
+            })
+            .fail(response => {
+               M.toast({html: "Sketch Engine API key could not be changed."})
+            })
+   }
+
+   changePassword(password){
+      return $.ajax({
+         url: `${window.API_URL}changepwd.json`,
+         method: 'POST',
+         data: {
+            ske_apiKey: ske_apiKey
+         }
+      })
+            .done(response => {
+               M.toast({html: "Password was changed."})
+            })
+            .fail(response => {
+               M.toast({html: "Password could not be changed."})
+            })
+   }
+
+   changeLexonomyApiKey(apiKey){
+      return $.ajax({
+         url: `${window.API_URL}changeoneclickapi.json`,
+         method: 'POST',
+         data: {
+            apiKey: apiKey
+         }
+      })
+            .done(response => {
+               if(response.success){
+                  window.auth.data.apiKey = apiKey
+                  if(apiKey){
+                     M.toast({html: "API key was changed."})
+                  } else {
+                     M.toast({html: "API key was removed."})
+                  }
+               }
+            })
+            .fail(response => {
+               M.toast({html: "API key could not be changed."})
+            })
+   }
+
    setDictionaryAttribute(dictId, attrName, attrValue){
       let dictionary = this.getDictionary(dictId)
       if(dictionary){
