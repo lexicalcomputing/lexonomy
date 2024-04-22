@@ -51,8 +51,7 @@ sed -i -e 's/@VERSION@/%{version}/g' $RPM_BUILD_ROOT/usr/share/lexonomy/website/
 cp -p libSqliteIcu.so $RPM_BUILD_ROOT/usr/share/lexonomy/
 
 %post
-cd /usr/share/lexonomy/
-make deploy DEPLOYDIR=/opt/lexonomy/
+make -C /usr/share/lexonomy/ deploy DEPLOYDIR=/opt/lexonomy/
 
 %files
 /usr/share/lexonomy/
