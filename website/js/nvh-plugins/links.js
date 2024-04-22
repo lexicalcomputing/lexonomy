@@ -2,7 +2,7 @@ window.nvhPlugins.links = {
 
    isActive: function(element){
       let config = window.store.data.config
-      return config.linking[element.name]
+      return config.links[element.name]
    },
 
    onPluginButtonClick: function(element){
