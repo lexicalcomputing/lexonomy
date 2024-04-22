@@ -1,6 +1,4 @@
 <admin-users>
-   <loading-overlay if={state.isLoading}/>
-
    <span class="buttons right">
       <a href="#/admin/users/add"
             class="btn waves-effect waves-light">
@@ -9,83 +7,87 @@
       </a>
    </span>
    <h1>All Users</h1>
-   <div class="topBar">
-      <span class="searchBox input-field">
+   <div if={state.users.length || state.query}
+         class="topBar">
+      <span class="searchBox input-field inputWithRightIcon">
             <i class="material-icons prefix grey-text">search</i>
          <input id="searchBox"
-               onkeyup={onSearchKeyUp}
+               oninput={onSearchInput}
                style="width: 150px;">
          <i onclick={onSearchCancelClick}
-            class="material-icons clearFilterIcon grey-text clickable">close</i>
+            class="material-icons rightIcon grey-text clickable">close</i>
       </span>
    </div>
-   <table if={state.users.length}
-         class="userTable">
-      <thead>
-         <tr>
-            <th class="toggleColumn"></th>
-            <th class="titleColumn">Email</th>
-            <th class="titleColumn">Comment</th>
-            <th class="dictionaryColumn">Dictionaries</th>
-            <th class="actionColumn"></th>
-         </tr>
-      </thead>
-      <tbody each={ (user, idx) in state.users }>
-         <tr class="userRow {user.dictionaries.length && 'pointer'}"
-               onclick={user.dictionaries.length ? onDictionaryToggleClick : null}>
-            <td>
-               <i if={user.dictionaries.length}
-                     class="toggleIcon material-icons clickable">chevron_right</i>
-            </td>
-            <td class="user">
-               { user.email }
-            </td>
-            <td class="user">
-               { user.comment }
-            </td>
-            <td>
-               {user.dictionaries.length}
-            </td>
-            <td class="user-actions">
-               <div class="buttons">
-                  <a class="clickable tooltipped"
-                        data-tooltip="Reset password"
-                        onclick={onResetUserPasswordClick.bind(this, user.email)}>
-                     <i class="material-icons">vpn_key</i>
-                  </a>
-                  <a class="clickable tooltipped"
-                        data-tooltip="Delete user"
-                        onclick={onDeleteUserClick.bind(this, user.email)}>
-                     <i class="material-icons">delete</i>
-                  </a>
-               </div>
-            </td>
-         </tr>
-         <tr class="dictionaryRow">
-            <td colspan="5">
-               <div class="dictionaryList" style="display: none;">
-                  <div each={dictionary in user.dictionaries}>
-                     <a href="#/{dictionary.id}">
-                        {dictionary.title ? dictionary.title : "--no title--"}
+   <div class="tableWrapper positionRelative">
+      <loading-overlay if={state.isLoading}/>
+      <table if={state.users.length}
+            class="userTable">
+         <thead>
+            <tr>
+               <th class="toggleColumn"></th>
+               <th class="titleColumn">Email</th>
+               <th class="titleColumn">Comment</th>
+               <th class="dictionaryColumn">Dictionaries</th>
+               <th class="actionColumn"></th>
+            </tr>
+         </thead>
+         <tbody each={ (user, idx) in state.users }>
+            <tr class="userRow {user.dictionaries.length && 'pointer'}"
+                  onclick={user.dictionaries.length ? onDictionaryToggleClick : null}>
+               <td>
+                  <i if={user.dictionaries.length}
+                        class="toggleIcon material-icons clickable">chevron_right</i>
+               </td>
+               <td class="user">
+                  { user.email }
+               </td>
+               <td class="user">
+                  { user.comment }
+               </td>
+               <td>
+                  {user.dictionaries.length}
+               </td>
+               <td class="user-actions">
+                  <div class="buttons">
+                     <a class="clickable tooltipped"
+                           data-tooltip="Reset password"
+                           onclick={onResetUserPasswordClick.bind(this, user.email)}>
+                        <i class="material-icons">vpn_key</i>
+                     </a>
+                     <a class="clickable tooltipped"
+                           data-tooltip="Delete user"
+                           onclick={onDeleteUserClick.bind(this, user.email)}>
+                        <i class="material-icons">delete</i>
                      </a>
                   </div>
-               </div>
-            </td>
-         </tr>
-      </tbody>
-   </table>
-   <template if={!state.isLoading}>
-      <div if={state.hasMore}
-            class="center-align">
-         <button class="btn showMoreBtn"
-               onclick={onShowMoreClick}>Show more</button>
-      </div>
-      <div if={!state.users.length}
-            class="center"
-            style="margin: 10vh auto;">
-         <h1 class="grey-text lighten-2">Nothing found</h1>
-      </div>
-   </template>
+               </td>
+            </tr>
+            <tr class="dictionaryRow">
+               <td colspan="5">
+                  <div class="dictionaryList" style="display: none;">
+                     <div each={dictionary in user.dictionaries}>
+                        <a href="#/{dictionary.id}">
+                           {dictionary.title ? dictionary.title : "--no title--"}
+                        </a>
+                     </div>
+                  </div>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+      <template if={!state.isLoading}>
+         <div if={state.hasMore}
+               class="center-align">
+            <button class="btn showMoreBtn"
+                  onclick={onShowMoreClick}>Show more</button>
+         </div>
+         <div if={!state.users.length}
+               class="center"
+               style="margin: 10vh auto;">
+            <h1 class="grey-text lighten-2">Nothing found</h1>
+         </div>
+      </template>
+   </div>
 
    <script>
       export default{
@@ -94,16 +96,22 @@
             users: [],
             query: "",
             howmany: 500,
-            hasMore: true
+            hasMore: false,
+            searchDebounceTimer: null,
+            searchRequest: null
          },
 
          onMounted(){
             this.search()
          },
 
+         onBeforeUnmount(){
+            this.state.searchRequest && this.state.searchRequest.abort()
+         },
+
          search(){
             this.update({isLoading: true})
-            this.store.loadAdminUserList(this.state.query, this.state.howmany + 1)  // + 1 to find, if there are more than "howmany" items
+            this.state.searchRequest = this.store.loadAdminUserList(this.state.query, this.state.howmany + 1)  // + 1 to find, if there are more than "howmany" items
                   .done(payload => {
                      this.state.hasMore = false
                      if(payload.entries.length == this.state.howmany + 1){
@@ -134,12 +142,15 @@
             }
          },
 
-         onSearchKeyUp(evt){
-            if(evt.keyCode == 13){
-               this.state.query = $("#searchBox").val()
+         onSearchInput(evt){
+            this.state.query = evt.target.value
+            this.searchDebounceTimer && clearTimeout(this.searchDebounceTimer)
+            this.searchDebounceTimer = setTimeout(() => {
+               this.state.searchRequest && this.state.searchRequest.abort()
+               clearTimeout(this.searchDebounceTimer)
                this.state.howmany = 500
                this.search()
-            }
+            }, 300)
          },
 
          onSearchCancelClick(){
@@ -176,14 +187,6 @@
          display: inline-block;
          margin: 0 15px 0 0;
       }
-      .searchBox input{
-         padding-right: 27px;
-      }
-      .clearFilterIcon{
-         position: absolute;
-         right: 5px;
-         top: 11px;
-      }
       .userTable tbody:hover tr{
          background-color: rgba(242,242,242,0.5);
       }
@@ -195,6 +198,9 @@
       }
       .dictionaryRow td{
          padding: 0 0.7rem 0 85px;
+      }
+      .tableWrapper{
+         min-height: 50vh;
       }
       table td{
          padding: 10px 10px;
