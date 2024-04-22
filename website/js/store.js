@@ -654,7 +654,9 @@ class StoreClass {
          }
       })
             .fail(response => {
-               M.toast({html: "Could not load final schema."})
+               if(response.statusText != "abort"){
+                  M.toast({html: "Could not load final schema."})
+               }
             })
    }
 
@@ -853,7 +855,9 @@ class StoreClass {
             }
          })
             .fail(response => {
-               M.toast({html: "User list could not be loaded."})
+               if(response.statusText != "abort"){
+                  M.toast({html: "User list could not be loaded."})
+               }
             })
    }
 
@@ -900,7 +904,9 @@ class StoreClass {
          }
       })
             .fail(response => {
-               M.toast({html: "Could not load users."})
+               if(response.statusText != "abort"){
+                  M.toast({html: "Could not load users."})
+               }
             })
    }
 
