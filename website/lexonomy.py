@@ -15,7 +15,6 @@ import urllib.request
 from ops import siteconfig
 import media
 import bottle
-import version
 from bottle import (hook, route, get, post, run, template, error, request,
                     response, static_file, abort, redirect, install)
 
@@ -40,6 +39,10 @@ if not cgi and len(sys.argv) > 1:
         print(sys.argv, file=sys.stderr)
         sys.exit(1)
     my_url = sys.argv[1]
+
+currdir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(currdir, 'version.txt')) as v_f:
+    version = v_f.readline().strip()
 
 # serve static files
 @route('/<path:re:(furniture|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.css|riot|img|js|css|docs|version\.txt).*>')
@@ -156,7 +159,7 @@ def lexonomyconfig():
         "ske_url": siteconfig['ske_url'],
         "api_url": siteconfig['api_url'],
         "langs": ops.get_iso639_1(),
-        "version": version.version
+        "version": version
     }
     if 'sketchengineLoginPage' in siteconfig:
         configData['sketchengineLoginPage'] = siteconfig['sketchengineLoginPage']

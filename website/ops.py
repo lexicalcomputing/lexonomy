@@ -22,7 +22,6 @@ import requests
 from nvh import nvh
 from bottle import request
 import sys
-import version
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
@@ -30,6 +29,9 @@ siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
 for datadir in ["dicts", "uploads", "sqlite_tmp"]:
     pathlib.Path(os.path.join(siteconfig["dataDir"], datadir)).mkdir(parents=True, exist_ok=True)
 os.environ["SQLITE_TMPDIR"] = os.path.join(siteconfig["dataDir"], "sqlite_tmp")
+
+with open(os.path.join(currdir, 'version.txt')) as v_f:
+    version = v_f.readline().strip()
 
 DEFAULT_ENTRY_LIMIT = 5000
 defaultDictConfig = {"editing": {},
@@ -624,7 +626,7 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
 
     #update dictionary info
     dictDB = getDB(dictID)
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version.version, "creator": email})))
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version, "creator": email})))
 
     ident = {"title": title, "blurb": blurb}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
