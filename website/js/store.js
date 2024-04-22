@@ -1262,7 +1262,7 @@ class StoreClass {
          title: "Broken structure",
          tag: "raw-html",
          small: true,
-         opts: {
+         props: {
             content: content
          }
       })
