@@ -4,13 +4,13 @@
          class="dropdown-content">
       <li>
          <a href="#/admin/users">
-            <i class="material-icons left ">person</i>
+            <i class="material-icons left">person</i>
             Users
          </a>
       </li>
       <li>
          <a href="#/admin/dicts">
-            <i class="material-icons left ">import_contacts</i>
+            <i class="material-icons left">import_contacts</i>
             Dictionaries
          </a>
       </li>
@@ -18,39 +18,47 @@
    <ul if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }
          id="dropdown-menu-dict"
          class="dropdown-content">
+      <li class="pointerEventsNone"
+            tabindex="-1">
+         <a class="grey-text">
+            {window.trim(dictData.title, 25)}
+         </a>
+      </li>
+      <li class="divider"
+            tabindex="-1"></li>
       <li if={ dictData.userAccess.canView && !dictData.userAccess.canEdit }>
          <a href="#/{ dictData.dictId }">
-            <i class="material-icons left ">view</i>
+            <i class="material-icons left">visibility</i>
             View
          </a>
       </li>
       <li if={ dictData.userAccess.canEdit }>
          <a href="#/{ dictData.dictId }/edit">
-            <i class="material-icons left ">edit</i>
+            <i class="material-icons left">edit</i>
             Edit
          </a>
       </li>
       <li if={ dictData.userAccess.canConfig }>
          <a href="#/{ dictData.dictId }/config">
-            <i class="material-icons left ">settings</i>
+            <i class="material-icons left">settings</i>
             Configure
          </a>
       </li>
       <li if={ dictData.userAccess.canDownload }>
          <a href="#/{ dictData.dictId }/download">
-            <i class="material-icons left ">download</i>
+            <i class="material-icons left">download</i>
             Download
          </a>
       </li>
       <li if={ dictData.userAccess.canUpload }>
          <a href="#/{ dictData.dictId }/upload">
-            <i class="material-icons left ">upload</i>
+            <i class="material-icons left">upload</i>
             Upload
          </a>
       </li>
       <li if={ dictData.userAccess.canEdit }>
          <a href="#/{ dictData.dictId }/links">
-            <i class="material-icons left ">link</i>
+            <i class="material-icons left">link</i>
             Links
          </a>
       </li>
@@ -81,14 +89,14 @@
             tabindex="-1"></li>
       <li>
          <a href="#/user-profile">
-            <i class="material-icons left ">account_box</i>
+            <i class="material-icons left">account_box</i>
             Your profile
          </a>
       </li>
       <li>
          <a href="#/"
                onclick={ doLogout }>
-            <i class="material-icons left ">exit_to_app</i>
+            <i class="material-icons left">exit_to_app</i>
             Log out
          </a>
       </li>
@@ -98,7 +106,7 @@
       <div class="nav-wrapper">
          <a href="#"
                class="brand-logo">
-            <img class="site-logo" src="img/logo_50.png"/>
+            <img class="site-logo" src="img/logo_200.png"/>
          </a>
          <a href="#"
                data-target="nav-mobile"
@@ -118,6 +126,11 @@
             <li if={ authData.authorized && authData.isProjectManager }>
                <a href="#projects/dashboard">
                   Projects
+               </a>
+            </li>
+            <li if={ authData.authorized && (!dictData.isDictionaryLoaded || !dictData.userAccess)}>
+               <a href="#{authData.authorized ? '' : 'opendictionaries'}">
+                  Dictionaries
                </a>
             </li>
             <li if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }>
