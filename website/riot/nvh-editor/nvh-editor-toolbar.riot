@@ -16,7 +16,7 @@
          <i class="material-icons">refresh</i>
       </button>
       <button class="btn btn-flat tooltipped"
-            data-tooltip="Close revision and go back to actual "
+            data-tooltip="Close revision"
             onclick={onCloseRevisionClick}>
          <i class="material-icons">close</i>
       </button>
@@ -29,13 +29,32 @@
 
    <div class="nvh-buttons noSelect">
       <template if={dictData.userAccess.canEdit}>
+         <button if={store.data.entryId != "new" || nvhData.isSaving}
+               class="btnWithText btn-flat tooltipped {!state.actions.add ? 'disabled' : ''} {!dictData.entryList || (!dictData.entryList.length && !store.getEntrySearchUrlQueryString()) ? 'redBtn' : ''}"
+               onclick={onNewEntryClick}
+               data-tooltip="Create a new entry">
+            <i class="material-icons">add</i>
+            <span>new</span>
+         </button>
+         <button if={store.data.entryId == "new" && !nvhData.isSaving}
+               class="btnWithText btn-flat tooltipped"
+               onclick={onNewEntryCancelClick}
+               data-tooltip="Discard the entry draft">
+            <i class="material-icons">close</i>
+            <span>cancel</span>
+         </button>
+         <div class="nvh-separator"></div>
 
-         <button class="btnSave btn-flat tooltipped {!state.actions.save ? 'disabled' : ''}"
+         <button if={!nvhData.isSaving}
+               class="btnSave btn-flat tooltipped {!state.actions.save ? 'disabled' : ''}"
                onclick={onSaveClick}
                data-tooltip="Save entry (ctrl+s or ⌘+s)</small>">
             <i class="material-icons">save</i>
          </button>
-
+         <button if={nvhData.isSaving}
+               class="btn-flat disabled spin">
+            <i class="material-icons">donut_large</i>
+         </button>
          <button class="btn-flat tooltipped {!state.actions.undo ? 'disabled' : ''}"
                onclick={onUndoClick}
                data-tooltip="Undo last action">
@@ -45,11 +64,6 @@
                onclick={onRedoClick}
                data-tooltip="Redo last action">
             <i class="material-icons">redo</i>
-         </button>
-         <button class="btn-flat tooltipped {!state.actions.add ? 'disabled' : ''} {!dictData.entryList || !dictData.entryList.length ? 'redBtn' : ''}"
-               onclick={onNewEntryClick}
-               data-tooltip="Create new entry">
-            <i class="material-icons">add</i>
          </button>
          <button class="btn-flat tooltipped {!state.actions.duplicate ? 'disabled' : ''}"
                onclick={onDuplicateClick}
@@ -61,7 +75,6 @@
                data-tooltip="Delete entry">
             <i class="material-icons">delete</i>
          </button>
-
          <div class="nvh-separator"></div>
       </template>
 
@@ -77,42 +90,45 @@
       </button>
 
       <span class="ml-auto"></span>
-      <small class="grey-text mr-4">
+      <small if={dictData.entryId}
+            class="grey-text mr-4">
          {dictData.entryId == "new" ? 'new entry' : 'ID: ' + dictData.entryId}
       </small>
-      <div class="nvh-separator"></div>
-      <template if={nvhData.customEditor}>
-         <button class="btn btn-flat tooltipped {dictData.editorMode == "edit" ? 'btn-primary white-text' : ''}"
-               data-tooltip="Edit entry"
-               onclick={onModeChangeClick.bind(this, "edit")}>
-            <i class="material-icons">edit</i>
+      <template if={dictData.userAccess.canEdit}>
+         <div class="nvh-separator"></div>
+         <template if={nvhData.customEditor}>
+            <button class="btn btn-flat tooltipped {dictData.editorMode == "edit" ? 'btn-primary white-text' : ''}"
+                  data-tooltip="Edit entry"
+                  onclick={onModeChangeClick.bind(this, "edit")}>
+               <i class="material-icons">edit</i>
+            </button>
+         </template>
+         <template if={!nvhData.customEditor}>
+            <button class="btn btn-flat tooltipped {dictData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
+                  data-tooltip="Preview entry (Alt ⌘ + 1)"
+                  onclick={onModeChangeClick.bind(this, "view")}>
+               <i class="material-icons">visibility</i>
+            </button>
+            <button class="btn btn-flat tooltipped {dictData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
+                  data-tooltip="Edit entry (Alt + 2)"
+                  onclick={onModeChangeClick.bind(this, "edit")}>
+               <i class="material-icons">edit</i>
+            </button>
+         </template>
+         <button class="btn btn-flat tooltipped {dictData.editorMode == "code" ? 'btn-primary white-text' : ''} {!state.actions.code ? 'disabled' : ''}"
+               data-tooltip="View source code (Alt + 3)"
+               onclick={onModeChangeClick.bind(this, "code")}>
+            <i class="material-icons">code</i>
+         </button>
+
+         <div class="nvh-separator"></div>
+
+         <button class="btn btn-flat tooltipped {!state.actions.history ? 'disabled' : ''} {nvhData.isRevisionsOpen ? 'btn-primary white-text' : ''}"
+               data-tooltip="Version history"
+               onclick={onRevisionsToggleClick}>
+            <i class="material-icons">history</i>
          </button>
       </template>
-      <template if={!nvhData.customEditor}>
-         <button class="btn btn-flat tooltipped {dictData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
-               data-tooltip="Preview entry"
-               onclick={onModeChangeClick.bind(this, "view")}>
-            <i class="material-icons">visibility</i>
-         </button>
-         <button class="btn btn-flat tooltipped {dictData.editorMode == "edit" ? 'btn-primary white-text' : ''} {!state.actions.edit ? 'disabled' : ''}"
-               data-tooltip="Edit entry"
-               onclick={onModeChangeClick.bind(this, "edit")}>
-            <i class="material-icons">edit</i>
-         </button>
-      </template>
-      <button class="btn btn-flat tooltipped {dictData.editorMode == "code" ? 'btn-primary white-text' : ''} {!state.actions.code ? 'disabled' : ''}"
-            data-tooltip="View source code"
-            onclick={onModeChangeClick.bind(this, "code")}>
-         <i class="material-icons">code</i>
-      </button>
-
-      <div class="nvh-separator"></div>
-
-      <button class="btn btn-flat tooltipped {!state.actions.history ? 'disabled' : ''} {nvhData.isRevisionsOpen ? 'btn-primary white-text' : ''}"
-            data-tooltip="Version history"
-            onclick={onRevisionsToggleClick}>
-         <i class="material-icons">history</i>
-      </button>
    </div>
 
 
@@ -153,6 +169,10 @@
 
          onNewEntryClick(){
             !this.nvhStore.editorNeedsSaving() && this.nvhStore.createNewEntry()
+         },
+
+         onNewEntryCancelClick(){
+            this.store.changeEntryId(null)
          },
 
          onDuplicateClick(){
@@ -204,6 +224,7 @@
          },
 
          onCloseRevisionClick(){
+            this.hideTooltips()
             this.nvhStore.showRevision(null)
             this.nvhStore.closeRevisions()
          },
@@ -253,12 +274,19 @@
          background-color: unset;
          opacity: 1;
          border-radius: 0;
+         height: 2.25rem;
+         line-height: 2.25rem;
          &:hover{
             background-color: lightgray;
             &.btn-primary{
                background-color: #E53935;
             }
          }
+      }
+      .btnWithText{
+         display: flex;
+         gap: 5px;
+         padding: 0 10px 0 5px;
       }
       .nvh-separator{
          width: 1px;

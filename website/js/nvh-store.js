@@ -34,6 +34,7 @@ class NVHStoreClass {
       window.store.data.editorMode == "view" && this.changeEditorMode("edit")
       this.trigger("entryChanged")
       this.updateUrl()
+      this.focusFirstElement()
    }
 
    saveEntry(){
@@ -79,6 +80,7 @@ class NVHStoreClass {
                this.history.reset()
                this.history.addState()
                this.updateUrl()
+               this.focusFirstElement()
             })
    }
 
@@ -142,20 +144,26 @@ class NVHStoreClass {
    }
 
    onEntryIdChanged(){
-      window.store.data.entryId == "new" && this.onEntryChanged()
+      if(!window.store.data.entryId || window.store.data.entryId == "new"){
+         this.onEntryChanged()
+      }
    }
 
    onEntryChanged(){
-      if(window.store.data.entryId == "new"){
-         this.data.entry = this._getNewEntry()
-      } else {
-         this.data.entry = this.nvhToJson(window.store.data.entry.nvh)
-      }
-      this.validateAllElements()
       this.data.storedEntry = null
       this.data.revision = null
       this.history.reset()
-      this.history.addState()
+      if(window.store.data.entryId){
+         if(window.store.data.entryId == "new"){
+            this.data.entry = this._getNewEntry()
+         } else{
+            this.data.entry = this.nvhToJson(window.store.data.entry.nvh)
+         }
+         this.validateAllElements()
+         this.history.addState()
+      } else {
+         this.data.entry = null
+      }
       this.trigger("entryChanged")
    }
 
@@ -163,6 +171,7 @@ class NVHStoreClass {
       if(window.store.data.actualPage == "dict-edit"
             && (this.data.entryId == "new"
                   || (window.store.data.entry
+                           && this.data.entry
                            && !this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
                      )
                )
@@ -665,6 +674,13 @@ class NVHStoreClass {
          e.edit = false
       })
       this.trigger("updateElements", elements)
+   }
+
+   focusFirstElement(){
+      if(window.store.data.editorMode == "edit"){
+         this.focusElement(this.data.entry)
+         $(".nvh-focused").focus()
+      }
    }
 
    toggleElementCollapsed(element){
