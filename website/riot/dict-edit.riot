@@ -10,7 +10,7 @@
       { dictData.title }
       <span class="totalEntries">total {dictData.entryCount} entries</span>
    </h1>
-   <template if={dictData.isDictionaryLoaded && !dictData.isDictionaryListLoading}>
+   <template if={dictData.isDictionaryLoaded}>
       <div if={ dictData.doctypes.length > 1 }
             class="doctypes">
          <ul class="tabs">
@@ -40,14 +40,22 @@
             <nvh-editor if={!state.showQueryBuilder}/>
          </div>
       </div>
+
+      <div class="divider"></div>
+      <div class="section grey-text">
+         Licence: { dictData.licence }
+      </div>
    </template>
 
 
    <script>
       export default {
-         bindings: [["store", "dictionaryListLoadingChanged", "update"],
-                    ["store", "entryIdChanged", "onEntryIdChanged"],
-                    ["store", "toggleQueryBuilder", "onToggleQueryBuilder"]],
+         bindings: [["store", "entryIdChanged", "onEntryIdChanged"],
+                    ["store", "toggleQueryBuilder", "onToggleQueryBuilder"],
+                    ["store", "entryListChanged", "update"]],
+
+         MAX_ENTRY_LIST_WIDTH: 800,
+         MIN_ENTRY_LIST_WIDTH: 250,
 
          state: {
             isMobile: false,
@@ -193,7 +201,7 @@
             const distance = evt.x - this.state.mousePos
             this.state.mousePos = evt.x
             let leftColWidth = $(".entryListContainer").width()
-            let width = Math.max(220, leftColWidth + distance)
+            let width = Math.min(this.MAX_ENTRY_LIST_WIDTH, Math.max(this.MIN_ENTRY_LIST_WIDTH, leftColWidth + distance))
             $(".entryListContainer").css("width", width + "px")
          },
 
@@ -258,6 +266,7 @@
       .resizeHandle{
          cursor: ew-resize;
          width: 5px;
+         min-width: 5px;
          min-height: 100%;
          background-color: whitesmoke;
          margin: 0 10px;
@@ -289,11 +298,11 @@
          padding: 20px 30px;
       }
       entry-list{
-         .collection-item.focused {
+         .entry-list-item.focused {
             background-color: #eceff1;
          }
          &.focused{
-            .collection-item.focused{
+            .entry-list-item.focused{
                background-color: #fff59d;
             }
          }
