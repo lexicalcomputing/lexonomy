@@ -12,32 +12,18 @@
    </div>
    <app-footer/>
 
-   <style>
-      .contentWrapper{
-         position: relative;
-      }
-      .content{
-         padding-left: 10px;
-         min-height: 50vh;
-      }
-      .wideContainer{
-         max-width: 1600px;
-         width: 90vw;
-      }
-   </style>
-
    <script>
       export default {
-         state: {
-            isLoading: true,
-            page: '',
-            pageProps: {}
-         },
          bindings: [["auth", "authChanged", "onAuthChanged"],
                     ["auth", "checkingAuthChanged", "onCheckingAuthChange"],
                     ["store", "isDictionaryLoadingChanged", "update"],
                     ["store", "dictionaryChanged", "update"]],
 
+         state: {
+            isLoading: true,
+            page: '',
+            pageProps: {}
+         },
 
          onBeforeMount() {
             $.ajaxSetup({
@@ -223,14 +209,12 @@
          hasUserAccessToThePage(page){
             let uA = this.store.data.userAccess
             if(this.authData.isAdmin
-               || !this.needAuthorization()
-               || this.store.data.public
+               || !this.needAuthorization(page)
                || (page == "dict-download" && uA.canDownload)
                || (page == "dict-upload" && uA.canUpload)
-               || (page.startsWith("dict-public"))
+               || (page != "dict-config-limits" && page.startsWith("dict-config") && uA.canConfig)
                || (page.startsWith("dict-edit")/* && (uA.canEdit)*/)
-               || (page.startsWith("dict-links") && (uA.canEdit))
-               || (page.startsWith("dict-config") && (uA.canConfig || uA.canUpload || uA.canDownload))){
+               || (page.startsWith("dict-links") && (uA.canEdit))){
                return true
             }
             return false
@@ -279,4 +263,18 @@
          }
       }
    </script>
+
+   <style>
+      .contentWrapper{
+         position: relative;
+      }
+      .content{
+         padding-left: 10px;
+         min-height: 50vh;
+      }
+      .wideContainer{
+         max-width: 1600px;
+         width: 90vw;
+      }
+   </style>
 </main>
