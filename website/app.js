@@ -55,7 +55,6 @@ import dict_upload from './riot/dict-upload.riot'
 import dict_links from './riot/dict-links.riot'
 import dict_favorite_toggle from './riot/dict-favorite-toggle.riot'
 import e404 from './riot/e404.riot'
-import entry_view from './riot/entry-view.riot'
 import app_footer from './riot/app-footer.riot'
 import feedback_dialog from './riot/feedback-dialog.riot'
 import forgot_password from './riot/forgot-password.riot'
@@ -152,7 +151,6 @@ riot_register('dict-upload', dict_upload)
 riot_register('dict-links', dict_links)
 riot_register('dict-favorite-toggle', dict_favorite_toggle)
 riot_register('e404', e404)
-riot_register('entry-view', entry_view)
 riot_register('app-footer', app_footer)
 riot_register('feedback-dialog', feedback_dialog)
 riot_register('forgot-password', forgot_password)
