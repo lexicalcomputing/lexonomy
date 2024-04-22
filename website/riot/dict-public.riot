@@ -67,12 +67,20 @@
          <template if={dictData.public || dictData.userAccess}>
             <div class="panel">
                <div class="search">
-                  <h3 class="grey-text">Search</h3>
+                  <h2 class="grey-text">Search</h2>
                   <dict-entry-filter search-func={search}/>
                </div>
                <div class="divider"></div>
                <div class="randomEntries">
-                  <h3 class="grey-text">Random entries</h3>
+                  <h2 class="grey-text">
+                     Random entries
+                     <a if={dictData.dictionaryExamplesHasMore}
+                           class="refreshExamplesBtn btn btn-floating btn-flat waves-effect waves-light tooltipped"
+                           data-tooltip="Show other random entries."
+                           onclick={ onReloadExamplesClick }>
+                        <i class="material-icons black-text">refresh</i>
+                     </a>
+                  </h2>
                   <div class="randomEntryList">
                      <div if={dictData.isDictionaryExamplesLoading}
                            class="loadingExamples grey-text">
@@ -84,14 +92,6 @@
                               class={entry.id == state.displayedEntryId ? "activeEntryLink" : ""}>
                            <a href="javascript:void(0);"
                                  onclick={onRandomEntryClick.bind(this, entry)}>{ entry.title.replace(/(<([^>]+)>)/gi, "") }</a>
-                        </li>
-                        <li>
-                           <a if={dictData.dictionaryExamplesHasMore}
-                                 class="refreshExamplesBtn btn btn-floating btn-flat waves-effect waves-light tooltipped"
-                                 data-tooltip="Show other random entries."
-                                 onclick={ onReloadExamplesClick }>
-                              <i class="material-icons black-text">refresh</i>
-                           </a>
                         </li>
                      </ul>
                   </div>
@@ -125,7 +125,7 @@
             </div>
             <div if={!state.showQueryBuilder}
                   class="description">
-               <h3 class="grey-text">Description</h3>
+               <h2 class="grey-text">Description</h2>
                <div class="displayFlex"
                      style="gap: 10px">
                   <raw-html content={dictData.blurb}></raw-html>
@@ -256,7 +256,7 @@
          }
       }
       advanced-query-builder{
-         h3{
+         h2{
             color: #9e9e9e;
          }
       }
