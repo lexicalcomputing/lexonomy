@@ -701,7 +701,7 @@ class StoreClass {
          this.data.publicDictionaryList = []
       }
       return $.ajax({
-         url: `${window.API_URL}${this.data.dictId}/configupdate.json`,
+         url: `${window.API_URL}${this.data.dictId}/dictconfigupdate.json`,
          method: 'POST',
          data: {
             id: configId,
@@ -714,6 +714,43 @@ class StoreClass {
             })
             .fail(response => {
                M.toast({html: `Could not save the data ('${configId}'): ${response.statusText}`})
+            })
+            .always(response => {})
+   }
+
+   updateDictionaryAccess(users){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/dictaccessupdate.json`,
+         method: 'POST',
+         data: {
+            users: JSON.stringify(users)
+         }
+      })
+            .done(response => {
+               this.loadActualDictionary()
+               M.toast({html: "Saved"})
+            })
+            .fail(response => {
+               M.toast({html: `Could not save the data ('users'): ${response.statusText}`})
+            })
+            .always(response => {})
+   }
+
+   updateDictionarySettings(data){
+      // only for admins
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/dictsettingsupdate.json`,
+         method: 'POST',
+         data: {
+            configs: JSON.stringify(data)
+         }
+      })
+            .done(response => {
+               this.loadActualDictionary()
+               M.toast({html: "Saved"})
+            })
+            .fail(response => {
+               M.toast({html: `Could not save the settings: ${response.statusText}`})
             })
             .always(response => {})
    }

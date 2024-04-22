@@ -57,7 +57,7 @@
                      <label>
                         <input type="checkbox"
                               name="canView"
-                              checked={ user.canView }
+                              checked={ !!user.canView }
                               onchange={onPermissionChange.bind(this, idx)}/>
                         <span></span>
                      </label>
@@ -66,7 +66,7 @@
                      <label>
                         <input type="checkbox"
                               name="canEdit"
-                              checked={ user.canEdit }
+                              checked={ !!user.canEdit }
                               onchange={onPermissionChange.bind(this, idx)}/>
                         <span></span>
                      </label>
@@ -75,7 +75,7 @@
                      <label>
                         <input type="checkbox"
                               name="canConfig"
-                              checked={ user.canConfig }
+                              checked={ !!user.canConfig }
                               onchange={onPermissionChange.bind(this, idx)}/>
                         <span></span>
                      </label>
@@ -84,7 +84,7 @@
                      <label>
                         <input type="checkbox"
                               name="canDownload"
-                              checked={ user.canDownload }
+                              checked={ !!user.canDownload }
                               onchange={onPermissionChange.bind(this, idx)}/>
                         <span></span>
                      </label>
@@ -93,13 +93,13 @@
                      <label>
                         <input type="checkbox"
                               name="canUpload"
-                              checked={ user.canUpload }
+                              checked={ !!user.canUpload }
                               onchange={onPermissionChange.bind(this, idx)}/>
                         <span></span>
                      </label>
                   </td>
                   <td>
-                     <a class="btn btn-floating right"
+                     <a class="btn btn-floating btn-flat right"
                            onclick={ doDeleteUser.bind(this, idx) }>
                         <i class="material-icons">delete</i>
                      </a>
@@ -117,17 +117,11 @@
          </div>
          <br><br>
          <dict-config-buttons save-data={saveData}></dict-config-buttons>
-         <div if={state.errorMessage} class="message messageError">
+         <div if={state.errorMessage} class="message messageError mt-4">
             <raw-html content={state.errorMessage}></raw-html>
          </div>
       </div>
    </template>
-
-   <style>
-      .messageError{
-         margin-top: 1rem;
-      }
-   </style>
 
    <script>
       export default {
@@ -208,7 +202,12 @@
                   isSaving: true,
                   errorMessage: ''
                })
-               this.store.updateDictionaryConfig('users', data)
+               this.store.updateDictionaryAccess(data)
+                     .done(response => {
+                        if(!response.error){
+                           this.state.data.users.forEach(u => u.isEditable = false)
+                        }
+                     })
                      .always(() => this.update({isSaving: false}))
             }
          }
