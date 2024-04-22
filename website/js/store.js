@@ -330,6 +330,7 @@ class StoreClass {
       }
       this.data.isDictionaryLoading = true
       this.data.isDictionaryLoaded = false
+      window.CustomStyles.remove("customDictionaryStyle")
       this.trigger("isDictionaryLoadingChanged")
       this.loadDictionary(this.data.dictId)
             .done(response => {
@@ -372,6 +373,7 @@ class StoreClass {
                   document.title = `Lexonomy - ${this.data.title}`
                   this.trigger("dictionaryChanged")
                   this.loadEntryList()
+                  window.CustomStyles.add("customDictionaryStyle", this.data.config.styles.css)
                } else {
                   this.data.isDictionaryLoading = false
                   route("#/")

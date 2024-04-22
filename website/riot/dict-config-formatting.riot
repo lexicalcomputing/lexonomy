@@ -1,26 +1,45 @@
 <dict-config-formatting>
    <loading-overlay if={state.isBusy}/>
    <h1>Entry formatting</h1>
-   <div class="formattingContainer displayFlex mb-8">
-      <div>
-         <h3>Element</h3>
-         <div each={element in elementOptionList}
-               class="element pointer {element.elementName == state.elementName ? 'selectedElement' : ''}"
-               onclick={onElementClick.bind(this, element.elementName)}
-               onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
-               onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
-               style="{element.style}">
-            {store.getElementDisplayedName(element.elementName)}
-            <i if={element.elementName == state.elementName}
-                  class="selectedElementArrow grey-text material-icons">chevron_right</i>
+   <div class="displayFlex mb-12">
+      <div class="leftSideWrapper displayFlex borderRight mr-6" style="flex-direction: column;">
+         <div class="displayFlex borderBottom mb-6">
+            <div class="elementListColumn pb-6">
+               <h2>Element</h2>
+               <div each={element in elementOptionList}
+                     class="element pointer {element.elementName == state.elementName ? 'selectedElement' : ''}"
+                     onclick={onElementClick.bind(this, element.elementName)}
+                     onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
+                     onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
+                     style="{element.style}">
+                  {store.getElementDisplayedName(element.elementName)}
+                  <i if={element.elementName == state.elementName}
+                        class="selectedElementArrow grey-text material-icons">chevron_right</i>
+               </div>
+            </div>
+            <div class="elementStyleColumn borderLeft ml-6 mr-6 pl-6 pb-6">
+               <h2>Style</h2>
+               <element-style-options element-name={state.elementName}/>
+            </div>
+         </div>
+         <div>
+            <label class="checkbox">
+               <input type="checkbox"
+                     id="custom_css"
+                     checked={state.useCustomCss}
+                     onchange={onUseCustomCssClick}/>
+               <span>Add custom style</span>
+            </label>
+            <div if={state.useCustomCss}
+                  class="cssCode input-field ml-8">
+               <label for="editor_css">CSS</label>
+               <pre id="editor_css"
+                     class="codeEditor language-css"></pre>
+            </div>
          </div>
       </div>
-      <div class="styleColumn">
-         <h3>Style</h3>
-         <element-style-options element-name={state.elementName}/>
-      </div>
-      <div class="exampleColumn positionRelative">
-         <h3>Example</h3>
+      <div class="exampleColumn">
+         <h2>Example</h2>
          <div class="exampleBar grey lighten-4 displayFlex mb-2">
             <entry-dropdown on-change={onExampleEntryChanged}/>
             <i class="material-icons grey-text">search</i>
@@ -39,6 +58,7 @@
          </div>
       </div>
    </div>
+
    <dict-config-buttons save-data={save}/>
 
    <script>
@@ -55,9 +75,12 @@
          },
 
          onBeforeMount(){
-            this.state.savedConfig = JSON.stringify(nvhStore.data.formatting)
             this.nvhStore = window.nvhStore
-             this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
+            let formatting = this.nvhStore.data.formatting
+            this.state.savedConfig = JSON.stringify(formatting.elements)
+            this.state.useCustomCss = formatting.useCustomCss
+            this.state.customCss = formatting.customCss
+            this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
                return {
                   elementName: element.elementName,
                   style: `color: ${element.color}; padding-left: ${element.indent * 15 + 25}px`
@@ -75,8 +98,14 @@
             }
          },
 
+         onMounted(){
+            this.initCustomCssEditor()
+            this.state.customCss && this.refreshCustomStyles()
+         },
+
          onBeforeUnmount(){
-            this.nvhStore.data.formatting = JSON.parse(this.state.savedConfig)
+            this.nvhStore.data.formatting.elements = JSON.parse(this.state.savedConfig)
+            window.CustomStyles.remove("nvhEditorCustomStyles")
          },
 
          onElementClick(elementName){
@@ -111,10 +140,50 @@
             this.store.loadRandomEntry()
          },
 
+         onUseCustomCssClick(){
+            this.update({useCustomCss: !this.state.useCustomCss})
+            this.initCustomCssEditor()
+            if(this.state.useCustomCss){
+               this.refreshCustomStyles()
+            } else {
+               window.CustomStyles.remove("nvhEditorCustomStyles")
+            }
+         },
+
+         onCustomCssUpdate(){
+            this.state.customCss = this.codeEditorCSS.toString()
+            this.customCssInputDebounceTimer && clearTimeout(this.customCssInputDebounceTimer)
+            this.customCssInputDebounceTimer = setTimeout(() => {
+               clearTimeout(this.customCssInputDebounceTimer)
+               this.refreshCustomStyles()
+            }, 200)
+         },
+
+         refreshCustomStyles(){
+            window.CustomStyles.add("nvhEditorCustomStyles", this.state.customCss, ".exampleWrapper")
+         },
+
+         initCustomCssEditor(){
+            if(this.state.useCustomCss){
+               let editorNode = document.getElementById("editor_css")
+               let options = {
+                 tab: "   ",
+                 indentOn: /[{]$/
+               }
+               this.codeEditorCSS = CodeJar(editorNode, Prism.highlightElement.bind(this, editorNode, false, null), options)
+               this.state.customCss && this.codeEditorCSS.updateCode(this.state.customCss)
+               this.codeEditorCSS.onUpdate(this.onCustomCssUpdate.bind(this))
+            }
+         },
+
          save(){
             this.update({isBusy: true})
-            this.state.savedConfig = JSON.stringify(this.nvhStore.data.formatting)
-            this.store.updateDictionaryConfig("formatting", this.nvhStore.data.formatting)
+            this.state.savedConfig = JSON.stringify(this.nvhStore.data.formatting.elements)
+            this.store.updateDictionaryConfig("formatting", {
+               elements: this.nvhStore.data.formatting.elements,
+               useCustomCss: this.state.useCustomCss,
+               customCss: this.state.useCustomCss ? this.state.customCss : ""
+            })
                   .always(response => {
                      this.update({isBusy: false})
                   })
@@ -123,11 +192,8 @@
    </script>
 
    <style type="scss">
-      .formattingContainer{
-         align-items: stretch;
-         & > div{
-            min-width: 150px;
-         }
+      .leftSideWrapper{
+         flex-direction: column;
       }
       .element{
          padding: 0px 15px;
@@ -144,17 +210,19 @@
       .selectedElement{
          background-color: whitesmoke;
       }
-      element-style-options{
-         display: block;
+      .elementStyleColumn{
+         min-width: 360px
+         element-style-options{
+            display: block;
+         }
       }
-      .styleColumn{
-         padding: 0 20px;
-         margin: 0 20px;
-         border-left: 1px solid lightgray;
-         border-right: 1px solid lightgray;
+      .elementListColumn{
+         min-width: 250px;
       }
       .exampleColumn{
          flex: 1;
+         position: sticky;
+         min-width: 250px;
          .exampleWrapper{
             min-height: 350px;
          }
@@ -177,6 +245,9 @@
          input{
             height: 2rem;
          }
+      }
+      .cssCode{
+         max-width: 500px;
       }
    </style>
 </dict-config-formatting>

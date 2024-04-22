@@ -1,0 +1,69 @@
+<dict-config-styles>
+   <loading-overlay if={state.isBusy}/>
+   <h1>Custom styles</h1>
+   <div class="helper-text mt-2 mb-12">
+      You can change the appearance of Lexonomy for this dictionary. To change entry style, please, go to <a href="#/{dictData.dictId}/config/formatting">Entry formatting</a>.
+   </div>
+   <div class="cssCode input-field mb-12">
+      <label for="editor_css">CSS</label>
+      <pre id="editor_css"
+            class="codeEditor language-css"></pre>
+   </div>
+
+   <dict-config-buttons save-data={save}/>
+
+   <script>
+      export default{
+         state: {
+            isBusy: false,
+            customCss: null
+         },
+
+         onMounted(){
+            this.state.customCss = this.dictData.config.styles.css
+            this.state.customCss && this.refreshCustomStyles()
+            this.initCustomCssEditor()
+         },
+
+         onBeforeUnmount(){
+            window.CustomStyles.remove("customDictionaryStyle")
+         },
+
+         onCustomCssUpdate(){
+            this.state.customCss = this.codeEditorCSS.toString()
+            this.refreshCustomStyles()
+         },
+
+         refreshCustomStyles(){
+            window.CustomStyles.add("customDictionaryStyle", this.state.customCss)
+         },
+
+         initCustomCssEditor(){
+            let editorNode = document.getElementById("editor_css")
+            let options = {
+              tab: "   ",
+              indentOn: /[{]$/
+            }
+            this.codeEditorCSS = CodeJar(editorNode, Prism.highlightElement.bind(this, editorNode, false, null), options)
+            this.state.customCss && this.codeEditorCSS.updateCode(this.dictData.config.styles.css)
+            this.codeEditorCSS.onUpdate(this.onCustomCssUpdate.bind(this))
+         },
+
+         save(){
+            this.update({isBusy: true})
+            this.store.updateDictionaryConfig("styles", {
+               css: this.state.customCss
+            })
+                  .always(response => {
+                     this.update({isBusy: false})
+                  })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .cssCode{
+         max-width: 550px;
+      }
+   </style>
+</dict-config-styles>
