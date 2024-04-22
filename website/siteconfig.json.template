@@ -13,6 +13,7 @@
   "trackingCode": "",
   "welcome": "Welcome to your <a href='http://www.lexonomy.eu/'>Lexonomy</a> installation.",
   "mailconfig": {"host": "localhost", "port": 25,"secure": false, "from": "noreply@localhost"},
+  "notification": "",
   "sketchengineKey": null,
   "sketchengineLoginPage": null,
   "consent": {"terms": null, "confirm": null},
