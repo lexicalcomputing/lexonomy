@@ -1,0 +1,53 @@
+<site-notification>
+   <div if={state.show}
+         class="notificationBar p-4 amber lighten-5 centerAlign">
+      <div class="notificationMessage">
+         {state.notification}
+      </div>
+      <button class="notificationCloseBtn btn btn-flat btn-floating"
+            onclick={onCloseClick}>
+         <i class="material-icons">close</i>
+      </button>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["store", "siteconfigChanged", "onSiteConfigChanged"]],
+
+         state:{
+            show: false,
+            notification: null
+         },
+
+         onSiteConfigChanged(){
+            if(this.dictData.siteconfig.notification){
+               this.update({
+                  notification: this.dictData.siteconfig.notification,
+                  show: true
+               })
+            }
+         },
+
+         onCloseClick(){
+            this.update({show: false})
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: block;
+      }
+      .notificationBar{
+         display: flex;
+         align-items: center;
+      }
+      .notificationMessage{
+         margin: 0 auto;
+         font-size: 1.2rem;
+      }
+      .notificationCloseBtn{
+
+      }
+   </style>
+</site-notification>

@@ -13,9 +13,18 @@
          <i class="material-icons clickable ml-2"
                onclick={onCloseStyleEditor}>close</i>
       </div>
+      <div if={dictData.config.formatting.customCss}
+            class="message messageInfo borderBottom">
+         Custom styles applied. You can change it <a href="#/{dictData.dictId}/config/formatting">here</a>
+      </div>
       <element-style-options element-name={state.elementName}
             class="p-2"
             on-change={onStyleChange}/>
+      <div class="p-2 borderTop">
+         <div style="padding-left: 5px;">
+            Go to <a href="#{dictData.dictId}/config/formatting">formatting settings</a>.
+         </div>
+      </div>
    </div>
 
 
@@ -64,7 +73,7 @@
             if(this.state.show){
                let input = $(".nvh-header input")
                let width = window.getInputValueWidth(input[0])
-               input.css("width", Math.min(width + 30, 300) + "px")
+               input.css("width", `min(calc(${width}px + 1.5rem + 5px), 300px)`) // left + right padding of the input field
             }
          },
 
@@ -175,6 +184,9 @@
                margin-bottom: 0px;
             }
          }
+      }
+      element-style-options{
+         display: block;
       }
    </style>
 
