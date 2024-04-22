@@ -600,7 +600,7 @@ def checkDictExists(dictID):
         return True
     return False
 
-def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filename=None, hwNode=None):
+def makeDict(dictID, schema_keys, title, lang, blurb, email, addExamples, import_filename=None, hwNode=None):
     if not import_filename:
         final_schema = mergeSchemaItems(schema_keys)
         schema_elements = []
@@ -628,7 +628,7 @@ def makeDict(dictID, schema_keys, title, blurb, email, addExamples, import_filen
     dictDB = getDB(dictID)
     dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version, "creator": email})))
 
-    ident = {"title": title, "blurb": blurb}
+    ident = {"title": title, "blurb": blurb, "lang": lang}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
 
     elements = {}
