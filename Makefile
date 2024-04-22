@@ -23,7 +23,6 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 deploy:
 	mkdir -p $(DEPLOYDIR)
 	mkdir -p $(DEPLOYDIR)/data
-	chmod -R o+rwX $(DEPLOYDIR)/data
 	cp -p libSqliteIcu.so $(DEPLOYDIR)/
 	cp -a website $(DEPLOYDIR)/
 
@@ -35,6 +34,8 @@ deploy:
 
 	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
+	chgrp -R apache $(DEPLOYDIR)/data
+	chmod -R g+rwX $(DEPLOYDIR)/data
 
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
