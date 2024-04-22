@@ -1,5 +1,4 @@
 #!/bin/bash
-
 helpFunction()
 {
    echo ""
@@ -15,13 +14,16 @@ fi
 
 if [ -f "$1/website/siteconfig.json" ]; then
     # UPDATE existing
-    rsync -avu --exclude={'data','website/siteconfig.json','website/config.js'} ./* $1
+    echo "Updating instance ..."
+    rsync -avu --exclude={'data','website/siteconfig.json','website/config.js','make_instance.sh'} ${PWD}/* $1
     $1/website/adminscripts/init_or_update.py
 else 
-    rsync -avu --exclude={'data','website/siteconfig.json','website/config.js'} ./* $1
+    echo "Initialize new instance ..."
+    echo ${PWD} > $1/INSTANCE_PATH.txt
+    rsync -avu --exclude={'data','website/siteconfig.json','website/config.js','make_instance.sh'} ${PWD}/* $1
+    cat ${PWD}/website/siteconfig.json.template | sed "s#%{path}#$1/website#g" > $1/website/siteconfig.json
+	cp ${PWD}/website/config.js.template $1/website/config.js
     mkdir $1/data
-    cat ./website/siteconfig.json.template | sed "s#%{path}#$1/website#g" > $1/website/siteconfig.json
-	cp ./website/config.js.template $1/website/config.js
     $1/website/adminscripts/init_or_update.py
     chown -R apache: $1/data
     chmod -R g+rwX $1/data
