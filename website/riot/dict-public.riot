@@ -13,7 +13,7 @@
             </a>
             <dict-favorite-toggle if={authData.authorized}
                   dict-id={dictData.dictId}/>
-            <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit}
+            <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit || dictData.userAccess.canUpload || dictData.userAccess.canDownload}
                   class="dropdown-trigger btn btn-floating btn-flat"
                   href="#"
                   data-target="dictMenuDropdown">
