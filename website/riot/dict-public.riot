@@ -175,6 +175,13 @@
             if(!this.dictData.isDictionaryLoading){
                this.initializeDropdown()
             }
+            if(this.dictData.config.formatting.customCss){
+               window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".nvh-editor-view-items")
+            }
+         },
+
+         onBeforeUnmount(){
+            window.CustomStyles.remove("nvhEditorCustomStyles")
          },
 
          isDictionaryExamplesLoadingChanged(){

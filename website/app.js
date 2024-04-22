@@ -9,6 +9,7 @@ import './js/misc.js'
 import './libs/js.cookie.js'
 import './libs/codejar/codejar.js'
 import './libs/jsdiff/jsdiff.js'
+import './libs/cssparser/cssparser.js'
 import './js/nvh-store.js'
 import './js/nvh-plugins/ske.js'
 import './js/nvh-plugins/image-search.js'
@@ -17,6 +18,7 @@ import './js/nvh-plugins/links.js'
 import './js/extendmaterialize.js'
 import './js/structure-editor-store.js'
 import './js/formatter.js'
+import './js/customstyles.js'
 
 import App from './riot/main.riot'
 import api from './riot/api.riot'
@@ -112,6 +114,7 @@ import projects_view from './riot/projects/projects-view.riot'
 import projects_edit from './riot/projects/projects-edit.riot'
 import project_dict_name from './riot/projects/project-dict-name.riot'
 import project_batches from './riot/projects/project-batches.riot'
+import dict_config_styles from './riot/dict-config-styles.riot'
 import site_notification from './riot/site-notification.riot'
 
 riot_register('api', api)
@@ -207,6 +210,7 @@ riot_register('projects-view', projects_view)
 riot_register('projects-edit', projects_edit)
 riot_register('project-dict-name', project_dict_name)
 riot_register('project-batches', project_batches)
+riot_register('dict-config-styles', dict_config_styles)
 riot_register('site-notification', site_notification)
 
 

@@ -55,10 +55,14 @@
 
          onMounted(){
             this.refreshListeners()
+            if(this.dictData.config.formatting.customCss){
+               window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".nvh-editor-view-items")
+            }
          },
 
          onBeforeUnmount(){
             this.removeEventListeners()
+             window.CustomStyles.remove("nvhEditorCustomStyles")
          },
 
          onIsEntryLoadingChanged(){
