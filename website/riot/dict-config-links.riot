@@ -62,55 +62,18 @@
             </button>
          </div>
       </template>
-      <br><br>
-      <div>
-         <h2>Automatic linking using NAISC</h2>
-      </div>
-      <div class="displayFlex">
-         <div>
-            <div class="input-field inlineBlock">
-               <select id="dictSelect"
-                     onchange={onDictionaryChange}>
-                  <option each={dict in state.dictList}
-                        value={dict.id}
-                        selected={dict.id == dictData.dictId}>{dict.title}</option>
-               </select>
-               <label>Dictionary</label>
-               <span class="helper-text">Select dictionary to link element to.</span>
-            </div>
-         </div>
-         <div class="input-field inlineBlock">
-            <button id="naisc_link"
-                  class="btn mt-2 waves-effect waves-light {state.isLinking || state.isChecking ? 'disabled' : ''}"
-                  onclick={startLinking}
-                  style="margin-left: 10px;">Start linking</button>
-         </div>
-      </div>
-      <div if={state.info}
-            class="section">
-         <div class="message messageInfo">
-            <raw-html content={state.info}></raw-html>
-         </div>
-      </div>
    </div>
    <br>
-   <a href="#{dictData.dictId}/config"
+   <a href="javascript:window.history.back()"
          class="btn btn-secondary btn-flat">Back</a>
 
    <script>
-      export default {
-         bindings: [["store", "dictionaryListChanged", "update"]],
-
+   export default {
          state: {
             isLoading: true,
             isSaving: false,
-            isLinking: false,
-            isChecking: true,
             unusedElements: [],
-            data: {elements: []},
-            info: "",
-            checkDelay: 1000,
-            dictList: []
+            data: {elements: []}
          },
 
          onMounted() {
@@ -121,23 +84,9 @@
                   .always(() => {
                      this.update({isLoading: false})
                   })
-
-            //check NAISC status
-            this.store.linkingCheckIfRunning()
-                  .done(response => {
-                     if (response.bgjob != -1) {
-                        this.state.info = "Linking to '" + response.otherdictID + "' already in progress, please wait..."
-                        this.waitForLinking(response.otherdictID, response.bgjob)
-                     }
-                  })
-                  .always(() => {
-                     this.update({isChecking: false})
-                  })
-            $('#dictSelect').formSelect()
          },
 
          onBeforeUpdate(){
-            this.state.dictList = this.dictData.dictionaryList.filter(dict => dict.id != this.dictData.dictId)
             this.refreshUnusedElements()
          },
 
@@ -158,7 +107,6 @@
                      .on("change", this.onElementChange)
                }.bind(this))
             }
-            $('#dictSelect').formSelect()
          },
 
          onDeleteLinkClick(element) {
@@ -191,56 +139,6 @@
             this.state.unusedElements = Object.keys(this.dictData.config.structure.elements).filter(el => {
                return !savedElements.includes(el)
             })
-         },
-
-         startLinking() {
-            var otherdictID = $("#dictSelect").val()
-            if(otherdictID){
-               this.update({
-                  isLinking: true,
-                  info: "Initiating linking..."
-               })
-               this.store.startLinking(otherdictID)
-                     .done(response => {
-                        this.update({
-                           info: "Linking in progress, please wait...",
-                           checkDelay: 1000
-                        })
-                        this.waitForLinking(otherdictID, response.bgjob)
-                     })
-                     .fail(() => {
-                        this.update({
-                           isLinking: false,
-                           info: "Linking failed."
-                        })
-                     })
-            }
-         },
-
-         waitForLinking(otherdictID, jobID) {
-            this.store.linkingGetProgress(otherdictID, jobID)
-                  .done(response => {
-                     if (response.status == "finished") {
-                        this.update({
-                           isLinking: false,
-                           info: "Linking done. <a href='#/" + this.dictData.dictId + "/links'>See results.</a>"
-                        })
-                     } else if (response.status == "failed") {
-                        this.update({
-                           isLinking: false,
-                           info: "Linking failed"
-                        })
-                     } else {
-                        this.state.checkDelay = this.state.checkDelay < 60000 ? this.state.checkDelay + 2000 : 60000
-                        setTimeout(this.waitForLinking.bind(this, otherdictID, jobID), this.state.checkDelay)
-                     }
-                  })
-                  .fail(() => {
-                     this.update({
-                        isLinking: false,
-                        info: "Linking failed"
-                     })
-                  })
          },
 
          saveData() {
