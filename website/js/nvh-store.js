@@ -503,7 +503,7 @@ class NVHStoreClass {
    }
 
    getElementStyle(elementName){
-      return this.data.formatting[elementName] || {}
+      return this.data.formatting.elements[elementName]
    }
 
    getAvailableChildElements(element){
@@ -562,13 +562,13 @@ class NVHStoreClass {
    changeElementStyleOption(elementName, option, value){
       if(this.getElementStyle(elementName)[option] != value){
          // TODO temporary fix
-         if(!this.data.formatting[elementName]){
-            this.data.formatting[elementName] = {}
+         if(!this.data.formatting.elements[elementName]){
+            this.data.formatting.elements[elementName] = {}
          }
          if(!value){
-            delete this.data.formatting[elementName][option]
+            delete this.data.formatting.elements[elementName][option]
          } else {
-            this.data.formatting[elementName][option] = value
+            this.data.formatting.elements[elementName][option] = value
          }
          this.trigger("updateElements", this.findElements(e => e.name == elementName))
       }

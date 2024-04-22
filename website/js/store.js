@@ -181,7 +181,7 @@ class StoreClass {
    }
 
    getElementDisplayedName(elementName){
-      let formatting = this.data.config.formatting
+      let formatting = this.data.config.formatting.elements
       if(formatting && formatting[elementName] && formatting[elementName].name){
          return formatting[elementName].name
       }
@@ -335,13 +335,21 @@ class StoreClass {
       this.loadDictionary(this.data.dictId)
             .done(response => {
                if(response.success){
-                  // TODO: backward compatibility, may be removed in future
-                  //response.configs.structure = response.configs.structure || response.configs.xema
                   let elements = response.configs.structure.elements
                   if(!response.configs.formatting){
-                     response.configs.formatting = response.configs.xemplate
+                     response.configs.formatting = {
+                        elements: response.configs.xemplate
+                     }
+                  }
+                  if(!response.configs.formatting.elements){
+                     response.configs.formatting.elements = {}
                   }
                   if(elements){
+                     Object.keys(elements).forEach(elementName => {
+                        if(!response.configs.formatting.elements[elementName]){
+                           response.configs.formatting.elements[elementName] = {}
+                        }
+                     })
                      Object.values(elements).forEach(element => {
                         if(typeof element.children == "undefined"){
                            element.children = []

@@ -162,7 +162,7 @@
                   .always(response => {
                      this.update({isLoading: false})
                      this.state.data.js && this.codeEditorJS.updateCode(this.state.data.js)
-                     this.state.data.css &&this.codeEditorCSS.updateCode(this.state.data.css)
+                     this.state.data.css && this.codeEditorCSS.updateCode(this.state.data.css)
                      if(this.state.data.useOwnEditor){
                         $("#editors").show()
                      }
