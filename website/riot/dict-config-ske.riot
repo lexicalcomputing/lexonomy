@@ -69,25 +69,6 @@
             <span class="helper-text">Select the element which should wrap each individual example. When you pull example sentences automatically from a corpus, Lexonomy will insert one of these elements for each example sentence.</span>
          </div>
       </div>
-      <!--div class="row">
-         <div class="input-field">
-            <textarea id="xampl_template"
-                  class="materialize-textarea"
-                  placeholder="XML template">{ state.data.xampl.template }</textarea>
-            <label for="xampl_template">XML template</label>
-            <span class="helper-text">This is the XML that will be inserted into your entries with each corpus example. The actual text will be where the placeholder <tt>$text</tt> is.</span>
-         </div>
-      </div-->
-      <!--div class="row">
-         <div class="input-field">
-            <element-select id="xampl_markup"
-                  riot-value={state.data.xampl.markup}
-                  show-empty-value={true}
-                  empty-value="(not set)"/>
-            <label for="xampl_markup">Headword mark-up</label>
-            <span class="helper-text">Select the element which should mark up the headword in inserted corpus examples. This setting is optional: if you make no selection, corpus examples will be inserted without mark-up.</span>
-         </div>
-      </div-->
       <div class="row">
          <h2>Collocations</h2>
       </div>
@@ -101,15 +82,6 @@
             <span class="helper-text">Select the element which should wrap each collocation (the collocate plus any other data). When you pull collocations automatically from a corpus, Lexonomy will insert one of these elements for each collocation.</span>
          </div>
       </div>
-      <!--div class="row">
-         <div class="input-field">
-            <textarea id="collx_template"
-                  class="materialize-textarea"
-                  placeholder="XML template">{ state.data.collx.template }</textarea>
-            <label for="collx_template">XML template</label>
-            <span class="helper-text">This is the XML that will be inserted into your entries with each collocation. The actual text will be where the placeholder <tt>$text</tt> is.</span>
-         </div>
-      </div-->
       <div class="row">
          <h2>Thesaurus items</h2>
       </div>
@@ -123,15 +95,6 @@
             <span class="helper-text">Select the element which should wrap each individual thesaurus item (a word). When you pull thesaurus items automatically from a corpus, Lexonomy will insert one of these elements for each thesaurus item.</span>
          </div>
       </div>
-      <!--div class="row">
-         <div class="input-field">
-            <textarea id="thes_template"
-                  class="materialize-textarea"
-                  placeholder="XML template">{ state.data.thes.template }</textarea>
-            <label for="thes_template">XML template</label>
-            <span class="helper-text">This is the XML that will be inserted into your entries with each thesaurus item. The actual text will be where the placeholder <tt>$text</tt> is.</span>
-         </div>
-      </div-->
       <div class="row">
          <h2>Definitions</h2>
       </div>
@@ -145,15 +108,6 @@
             <span class="helper-text">Select the element which should wrap each definition. When you pull definitions automatically from a corpus, Lexonomy will insert one of these elements for each definition.</span>
          </div>
       </div>
-      <!--div class="row">
-         <div class="input-field">
-            <textarea id="defo_template"
-                  class="materialize-textarea"
-                  placeholder="XML template">{ state.data.defo.template }</textarea>
-            <label for="defo_template">XML template</label>
-            <span class="helper-text">This is the XML that will be inserted into your entries with each definition. The actual text will be where the placeholder <tt>$text</tt> is.</span>
-         </div>
-      </div-->
    </template>
    <dict-config-buttons save-data={saveData}
          show-save={!state.showMissingHeadwordWarning}></dict-config-buttons>
@@ -169,7 +123,7 @@
                   concsampling: 0,
                   searchElements: []
                },
-               xampl: {container: "", markup: ""},
+               xampl: {container: ""},
                collx: {container: ""},
                defo: {container: ""},
                thes: {container: ""},
@@ -191,6 +145,7 @@
                         this.state.data.kex = this.state.data.kex || {}
                         this.state.data.kex.concsampling = this.state.data.kex.concsampling || 0
                         this.state.data.kex.searchElements = this.state.data.kex.searchElements || []
+                        // TODO: takes too long, should be loaded in background
                         this.store.skeLoadCorpora()
                               .done(response => {
                                  let corpusList = response.data.map(corpus => {
@@ -230,7 +185,7 @@
          },
 
          getConfigData() {
-            var newData = {
+            return {
                kex: {
                   corpus: $("#kex_corpus").attr("corpname"),
                   concquery: $("#kex_concquery").val(),
@@ -239,23 +194,17 @@
                },
                xampl: {
                   container: $("#xampl_container select").val()
-                  //template: $("#xampl_template").val(),
-                  //markup: $("#xampl_markup select").val(),
                },
                collx: {
-                  container: $("#collx_container select").val()/*,
-                  template: $("#collx_template").val(),*/
+                  container: $("#collx_container select").val()
                },
                defo: {
-                  container: $("#defo_container select").val()/*,
-                  template: $("#defo_template").val(),*/
+                  container: $("#defo_container select").val()
                },
                thes: {
-                  container: $("#thes_container select").val()/*,
-                  template: $("#thes_template").val(),*/
-               },
+                  container: $("#thes_container select").val()
+               }
             }
-            return newData
          },
 
          saveData() {
