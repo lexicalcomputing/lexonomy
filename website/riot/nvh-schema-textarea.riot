@@ -1,0 +1,65 @@
+<nvh-schema-textarea>
+   <nvh-schema-syntax-help/>
+   <textarea class="materialize-textarea {state.error ? 'invalid' : ''}"
+         oninput={onSchemaInput}>{props.riotValue}</textarea>
+   <div class="errorMessage red-text">
+      <small>
+         {state.error}
+      </small>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            error: "",
+            isValid: null
+         },
+
+         onMounted(){
+            this.validate(this.props.riotValue)
+            M.textareaAutoResize($("textarea", this.root))
+         },
+
+         onUpdated(){
+            this.validate(this.props.riotValue)
+            M.textareaAutoResize($("textarea", this.root))
+         },
+
+         onSchemaInput(evt){
+            let schema = evt.target.value.trim()
+            this.props.onChange && this.props.onChange(schema)
+            this.validate(schema)
+         },
+
+         validate(schema){
+            let {isValid, error} = window.nvhStore.validateNVHSchema(schema)
+            if(isValid != this.state.isValid || error !=  this.state.error){
+               this.state.isValid = isValid
+               this.state.error = error
+               $("textarea", this.root).toggleClass("invalid", !isValid)
+               $(".errorMessage", this.root).toggle(!isValid)
+                     .find("small")
+                     .html(error)
+               this.props.onValidChange && this.props.onValidChange(isValid, error)
+            }
+         }
+      }
+   </script>
+
+   <style>
+      :host{
+         position: relative;
+         display: block;
+      }
+      .schemaSyntaxToggleBtn{
+         position: absolute;
+         right: 0;
+         top: -22px;
+      }
+      .errorMessage{
+         min-height: 24px;
+         position: relative;
+         top: -15px;
+      }
+   </style>
+</nvh-schema-textarea>
