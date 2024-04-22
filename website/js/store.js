@@ -855,12 +855,13 @@ class StoreClass {
             })
    }
 
-   createUser(email){
+   createUser(email, isManager){
       return $.ajax({
          url: `${window.API_URL}users/usercreate.json`,
          method: 'POST',
          data: {
-            id: email
+            id: email,
+            manager: isManager
          }
       })
             .done(response => {

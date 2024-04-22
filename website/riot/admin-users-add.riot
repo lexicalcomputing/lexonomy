@@ -1,7 +1,7 @@
 <admin-users-add>
    <h1>Add user</h1>
    <loading-overlay if={state.isSaving}/>
-   <div class="input-field">
+   <div class="input-field mb-0">
       <input class="userEmail"
             type="email"
             oninput={onEmailInput}/>
@@ -11,7 +11,12 @@
          Email address is not valid
       </span>
    </div>
-   <div class="buttons">
+   <label class="checkbox">
+      <input type="checkbox"
+            id="manager"/>
+      <span>User is project manager</span>
+   </label>
+   <div class="buttons mt-12">
       <button class="btnCreateUser btn btn-primary disabled"
             onclick={onCreateUserClick}>
          Create user
@@ -38,7 +43,7 @@
 
          onCreateUserClick(){
             this.update({isSaving: true})
-            this.store.createUser($(".userEmail").val())
+            this.store.createUser($(".userEmail").val(), $("#manager").prop("checked"))
                   .done(() => {
                      route("#/admin/users")
                   })
