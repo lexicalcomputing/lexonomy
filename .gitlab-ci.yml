@@ -10,6 +10,7 @@ dist beta:
     script:
         - make dist-gzip
         - VERSION=$(git describe --tags --always)
+        - VERSION=${VERSION:5}
         - rpmdev-bumpspec --new=${VERSION} lexonomy-beta.spec
         - mock --verbose -r /etc/mock/ske/fedora-32-x86_64.cfg --buildsrpm --spec lexonomy-beta.spec --sources . --resultdir .
     artifacts:
