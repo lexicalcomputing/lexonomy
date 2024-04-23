@@ -2,35 +2,14 @@ stages:
     - dist
     - build
     - repo
-dist main:
-    tags:
-        - dist
-    stage: dist
-    script:
-        - make dist-gzip
-        - VERSION=$(git describe --tags --always)
-        - rpmdev-bumpspec --new=${VERSION} lexonomy.spec
-        - mock --verbose -r /etc/mock/ske/fedora-32-x86_64.cfg --buildsrpm --spec lexonomy.spec --sources . --resultdir .
-    artifacts:
-        paths:
-            - "*.src.rpm"
-            - "*.tar.gz"
-    rules:
-        - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG !~ /^beta-.*/'
 
 dist beta:
     tags:
         - dist
     stage: dist
     script:
-        - cp lexonomy.spec lexonomy-beta.spec
-        - 'sed -i -e "s/Name:\s*lexonomy/Name: lexonomy-beta/" lexonomy-beta.spec'
-        - 'sed -i -e "s/Source0:\s*lexonomy-/Source0: lexonomy-beta-/" lexonomy-beta.spec'
-        - 'sed -i -e "s/lexonomy\//lexonomy-beta\//g" lexonomy-beta.spec'
-        - 'sed -i -e "s/setup -n lexonomy-/setup -n lexonomy-beta-/" lexonomy-beta.spec'
         - make dist-gzip
         - VERSION=$(git describe --tags --always)
-        - VERSION=${VERSION:5}
         - rpmdev-bumpspec --new=${VERSION} lexonomy-beta.spec
         - mock --verbose -r /etc/mock/ske/fedora-32-x86_64.cfg --buildsrpm --spec lexonomy-beta.spec --sources . --resultdir .
     artifacts:
@@ -51,17 +30,7 @@ build f32:
     artifacts:
         paths:
         - "*fc32*.rpm"
-build f34:
-    tags:
-        - mock
-    stage: build
-    script:
-        - mock --verbose -r /etc/mock/ske/fedora-34-x86_64.cfg --rebuild lexonomy-*.src.rpm --resultdir .
-    except:
-        - branches
-    artifacts:
-        paths:
-        - "*fc34*.rpm"
+
 build f36:
     tags:
         - mock
@@ -73,6 +42,7 @@ build f36:
     artifacts:
         paths:
         - "*fc36*.rpm"
+
 update repo:
     tags:
         - repo
@@ -82,10 +52,6 @@ update repo:
         - createrepo_c --update /rpm_packages/f32_src
         - mv *.fc32.*.rpm /rpm_packages/f32/
         - createrepo_c --update /rpm_packages/f32
-        - mv *.fc34.src.rpm /rpm_packages/f34_src/
-        - createrepo_c --update /rpm_packages/f34_src
-        - mv *.fc34.*.rpm /rpm_packages/f34/
-        - createrepo_c --update /rpm_packages/f34
         - mv *.fc36.src.rpm /rpm_packages/f36_src/
         - createrepo_c --update /rpm_packages/f36_src
         - mv *.fc36.*.rpm /rpm_packages/f36/
@@ -94,6 +60,5 @@ update repo:
         - branches
     dependencies:
         - build f32
-        - build f34
         - build f36
 
