@@ -98,10 +98,10 @@ def update_dbs():
     #### ADDING COLUMNS TO EXISTING TABLES ####
 
     upgrades = {
-        "users": [("ske_id", "INTEGER"), ("ske_username", "TEXT"), ("consent", "INTEGER"), ("ske_apiKey", "TEXT"), ("comment", "TEXT"), 
+        "users": [("ske_id", "INTEGER"), ("ske_username", "TEXT"), ("consent", "INTEGER"), ("ske_apiKey", "TEXT"), ("comment", "TEXT"),
                   ("annotator_role", "JSON"), ("created_by", "TEXT"), ("is_manager", "INTEGER")],
-        "dicts": [("language", "TEXT"), ("public", "BOOLEAN DEFAULT false"), ("configs", "JSON")],
-        "user_dict": [("can_config", "INTEGER"), ("can_download", "INTEGER"), ("can_upload", "INTEGER"), ("can_view", "INTEGER"), 
+        "dicts": [("language", "TEXT"), ("public", "BOOLEAN DEFAULT false"), ("creator", "TEXT"), ("configs", "JSON")],
+        "user_dict": [("can_config", "INTEGER"), ("can_download", "INTEGER"), ("can_upload", "INTEGER"), ("can_view", "INTEGER"),
                       ("can_edit", "INTEGER")]
     }
 
