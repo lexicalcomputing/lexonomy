@@ -62,12 +62,17 @@
          bindings: [["store", "entryListChanged", "update"],
                     ["store", "isEntryListLoadingChanged", "update"],
                     ["store", "isLoadingMoreEntriesChanged", "update"],
-                    ["store", "entryIdChanged", "onEntryIdChanged"]],
+                    ["store", "entryIdChanged", "onEntryIdChanged"],
+                    ["nvhStore","editorModeChanged", "update"]],
 
          state: {
             focused: false,
             size: 10,
             cursorPosition: null
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
          },
 
          onMounted(){
