@@ -1,6 +1,6 @@
 <nvh-schema-textarea>
    <nvh-schema-syntax-help/>
-   <textarea class="materialize-textarea {state.error ? 'invalid' : ''}"
+   <textarea class="materialize-textarea monospace {state.error ? 'invalid' : ''}"
          oninput={onSchemaInput}>{props.riotValue}</textarea>
    <div class="errorMessage red-text">
       <small>
