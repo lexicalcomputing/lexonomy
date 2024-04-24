@@ -19,7 +19,7 @@ from bottle import (hook, route, get, post, run, template, error, request,
                     response, static_file, abort, redirect, install)
 
 # configuration
-app = bottle.default_app()
+application = app = bottle.default_app()
 app.config['autojson'] = True
 bottle.BaseRequest.MEMFILE_MAX = 10 * 1024 * 1024 #10MB upload
 my_url = siteconfig["baseUrl"].split("://")[1].rstrip("/")
@@ -1341,7 +1341,7 @@ else:
     port = 3000
 if cgi: # we are called as CGI script
     run(host=host, port=port, debug=debug, server="cgi")
-else: # run a standalone server, prefer the paste server if available over the builtin one
+elif "httpd" not in os.environ["HOME"]: # very poor mod_wsgi detection; else run a standalone server, prefer the paste server if available over the builtin one
     try:
         import paste
         run(host=host, port=port, debug=debug, reloader=debug, server='paste', interval=0.1)
