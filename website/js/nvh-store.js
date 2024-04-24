@@ -245,7 +245,7 @@ class NVHStoreClass {
    }
 
    jsonToNvh(element, indent=0){
-      let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.value === null ? "" : element.value.replaceAll("\n", this.const.markDownNewLine)}\n`
+      let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.markDownNewLine)}\n`
          element.children && element.children.forEach(child => {
          nvh += this.jsonToNvh(child, indent + 1)
       }, this)
