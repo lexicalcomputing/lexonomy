@@ -150,6 +150,7 @@
             if(route.query().next){
                window.location.href = decodeURIComponent(route.query().next)
             } else {
+               this.store.resetDictionary()  // dictionary cloud be loaded as unauthorized with userAccess: false
                this.update()
             }
          },
