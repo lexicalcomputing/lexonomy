@@ -13,8 +13,9 @@ if len(sys.argv) != 2:
     print("Usage: ./adminscripts/changePassword.py email")
     sys.exit()
 
-siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
-                                           "siteconfig.json"), encoding="utf-8"))
+main_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+siteconfig_file_path = os.path.join(main_dir, "siteconfig.json")
+siteconfig = json.load(open(siteconfig_file_path, encoding="utf-8"))
 path = os.path.join(siteconfig["dataDir"], 'lexonomy.sqlite')
 conn = sqlite3.connect(path)
 print("Connected to database: %s" % path)

@@ -24,8 +24,7 @@ from bottle import request
 import sys
 
 currdir = os.path.dirname(os.path.abspath(__file__))
-siteconfig = json.load(open(os.environ.get("LEXONOMY_SITECONFIG",
-                                           os.path.join(currdir, "siteconfig.json")), encoding="utf-8"))
+siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="utf-8"))
 for datadir in ["dicts", "uploads", "sqlite_tmp"]:
     pathlib.Path(os.path.join(siteconfig["dataDir"], datadir)).mkdir(parents=True, exist_ok=True)
 os.environ["SQLITE_TMPDIR"] = os.path.join(siteconfig["dataDir"], "sqlite_tmp")
