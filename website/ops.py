@@ -2036,9 +2036,6 @@ def getEntrySearchables(nvhParsed, configs): # TODO search
     return ret
 
 def flagEntry(dictDB, dictID, configs, entryID, flag_value, email, historiography):
-    if configs["flagging"]["flag_element"] == configs["structure"]["root"]:
-        return False
-
     c = dictDB.execute("select id, nvh from entries where id=?", (entryID,))
     row = c.fetchone()
     nvhParsed = nvh.parse_string(row["nvh"])
@@ -2055,7 +2052,7 @@ def flagEntry(dictDB, dictID, configs, entryID, flag_value, email, historiograph
     return entryID
 
 
-def addFlag(nvhParsed, flag_value, flag_element):#, structureconfig):
+def addFlag(nvhParsed, flag_value, flag_element):
     for c in nvhParsed.children:
         addFlagRecursive(c, flag_value, flag_element)
     return nvhParsed
