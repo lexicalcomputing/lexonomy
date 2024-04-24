@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.10
 # Copyright (c) 2019-2022 Lexical Computing: Miloš Jakubíček, Vojtěch Kovář, Marek Medveď, Jan Michelfeit
 #
 # Permission is hereby granted, free of charge, to any person
