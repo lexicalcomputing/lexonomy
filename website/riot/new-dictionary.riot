@@ -4,7 +4,7 @@
       New dictionary <span class="step">Step {(state.step + "").substr(0, 1)} of 3</span>
    </h1>
    <div if={state.step == 1}>
-      <h5 class="grey-text mb-4">Basic information</h5>
+      <h3 class="grey-text mb-4">Basic information</h3>
       <div class="row mt-8">
          <div class="input-field">
             <input id="title"
@@ -62,7 +62,7 @@
    </div>
 
    <div if={state.step == 2}>
-      <h5 class="grey-text mb-4">Dictionary content</h5>
+      <h3 class="grey-text mb-4">Dictionary content</h3>
       <div class="emptyOrUpload">
          <div class="option"
                onclick={onChangeStepClick.bind(this, "3_empty")}>
@@ -81,7 +81,7 @@
                Upload entries
             </div>
             <div class="description grey-text">
-               Upload entries in NVH format to create new dictionary.
+               Upload entries in NVH or XML format to create new dictionary.
             </div>
          </div>
       </div>
@@ -95,10 +95,10 @@
 
    <div if={state.step == "3_empty"}>
       <div class="row mb-4">
-         <h5 class="grey-text mb-4">Entry structure</h5>
+         <h3 class="grey-text mb-4">Entry structure</h3>
          <div class="grey-text">Chose modules you want to use in your dictionary. You can change this later.</div>
-         <nvh-schema selected-modules={state.selectedModules}
-               on-schema-loaded={onSchemaLoaded}
+               <nvh-schema selected-modules={state.selectedModules}
+                     on-schema-loaded={onSchemaLoaded}
                on-schema-change={onSchemaChange}
                on-modules-change={onModulesChange}/>
 
@@ -109,12 +109,12 @@
                         type="checkbox"
                         checked="checked">
                   <span>
-                     Add example entries
-                  </span>
-               </label>
+                           Add example entries
+                        </span>
+                     </label>
+                  </div>
+               </div>
             </div>
-         </div>
-      </div>
       <div class="mt-8">
          <div if={state.errorMessage != ""}
                class="section">
@@ -138,7 +138,7 @@
    </div>
 
    <div if={state.step == "3_upload"}>
-      <h5 class="grey-text mb-4">Upload entries</h5>
+      <h3 class="grey-text mb-4">Upload entries</h3>
       <div class="uploadWrapper">
          <div class="row mt-8">
             <div class="file-field input-field buttons">
@@ -327,8 +327,8 @@
                this.store.createDictionary({
                   title: this.state.title,
                   url: this.state.url,
-                  file: this.state.file,
-                  headword: this.state.headword
+                  filename: this.state.file,
+                  hwNode: this.state.headword
                })
                      .done(response => {
                         if (response.success) {
