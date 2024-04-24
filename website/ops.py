@@ -1608,7 +1608,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         for rf in cf.fetchall():
             item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
             if "flag_element" in configs["flagging"]:
-                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), configs["flagging"]["flag_element"])
+                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), "__lexonomy_flag__")
             entries.append(item)
         return rc["total"], entries, True
 
@@ -1736,8 +1736,38 @@ def updateDictConfig(dictDB, dictID, configID, content):
             dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
         return content, resaveNeeded
+    elif configID == 'flagging':
+        if content['flags']:
+            addFlagToStructure(dictDB, content)
+        else:
+            deleteFlagFromStructure(dictDB)
+        return content, False
     else:
         return content, False
+
+def addFlagToStructure(dictDB, content):
+    deleteFlagFromStructure(dictDB)
+    c = dictDB.execute("SELECT json FROM configs WHERE id=?", ('structure',))
+    structure = json.loads(c.fetchone()['json'])
+    flag_element = content["flag_element"]
+    flag_name = f'__lexonomy_flag__'
+    structure['elements'][flag_name] = {'type': 'string', 'min': 1, 'max': 1, 'values': [x['name'] for x in content['flags']], 're': '', 'children': []}
+    structure['elements'][flag_element]['children'].append(flag_name)
+    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(structure), 'structure'))
+    dictDB.commit()
+
+def deleteFlagFromStructure(dictDB):
+    c = dictDB.execute("SELECT json FROM configs WHERE id=?", ('structure',))
+    structure = json.loads(c.fetchone()['json'])
+    flag_name = '__lexonomy_flag__'
+    if '__lexonomy_flag__' in structure['elements']:
+        structure['elements'].pop(flag_name)
+        for e in structure['elements']:
+            if flag_name in structure['elements'][e]['children']:
+                idx = structure['elements'][e]['children'].index(flag_name)
+                structure['elements'][e]['children'].pop(idx)
+        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(structure), 'structure'))
+        dictDB.commit()
 
 def updateDictAccess(dictID, users):
     conn = getMainDB()
@@ -2001,63 +2031,45 @@ def getEntrySearchables(nvhParsed, configs): # TODO search
                     ret.append(txt)
     return ret
 
-def flagEntry(dictDB, dictID, configs, entryID, flag, email, historiography):
+def flagEntry(dictDB, dictID, configs, entryID, flag_value, email, historiography):
     if configs["flagging"]["flag_element"] == configs["structure"]["root"]:
         return False
-    c = dictDB.execute("select id, xml from entries where id=?", (entryID,))
-    row = c.fetchone()
-    xml = row["xml"] if row else ""
-    xml = re.sub(r" xmlns:lxnm=[\"\']http:\/\/www\.lexonomy\.eu\/[\"\']", "", xml)
-    xml = re.sub(r"\=\"([^\"]*)\"", r"='\1'", xml)
-    xml = re.sub(r" lxnm:(sub)?entryID='[0-9]+'", "", xml)
-    xml = addFlag(xml, flag, configs["flagging"], configs["structure"])
 
-    # tell my parents that they need a refresh:
-    dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID, ))
-    # update me
-    #needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
-    needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
-    dictDB.execute("update entries set doctype=?, xml=?, title=?, sortkey=$sortkey, needs_refac=?, needs_resave=? where id=?", (getDoctype(xml), xml, getEntryTitle(xml, configs["titling"]), getSortTitle(xml, configs["titling"]), needs_refac, needs_resave, entryID))
-    dictDB.execute("insert into history(entry_id, action, [when], email, xml, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, xml, json.dumps(historiography)))
+    c = dictDB.execute("select id, nvh from entries where id=?", (entryID,))
+    row = c.fetchone()
+    nvhParsed = nvh.parse_string(row["nvh"])
+    nvhParsed = addFlag(nvhParsed, flag_value, configs["flagging"]["flag_element"])
+    dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
+                                                                                                                                                  nvhParsed.dump_string(),
+                                                                                                                                                  nvh2json(nvhParsed),
+                                                                                                                                                  getEntryTitle(nvhParsed, configs["titling"]),
+                                                                                                                                                  getSortTitle(nvhParsed, configs["titling"]),
+                                                                                                                                                  0, 0, 0, entryID))
+
+    dictDB.execute("insert into history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvhParsed.dump_string(), json.dumps(historiography)))
     dictDB.commit()
     return entryID
 
 
-def addFlag(xml, flag, flagconfig, structureconfig):
-    flag_element = flagconfig["flag_element"]
+def addFlag(nvhParsed, flag_value, flag_element):#, structureconfig):
+    for c in nvhParsed.children:
+        addFlagRecursive(c, flag_value, flag_element)
+    return nvhParsed
 
-    path = getFlagElementPath(structureconfig, flag_element)
-    loc1, loc2 = getFlagElementInString(path, xml)
-
-    return "{0}<{1}>{2}</{1}>{3}".format(
-            xml[:loc1], flag_element, flag, xml[loc2:])
-
-
-def getFlagElementPath(structureconfig, flag_element):
-    result = getFlagElementPath_recursive(structure, flag_element, structureconfig["root"])
-    if result is not None:
-        result.insert(0, structureconfig["root"])
-    return result
-
-
-def getFlagElementPath_recursive(structureconfig, flag_element, current_element):
-    # try all children
-    for child_props in structureconfig["elements"][current_element]["children"]:
-        next_el = child_props["name"]
-
-        # if we get to the flag element, return!
-        if next_el == flag_element:
-            return [flag_element]
-
-        # else, recursive search, depth first
-        path = getFlagElementPath_recursive(structureconfig, flag_element, next_el)
-
-        # if returned is not None, then we found what we need, just prepend to the returned path
-        if path is not None:
-            return [next_el] + path
-
-    # nothing useful found, return None
-    return None
+def addFlagRecursive(nvhNode, flag_value, flag_element):
+    if nvhNode.name == flag_element:
+        ind_step = nvhNode.parent.indent[len(nvhNode.parent.parent.indent):]
+        indent = nvhNode.parent.indent + ind_step
+        updated_value = False
+        for c in nvhNode.children:
+            if c.name == "__lexonomy_flag__":
+                c.value = flag_value
+                updated_value = True
+        if not updated_value:
+            nvhNode.children.append(nvh(nvhNode, indent, "__lexonomy_flag__", flag_value, []))
+    else:
+        for c in nvhNode.children:
+            addFlagRecursive(c, flag_value, flag_element)
 
 
 def getFlagElementInString(path, xml):
