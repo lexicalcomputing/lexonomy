@@ -14,12 +14,12 @@ URL:		https://www.lexonomy.eu/
 Source0: lexonomy-beta-%{version}.tar.gz
 
 BuildRequires:	make
-BuildRequires:	python3 >= 3.8
+BuildRequires:	python3 >= 3.10
 BuildRequires:	git
 BuildRequires:	nodejs
 BuildRequires:	npm
 
-Requires:	python3 >= 3.8
+Requires:	python3 >= 3.10
 Requires:	python3-jwt
 Requires:	python3-markdown
 Requires:	python3-paste
@@ -45,6 +45,7 @@ sed -i -e 's/@VERSION@/%{version}/g' $RPM_BUILD_ROOT/usr/share/lexonomy-beta/web
 
 %post
 make -C /usr/share/lexonomy-beta/ deploy DEPLOYDIR=/opt/lexonomy-beta/
+chgrp -R `id -g apache` /opt/lexonomy-beta/data
 
 %files
 /usr/share/lexonomy-beta/
