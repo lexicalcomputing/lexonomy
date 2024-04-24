@@ -237,8 +237,8 @@ def main():
     elements = {}
     ops.get_gen_schema_elements(schema, elements)
     structure = {"root": args.main_node_name, "elements": elements}
-    db.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
-    db.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
+    db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure))) # TODO should be INSERT or IGNORE if exists
+    db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
 
     configs = ops.readDictConfigs(db)
     dict_stats = ops.getDictStats(db)
