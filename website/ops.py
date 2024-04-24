@@ -1608,7 +1608,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         for rf in cf.fetchall():
             item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
             if "flag_element" in configs["flagging"]:
-                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), "__lexonomy_flag__")
+                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), "lexonomy_flag")
             entries.append(item)
         return rc["total"], entries, True
 
@@ -1750,17 +1750,21 @@ def addFlagToStructure(dictDB, content):
     c = dictDB.execute("SELECT json FROM configs WHERE id=?", ('structure',))
     structure = json.loads(c.fetchone()['json'])
     flag_element = content["flag_element"]
-    flag_name = f'__lexonomy_flag__'
+    flag_name = 'lexonomy_flag'
     structure['elements'][flag_name] = {'type': 'string', 'min': 1, 'max': 1, 'values': [x['name'] for x in content['flags']], 're': '', 'children': []}
-    structure['elements'][flag_element]['children'].append(flag_name)
+    if structure['elements'][flag_element].get('children', False):
+        structure['elements'][flag_element]['children'].append(flag_name)
+    else:
+        structure['elements'][flag_element]['children'] = [flag_name]
+
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(structure), 'structure'))
     dictDB.commit()
 
 def deleteFlagFromStructure(dictDB):
     c = dictDB.execute("SELECT json FROM configs WHERE id=?", ('structure',))
     structure = json.loads(c.fetchone()['json'])
-    flag_name = '__lexonomy_flag__'
-    if '__lexonomy_flag__' in structure['elements']:
+    flag_name = 'lexonomy_flag'
+    if flag_name in structure['elements']:
         structure['elements'].pop(flag_name)
         for e in structure['elements']:
             if flag_name in structure['elements'][e]['children']:
@@ -2062,11 +2066,11 @@ def addFlagRecursive(nvhNode, flag_value, flag_element):
         indent = nvhNode.parent.indent + ind_step
         updated_value = False
         for c in nvhNode.children:
-            if c.name == "__lexonomy_flag__":
+            if c.name == "lexonomy_flag":
                 c.value = flag_value
                 updated_value = True
         if not updated_value:
-            nvhNode.children.append(nvh(nvhNode, indent, "__lexonomy_flag__", flag_value, []))
+            nvhNode.children.append(nvh(nvhNode, indent, "lexonomy_flag", flag_value, []))
     else:
         for c in nvhNode.children:
             addFlagRecursive(c, flag_value, flag_element)
