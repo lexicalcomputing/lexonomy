@@ -114,7 +114,9 @@
             } else if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){  // ctrl + s
                evt.preventDefault()
                if(this.nvhStore.getAvailableActions().save){
-                  this.nvhStore.validateAllElements()
+                  if(this.nvhStore.data.customEditor && this.dictData.editorMode != "edit"){
+                     this.nvhStore.validateAllElements()
+                  }
                   this.nvhData.isValid && this.nvhStore.saveEntry()
                }
             }
