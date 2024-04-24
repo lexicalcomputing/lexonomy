@@ -10,7 +10,7 @@ SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(
 INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
 SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md Makefile
 
-build: website/bundle.js
+build: website/bundle.js website/version.txt
 
 website/bundle.js: $(SOURCE_RIOT)
 	make -C website
@@ -32,6 +32,9 @@ deploy:
 	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
 	chmod -R g+rwX $(DEPLOYDIR)/data
+
+website/version.txt:
+	git describe --always > $@
 
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
