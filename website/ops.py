@@ -1608,7 +1608,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         for rf in cf.fetchall():
             item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
             if "flag_element" in configs["flagging"]:
-                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), "lexonomy_flag")
+                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), configs["flagging"]["flag_element"])
             entries.append(item)
         return rc["total"], entries, True
 
@@ -1736,12 +1736,12 @@ def updateDictConfig(dictDB, dictID, configID, content):
             dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
         return content, resaveNeeded
-    elif configID == 'flagging':
-        if content['flags']:
-            addFlagToStructure(dictDB, content)
-        else:
-            deleteFlagFromStructure(dictDB)
-        return content, False
+    # elif configID == 'flagging':
+    #     if content['flags']:
+    #         addFlagToStructure(dictDB, content)
+    #     else:
+    #         deleteFlagFromStructure(dictDB)
+    #     return content, False
     else:
         return content, False
 
@@ -2059,15 +2059,16 @@ def addFlag(nvhParsed, flag_value, flag_element):
 
 def addFlagRecursive(nvhNode, flag_value, flag_element):
     if nvhNode.name == flag_element:
-        ind_step = nvhNode.parent.indent[len(nvhNode.parent.parent.indent):]
-        indent = nvhNode.parent.indent + ind_step
-        updated_value = False
-        for c in nvhNode.children:
-            if c.name == "lexonomy_flag":
-                c.value = flag_value
-                updated_value = True
-        if not updated_value:
-            nvhNode.children.append(nvh(nvhNode, indent, "lexonomy_flag", flag_value, []))
+        nvhNode.value = flag_value
+        # ind_step = nvhNode.parent.indent[len(nvhNode.parent.parent.indent):]
+        # indent = nvhNode.parent.indent + ind_step
+        # updated_value = False
+        # for c in nvhNode.children:
+        #     if c.name == "lexonomy_flag":
+        #         c.value = flag_value
+        #         updated_value = True
+        # if not updated_value:
+        #     nvhNode.children.append(nvh(nvhNode, indent, "lexonomy_flag", flag_value, []))
     else:
         for c in nvhNode.children:
             addFlagRecursive(c, flag_value, flag_element)
