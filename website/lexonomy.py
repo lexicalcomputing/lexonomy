@@ -811,12 +811,19 @@ def uploadhtml(dictID, user, dictDB, configs):
     else:
         upload = request.files.get("myfile")
         uploadStart = str(datetime.datetime.utcnow())
-        temppath = tempfile.mkdtemp()
-        upload.save(temppath)
-        filepath = os.path.join(temppath, upload.filename)
+
+        save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
+        while os.path.exists(save_path):
+            save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
+
+        os.makedirs(save_path)
+
+        file_path =os.path.join(save_path, upload.filename)
+        upload.save(file_path)
+
         if request.forms.purge == "on":
-            ops.purge(dictDB, user["email"], { "uploadStart": uploadStart, "filename": filepath })
-        return {"file": filepath,  "uploadStart": uploadStart, "success": True}
+            ops.purge(dictDB, user["email"], { "uploadStart": uploadStart, "filename": file_path })
+        return {"file": file_path,  "uploadStart": uploadStart, "success": True}
 
 @get(siteconfig["rootPath"]+"<dictID>/import.json") # OK
 @authDict(["canUpload"])
@@ -835,7 +842,7 @@ def importjson(dictID, user, dictDB, configs):
             return{"finished": False, "progressMessage": "",
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.'}
         else:
-            progress, finished, err, msg = ops.importfile(dictID, request.query.filename, user["email"], json.loads(configs['structure'])['root'])
+            progress, finished, err, msg = ops.importfile(dictID, request.query.filename, user["email"], configs['structure']['root'])
             return{"finished": finished, "progress": progress, "error": err, 'msg': msg}
 
 @post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK

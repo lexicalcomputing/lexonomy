@@ -1514,7 +1514,7 @@ def showImportErrors(filename, truncate):
         return content
 
 
-done_re = re.compile(r'^INFO:\s*DONE:\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
+done_re = re.compile(r'^INFO:\s*(DONE|DONE_IMPORT):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
 waring_re = re.compile(r'^WARNING:\s*(.+)$')
 err_re = re.compile(r'^ERROR:\s*(.*?)$')
 def importfile(dictID, filename, email, hwNode):
@@ -1533,7 +1533,7 @@ def importfile(dictID, filename, email, hwNode):
                 warn = waring_re.match(line)
                 err = err_re.match(line)
                 if prg:
-                    progress = {'per': int(prg.group(1)), 'done': int(prg.group(2)), 'total': int(prg.group(3))}
+                    progress = {'per': int(prg.group(2)), 'done': int(prg.group(3)), 'total': int(prg.group(4))}
                 elif warn:
                     errors.append(warn.group(1))
                 elif err:
@@ -1547,6 +1547,7 @@ def importfile(dictID, filename, email, hwNode):
     else:
         logfile_f = open(filename + ".log", "w")
         dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
+        # TODO send purge
         p = subprocess.Popen([currdir + "/import.py", dbpath, filename, email, hwNode],
                              stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
         return {'per': 0, 'done': 0, 'total': 0}, False, [], "Import started. You may close the window, import will run in the background. Please wait..."
