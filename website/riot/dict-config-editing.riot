@@ -182,7 +182,11 @@
          onKeyDown(evt){
             if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
                evt.preventDefault()
-               this.state.isJSValid && this.saveData()
+               if(this.state.isJSValid){
+                  this.saveData()
+               } else {
+                  M.toast({html: "Invalid code"})
+               }
             }
          },
 
