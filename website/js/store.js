@@ -99,15 +99,18 @@ class StoreClass {
    }
 
    changeSearchParams(searchParams){
-      Object.assign(this.data.search, {
+      let newSearchParams = {
          tab: searchParams.tab || this.data.search.tab,
          searchtext: searchParams.searchtext || "",
          modifier: searchParams.modifier || "start",
          advanced_query: searchParams.advanced_query || ""
-      })
-      this.trigger("searchParamsChanged")
-      if(!this.data.isDictionaryLoading){
-         this.loadEntryList()
+      }
+      if(JSON.stringify(this.data.search) != JSON.stringify(newSearchParams)){
+         Object.assign(this.data.search, newSearchParams)
+         this.trigger("searchParamsChanged")
+         if(!this.data.isDictionaryLoading){
+            this.loadEntryList()
+         }
       }
    }
 
