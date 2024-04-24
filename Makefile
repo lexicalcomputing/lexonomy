@@ -31,7 +31,6 @@ deploy:
 
 	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
-	chgrp -R `id -g apache` $(DEPLOYDIR)/data
 	chmod -R g+rwX $(DEPLOYDIR)/data
 
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile
