@@ -194,14 +194,14 @@ def main():
     else:
         log_err(f'NOT a supported format: {args.filename}')
 
-    # Cleaning duplicate (name, value) nodes
-    log_info('Cleaning NVH')
-    import_nvh.clean_duplicate_nodes(out=sys.stderr)
+    ## Cleaning duplicate (name, value) nodes
+    #log_info('Cleaning NVH')
+    #import_nvh.clean_duplicate_nodes(out=sys.stderr)
 
-    # Renaming node names that appear under different parents
-    log_info('Renaming duplicate NVH nodes')
+    ## Renaming node names that appear under different parents
+    #log_info('Renaming duplicate NVH nodes')
     rename_dict = {}
-    import_nvh.rename_nodes(rename_dict, out=sys.stderr)
+    #import_nvh.rename_nodes(rename_dict, out=sys.stderr)
 
     with open(args.filename + ".cleaned", 'w') as clean_f:
         import_nvh.dump(clean_f)
@@ -217,7 +217,7 @@ def main():
     with open(args.filename + ".schema", 'w') as schema_f:
         nvh.print_schema(schema, outfile=schema_f)
 
-    import_nvh.check_schema(schema, outfile=sys.stderr)
+    #import_nvh.check_schema(schema, outfile=sys.stderr)
 
     # Splitting into individual entries
     import_entries, tl_name = import_nvh.get_entries()
@@ -225,7 +225,6 @@ def main():
 
     entry_inserted = 0
     limit_reached = False
-    max_import = 1000
 
     db = sqlite3.connect(args.dbname)
     db.row_factory = sqlite3.Row
@@ -242,7 +241,12 @@ def main():
 
     configs = ops.readDictConfigs(db)
     dict_stats = ops.getDictStats(db)
-    limit = configs["limits"]["entries"] if configs.get("limits") and configs["limits"].get("entries") else 5000
+
+    main_db = ops.getMainDB()
+    dict_name = args.dbname.strip().split('/')[:-7]
+    d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_name))
+    limit = d.fetchone()['configs']["limits"]["entries"]
+
     max_import = limit - dict_stats["entryCount"]
     if max_import < entry_count:
         log_info("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
