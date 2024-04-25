@@ -48,7 +48,7 @@
          <button if={!nvhData.isSaving}
                class="btnSave btn-flat tooltipped {!state.actions.save ? 'disabled' : ''}"
                onclick={onSaveClick}
-               data-tooltip="Save entry (ctrl+s or ⌘+s)</small>">
+               data-tooltip="Save entry (Ctrl+s or ⌘+s)<br>Save entry and go to next: (Ctrl+Enter)">
             <i class="material-icons">save</i>
          </button>
          <button if={nvhData.isSaving}
@@ -79,12 +79,12 @@
       </template>
 
       <button class="btn-flat tooltipped {!state.actions.prevEntry ? 'disabled' : ''}"
-            data-tooltip="Go to previous entry (ctrl or ⌘ + alt + ↑)"
+            data-tooltip="Go to previous entry (Alt + ↑)"
             onclick={onOpenPreviousEntryClick}>
          <i class="material-icons">navigate_before</i>
       </button>
       <button class="btn-flat tooltipped {!state.actions.nextEntry ? 'disabled' : ''}"
-            data-tooltip="Go to next entry (ctrl or ⌘ + alt + ↓)"
+            data-tooltip="Go to next entry (Alt + ↓)"
             onclick={onOpenNextEntryClick}>
          <i class="material-icons">navigate_next</i>
       </button>
@@ -105,7 +105,7 @@
          </template>
          <template if={!nvhData.customEditor}>
             <button class="btn btn-flat tooltipped {dictData.editorMode == "view" ? 'btn-primary white-text' : ''} {!state.actions.view ? 'disabled' : ''}"
-                  data-tooltip="Preview entry (Alt ⌘ + 1)"
+                  data-tooltip="Preview entry (Alt + 1)"
                   onclick={onModeChangeClick.bind(this, "view")}>
                <i class="material-icons">visibility</i>
             </button>

@@ -21,13 +21,17 @@
       <div if={state.tab == "hotkeys"}>
          To save time, you can use the following shortcuts in the entry editor. You need to press all keys simultaneously.
          <br><br>
-         <div each={hotkey in state.hotkeys} class="shortcut">
-            <span class="keys">
-               <raw-html content={getHotkeyShortcut(hotkey[0])}></raw-html>
-            </span>
-            <span class="desc">
-               <raw-html content={hotkey[1]}></raw-html>
-            </span>
+         <div each={section in state.hotkeys}
+               class="mb-4">
+            <h3>{section.label}</h3>
+            <div each={hotkey in section.hotkeys} class="shortcut">
+               <span class="keys">
+                  <raw-html content={getHotkeyShortcut(hotkey[0])}></raw-html>
+               </span>
+               <span class="desc">
+                  <raw-html content={hotkey[1]}></raw-html>
+               </span>
+            </div>
          </div>
       </div>
 
@@ -74,14 +78,31 @@
          state: {
             tab: "intro",
             hotkeys: [
-               ["Ctrl Alt N", "<b>N</b>ew entry"],
-               ["Ctrl Alt S", "<b>S</b>ave changes"],
-               ["Ctrl Alt E", "<b>E</b>dit current entry"],
-               ["Ctrl Alt F", "<b>F</b>ind – jump to the search form"],
-               ["Ctrl Alt left", "Switch focus to the entry list"],
-               ["Ctrl Alt right", "Switch focus to the entry"],
-               ["Ctrl Alt up", "Go to the previous entry"],
-               ["Ctrl Alt down", "Go to the next entry"]
+               {
+                  label: "Editor general",
+                  hotkeys: [
+                     ["Ctrl + S", "Save changes"],
+                     ["Ctrl + Enter", "Save changes and go to next entry"],
+                     ["Ctrl + Alt + left", "Switch focus to the entry list"],
+                     ["Ctrl + Alt + right", "Switch focus to the entry"],
+                     ["Alt + ↑", "Go to the previous entry"],
+                     ["Alt + ↓", "Go to the next entry"],
+                     ["Alt + 1", "Switch to entry viewer"],
+                     ["Alt + 2", "Switch to entry editor"],
+                     ["Alt + 3", "Switch to source code"]
+                  ]
+               },
+               {
+                  label: "Entry editor mode",
+                  hotkeys: [
+                     ["↑", "Go to the previous element"],
+                     ["↓", "Go to the next element"],
+                     ["Ctrl + ↑", "Move element up"],
+                     ["Ctrl + ↓", "Move element down"],
+                     ["Ctrl + Alt + ↑", "Move element to previous parent"],
+                     ["Ctrl + Alt + ↓", "Move element to newt parent"]
+                  ]
+               }
             ]
          },
 

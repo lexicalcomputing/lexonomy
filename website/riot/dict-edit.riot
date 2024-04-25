@@ -152,16 +152,6 @@
                   } else if(this.dictData.editorMode == "code"){
                      $(".nvh-code-editor").focus()
                   }
-               } else if(evt.keyCode == 38){  // up
-                  if(!window.nvhStore.editorNeedsSaving()){
-                     let previousEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) - 1]
-                     previousEntry && this.store.changeEntryId(previousEntry.id)
-                  }
-               } else if(evt.keyCode == 40){  // down
-                  if(!window.nvhStore.editorNeedsSaving()){
-                     let nextEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) + 1]
-                     nextEntry && this.store.changeEntryId(nextEntry.id)
-                  }
                }
             }
          },
