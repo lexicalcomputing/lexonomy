@@ -88,7 +88,7 @@ class StoreClass {
    changeDoctype(doctype){
       if(this.data.isDictionaryLoading){
          this.one("dictionaryChanged", this.changeDoctype.bind(this, doctype))
-      } else {
+      } else if(this.data.config){  // is dictionary loaded
          doctype = doctype || this.data.doctypes[0]
          if(doctype != this.data.doctype){
             this.data.doctype = doctype
@@ -156,6 +156,11 @@ class StoreClass {
             .done(function(flag, response) {
                if(response.success){
                   entry.flag = [flag]
+                  if(entry.id == this.data.entryId){
+                     // TODO: does not work in source code tab
+                     let flagElement = window.nvhStore.findElement(e => e.name == this.data.config.flagging.flag_element)
+                     flagElement && window.nvhStore.changeElementValue(flagElement, flag)
+                  }
                }
             }.bind(this, flag))
             .fail(response => {
@@ -543,6 +548,7 @@ class StoreClass {
                if(this.data.entryRevisions.length){
                   this.loadEntryRevisions()
                }
+               this.updateFlagInEntryList(nvh)
             })
    }
 
@@ -1294,6 +1300,21 @@ class StoreClass {
             route(`${this.data.dictId}/config/structure`)
          })
       }, 400)
+   }
+
+   updateFlagInEntryList(nvh){
+      let flagging = this.data.config.flagging
+      if(flagging){
+         let entry = window.nvhStore.nvhToJson(nvh)
+         let flagElement = window.nvhStore.findElement(e => e.name == flagging.flag_element, entry)
+         if(flagElement){
+            let listItem = this.data.entryList.find(e => e.id == this.data.entryId)
+            if(listItem && listItem.flag != flagElement.value){
+               listItem.flag = [flagElement.value]
+               this.trigger("entryListChanged", this.data.entryId)
+            }
+         }
+      }
    }
 
    getEntrySearchUrlQueryString(){
