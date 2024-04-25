@@ -323,7 +323,7 @@ class nvh:
                 is_this_new = True
 
             elif tln:
-                schema[c.name]['max'] = float('inf')
+                schema[c.name]['max'] = None
 
             elif not firstInThisParent[c.name]:
                 schema[c.name]['max'] += 1
@@ -358,9 +358,9 @@ class nvh:
             if n not in schema:
                 report("%s not allowed as a child of %s" % (n, parent))
                 continue
-            if freqs[n] < schema[n]["min"]:
+            if schema[n]["min"] and freqs[n] < schema[n]["min"]:
                 report("%s: minimum count must be %d." % (n, schema[n]["min"]))
-            if freqs[n] > schema[n]["max"]:
+            if schema[n]["max"] and freqs[n] > schema[n]["max"]:
                 report("%s: maximum count must be %d." % (n, schema[n]["max"]))
 
         for c in self.children:
@@ -470,13 +470,13 @@ class nvh:
         def get_symbol(d):
             result = []
             if d["optional"]:
-                if d["max"] > 1:
+                if  d["max"] == None or d["max"] > 1:
                     result.append("*")
                 else:
                     result.append("?")
-            elif d["max"] > 1:
+            elif  d["max"] == None or d["max"] > 1:
                 result.append("+")
-                
+
             result.append(d["type"])
 
             return ' '.join(result)
