@@ -980,11 +980,11 @@ class NVHStoreClass {
                warnings.push(`Element "${element.name}" should not have the value "${element.value}".`)
             }
          }
-         if(config.type != "empty"){
+         /*if(config.type != "empty"){
             if(!element.value){
                warnings.push(`Element "${element.name}" should have some text.`)
             }
-         }
+         }*/
          let counts = element.children.reduce((counts, e) => {
             counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
             return counts
