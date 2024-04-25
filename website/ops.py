@@ -1933,19 +1933,28 @@ def clearRefac(dictDB):
 
 def resave(dictDB, dictID, configs):
     c = dictDB.execute("select id, nvh from entries where needs_resave=1")
+    entry_updates = []
+    ids = []
+    searchable_updates = []
     for r in c.fetchall():
         entryID = r["id"]
         nvhParsed = nvh.parse_string(r["nvh"])
-        dictDB.execute("update entries set needs_resave=0, title=?, sortkey=? where id=?", (getEntryTitle(nvhParsed, configs["titling"]), getSortTitle(nvhParsed, configs["titling"]), entryID))
-        dictDB.execute("delete from searchables where entry_id=?", (entryID,))
-        dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(nvhParsed, configs["titling"], True), 1))
-        dictDB.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, getEntryTitle(nvhParsed, configs["titling"], True).lower(), 1))
+        entryTitle = getEntryTitle(nvhParsed, configs["titling"])
+        entryTitle_plaintext = getEntryTitle(nvhParsed, configs["titling"], True)
+        sortTitle = getSortTitle(nvhParsed, configs["titling"])
+        entry_updates.append((entryTitle, sortTitle, entryID))
+        ids.append(entryID)
+        searchable_updates.append((entryID, entryTitle_plaintext, 1))
+        searchable_updates.append((entryID, entryTitle_plaintext.lower(), 1))
         headword = getEntryHeadword(nvhParsed, configs["titling"].get("headword"))
         for searchable in getEntrySearchables(nvhParsed, configs):
             if searchable != headword:
-                dictDB.execute("insert into searchables(entry_id, txt, level) values(?,?,?)", (entryID, searchable, 2))
+                searchable_updates.append((entryID, searchable, 2))
         if configs["links"]:
             updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
+    dictDB.executemany("update entries set needs_resave=0, title=?, sortkey=? where id=?", entry_updates)
+    dictDB.execute("delete from searchables where entry_id in (%s)" % (",".join(map(str, ids))))
+    dictDB.executemany("insert into searchables(entry_id, txt, level) values(?, ?, ?)", searchable_updates)
     dictDB.commit()
     return True
 
