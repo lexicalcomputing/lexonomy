@@ -214,7 +214,7 @@ window.CodeJar = function(editor, highlight, opt = {}) {
         return r.toString();
     }
     function handleNewLine(event) {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
             const before = beforeCursor();
             const after = afterCursor();
             let [padding] = findPadding(before);
