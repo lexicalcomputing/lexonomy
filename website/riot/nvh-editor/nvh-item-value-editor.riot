@@ -4,11 +4,12 @@
       <div class="nvh-toolbar">
       </div>
       <div class="nvh-editable-div"
+            onkeydown={onKeyDown}
             onkeyup={onKeyUp}
             onblur={onBlur}>
       </div>
       <small class="nvh-save-note grey-text">
-         Ctrl + Enter to confirm
+         Shift + Enter to add a new line
       </small>
    </div>
    <input if={state.config.type == "int"}
@@ -99,9 +100,15 @@
             this.state.showEditor && this.state.editor.destroy()
          },
 
+         onKeyDown(evt){
+            if(evt.keyCode == 13 && !evt.shiftKey){
+               evt.preventDefault()
+            }
+         },
+
          onKeyUp(evt){
             evt.stopPropagation()
-            if(evt.keyCode == 13 && (evt.ctrlKey || evt.metaKey)){
+            if(evt.keyCode == 13 && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey){
                this.changeValue()
             } else if(evt.keyCode == 27){
                this.nvhStore.stopElementEditing()

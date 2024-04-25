@@ -98,88 +98,110 @@
          },
 
          onKeyDown(evt){
-            if (evt.altKey && evt.keyCode == 49 && this.nvhStore.getAvailableActions().view){
-               this.nvhStore.changeEditorMode("view")
-            } else if (evt.altKey && evt.keyCode == 50 && this.nvhStore.getAvailableActions().edit){
-               this.nvhStore.changeEditorMode("edit")
-            } else if (evt.altKey && evt.keyCode == 51 && this.nvhStore.getAvailableActions().code){
-               this.nvhStore.changeEditorMode("code")
+            let key = evt.keyCode
+            let ctrl = evt.ctrlKey || evt.metaKey
+            let alt = evt.altKey
+            let shift = evt.shiftKey
+            let actions = this.nvhStore.getAvailableActions()
+            if (evt.key == "1"){ // 1
+               !ctrl &&  alt && !shift && actions.view && this.nvhStore.changeEditorMode("view")
+            } else if (evt.key == "2"){ // 2
+               !ctrl && alt && !shift && actions.edit && this.nvhStore.changeEditorMode("edit")
+            } else if (evt.key == "3"){ // 3
+               !ctrl && alt && !shift && actions.code && this.nvhStore.changeEditorMode("code")
+            } else if(key == 13){  // enter
+               ctrl && !alt && !shift && this.saveEntryAndGoToNext()
+            } else if(key == 83){  // s
+               if(ctrl && !alt && !shift){
+                  evt.preventDefault()
+                  this.saveEntry()
+               }
             }
-            if((evt.keyCode == 38 || evt.keyCode == 40)
-               && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)
-               && evt.target.contentEditable != 'true'
-               && evt.target.contentEditable != 'plaintext-only'){
-               // prvent screen from scrolling
-               evt.preventDefault()
-            } else if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){  // ctrl + s
-               evt.preventDefault()
-               if(this.nvhStore.getAvailableActions().save){
-                  if(this.nvhStore.data.customEditor && this.dictData.editorMode != "edit"){
-                     this.nvhStore.validateAllElements()
-                  }
-                  this.nvhData.isValid && this.nvhStore.saveEntry()
+            if(key == 38 || key == 40){  // up, down
+               if(alt && !window.nvhStore.editorNeedsSaving()){
+                  let nextEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) + (key == 38 ? -1 : 1)]
+                  nextEntry && this.store.changeEntryId(nextEntry.id)
+               }
+               if(!["TEXTAREA", "INPUT"].includes(evt.target.nodeName)
+                  && evt.target.contentEditable != 'true'
+                  && evt.target.contentEditable != 'plaintext-only'){
+                  // prvent screen from scrolling
+                  evt.preventDefault()
                }
             }
          },
 
          onKeyUp(evt){
+            let key = evt.keyCode
+            let alt = evt.altKey
+            let shift = evt.shiftKey
+            let ctrl = evt.ctrlKey || evt.metaKey
             let focused = this.nvhStore.getFocusedElement()
             if(focused
                   && $(this.root).hasClass("focused")
                   && !this.nvhData.isContextMenuOpen
                   && !focused.edit
                   && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
-               if(evt.keyCode == 38){ // arrow up
-                  if(evt.ctrlKey || evt.metaKey){
-                     if(!evt.altKey){ //  ctrl+alt+up = go to previous entry
-                        if(evt.shiftKey){
-                           this.nvhStore.moveElementToPreviousParent(focused)
-                        } else {
-                           this.nvhStore.moveElementUp(focused)
-                        }
-                     }
-                  } else {
-                     this.nvhStore.goToPrevElement()
-                  }
-               } else if(evt.keyCode == 40){ // arrow down
-                  if(evt.ctrlKey || evt.metaKey){
-                     if(!evt.altKey){ //  ctrl+alt+down = go to next entry
-                        if(evt.shiftKey){
-                           this.nvhStore.moveElementToNextParent(focused)
-                        } else {
-                           this.nvhStore.moveElementDown(focused)
-                        }
-                     }
-                  } else {
-                     this.nvhStore.goToNextElement()
-                  }
-               } else if(evt.keyCode == 39){ // arrow right
-                  if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
+               if(key == 38){ // arrow up
+                  !ctrl && !alt && !shift && this.nvhStore.goToPrevElement()
+                   ctrl && !alt && !shift && this.nvhStore.moveElementUp(focused)
+                   ctrl && !alt &&  shift && this.nvhStore.moveElementToPreviousParent(focused)
+               } else if(key == 40){ // arrow down
+                  !ctrl && !alt && !shift && this.nvhStore.goToNextElement()
+                   ctrl && !alt && !shift && this.nvhStore.moveElementDown(focused)
+                   ctrl && !alt &&  shift && this.nvhStore.moveElementToNextParent(focused)
+               } else if(key == 39){ // arrow right
+                  if(!ctrl && !alt){
                      if(focused.children.length && focused.collapsed){
                         this.nvhStore.expandElement()
                      } else {
                         this.nvhStore.goToNextElement()
                      }
                   }
-               } else if(evt.keyCode == 37){ // arrow left
-                  if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
+               } else if(key == 37){ // arrow left
+                  if(!ctrl && !alt){
                      if((focused.collapsed || !focused.children.length) && focused.parent){
                         this.nvhStore.focusElement(focused.parent)
                      } else {
                         this.nvhStore.collapseElement()
                      }
                   }
-               } else if (evt.keyCode == 13){
-                  if(evt.ctrlKey || evt.metaKey){
-                     this.nvhStore.startElementEditing(focused)
-                  } else {
-                     this.nvhStore.trigger("openContextMenu")
-                  }
-               } else if (evt.keyCode == 45 && (evt.ctrlKey || evt.metaKey)){  // insert
-                  this.nvhStore.isElementDuplicationAllowed(focused) && this.nvhStore.duplicateElement(focused)
-               } else if (evt.keyCode == 46 && (evt.ctrlKey || evt.metaKey)){  //delete
-                  this.nvhStore.isElementRemovalAllowed(focused) && this.nvhStore.removeElement(focused)
+               } else if (key == 13){  // enter
+                  !ctrl && !alt && !shift && this.nvhStore.startElementEditing(focused)
+                  !ctrl && !alt &&  shift && this.nvhStore.trigger("openContextMenu")
+               } else if (key == 45){  // insert
+                   ctrl && !alt && !shift && this.nvhStore.isElementDuplicationAllowed(focused) && this.nvhStore.duplicateElement(focused)
+               } else if (key == 46) {  //delete
+                   ctrl && !alt && !shift && this.nvhStore.isElementRemovalAllowed(focused) && this.nvhStore.removeElement(focused)
                }
+            }
+         },
+
+         saveEntry(){
+            if(this.nvhStore.data.customEditor && this.dictData.editorMode != "edit"){
+               this.nvhStore.validateAllElements()
+            }
+            if(this.nvhData.isValid){
+               if(this.nvhStore.getAvailableActions().save){
+                  return this.nvhStore.saveEntry()
+               }
+            } else {
+               M.toast({html: "Cannot save an invalid entry."})
+            }
+            return false
+         },
+
+         saveEntryAndGoToNext(){
+            let saveRequest = this.saveEntry()
+            if(saveRequest){
+               saveRequest.done(response => {
+                  if(response.success){
+                     let idx = this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId)
+                     if(this.dictData.entryList[idx + 1]){
+                        this.store.changeEntryId(this.dictData.entryList[idx + 1].id)
+                     }
+                  }
+               })
             }
          },
 
