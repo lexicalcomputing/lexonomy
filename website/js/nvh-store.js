@@ -930,15 +930,17 @@ class NVHStoreClass {
 
    scrollElementIntoView(element){
       let node = this.getElementHTMLTag(element)
-      let elementTop = node.offset().top
-      let elementBottom = elementTop + node.outerHeight()
-      let viewportTop = $(window).scrollTop()
-      let windowHeight = $(window).height()
-      let viewportBottom = viewportTop + windowHeight
-      if(elementTop < viewportTop + 100){
-         $("html, body").animate({scrollTop: elementTop - 100}, 200)
-      } else if(elementBottom > viewportBottom - 100){
-         $("html, body").animate({scrollTop: elementBottom - windowHeight + 100}, 200)
+      if(node.length){  // page might change
+         let elementTop = node.offset().top
+         let elementBottom = elementTop + node.outerHeight()
+         let viewportTop = $(window).scrollTop()
+         let windowHeight = $(window).height()
+         let viewportBottom = viewportTop + windowHeight
+         if(elementTop < viewportTop + 100){
+            $("html, body").animate({scrollTop: elementTop - 100}, 200)
+         } else if(elementBottom > viewportBottom - 100){
+            $("html, body").animate({scrollTop: elementBottom - windowHeight + 100}, 200)
+         }
       }
    }
 
