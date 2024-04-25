@@ -440,7 +440,9 @@ class NVHStoreClass {
                && (this.history.actualIdx != this.history.lastSavedIdx
                         || window.store.data.entryId == "new"
                         || window.store.data.editorMode == "code"
-                        || (this.data.customEditor && this.data.legacyCustomEditor)
+                        // TODO: hot fix - changing value in custom editor input without leaving the field
+                        //       does not trigger onchange, so no new state is added to the history
+                        || (this.data.customEditor/* && this.data.legacyCustomEditor*/)
                   )
                && !revisions,
          undo: this.history.actualIdx > 0
