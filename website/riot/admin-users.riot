@@ -119,6 +119,11 @@
                         this.state.hasMore = true
                      }
                      this.state.users = payload.entries
+                     this.state.users.forEach(user => {
+                        user.dictionaries.sort((a, b) => {
+                           return a.title.localeCompare(b.title)
+                        })
+                     })
                   })
                   .always(() => {
                      this.update({isLoading: false})
