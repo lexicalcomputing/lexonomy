@@ -772,6 +772,23 @@ class StoreClass {
             .always(response => {})
    }
 
+   changeDictionaryUrl(url){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/move.json`,
+         method: 'POST',
+         data: {
+            url: url
+         }
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Dictionary URL has been changed."})
+               } else {
+                  M.toast({html: "Could not change the dictionary URL."})
+               }
+            })
+   }
+
    isDictIdTaken(dictId){
       return $.ajax(`${window.API_URL}${dictId}/config.json`)
    }
@@ -790,6 +807,19 @@ class StoreClass {
             })
             .fail(payload => {
                M.toast({html: "Could not import configuration."})
+            })
+   }
+
+   isDictionaryUrlTaken(url){
+      return $.ajax({
+         url: `${window.API_URL}exists.json`,
+         method: 'POST',
+         data: {
+            url: url
+         }
+      })
+            .fail(payload => {
+               M.toast({html: "Could not check dictionary URL."})
             })
    }
 
