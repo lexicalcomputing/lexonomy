@@ -3,7 +3,8 @@
          class="entryListContainer"
          style="width: max({dictData.config.flagging.flags.length ? '25vw' : '20vw'}, 250px);">
       <dict-entry-filter search-func={onFilterChanged}
-            basic-search-on-input={true}/>
+            basic-search-on-input={true}
+            on-key-down={onSearchKeyDown}/>
       <div if={dictData.isEntryListLoaded}
             class="positionRelative listWrapper">
          <loading-overlay if={dictData.isEntryListLoading}/>
@@ -104,6 +105,23 @@
                $(".entry-list").scrollTop(0)
             })
             this.store.loadEntryList()
+            this.state.cursorPosition = 1
+         },
+
+         onSearchKeyDown(evt){
+            if(!evt.shiftKey && !evt.ctrlKey && !evt.metaKey && !evt.altKey){
+               if(evt.keyCode == 38){
+                  evt.preventDefault()
+                  this.moveCursorUp(1)
+               }
+               if(evt.keyCode == 40){
+                  evt.preventDefault()
+                  this.moveCursorDown(1)
+               }
+               if(evt.keyCode == 13){
+                  this.openEntryAtCursorPosition()
+               }
+            }
          },
 
          onEntryListScroll(evt){
@@ -147,10 +165,7 @@
          },
 
          onDocumentKeyDown(evt){
-            if(["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
-               return
-            }
-            if(this.state.focused){
+            if(this.state.focused && ! ["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
                if(!evt.ctrlKey && !evt.altKey && !evt.metaKey){
                   if([38, 40, 33, 34, 13].includes(evt.keyCode)){
                      evt.preventDefault()
@@ -163,13 +178,7 @@
                      } else if(evt.keyCode == 34){
                          this.moveCursorDown(this.state.size) // pgDown
                      } else if(evt.keyCode == 13){
-                        if(this.state.cursorPosition){
-                           let entry = this.dictData.entryList[this.state.cursorPosition - 1]
-                           if(entry){
-                              this.store.changeEntryId(entry.id)
-                              this.updateCursor()
-                           }
-                        }
+                        this.openEntryAtCursorPosition()
                      }
                   } else if(this.dictData.config.flagging.flags.length && this.state.cursorPosition){
                      if(evt.keyCode == 46){ //delete
@@ -218,6 +227,16 @@
             if(this.state.cursorPosition){
                const node = $(".entry-list-item:nth-child(" + this.state.cursorPosition + ")")
                $(node).addClass("focused")
+            }
+         },
+
+         openEntryAtCursorPosition(){
+            if(this.state.cursorPosition){
+               let entry = this.dictData.entryList[this.state.cursorPosition - 1]
+               if(entry){
+                  this.store.changeEntryId(entry.id)
+                  this.updateCursor()
+               }
             }
          },
 

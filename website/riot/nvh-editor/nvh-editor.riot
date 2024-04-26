@@ -111,6 +111,8 @@
                !ctrl && alt && !shift && actions.code && this.nvhStore.changeEditorMode("code")
             } else if(key == 13){  // enter
                ctrl && !alt && !shift && this.saveEntryAndGoToNext()
+            } else if(evt.key == "n"){  // n
+               !ctrl &&  alt && !shift && actions.new && !this.nvhStore.editorNeedsSaving() && this.nvhStore.createNewEntry()
             } else if(key == 83){  // s
                if(ctrl && !alt && !shift){
                   evt.preventDefault()

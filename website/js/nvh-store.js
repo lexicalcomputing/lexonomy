@@ -434,6 +434,8 @@ class NVHStoreClass {
       let revisions = !!this.data.revision
       let hasEntry = !!this.data.entry
       return {
+         new: window.store.data.entryId != "new"
+               && !revisions,
          save: hasEntry
                && !this.data.isSaving
                && this.data.isValid
