@@ -62,6 +62,15 @@
             Links
          </a>
       </li>
+      <li class="divider"
+            tabindex="-1"></li>
+      <li if={ dictData.userAccess.canEdit }>
+         <a href="#"
+               class="allDictLink">
+            All dictionaries
+            <i class="material-icons">chevron_right</i>
+         </a>
+      </li>
    </ul>
    <ul if={ !authData.authorized }
          id="dropdown-menu-anon"
@@ -334,6 +343,12 @@
       }
       li:hover .accountCircle{
          background-color: #c62132!important;
+      }
+      .dropdown-content li > a.allDictLink{
+         display: flex;
+         i{
+            float: none;
+         }
       }
       nav,
       nav .nav-wrapper i,
