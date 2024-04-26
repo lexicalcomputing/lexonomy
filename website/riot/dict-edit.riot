@@ -133,8 +133,9 @@
          },
 
          onDocumentKeyDown(evt){
-            if(["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
-               return
+            if((evt.ctrlKey || evt.metaKey) && !evt.shiftKey && !evt.altKey && evt.key == "f"){
+               evt.preventDefault()
+               $("#entryListSidenav", this.root).find("input, textarea", this.root).first().focus()
             }
             if((evt.ctrlKey || evt.metaKey) && evt.altKey){
                if(evt.keyCode == 37){  // left
@@ -183,6 +184,7 @@
          focusEntryEditor(){
             if(this.state.focus != "entryEditor"){
                this.state.focus = "entryEditor"
+               $(":focus").blur()
                $("entry-list", this.root).removeClass("focused")
                $("nvh-editor").addClass("focused")
             }

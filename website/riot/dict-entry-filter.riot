@@ -20,7 +20,8 @@
                   class="input-field"
                   value={dictData.search.searchtext}
                   oninput={onSearchtextInput}
-                  onkeyup={onSearchtextKeyUp}/>
+                  onkeyup={onSearchtextKeyUp}
+                  onkeydown={onSearchtextKeyDown}/>
             <i onclick={onClearFilterClick}
                class="material-icons rightIcon grey-text clickable">close</i>
          </span>
@@ -126,7 +127,7 @@
             }
             this.dictData.search.tab = tab
             this.update()
-            $("input", this.root).first().focus()
+            $("input, textarea", this.root).first().focus()
             localStorage.setItem("entryFilterTab", tab)
          },
 
@@ -136,6 +137,10 @@
                input.val("")
                this.search()
             }
+         },
+
+         onSearchtextKeyDown(evt){
+            this.props.onKeyDown && this.props.onKeyDown(evt)
          },
 
          onSearchtextKeyUp(evt){
@@ -165,6 +170,7 @@
             } else if(evt.keyCode == 27){
                evt.target.blur()
             }
+            this.props.onKeyDown && this.props.onKeyDown(evt)
          },
 
          onAdvancedQueryInput(){
@@ -226,7 +232,7 @@
          padding: 10px;
          div{
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
          }
          .searchBox{
@@ -239,14 +245,12 @@
             }
             textarea{
                margin-bottom: 0;
-               border: 0px!important;
-               outline: none!important;
                background-color: #fff;
+               display: block;
             }
             .textareaWrapper{
                display: block;
                position: relative;
-               border: 1px solid black;
                background-color: #fff;
                &::after{
                   content: "";

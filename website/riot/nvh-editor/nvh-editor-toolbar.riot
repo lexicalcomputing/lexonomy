@@ -29,7 +29,7 @@
 
    <div class="nvh-buttons noSelect">
       <template if={dictData.userAccess.canEdit}>
-         <button if={store.data.entryId != "new" || nvhData.isSaving}
+         <button if={state.actions.new || nvhData.isSaving}
                class="btnWithText btn-flat tooltipped {!state.actions.add ? 'disabled' : ''} {!dictData.entryList || (!dictData.entryList.length && !store.getEntrySearchUrlQueryString()) ? 'redBtn' : ''}"
                onclick={onNewEntryClick}
                data-tooltip="Create a new entry">
