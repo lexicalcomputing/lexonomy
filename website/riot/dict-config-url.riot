@@ -3,67 +3,83 @@
    <h1>Change URL</h1>
    <div class="row">
       <label for="url">Current URL</label>
-      <div style="margin: 0 0 30px;">
+      <div class="mb-4">
          <span>https://www.lexonomy.eu/{ dictData.dictId }</span>
       </div>
    </div>
    <div class="row">
       <label for="url">New URL</label>
-      <div>
-         <div style="display: flex; align-items: baseline;">
-            <span id="baseUrl">https://www.lexonomy.eu/</span>
-            <span>
-               <input id="url"
-                     type="text"
-                     class="validate inlineBlock"
-                     required
-                     minlength="5"
-                     pattern="[a-zA-Z0-9\-_]*"
-                     oninput={onNewUrlInput}
-                     style="max-width: 300px;"/>
-            </span>
-         </div>
-         <div class="input-field"
-               style="margin-top: 0;">
-            <span class="helper-text">This will be your dictionary's address on the web. Minimum length: 5 characters. Allowed: letters, numbers, - and _</span>
-         </div>
+      <div class="displayFlex alignBaseline">
+         <span id="baseUrl">https://www.lexonomy.eu/</span>
+         <span>
+            <input id="url"
+                  type="text"
+                  class="validate inlineBlock"
+                  required
+                  minlength="5"
+                  pattern="[a-zA-Z0-9\-_]*"
+                  oninput={onNewUrlInput}
+                  style="max-width: 300px;"/>
+         </span>
+         <span if={state.isCheckingUrl}
+               class="ml-2">
+            <i class="material-icons spin grey-text">donut_large</i>
+         </span>
+         <small if={!state.isCheckingUrl && state.isUrlInvalid}
+               class="red-text ml-2">
+            {state.urlError}
+         </small>
+      </div>
+      <div class="input-field mt-0">
+         <span class="helper-text">This will be your dictionary's address on the web. Minimum length: 5 characters. Allowed: letters, numbers, - and _</span>
       </div>
    </div>
    <dict-config-buttons save-data={saveData}
-         btn-class="disabled"
+         btn-class={state.isUrlInvalid || state.isCheckingUrl ? "disabled" : ""}
          label="Change"></dict-config-buttons>
-   <br>
-   <div>
-      <span id="error"
-            style="display:none">This URL is already taken.</span>
-   </div>
 
    <script>
       export default {
+         state: {
+            isCheckingUrl: false,
+            isUrlInvalid: true,
+            urlError: ""
+         },
+
          saveData() {
-            if ($('#url').hasClass('valid')) {
-               this.update({isSaving: true})
-               var newurl = $('#url').val()
-               if (newurl != "" && $('#url').hasClass('valid')) {
-                  $.post(window.API_URL + this.dictData.dictId + "/move.json", {url: newurl}, (response) => {
+            let url = $("#url", this.root).val()
+            this.update({isSaving: true})
+            this.store.changeDictionaryUrl(url)
+                  .done(response => {
                      if (response.success) {
-                        route('/' + newurl)
-                        M.toast({html: `Dictionary URL has been changed.`})
-                     } else {
-                        $('#error').show()
+                        route("/" + url)
                      }
+                  })
+                  .always(response =>{
                      this.update({isSaving: false})
                   })
-               }
-            } else {
-               M.toast({html: 'Please fix invalid URL.'});
-            }
          },
 
          onNewUrlInput(evt){
-            $("#submit_button", this.root).toggleClass("disabled", !/^[a-zA-Z0-9-_]{5,}$/.test(evt.target.value))
+            if(evt.target.value.length < 5){
+               this.state.isUrlInvalid = true
+               this.state.urlError = "URL too short"
+            } else if(!/^[a-zA-Z0-9-_]{5,}$/.test(evt.target.value)){
+               this.state.isUrlInvalid = true
+               this.state.urlError = "Invalid character in URL"
+            } else {
+               this.state.isCheckingUrl = true
+               this.store.isDictionaryUrlTaken(evt.target.value)
+                     .done(response => {
+                        this.update({
+                           isUrlInvalid: response.success,
+                           isCheckingUrl: false,
+                           urlError: "URL already taken"
+                        })
+                     })
+            }
+            this.update()
          }
       }
    </script>
-
 </dict-config-url>
