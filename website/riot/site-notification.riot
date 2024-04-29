@@ -20,7 +20,7 @@
          },
 
          onSiteConfigChanged(){
-            if(this.dictData.siteconfig.notification){
+            if(this.dictData.siteconfig.notification && !window.getCookie("hideNotification")){
                this.update({
                   notification: this.dictData.siteconfig.notification,
                   show: true
@@ -29,6 +29,7 @@
          },
 
          onCloseClick(){
+            window.setCookie("hideNotification", 1, 7)
             this.update({show: false})
          }
       }

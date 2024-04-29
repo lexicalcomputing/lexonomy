@@ -234,7 +234,7 @@
          },
 
          showAutocomplete(elementName, row, col){
-            let magicNumber = (22 - (window.getFontSizeFromCookies() || 16)) * 0.5 //different interface font size correction
+            let magicNumber = (22 - (window.getCookie("fontSize") || 16)) * 0.5 //different interface font size correction
             $(".nvh-autocomplete").show()
                   .css({
                      top: `calc(${1.3125 * (row + 1)}rem + ${magicNumber}px)`,
