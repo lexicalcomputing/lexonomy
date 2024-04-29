@@ -169,19 +169,29 @@ window.stopEvtPropagation = (evt) => {
    evt.stopPropagation()
 }
 
-window.getFontSizeFromCookies = () => {
+window.getCookie = (name) => {
    let decodedCookie = decodeURIComponent(document.cookie)
    let cookies = decodedCookie.split(';')
-   let size
    for(let i = 0; i < cookies.length; i++) {
       let cookie = cookies[i].trim()
-      if (cookie.indexOf("fontSize=") == 0) {
-         return cookie.substring(9, cookie.length)
+      if (cookie.startsWith(`${name}=`)) {
+         return cookie.substring(name.length + 1, cookie.length)
       }
    }
    return ""
 }
 
+window.setCookie = (name, value, expirationDays) => {
+   let date = new Date()
+   expirationDays = expirationDays || 365 * 2 // Chrome maximum is 400 days, Firefox 2 years
+   date.setTime(date.getTime() + (expirationDays * 24 * 60 * 60 * 1000))
+   let expires = "expires="+ date.toUTCString()
+   document.cookie = name + "=" + value + ";" + expires + ";path=/"
+}
+
+window.removeCookie = (name) => {
+   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:01 GMT`
+}
 
 window.capitalize = (str) => {
    return str.charAt(0).toUpperCase() + str.slice(1);

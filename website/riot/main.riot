@@ -257,7 +257,7 @@
          },
 
          setFontSizeFromCookies(){
-            let size = window.getFontSizeFromCookies()
+            let size = window.getCookie("fontSize")
             if(size){
                $("html").css("font-size", size + "px")
             }
