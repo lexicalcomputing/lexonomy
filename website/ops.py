@@ -2043,11 +2043,15 @@ def getEntrySearchables(nvhParsed, configs): # TODO search
                     ret.append(txt)
     return ret
 
-def flagEntry(dictDB, dictID, configs, entryID, flag_value, email, historiography):
+def flagEntry(dictDB, configs, entryID, flag_value, email, historiography):
     c = dictDB.execute("select id, nvh from entries where id=?", (entryID,))
     row = c.fetchone()
     nvhParsed = nvh.parse_string(row["nvh"])
-    nvhParsed = addFlag(nvhParsed, flag_value, configs["flagging"]["flag_element"])
+    if not flag_value:
+        success = deleteNode(nvhParsed, configs["flagging"]["flag_element"])
+        error = '' if success else "Error flag removing"
+    else:
+        success, error = updateNode(nvhParsed, flag_value, configs["flagging"]["flag_element"], configs["structure"]['elements'])
     dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
                                                                                                                                                   nvhParsed.dump_string(),
                                                                                                                                                   nvh2json(nvhParsed),
@@ -2057,29 +2061,66 @@ def flagEntry(dictDB, dictID, configs, entryID, flag_value, email, historiograph
 
     dictDB.execute("insert into history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvhParsed.dump_string(), json.dumps(historiography)))
     dictDB.commit()
-    return entryID
+    return success, error
 
 
-def addFlag(nvhParsed, flag_value, flag_element):
+def updateNode(nvhParsed, node_value, node_name, structure):
     for c in nvhParsed.children:
-        addFlagRecursive(c, flag_value, flag_element)
-    return nvhParsed
+        flag_node_exists = updateNodeRecursive(c, node_value, node_name)
 
-def addFlagRecursive(nvhNode, flag_value, flag_element):
-    if nvhNode.name == flag_element:
-        nvhNode.value = flag_value
-        # ind_step = nvhNode.parent.indent[len(nvhNode.parent.parent.indent):]
-        # indent = nvhNode.parent.indent + ind_step
-        # updated_value = False
-        # for c in nvhNode.children:
-        #     if c.name == "lexonomy_flag":
-        #         c.value = flag_value
-        #         updated_value = True
-        # if not updated_value:
-        #     nvhNode.children.append(nvh(nvhNode, indent, "lexonomy_flag", flag_value, []))
+    if not flag_node_exists:
+        success, error = addNode(nvhParsed, node_value, node_name, structure)
+    else:
+        success = True
+        error = ''
+
+    return success, error
+
+def updateNodeRecursive(nvhNode, node_value, node_name):
+    flag_node_updated = False
+    if nvhNode.name == node_name:
+        nvhNode.value = node_value
+        flag_node_updated = True
     else:
         for c in nvhNode.children:
-            addFlagRecursive(c, flag_value, flag_element)
+            flag_node_updated = flag_node_updated or updateNodeRecursive(c, node_value, node_name)
+            if flag_node_updated:
+                break
+    return flag_node_updated
+
+def addNode(nvhParsed, node_value, node_name, structure):
+    parent_name = ''
+    for name, params in structure.items():
+        if node_name in params['children']:
+            parent_name = name
+
+    if not parent_name:
+        return False, 'Flagging elemennt no present in strucure'
+    else:
+        for c in nvhParsed.children:
+            addNodeRecursive(c, node_value, node_name, parent_name)
+        return True, ''
+
+def addNodeRecursive(nvhNode, node_value, node_name, node_parent_name):
+    if nvhNode.name == node_parent_name:
+        ind_step = nvhNode.indent[len(nvhNode.parent.indent):]
+        indent = nvhNode.indent + ind_step
+        nvhNode.children.append(nvh(nvhNode, indent, node_name, node_value, []))
+    else:
+        for c in nvhNode.children:
+            addNodeRecursive(c, node_value, node_name, node_parent_name)
+
+def deleteNode(nvhParsed, node_name):
+    success = False
+    for idx, c in enumerate(nvhParsed.children):
+        if c.name == node_name:
+            nvhParsed.children.pop(idx)
+            success = True
+        else:
+            success = success or deleteNode(c, node_name)
+            if success:
+                break
+    return success
 
 
 def getFlagElementInString(path, xml):
