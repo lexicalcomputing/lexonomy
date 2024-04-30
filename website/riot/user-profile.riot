@@ -148,7 +148,7 @@
          },
 
          onBeforeMount(){
-            this.state.fontSize = window.getFontSizeFromCookies() || 16
+            this.state.fontSize = window.getCookie("fontSize") || 16
          },
 
          onMounted() {
@@ -210,13 +210,13 @@
          onFontSizeChange(evt){
             this.state.fontSize = $(evt.target).val()
             $("html").css("font-size", this.state.fontSize + "px")
-            document.cookie = "fontSize=" + this.state.fontSize
+            window.setCookie("fontSize", this.state.fontSize)
             this.update()
          },
 
          onResetFontSize(){
             $("html").css("font-size", "")
-            document.cookie = "fontSize=;expires=Thu, 01 Jan 1970 00:00:01 GMT"
+            window.removeCookie("fontSize")
             this.state.fontSize = 16
             this.update()
             $("select", this.root).formSelect()
