@@ -34,7 +34,7 @@
             No entry selected.
          </div>
          <div class="nvh-no-entry-desc">
-            Select an entry from the side menu or create a <a href="javascript:void(0);" onclick={onCreateNewEntryClick}>new one</a>.
+            Select an entry from the side menu<template if={dictData.userAccess.canEdit}>or create a <a href="javascript:void(0);" onclick={onCreateNewEntryClick}>new one</a></template>.
          </div>
       </div>
    </template>
