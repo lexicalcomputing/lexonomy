@@ -2,7 +2,7 @@ class NVHStoreClass {
    constructor(){
       this.lastId = 0
       this.const = {
-         markDownNewLine: "<BR>"  //TODO
+         markDownNewLine: "\\\\n"
       }
       this.data = {
          entry: null,
@@ -1098,45 +1098,47 @@ class NVHStoreClass {
       if(!md){
          return md
       }
-         //ul
-      return md.replace(/^\s*\n\*/gm, '<ul>\n*')
-         .replace(/^(\*.+)\s*\n([^\*])/gm, '$1\n</ul>\n\n$2')
-         .replace(/^\*(.+)/gm, '<li>$1</li>')
-         //ol
-         .replace(/^\s*\n\d\./gm, '<ol>\n1.')
-         .replace(/^(\d\..+)\s*\n([^\d\.])/gm, '$1\n</ol>\n\n$2')
-         .replace(/^\d\.(.+)/gm, '<li>$1</li>')
-         //blockquote
-         .replace(/^\>(.+)/gm, '<blockquote>$1</blockquote>')
-         //h
-         .replace(/[\#]{6}(.+)/g, '<h6>$1</h6>')
-         .replace(/[\#]{5}(.+)/g, '<h5>$1</h5>')
-         .replace(/[\#]{4}(.+)/g, '<h4>$1</h4>')
-         .replace(/[\#]{3}(.+)/g, '<h3>$1</h3>')
-         .replace(/[\#]{2}(.+)/g, '<h2>$1</h2>')
-         .replace(/[\#]{1}(.+)/g, '<h1>$1</h1>')
-         //alt h
-         .replace(/^(.+)\n\=+/gm, '<h1>$1</h1>')
-         .replace(/^(.+)\n\-+/gm, '<h2>$1</h2>')
-         //images
-         .replace(/\!\[([^\]]+)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" />')
+      return md
          //links
-         .replace(/[\[]{1}([^\]]+)[\]]{1}[\(]{1}([^\)\"]+)(\"(.+)\")?[\)]{1}/g, '<a href="$2" title="$4">$1</a>')
+         .replace(/[\[]{1}([^\]]+)[\]]{1}[\(]{1}([^\)\"]+)[\)]{1}/g, '<a href="$2" target="_blank">$1</a>')
          //font styles
-         .replace(/[\*]{2}([^\*]+)[\*]{2}/g, '<b>$1</b>')
-         .replace(/[\_]{1}([^\_]+)[\_]{1}/g, '<i>$1</i>')
-         .replace(/[\~]{2}([^\~]+)[\~]{2}/g, '<del>$1</del>')
+          .replace(/[\*]{2}([^\*]+)[\*]{2}/g, '<b>$1</b>')
+          .replace(/[\_]{1}([^\_]+)[\_]{1}/g, '<i>$1</i>')
+          .replace(/\\n/g, '<br>')
+         //  .replace(/[\~]{2}([^\~]+)[\~]{2}/g, '<del>$1</del>')
+         //blockquote
+         // .replace(/^\>(.+)/gm, '<blockquote>$1</blockquote>')
+         //h
+         // .replace(/[\#]{6}(.+)/g, '<h6>$1</h6>')
+         // .replace(/[\#]{5}(.+)/g, '<h5>$1</h5>')
+         // .replace(/[\#]{4}(.+)/g, '<h4>$1</h4>')
+         // .replace(/[\#]{3}(.+)/g, '<h3>$1</h3>')
+         // .replace(/[\#]{2}(.+)/g, '<h2>$1</h2>')
+         // .replace(/[\#]{1}(.+)/g, '<h1>$1</h1>')
+         //alt h
+         // .replace(/^(.+)\n\=+/gm, '<h1>$1</h1>')
+         // .replace(/^(.+)\n\-+/gm, '<h2>$1</h2>')
+         //images
+         // .replace(/\!\[([^\]]+)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" />')
+         // ul
+         // .replace(/^\s*\n\*/gm, '<ul>\n*')
+         // .replace(/^(\*.+)\s*\n([^\*])/gm, '$1\n</ul>\n\n$2')
+         // .replace(/^\*(.+)/gm, '<li>$1</li>')
+         //ol
+         // .replace(/^\s*\n\d\./gm, '<ol>\n1.')
+         // .replace(/^(\d\..+)\s*\n([^\d\.])/gm, '$1\n</ol>\n\n$2')
+         // .replace(/^\d\.(.+)/gm, '<li>$1</li>')
          //pre
-         .replace(/^\s*\n\`\`\`(([^\s]+))?/gm, '<pre class="$2">')
-         .replace(/^\`\`\`\s*\n/gm, '</pre>\n\n')
+         // .replace(/^\s*\n\`\`\`(([^\s]+))?/gm, '<pre class="$2">')
+         // .replace(/^\`\`\`\s*\n/gm, '</pre>\n\n')
          //code
-         .replace(/[\`]{1}([^\`]+)[\`]{1}/g, '<code>$1</code>')
+         // .replace(/[\`]{1}([^\`]+)[\`]{1}/g, '<code>$1</code>')
          //p
-         .replace(/^\s*(\n)?(.+)/gm, function(m){
-            return  /\<(\/)?(h\d|ul|ol|li|blockquote|pre|img)/.test(m) ? m : m+'<br>';
-         })
+         // .replace(/^\s*(\n)?(.+)/gm, function(m){
+         //    return  /\<(\/)?(h\d|ul|ol|li|blockquote|pre|img)/.test(m) ? m : m+'<br>';
+         // })
          //strip p from pre
-         .replace(/(\<pre.+\>)\s*\n\<p\>(.+)\<\/p\>/gm, '$1$2')
+         // .replace(/(\<pre.+\>)\s*\n\<p\>(.+)\<\/p\>/gm, '$1$2')
          //remove trailing <br>
          .replace(/<br>*$/,"")
    }
