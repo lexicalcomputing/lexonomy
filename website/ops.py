@@ -2049,7 +2049,7 @@ def flagEntry(dictDB, configs, entryID, flag_value, email, historiography):
     nvhParsed = nvh.parse_string(row["nvh"])
     if not flag_value:
         success = deleteNode(nvhParsed, configs["flagging"]["flag_element"])
-        error = '' if success else "Error flag removing"
+        error = '' if success else "WARNING: flagging element \"%s\" not present in entry %s." % (configs["flagging"]["flag_element"], entryID)
     else:
         success, error = updateNode(nvhParsed, flag_value, configs["flagging"]["flag_element"], configs["structure"]['elements'])
     dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
@@ -2091,7 +2091,7 @@ def updateNodeRecursive(nvhNode, node_value, node_name):
 def addNode(nvhParsed, node_value, node_name, structure):
     parent_name = ''
     for name, params in structure.items():
-        if node_name in params['children']:
+        if node_name in params.get('children',[]):
             parent_name = name
 
     if not parent_name:
