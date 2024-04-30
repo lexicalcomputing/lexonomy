@@ -825,11 +825,11 @@
   };
 
   // export content as markdown
-  var regs = {
+  /*var regs = {
     a: [/<a\b[^>]*href=["']([^"]+|[^']+)\b[^>]*>(.*?)<\/a>/ig, '[$2]($1)'],
     img: [/<img\b[^>]*src=["']([^\"+|[^']+)[^>]*>/ig, '![]($1)'],
     b: [/<b\b[^>]*>(.*?)<\/b>/ig, '**$1**'],
-    i: [/<i\b[^>]*>(.*?)<\/i>/ig, '_$1_'],
+    i: [/<i\b[^>]*>(.*?)<\/i>/ig, '_$1_']/*,
     h: [/<h([1-6])\b[^>]*>(.*?)<\/h\1>/ig, function(a, b, c) {
       return '\n' + ('######'.slice(0, b)) + ' ' + c + '\n';
     }],
@@ -839,16 +839,18 @@
     code: [/<code\b[^>]*>(.*?)<\/code>/ig, '\n`\n$1\n`\n'],
     p: [/<p\b[^>]*>(.*?)<\/p>/ig, '\n$1\n'],
     hr: [/<hr\b[^>]*>/ig, '\n---\n']
-  };
+  };*/
 
   Pen.prototype.toMd = function() {
     var html = this.getContent()
           .replace(/\n+/g, '') // remove line break
-          .replace(/<([uo])l\b[^>]*>(.*?)<\/\1l>/ig, '$2'); // remove ul/ol
-
-    for(var p in regs) {
-      if (regs.hasOwnProperty(p))
-        html = html.replace.apply(html, regs[p]);
+          .replace(/<([uo])l\b[^>]*>(.*?)<\/\1l>/ig, '$2') // remove ul/ol
+          .replace(/<b\b[^>]*>(.*?)<\/b>/ig, '**$1**')
+          .replace(/<i\b[^>]*>(.*?)<\/i>/ig, '_$1_')
+          .replace(/<br>/ig, '\\n')
+    let res = /<a\b[^>]*href=["'](?<link>[^"]+|[^']+)\b[^>]*(\s)*(target="_blank")?>(?<label>.*?)<\/a>/.exec(html)
+    if(res){
+      html = html.replaceAll(res[0], `[${res.groups.label}](${res.groups.link})`)
     }
     return html.replace(/\*{5}/g, '**');
   };
