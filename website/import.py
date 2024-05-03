@@ -12,6 +12,7 @@ import fileinput
 import xml.sax
 import xml.dom.minidom
 from nvh import nvh
+current_dir = os.path.dirname(os.path.realpath(__file__))
 
 def log_info(msg):
     sys.stderr.write(f'INFO: {msg}\n')
@@ -173,10 +174,14 @@ def main():
                         help='Name of the mani node of the entry (headword, entry, ...)')
     parser.add_argument('-p', '--purge', action='store_true',
                         required=False, default=False,
-                        help='backup and purge dictionary history')
+                        help='Backup and purge dictionary history')
     parser.add_argument('-pp', '--purge_all', action='store_true',
                         required=False, default=False,
-                        help='purge dictionary history without backup')
+                        help='Purge dictionary history without backup')
+    parser.add_argument('-d', '--deduplicate', action='store_true',
+                        required=False, default=False,
+                        help='Deduplicate nodes with same name and value on the same level')
+
     args = parser.parse_args()
 
     sys.stderr.write(f'PID: {str(os.getpid())}\n')
@@ -195,13 +200,14 @@ def main():
         log_err(f'NOT a supported format: {args.filename}')
 
     ## Cleaning duplicate (name, value) nodes
-    #log_info('Cleaning NVH')
-    #import_nvh.clean_duplicate_nodes(out=sys.stderr)
+    if args.deduplicate:
+        log_info('Cleaning NVH')
+        import_nvh.clean_duplicate_nodes(out=sys.stderr)
 
     ## Renaming node names that appear under different parents
-    #log_info('Renaming duplicate NVH nodes')
+    log_info('Renaming duplicate NVH nodes')
     rename_dict = {}
-    #import_nvh.rename_nodes(rename_dict, out=sys.stderr)
+    import_nvh.rename_nodes(rename_dict, out=sys.stderr)
 
     with open(args.filename + ".cleaned", 'w') as clean_f:
         import_nvh.dump(clean_f)
@@ -238,6 +244,16 @@ def main():
     structure = {"root": args.main_node_name, "elements": elements}
     db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure))) # TODO should be INSERT or IGNORE if exists
     db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
+
+    formatting = {} # TODO problem when file
+    with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
+        styles = json.loads(f.read())
+        for key in elements.keys():
+            if styles.get(key):
+                formatting[key] = styles[key]
+            else:
+                formatting[key] = styles['__other__']
+    db.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
 
     configs = ops.readDictConfigs(db)
     dict_stats = ops.getDictStats(db)

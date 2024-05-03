@@ -58,7 +58,7 @@ class AdminTests(unittest.TestCase):
         self.assertTrue(r.json()['success'])
         self.assertEqual(r.json()['configs']['ident']['title'], 'title')
         self.assertEqual(r.json()['configs']['ident']['blurb'], 'Yet another Lexonomy dictionary.')
-        self.assertEqual(r.json()['configs']['ident'].get('lang'), None)
+        self.assertEqual(r.json()['configs']['ident'].get('lang'), '')
         self.assertEqual(r.json()['configs']['ident'].get('handle'), None)
         self.assertEqual(r.json()['configs']['dict_settings']['limits']['entries'], 5000)
 
@@ -136,7 +136,7 @@ class AdminTests(unittest.TestCase):
         self.assertTrue(r.json()['success'])
         self.assertEqual(r.json()['configs']['ident']['title'], 'title')
         self.assertEqual(r.json()['configs']['ident']['blurb'], 'Yet another Lexonomy dictionary.')
-        self.assertEqual(r.json()['configs']['ident'].get('lang'), None)
+        self.assertEqual(r.json()['configs']['ident'].get('lang'), '')
         self.assertEqual(r.json()['configs']['ident'].get('handle'), None)
         self.assertEqual(r.json()['configs']['dict_settings']['limits']['entries'], 5000)
 

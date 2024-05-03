@@ -502,18 +502,23 @@ def makedict(user):
 @post(siteconfig["rootPath"] + "make.json")
 @auth
 def makedictjson(user):
-    if request.query.filename and request.query.hwNode:
+    if request.files.get('filename'):
+        upload = request.files.get("filename")
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        if supported_formats.match(request.query.filename):
-            res, msg, error = ops.makeDict(request.forms.url, None, None, request.forms.title, request.forms.language, "", user["email"],
-                                           None, request.query.filename, request.query.hwNode)
+        if supported_formats.match(upload.filename):
+            res = ops.makeDict(request.forms.url, None, None, request.forms.title,
+                               request.forms.language, "", user["email"],
+                               addExamples=False, deduplicate=request.forms.deduplicate=='true',
+                               bottle_file_object=upload, hwNode=request.forms.hwNode)
         else:
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
     else:
-        res, msg, error = ops.makeDict(request.forms.url, request.forms.nvhSchema, json.loads(request.forms.schemaKeys), request.forms.title, request.forms.language,
-                                       "", user["email"], request.forms.addExamples == "true")
-    return {"success": res, "url": request.forms.url, "error": error, 'msg': msg}
+        res = ops.makeDict(request.forms.url, request.forms.nvhSchema, json.loads(request.forms.schemaKeys),
+                           request.forms.title, request.forms.language, "", user["email"],
+                           addExamples=request.forms.addExamples=="true",
+                           deduplicate=False, bottle_file_object=None, hwNode=None)
+    return res
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
 @authDict(["canView"])
@@ -799,48 +804,14 @@ def download(dictID, user, dictDB, configs):
     else:
         return {'error': 'Unsupported export type.'}
 
-@post(siteconfig["rootPath"]+"<dictID>/upload.html") # OK
-@authDict(["canUpload"])
-def uploadhtml(dictID, user, dictDB, configs):
-    import tempfile
-    if not request.files.get("myfile"):
-        return {"success": False}
-    else:
-        upload = request.files.get("myfile")
-        uploadStart = str(datetime.datetime.utcnow())
-
-        save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
-        while os.path.exists(save_path):
-            save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
-
-        os.makedirs(save_path)
-
-        file_path =os.path.join(save_path, upload.filename)
-        upload.save(file_path)
-
-        if request.forms.purge == "on":
-            ops.purge(dictDB, user["email"], { "uploadStart": uploadStart, "filename": file_path })
-        return {"file": file_path,  "uploadStart": uploadStart, "success": True}
-
-@get(siteconfig["rootPath"]+"<dictID>/import.json") # OK
+@post(siteconfig["rootPath"]+"<dictID>/import.json") # OK
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
-    truncate = 0
-    if request.query.truncate:
-        truncate = int(request.query.truncate)
-    if request.query.showErrors:
-        response.content_type = "text/plain; charset=utf-8"
-        response.set_header("Content-Disposition", "attachment; filename=error.log")
-        return ops.showImportErrors(request.query.filename, truncate)
-    else:
-        supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        # XML file transforamtion
-        if not supported_formats.match(request.query.filename):
-            return{"finished": False, "progressMessage": "",
-                   "error": 'Unsupported format for import file. An .xml or .nvh file are required.'}
-        else:
-            progress, finished, err, msg = ops.importfile(dictID, request.query.filename, user["email"], configs['structure']['root'])
-            return{"finished": finished, "progress": progress, "error": err, 'msg': msg}
+    progress, finished, err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
+                                                                    deduplicate=request.forms.deduplicate,purge=request.forms.purge,
+                                                                    bottle_upload_obj=request.files.get("filename"),
+                                                                    file_path=request.forms.upload_file_path)
+    return{"finished": finished, "progress": progress, "error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
 @post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
 @authDict(["canEdit"])
@@ -1028,67 +999,67 @@ def pushtest():
 def pushapioptions():
     return {}
 
-@post(siteconfig["rootPath"] + "push.api")
-def pushapi():
-    data = json.loads(request.body.getvalue().decode('utf-8'))
-    user = ops.verifyUserApiKey(data["email"], data["apikey"])
-    if not user["valid"]:
-        return {"success": False}
-    else:
-        if data["command"] == "makeDict":
-            dictID = ops.suggestDictId()
-            dictTitle = re.sub(r"^\s+", "", data["dictTitle"])
-            if dictTitle == "":
-                dictTitle = dictID
-            dictBlurb = data["dictBlurb"]
-            addExamples = data["addExamples"]
-            poses = []
-            labels = []
-            if "poses" in data:
-                poses = data["poses"]
-            if "labels" in data:
-                labels = data["labels"]
-            if data.get("format") == "teilex0":
-                dictFormat = "teilex0"
-            else:
-                dictFormat = "push"
-            res, error = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"], addExamples)
-            if not res:
-                return {"success": False, "error": error}
-            else:
-                if dictFormat == "push":
-                    dictDB = ops.getDB(dictID)
-                    configs = ops.readDictConfigs(dictDB)
-                    if configs["structure"]["elements"].get("partOfSpeech"):
-                        for pos in poses:
-                            configs["structure"]["elements"]["partOfSpeech"]["values"].append({"value": pos, "caption": ""})
-                    if configs["structure"]["elements"].get("collocatePartOfSpeech"):
-                        for pos in poses:
-                            configs["structure"]["elements"]["collocatePartOfSpeech"]["values"].append({"value": pos, "caption":""})
-                    if configs["structure"]["elements"].get("label"):
-                        for label in labels:
-                            configs["structure"]["elements"]["label"]["values"].append({"value":label, "caption": ""})
-                    ops.updateDictConfig(dictDB, dictID, "structure", configs["structure"])
-                return {"success": True, "dictID": dictID}
-        elif data["command"] == "listDicts":
-            dicts = ops.getDictsByUser(user["email"])
-            return {"entries": dicts, "success": True}
-        elif data["command"] == "createEntries":
-            dictID = data["dictID"]
-            entryXmls = data["entryXmls"]
-            dictDB = ops.getDB(dictID)
-            configs = ops.readDictConfigs(dictDB)
-            dictAccess = configs["users"].get(user["email"])
-            if dictAccess and (dictAccess["canEdit"] or dictAccess["canUpload"]):
-                for entry in entryXmls:
-                    if data.get("format") == "teilex0":
-                        entry = ops.preprocessLex0(entry)
-                    ops.createEntry(dictDB, configs, None, entry, user["email"], {"apikey": data["apikey"]})
-                return {"success": True}
-            else:
-                return {"success": False}
-        else:
-            return {"success": False}
+# @post(siteconfig["rootPath"] + "push.api") TODO FIX
+# def pushapi():
+#     data = json.loads(request.body.getvalue().decode('utf-8'))
+#     user = ops.verifyUserApiKey(data["email"], data["apikey"])
+#     if not user["valid"]:
+#         return {"success": False}
+#     else:
+#         if data["command"] == "makeDict":
+#             dictID = ops.suggestDictId()
+#             dictTitle = re.sub(r"^\s+", "", data["dictTitle"])
+#             if dictTitle == "":
+#                 dictTitle = dictID
+#             dictBlurb = data["dictBlurb"]
+#             addExamples = data["addExamples"]
+#             poses = []
+#             labels = []
+#             if "poses" in data:
+#                 poses = data["poses"]
+#             if "labels" in data:
+#                 labels = data["labels"]
+#             if data.get("format") == "teilex0":
+#                 dictFormat = "teilex0"
+#             else:
+#                 dictFormat = "push"
+#             res, error = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"], addExamples)
+#             if not res:
+#                 return {"success": False, "error": error}
+#             else:
+#                 if dictFormat == "push":
+#                     dictDB = ops.getDB(dictID)
+#                     configs = ops.readDictConfigs(dictDB)
+#                     if configs["structure"]["elements"].get("partOfSpeech"):
+#                         for pos in poses:
+#                             configs["structure"]["elements"]["partOfSpeech"]["values"].append({"value": pos, "caption": ""})
+#                     if configs["structure"]["elements"].get("collocatePartOfSpeech"):
+#                         for pos in poses:
+#                             configs["structure"]["elements"]["collocatePartOfSpeech"]["values"].append({"value": pos, "caption":""})
+#                     if configs["structure"]["elements"].get("label"):
+#                         for label in labels:
+#                             configs["structure"]["elements"]["label"]["values"].append({"value":label, "caption": ""})
+#                     ops.updateDictConfig(dictDB, dictID, "structure", configs["structure"])
+#                 return {"success": True, "dictID": dictID}
+#         elif data["command"] == "listDicts":
+#             dicts = ops.getDictsByUser(user["email"])
+#             return {"entries": dicts, "success": True}
+#         elif data["command"] == "createEntries":
+#             dictID = data["dictID"]
+#             entryXmls = data["entryXmls"]
+#             dictDB = ops.getDB(dictID)
+#             configs = ops.readDictConfigs(dictDB)
+#             dictAccess = configs["users"].get(user["email"])
+#             if dictAccess and (dictAccess["canEdit"] or dictAccess["canUpload"]):
+#                 for entry in entryXmls:
+#                     if data.get("format") == "teilex0":
+#                         entry = ops.preprocessLex0(entry)
+#                     ops.createEntry(dictDB, configs, None, entry, user["email"], {"apikey": data["apikey"]})
+#                 return {"success": True}
+#             else:
+#                 return {"success": False}
+#         else:
+#             return {"success": False}
 
 @get(siteconfig["rootPath"]+"publicdicts.json")
 def publicdicts():
