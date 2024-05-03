@@ -22,6 +22,8 @@ import requests
 from nvh import nvh
 from bottle import request
 import sys
+import tempfile
+
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="utf-8"))
@@ -599,32 +601,20 @@ def checkDictExists(dictID):
         return True
     return False
 
-def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, addExamples, import_filename=None, hwNode=None):
-    if not import_filename:
-        if nvh_schema_string:
-            final_schema = nvh_schema_string
-        elif schema_keys:
-            final_schema = mergeSchemaItems(schema_keys)
-        else:
-            raise Exception('No schema provided')
-        schema_elements = []
-        schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
-        schema_elements = list(filter(None, schema_elements))  #filter out empty strings
-
+def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, addExamples=False, deduplicate=False, bottle_file_object=None, hwNode=None):
     if title == "":
         title = "?"
     if blurb == "":
         blurb = "Yet another Lexonomy dictionary."
     if dictID in prohibitedDictIDs:
-        return False, "", "The entered name of the dictionary is prohibited"
+        return {'url': dictID, 'success': False, 'error': "The entered name of the dictionary is prohibited"}
     if dictExists(dictID):
-        return False, "", "The dict with the entered name already exists"
+        return {'url': dictID, 'success': False, 'error': "The dict with the entered name already exists"}
     #init db schema
     with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
         sql_schema = f.read()
 
-    conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"],
-                                                  "dicts/" + dictID + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/")), uri=True)
+    conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], "dicts/" + dictID) + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/"), uri=True)
     conn.executescript(sql_schema)
     conn.commit()
 
@@ -635,36 +625,48 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
     ident = {"title": title, "blurb": blurb, "lang": lang}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
 
-    elements = {}
-    if not import_filename:
+    if not bottle_file_object:
+        if nvh_schema_string:
+            final_schema = nvh_schema_string
+        elif schema_keys:
+            final_schema = mergeSchemaItems(schema_keys)
+        else:
+            raise Exception('No schema provided')
+        schema_elements = []
+        schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
+        schema_elements = list(filter(None, schema_elements))  #filter out empty strings
+
+        # DICTIONARY STRUCUTRE
+        elements = {}
         nvh_structure = nvh.parse_string(final_schema).children[0]
         get_schema_elements(nvh_structure, elements)
 
         structure = {"root": nvh_structure.name, "elements": elements}
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
-    formatting = {}
-    with open(currdir + "/dictTemplates/styles.json", 'r') as f:
-        styles = json.loads(f.read())
-        for key in elements.keys():
-            if styles.get(key):
-                formatting[key] = styles[key]
-            else:
-                formatting[key] = styles['__other__']
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
+        # DICTIONARY FORMATTING
+        formatting = {}
+        with open(currdir + "/dictTemplates/styles.json", 'r') as f:
+            styles = json.loads(f.read())
+            for key in elements.keys():
+                if styles.get(key):
+                    formatting[key] = styles[key]
+                else:
+                    formatting[key] = styles['__other__']
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
 
-    # add examples
-    if addExamples and not import_filename:
-        examples = []
-        with open("dictTemplates/examples.json", 'r') as f:
-            for example in json.loads(f.read()):
-                rows = example["nvh"].splitlines()
-                rows = filter(lambda row: row.split(":")[0].strip() in schema_elements, rows)  #only example elements included in schema
-                example["nvh"] = "\n".join(rows)
-                examples.append(example)
-        for idx, example in enumerate(examples):
-            dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
-            dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
+        # ADD EXAMPLES
+        if addExamples:
+            examples = []
+            with open("dictTemplates/examples.json", 'r') as f:
+                for example in json.loads(f.read()):
+                    rows = example["nvh"].splitlines()
+                    rows = filter(lambda row: row.split(":")[0].strip() in schema_elements, rows)  #only example elements included in schema
+                    example["nvh"] = "\n".join(rows)
+                    examples.append(example)
+            for idx, example in enumerate(examples):
+                dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
+                dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
     dictDB.commit()
 
@@ -672,11 +674,12 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
     attachDict(dictDB, dictID, users, dict_config)
 
-    if import_filename:
-        progress, _, err, _ = importfile(dictID, import_filename, email, hwNode)
-        return True, progress, err
+    if bottle_file_object:
+        progress, import_finished, err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, bottle_upload_obj=bottle_file_object)
+        return {'url': dictID, 'success':True, 'upload_progress': progress, 'upload_finished': import_finished, 'upload_error': err, 
+                'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
-    return True, "", ""
+    return {'url': dictID, 'success':True, 'error': ''}
 
 def attachDict(dictDB, dictID, users, dict_config):
     configs = readDictConfigs(dictDB)
@@ -1503,30 +1506,30 @@ def purge(dictDB, email, historiography):
     dictDB.commit()
     return True
 
-def showImportErrors(filename, truncate):
-    with open(filename+".err", "r") as content_file:
-        content = content_file.read()
-    if (truncate):
-        content = content[0:truncate].replace("<", "&lt;")
-        return {"errorData": content, "truncated": truncate}
-    else:
-        return content
+# def showImportErrors(filename, truncate):
+#     with open(filename+".err", "r") as content_file:
+#         content = content_file.read()
+#     if (truncate):
+#         content = content[0:truncate].replace("<", "&lt;")
+#         return {"errorData": content, "truncated": truncate}
+#     else:
+#         return content
 
 
 done_re = re.compile(r'^INFO:\s*(DONE|DONE_IMPORT):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
 waring_re = re.compile(r'^WARNING:\s*(.+)$')
 err_re = re.compile(r'^ERROR:\s*(.*?)$')
-def importfile(dictID, filename, email, hwNode):
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upload_obj=None, file_path=''):
     """
     return progress, finished status, error messages
     """
     import subprocess
 
-    if os.path.isfile(filename + ".log"):
+    if file_path and os.path.isfile(file_path + ".log"):
         errors = []
         progress = {}
         finished = False
-        with open(filename + ".log", "r") as log_f:
+        with open(file_path + ".log", "r") as log_f:
             for line in log_f:
                 prg = done_re.match(line)
                 warn = waring_re.match(line)
@@ -1541,15 +1544,35 @@ def importfile(dictID, filename, email, hwNode):
         if progress.get('per', 0) == 100:
             finished = True
 
-        return progress, finished, errors, 'ERRORS and WARNING' if errors else ''
+        return progress, finished, errors, 'ERRORS and WARNING' if errors else '', file_path
 
     else:
-        logfile_f = open(filename + ".log", "w")
+        supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
+        # XML file transforamtion
+        if not supported_formats.match(bottle_upload_obj.filename):
+            return {'per': 0, 'done': 0, 'total': 0}, False, ['Unsupported format for import file. An .xml or .nvh file are required.'], 'Unsupported format for import file. An .xml or .nvh file are required.'
+
+        save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
+        while os.path.exists(save_path):
+            save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
+
+        os.makedirs(save_path)
+
+        file_path =os.path.join(save_path, bottle_upload_obj.filename)
+        bottle_upload_obj.save(file_path)
+
+        logfile_f = open(file_path + ".log", "w")
         dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
         # TODO send purge
-        p = subprocess.Popen([currdir + "/import.py", dbpath, filename, email, hwNode],
+        params = []
+        if deduplicate:
+            params += '-d'
+        elif purge:
+            params += '-p'
+
+        p = subprocess.Popen([currdir + "/import.py", dbpath, file_path, email, hwNode] + params,
                              stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
-        return {'per': 0, 'done': 0, 'total': 0}, False, [], "Import started. You may close the window, import will run in the background. Please wait..."
+        return {'per': 0, 'done': 0, 'total': 0}, False, [], "Import started. You may close the window, import will run in the background. Please wait...", file_path
 
 def checkImportStatus(pidfile, errfile):
     content = ''

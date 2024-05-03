@@ -39,7 +39,6 @@ class TestQueries(unittest.TestCase):
         self.assertEqual(r.json()['success'], True)
         self.assertEqual(r.json()['url'], data['url'])
         self.assertEqual(r.json()['error'], '')
-        self.assertEqual(r.json()['msg'], '')
 
     # DICT EXISTS
     def test_3(self):

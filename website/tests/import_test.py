@@ -1,58 +1,124 @@
 #!/usr/bin/env python3
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
-import re
 import os
 import sys
+import config
+import requests
 import unittest
-import time
-import fileinput
-
 sys.path.append('../')
-import ops
-
 current_dir = os.path.dirname(os.path.realpath(__file__))
-supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
 
 
-# Unit tests
-class TestQueries(unittest.TestCase):
-    def setUp(self):
-        self.error_re = re.compile('(^|.*\n)ERROR.*', re.IGNORECASE)
+class TestImportNVH(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        cls.website = config.website
+
+        # LOGIN and get session key
+        data = {'email': config.admin_mail,
+                'password': config.admin_password}
+
+        r1 = requests.post(url=cls.website + "/login.json",
+                           data=data, headers=cls.headers)
+        cls.cookies = {"email":r1.json()['email'], 'sessionkey':r1.json()['sessionkey']}
+        cls.dicID = 'test_import_nvh'
+        cls.upload_file_path = ''
+
+    @classmethod
+    def update_upload_file_path(cls, value):
+        cls.upload_file_path = value
+
+    # DICT CREATE
+    def test_1(self):
+        data = {'url': self.dicID,
+                'hwNode': 'entry',
+                'title': self.dicID,
+                'addExamples': 'false',
+                'deduplicate': 'false',
+                'language': 'en'
+                }
+        f = open(os.path.join(current_dir, 'test_import.nvh'), 'rb')
+        files = {'filename': f}
+
+        r = requests.post(url=self.website + "/make.json", data=data, files=files, cookies=self.cookies)
+        f.close()
+        self.update_upload_file_path(r.json()['upload_file_path'])
+        self.assertEqual(r.json()['success'], True)
+
+    def test_2(self):
+        data = {'upload_file_path': self.upload_file_path}
+        r = requests.post(url=self.website + f"/{self.dicID}/import.json", data=data, cookies=self.cookies)
+        self.assertEqual(r.json()['finished'], True)
+        self.assertEqual(r.json()['error'], [])
+        self.assertEqual(r.json()['progress']['per'], 100)
+
+    def test_3(self):
+        data = {'howmany': 100}
+        r = requests.post(url=self.website + f"/{self.dicID}/entry/entrylist.json", data=data, cookies=self.cookies)
+        self.assertEqual(r.json()['success'], True)
+        self.assertEqual(r.json()['total'], 5)
+
+    def test_4(self):
+        r = requests.post(url=self.website + '/' + self.dicID + "/destroy.json",
+                          headers=self.headers, cookies=self.cookies)
+        self.assertEqual(r.json()['success'], True)
+
+class TestImportXML(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        cls.website = config.website
+
+        # LOGIN and get session key
+        data = {'email': config.admin_mail,
+                'password': config.admin_password}
+
+        r1 = requests.post(url=cls.website + "/login.json",
+                           data=data, headers=cls.headers)
+        cls.cookies = {"email":r1.json()['email'], 'sessionkey':r1.json()['sessionkey']}
+        cls.dicID = 'test_import_xml'
+        cls.upload_file_path = ''
     
-    def test_xml_import(self):
-        import_file = current_dir + '/test_import.xml'
-        res, msg, error = ops.makeDict('test_import_xml', None, 'test_import_xml', "", 'test_import_xml@lexonomy.com', 
-                                        None, import_file, 'HWD')
-        self.assertEqual(error, [])
-        self.assertEqual(res, True)
-        time.sleep(5)
-        with open(import_file + ".log", 'r') as f:
-            err_content = f.read()
-        self.assertFalse(self.error_re.match(err_content))
+    @classmethod
+    def update_upload_file_path(cls, value):
+        cls.upload_file_path = value
 
+    # DICT CREATE
+    def test_1(self):
+        data = {'url': self.dicID,
+                'hwNode': 'entry',
+                'title': self.dicID,
+                'addExamples': 'false',
+                'deduplicate': 'false',
+                'language': 'en'
+                }
+        f = open(os.path.join(current_dir, 'test_import.xml'), 'rb')
+        files = {'filename': f}
 
-    def test_nvh_import(self): 
-        import_file = current_dir + '/test_import.nvh'
-        res, msg, error = ops.makeDict('test_import_nvh', None, 'test_import_nvh', "", 'test_import_nvh@lexonomy.com', 
-                                        None, import_file, 'hw')
-        self.assertEqual(error, [])
-        self.assertEqual(res, True)
-        time.sleep(5)
-        with open(import_file + ".log", 'r') as f:
-            err_content = f.read()
-        self.assertFalse(self.error_re.match(err_content))
+        r = requests.post(url=self.website + "/make.json", data=data, files=files, cookies=self.cookies)
+        f.close()
+        self.update_upload_file_path(r.json()['upload_file_path'])
+        self.assertEqual(r.json()['success'], True)
 
-    def test_dante_import(self):
-        import_file = current_dir + '/dante.xml'
-        res, msg, error = ops.makeDict('test_import_dante', None, 'test_import_dante', "", 'test_import_dante@lexonomy.com', 
-                                        None, import_file, 'HWD')
-        self.assertEqual(error, [])
-        self.assertEqual(res, True)
-        time.sleep(1200)
-        with open(import_file + ".log", 'r') as f:
-            err_content = f.read()
-        self.assertFalse(self.error_re.match(err_content))
+    def test_2(self):
+        data = {'upload_file_path': self.upload_file_path}
+        r = requests.post(url=self.website + f"/{self.dicID}/import.json", data=data, cookies=self.cookies)
+        self.assertEqual(r.json()['finished'], True)
+        self.assertEqual(len(r.json()['error']), 11)
+        self.assertEqual(r.json()['progress']['per'], 100)
+
+    def test_3(self):
+        data = {'howmany': 100}
+        r = requests.post(url=self.website + f"/{self.dicID}/entry/entrylist.json", data=data, cookies=self.cookies)
+        self.assertEqual(r.json()['success'], True)
+        self.assertEqual(r.json()['total'], 3)
+
+    def test_4(self):
+        r = requests.post(url=self.website + '/' + self.dicID + "/destroy.json", 
+                          headers=self.headers, cookies=self.cookies)
+        self.assertEqual(r.json()['success'], True)
 
 
 if __name__ == '__main__':

@@ -12,8 +12,8 @@ class TestQueries(unittest.TestCase):
         cls.website = config.website
 
         # LOGIN and get session key
-        data = {'email': config.mail,
-                'password': config.password}
+        data = {'email': config.admin_mail,
+                'password': config.admin_password}
 
         r1 = requests.post(url=cls.website + "/login.json",
                            data=data, headers=cls.headers)
