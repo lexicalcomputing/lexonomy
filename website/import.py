@@ -263,7 +263,7 @@ def main():
         dict_name = args.dbname.strip().split('/')[-1][:-7]
         log_info(f"Marek: {dict_name}")
         d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_name,))
-        limit = json.loads(d.fetchone()['configs'])['limits']['entries']
+        limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
         max_import = limit - dict_stats["entryCount"]
         if max_import < entry_count:
