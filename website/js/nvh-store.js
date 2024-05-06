@@ -210,8 +210,9 @@ class NVHStoreClass {
    restoreRevision(){
       this.data.revision = null
       this.data.storedEntry = null
-      this.history.addState()
+      //this.history.addState()
       this.closeRevisions()
+      this.saveEntry()
       this.trigger("updateEditor")
    }
 
