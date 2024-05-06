@@ -807,11 +807,18 @@ def download(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/import.json") # OK
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
-    progress, finished, err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
-                                                                    deduplicate=request.forms.deduplicate,purge=request.forms.purge,
-                                                                    bottle_upload_obj=request.files.get("filename"),
-                                                                    file_path=request.forms.upload_file_path)
-    return{"finished": finished, "progress": progress, "error": err, 'msg': msg, 'upload_file_path': upload_file_path}
+    err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
+                                                deduplicate=request.forms.deduplicate,purge=request.forms.purge,
+                                                bottle_upload_obj=request.files.get("filename"))
+    return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
+
+
+@post(siteconfig["rootPath"]+"<dictID>/getImportProgress.json") # OK
+@authDict(["canUpload"])
+def getImportProgress(dictID, user, dictDB, configs):
+    progress, finished, err, upload_file_path = ops.getImportProgress(request.forms.upload_file_path)
+    return{"finished": finished, "progress": progress, "error": err, 'upload_file_path': upload_file_path}
+
 
 @post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
 @authDict(["canEdit"])

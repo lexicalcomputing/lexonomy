@@ -675,8 +675,8 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
     attachDict(dictDB, dictID, users, dict_config)
 
     if bottle_file_object:
-        progress, import_finished, err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, bottle_upload_obj=bottle_file_object)
-        return {'url': dictID, 'success':True, 'upload_progress': progress, 'upload_finished': import_finished, 'upload_error': err, 
+        err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, bottle_upload_obj=bottle_file_object)
+        return {'url': dictID, 'success':True, 'upload_error': err, 
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
     return {'url': dictID, 'success':True, 'error': ''}
@@ -1519,13 +1519,12 @@ def purge(dictDB, email, historiography):
 done_re = re.compile(r'^INFO:\s*(DONE|DONE_IMPORT):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
 waring_re = re.compile(r'^WARNING:\s*(.+)$')
 err_re = re.compile(r'^ERROR:\s*(.*?)$')
-def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upload_obj=None, file_path=''):
+
+def getImportProgress(file_path):
     """
     return progress, finished status, error messages
     """
-    import subprocess
-
-    if file_path and os.path.isfile(file_path + ".log"):
+    if os.path.isfile(file_path + ".log"):
         errors = []
         progress = {}
         finished = False
@@ -1544,35 +1543,43 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upl
         if progress.get('per', 0) == 100:
             finished = True
 
-        return progress, finished, errors, 'ERRORS and WARNING' if errors else '', file_path
-
+        return progress, finished, errors, file_path
     else:
-        supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        # XML file transforamtion
-        if not supported_formats.match(bottle_upload_obj.filename):
-            return {'per': 0, 'done': 0, 'total': 0}, False, ['Unsupported format for import file. An .xml or .nvh file are required.'], 'Unsupported format for import file. An .xml or .nvh file are required.'
+        return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], file_path
 
+
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upload_obj=None):
+    """
+    return progress, finished status, error messages
+    """
+    import subprocess
+
+    supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
+    # XML file transforamtion
+    if not supported_formats.match(bottle_upload_obj.filename):
+        return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
+
+    save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
+    while os.path.exists(save_path):
         save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
-        while os.path.exists(save_path):
-            save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
 
-        os.makedirs(save_path)
+    os.makedirs(save_path)
 
-        file_path =os.path.join(save_path, bottle_upload_obj.filename)
-        bottle_upload_obj.save(file_path)
+    file_path =os.path.join(save_path, bottle_upload_obj.filename)
+    bottle_upload_obj.save(file_path)
 
-        logfile_f = open(file_path + ".log", "w")
-        dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
-        # TODO send purge
-        params = []
-        if deduplicate:
-            params += '-d'
-        elif purge:
-            params += '-p'
+    logfile_f = open(file_path + ".log", "w")
+    dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
 
-        p = subprocess.Popen([currdir + "/import.py", dbpath, file_path, email, hwNode] + params,
-                             stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
-        return {'per': 0, 'done': 0, 'total': 0}, False, [], "Import started. You may close the window, import will run in the background. Please wait...", file_path
+    params = []
+    if deduplicate:
+        params += '-d'
+    elif purge:
+        params += '-p'
+
+    p = subprocess.Popen([currdir + "/import.py", dbpath, file_path, email, hwNode] + params,
+                          stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    return '', "Import started. You may close the window, import will run in the background. Please wait...", file_path
 
 def checkImportStatus(pidfile, errfile):
     content = ''
