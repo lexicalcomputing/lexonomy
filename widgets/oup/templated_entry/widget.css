@@ -1,0 +1,18 @@
+.myEditor .input-field{
+   margin-top: 15px;
+   margin-bottom: 10px;
+}
+.myEditor input,
+.myEditor .select-wrapper input.select-dropdown{
+   background-color: #fff;
+}
+.myEditor .select-wrapper .caret{
+   z-index: 1;
+   pointer-events: none;
+}
+.myEditor .entryBar input{
+   max-width: 300px;
+}
+.myEditor .entryBar .select-wrapper{
+   max-width: 200px;
+}
