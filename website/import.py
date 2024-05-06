@@ -187,129 +187,132 @@ def main():
     sys.stderr.write(f'PID: {str(os.getpid())}\n')
     log_info("Import started. You may close the window, import will run in the background. Please wait...")
 
-    if args.filename.endswith('.xml'):
-        log_info('XML to NVH processing')
-        with open(args.filename + ".xml2nvh.nvh", 'w') as f:
-            xml2nvh(args.filename, f)
-        import_nvh = nvh.parse_file(fileinput.input(args.filename + ".xml2nvh.nvh"))
+    try:
+        if args.filename.endswith('.xml'):
+            log_info('XML to NVH processing')
+            with open(args.filename + ".xml2nvh.nvh", 'w') as f:
+                xml2nvh(args.filename, f)
+            import_nvh = nvh.parse_file(fileinput.input(args.filename + ".xml2nvh.nvh"))
 
-    elif args.filename.endswith('.nvh'):
-        import_nvh = nvh.parse_file(fileinput.input(args.filename))
-
-    else:
-        log_err(f'NOT a supported format: {args.filename}')
-
-    ## Cleaning duplicate (name, value) nodes
-    if args.deduplicate:
-        log_info('Cleaning NVH')
-        import_nvh.clean_duplicate_nodes(out=sys.stderr)
-
-    ## Renaming node names that appear under different parents
-    log_info('Renaming duplicate NVH nodes')
-    rename_dict = {}
-    import_nvh.rename_nodes(rename_dict, out=sys.stderr)
-
-    with open(args.filename + ".cleaned", 'w') as clean_f:
-        import_nvh.dump(clean_f)
-
-    name_mapping = {}
-    for orig_name, rename_list in rename_dict.items():
-        for _, new_name in rename_list:
-            name_mapping[new_name] = orig_name
-
-    # Generating schema form NVH
-    schema = {}
-    import_nvh.generate_schema(schema, tln=True)
-    with open(args.filename + ".schema", 'w') as schema_f:
-        nvh.print_schema(schema, outfile=schema_f)
-
-    #import_nvh.check_schema(schema, outfile=sys.stderr)
-
-    # Splitting into individual entries
-    import_entries, tl_name = import_nvh.get_entries()
-    entry_count = len(import_entries)
-
-    entry_inserted = 0
-    limit_reached = False
-
-    db = sqlite3.connect(args.dbname)
-    db.row_factory = sqlite3.Row
-    if args.purge:
-        purge(db, historiography, args)
-
-    historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(args.filename)}
-
-    elements = {}
-    ops.get_gen_schema_elements(schema, elements)
-    structure = {"root": args.main_node_name, "elements": elements}
-    db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure))) # TODO should be INSERT or IGNORE if exists
-    db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
-
-    formatting = {} # TODO problem when file
-    with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
-        styles = json.loads(f.read())
-        for key in elements.keys():
-            if styles.get(key):
-                formatting[key] = styles[key]
-            else:
-                formatting[key] = styles['__other__']
-    db.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
-
-    configs = ops.readDictConfigs(db)
-    dict_stats = ops.getDictStats(db)
-
-    main_db = ops.getMainDB()
-    dict_name = args.dbname.strip().split('/')[-1][:-7]
-    log_info(f"Marek: {dict_name}")
-    d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_name,))
-    limit = json.loads(d.fetchone()['configs'])['limits']['entries']
-
-    max_import = limit - dict_stats["entryCount"]
-    if max_import < entry_count:
-        log_info("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
-    else:
-        log_info("Detected %d entries in '%s' element" % (entry_count, tl_name))
-
-    needs_refac = 0
-    needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
-
-    log_info('Importing into dictionary')
-    for entry in import_entries:
-        entry_str = entry.dump_string()
-        if entry_inserted >= max_import:
-            limit_reached = True
-            break
-        action = "create"
-        entry_key = ops.getEntryHeadword(entry, args.main_node_name)
-        title = "<span class='headword'>" + entry_key + "</span>"
-        c = db.execute("SELECT id FROM entries WHERE sortkey=?", (entry_key,))
-        if not c.fetchone():
-            sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-            params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
+        elif args.filename.endswith('.nvh'):
+            import_nvh = nvh.parse_file(fileinput.input(args.filename))
 
         else:
-            sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-            params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
-            action = "update"
-        c = db.execute(sql, params)
-        entryID = c.lastrowid
-        db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)",
-                   (entryID, action, str(datetime.datetime.utcnow()), args.email, entry_str, json.dumps(historiography)))
-        db.execute("DELETE FROM searchables WHERE entry_id=? and level=?", (entryID, 1))
-        searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
-        db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
-        db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle.lower(), 1))
-        entry_inserted += 1
+            log_err(f'NOT a supported format: {args.filename}')
 
-        if entry_inserted % 100 == 0:
-            log_info("DONE_IMPORT: PER:%.2d, COUNT:%d/%d" % ((entry_inserted/entry_count*100), entry_inserted, entry_count))
+        ## Cleaning duplicate (name, value) nodes
+        if args.deduplicate:
+            log_info('Cleaning NVH')
+            import_nvh.clean_duplicate_nodes(out=sys.stderr)
 
-    if limit_reached:
-        log_info("DONE_IMPORT: PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
-                 "email inquiries@sketchengine.eu and give details of your dictionary project." % (entry_inserted, entry_count))
+        ## Renaming node names that appear under different parents
+        log_info('Renaming duplicate NVH nodes')
+        rename_dict = {}
+        import_nvh.rename_nodes(rename_dict, out=sys.stderr)
 
-    log_info("DONE_IMPORT: PER:100, COUNT:%d/%d"  % (entry_inserted, entry_count))
-    db.commit()
+        with open(args.filename + ".cleaned", 'w') as clean_f:
+            import_nvh.dump(clean_f)
+
+        name_mapping = {}
+        for orig_name, rename_list in rename_dict.items():
+            for _, new_name in rename_list:
+                name_mapping[new_name] = orig_name
+
+        # Generating schema form NVH
+        schema = {}
+        import_nvh.generate_schema(schema, tln=True)
+        with open(args.filename + ".schema", 'w') as schema_f:
+            nvh.print_schema(schema, outfile=schema_f)
+
+        #import_nvh.check_schema(schema, outfile=sys.stderr)
+
+        # Splitting into individual entries
+        import_entries, tl_name = import_nvh.get_entries()
+        entry_count = len(import_entries)
+
+        entry_inserted = 0
+        limit_reached = False
+
+        db = sqlite3.connect(args.dbname)
+        db.row_factory = sqlite3.Row
+        if args.purge:
+            purge(db, historiography, args)
+
+        historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(args.filename)}
+
+        elements = {}
+        ops.get_gen_schema_elements(schema, elements)
+        structure = {"root": args.main_node_name, "elements": elements}
+        db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure))) # TODO should be INSERT or IGNORE if exists
+        db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
+
+        formatting = {}
+        with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
+            styles = json.loads(f.read())
+            for key in elements.keys():
+                if styles.get(key):
+                    formatting[key] = styles[key]
+                else:
+                    formatting[key] = styles['__other__']
+        db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
+
+        configs = ops.readDictConfigs(db)
+        dict_stats = ops.getDictStats(db)
+
+        main_db = ops.getMainDB()
+        dict_name = args.dbname.strip().split('/')[-1][:-7]
+        log_info(f"Marek: {dict_name}")
+        d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_name,))
+        limit = json.loads(d.fetchone()['configs'])['limits']['entries']
+
+        max_import = limit - dict_stats["entryCount"]
+        if max_import < entry_count:
+            log_info("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
+        else:
+            log_info("Detected %d entries in '%s' element" % (entry_count, tl_name))
+
+        needs_refac = 0
+        needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
+
+        log_info('Importing into dictionary')
+        for entry in import_entries:
+            entry_str = entry.dump_string()
+            if entry_inserted >= max_import:
+                limit_reached = True
+                break
+            action = "create"
+            entry_key = ops.getEntryHeadword(entry, args.main_node_name)
+            title = "<span class='headword'>" + entry_key + "</span>"
+            c = db.execute("SELECT id FROM entries WHERE sortkey=?", (entry_key,))
+            if not c.fetchone():
+                sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
+
+            else:
+                sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
+                action = "update"
+            c = db.execute(sql, params)
+            entryID = c.lastrowid
+            db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)",
+                    (entryID, action, str(datetime.datetime.utcnow()), args.email, entry_str, json.dumps(historiography)))
+            db.execute("DELETE FROM searchables WHERE entry_id=? and level=?", (entryID, 1))
+            searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
+            db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
+            db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle.lower(), 1))
+            entry_inserted += 1
+
+            if entry_inserted % 100 == 0:
+                log_info("DONE_IMPORT: PER:%.2d, COUNT:%d/%d" % ((entry_inserted/entry_count*100), entry_inserted, entry_count))
+
+        if limit_reached:
+            log_info("DONE_IMPORT: PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
+                    "email inquiries@sketchengine.eu and give details of your dictionary project." % (entry_inserted, entry_count))
+
+        log_info("DONE_IMPORT: PER:100, COUNT:%d/%d"  % (entry_inserted, entry_count))
+        db.commit()
+    except Exception as e:
+        log_err(f"Import crashed on: {e}")
 
 
 if __name__ == '__main__':

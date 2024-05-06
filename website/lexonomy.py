@@ -508,7 +508,7 @@ def makedictjson(user):
         if supported_formats.match(upload.filename):
             res = ops.makeDict(request.forms.url, None, None, request.forms.title,
                                request.forms.language, "", user["email"],
-                               addExamples=False, deduplicate=request.forms.deduplicate=='true',
+                               addExamples=False, deduplicate=json.loads(request.forms.deduplicate),
                                bottle_file_object=upload, hwNode=request.forms.hwNode)
         else:
             return{"success": False, "url": request.forms.url,
@@ -808,7 +808,7 @@ def download(dictID, user, dictDB, configs):
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
     err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
-                                                deduplicate=request.forms.deduplicate,purge=request.forms.purge,
+                                                deduplicate=json.loads(request.forms.deduplicate),purge=json.loads(request.forms.purge),
                                                 bottle_upload_obj=request.files.get("filename"))
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
