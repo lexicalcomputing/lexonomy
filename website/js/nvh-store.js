@@ -24,8 +24,6 @@ class NVHStoreClass {
    }
 
    createNewEntry(){
-      this.data.revision && this.showRevision(null)
-      this.closeRevisions()
       window.store.data.entryId = "new"
       this.data.entry = this._getNewEntry()
       this.validateAllElements()
