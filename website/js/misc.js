@@ -162,6 +162,9 @@ window.dateToTimeAgo = (date) => {
    if (interval > 1) {
       return Math.floor(interval) + " minutes ago"
    }
+   if(seconds < 5){ // seconds may be less than 0
+      return "few seconds ago"
+   }
    return Math.floor(seconds) + " seconds ago"
 }
 
