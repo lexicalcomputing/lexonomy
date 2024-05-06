@@ -49,7 +49,7 @@ class TestImportNVH(unittest.TestCase):
 
     def test_2(self):
         data = {'upload_file_path': self.upload_file_path}
-        r = requests.post(url=self.website + f"/{self.dicID}/import.json", data=data, cookies=self.cookies)
+        r = requests.post(url=self.website + f"/{self.dicID}/getImportProgress.json", data=data, cookies=self.cookies)
         self.assertEqual(r.json()['finished'], True)
         self.assertEqual(r.json()['error'], [])
         self.assertEqual(r.json()['progress']['per'], 100)
@@ -104,7 +104,7 @@ class TestImportXML(unittest.TestCase):
 
     def test_2(self):
         data = {'upload_file_path': self.upload_file_path}
-        r = requests.post(url=self.website + f"/{self.dicID}/import.json", data=data, cookies=self.cookies)
+        r = requests.post(url=self.website + f"/{self.dicID}/getImportProgress.json", data=data, cookies=self.cookies)
         self.assertEqual(r.json()['finished'], True)
         self.assertEqual(len(r.json()['error']), 11)
         self.assertEqual(r.json()['progress']['per'], 100)
