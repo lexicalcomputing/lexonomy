@@ -1573,9 +1573,9 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upl
 
     params = []
     if deduplicate:
-        params += '-d'
+        params.append('-d')
     elif purge:
-        params += '-p'
+        params.append('-p')
 
     p = subprocess.Popen([currdir + "/import.py", dbpath, file_path, email, hwNode] + params,
                           stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
