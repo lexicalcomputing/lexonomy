@@ -1228,6 +1228,8 @@ class NVHStoreClass {
       }
       if(newUrl != window.location.href){
          history.pushState(null, null, newUrl)
+         route.base() // need to update route's "current" value in
+                       //order to browser back button works correctly
       }
    }
 
