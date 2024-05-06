@@ -110,7 +110,7 @@
             } else if (evt.key == "3"){ // 3
                !ctrl && alt && !shift && actions.code && this.nvhStore.changeEditorMode("code")
             } else if(key == 13){  // enter
-               ctrl && !alt && !shift && this.saveEntryAndGoToNext()
+               ctrl && !alt && !shift && this.saveEntryAndGoToNext(evt)
             } else if(evt.key == "n"){  // n
                !ctrl &&  alt && !shift && actions.new && !this.nvhStore.editorNeedsSaving() && this.nvhStore.createNewEntry()
             } else if(key == 83){  // s
@@ -193,17 +193,24 @@
             return false
          },
 
-         saveEntryAndGoToNext(){
+         saveEntryAndGoToNext(evt){
+            evt.preventDefault()
             let saveRequest = this.saveEntry()
             if(saveRequest){
                saveRequest.done(response => {
                   if(response.success){
-                     let idx = this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId)
-                     if(this.dictData.entryList[idx + 1]){
-                        this.store.changeEntryId(this.dictData.entryList[idx + 1].id)
-                     }
+                     this.goToNextEntry()
                   }
                })
+            } else if(this.nvhData.isValid){
+               this.goToNextEntry()
+            }
+         },
+
+         goToNextEntry(){
+            let idx = this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId)
+            if(this.dictData.entryList[idx + 1]){
+               this.store.changeEntryId(this.dictData.entryList[idx + 1].id)
             }
          },
 
