@@ -9,7 +9,7 @@
       <div>
          Revision from {nvhData.revision.when.substr(0, 19)}
       </div>
-      <button if={dictData.userAccess.canEdit}
+      <button if={dictData.userAccess.canEdit && nvhData.revision.idx > 0}
             class="btn btn-flat ml-2 tooltipped"
             data-tooltip="Restore this revision"
             onclick={onRestoreRevisionClick}>
