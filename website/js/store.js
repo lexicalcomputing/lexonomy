@@ -158,8 +158,7 @@ class StoreClass {
                   entry.flag = [flag]
                   if(entry.id == this.data.entryId){
                      // TODO: does not work in source code tab
-                     let flagElement = window.nvhStore.findElement(e => e.name == this.data.config.flagging.flag_element)
-                     flagElement && window.nvhStore.changeElementValue(flagElement, flag)
+                     this._setElementValue(element => element.name == this.data.config.flagging.flag_element, flag)
                   }
                }
             }.bind(this, flag))
@@ -1091,6 +1090,26 @@ class StoreClass {
             .fail(response => {
                M.toast({html: "API key could not be changed."})
             })
+   }
+
+
+
+   _setElementValue(elementSelector, value){
+      // used to update element value changed in DB otherwise than in NVH editor
+      // updates: element value in this.data.entry.nvh (entry in NVH format, string)
+      //        : element in nvhStore.data.entry (entry in JSON format)
+      let nvhStore = window.nvhStore
+      let nvhStoreElement = nvhStore.findElement(elementSelector)
+      if(nvhStoreElement){
+         nvhStoreElement.value = value
+         let jsonEntry = nvhStore.nvhToJson(this.data.entry.nvh)
+         let element = nvhStore.findElement(elementSelector, jsonEntry)
+         if(element){
+            element.value = value
+            this.data.entry.nvh = nvhStore.jsonToNvh(jsonEntry)
+            nvhStore.trigger("updateElements", [nvhStoreElement])
+         }
+      }
    }
 
    setDictionaryAttribute(dictId, attrName, attrValue){
