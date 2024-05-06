@@ -139,6 +139,7 @@ class NVHStoreClass {
             M.toast({html: "Invalid custom editor code."})
          }
       }
+      this.onEntryChanged()
    }
 
    onEntryIdChanged(){
