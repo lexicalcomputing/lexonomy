@@ -1119,20 +1119,21 @@ class StoreClass {
       }
    }
 
-   uploadXML(data){
-      return $.ajax({
-            url: `${window.API_URL}${this.data.dictId}/upload.html`,
-            method: 'POST',
-            data: data,
-            processData: false,
-            contentType: false
-         })
-   }
-
-   importXML(data){
+   importFile(data){
       return $.ajax({
          url: `${window.API_URL}${this.data.dictId}/import.json`,
-         data: data
+         method: 'POST',
+         data: data,
+         processData: false,
+         contentType: false
+      })
+   }
+
+   checkImportProgress(upload_file_path){
+      return $.ajax({
+         url: `${window.API_URL}${this.data.dictId}/getImportProgress.json`,
+         method: 'POST',
+         data: {upload_file_path: upload_file_path}
       })
             .done(response => {
                if(response.finished){

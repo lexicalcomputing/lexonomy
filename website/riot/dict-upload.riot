@@ -1,7 +1,7 @@
 <dict-upload>
    <loading-overlay if={state.isUploading}/>
    <h1>Upload</h1>
-   <div if={!state.isImporting}
+   <div if={!state.isImporting && !state.isFinished}
          class="uploadForm">
       <div class="file-field input-field">
          <div class="btn">
@@ -32,10 +32,38 @@
             <span>Purge dictionary before upload</span>
          </label>
       </div>
+      <div class="mt-8">
+         <label class="checkbox">
+            <input id="deduplicate"
+                  type="checkbox"
+                  checked="checked">
+            <span>
+               Deduplicate
+                 <span class="hint tooltipped"
+                     data-tooltip="Remove duplicities from the data. This may slow down the import.">
+                  <i class="material-icons">help_outline</i>
+              </span>
+            </span>
+         </label>
+      </div>
+      <!--div class="mt-8">
+         <label class="checkbox">
+            <input id="deduplicate"
+                  type="checkbox"
+                  checked="checked">
+            <span>
+               Create schema from the uploaded data
+                 <span class="hint tooltipped"
+                     data-tooltip="If checked, current schema will be replaced with new one, generated from the uploaded data.">
+                  <i class="material-icons">help_outline</i>
+              </span>
+            </span>
+         </label>
+      </div-->
       <div class="mt-12">
          <button id="startImportBtn"
                class="waves-effect waves-light btn btn-primary disabled"
-               onclick={ doUpload }
+               onclick={onImportClick}
                id="startButton">
             <i class="material-icons left">file_upload</i>Start import
          </button>
@@ -44,11 +72,6 @@
 
 
    <div if={state.showProgress}>
-      <template if={state.isUploading}>
-         <h3>
-            Uploading file...
-         </h3>
-      </template>
       <template if={state.isImporting}>
          <h3>
             Importing entries...
@@ -73,11 +96,15 @@
          state: {
             file: null,
             headwordElement: null,
-            isUploading: false,
             isImporting: false,
             showProgress: false,
             errorMessage: "",
             infoMessage: ""
+         },
+
+         onBeforeUnmount(){
+            this.state.timeoutHandle && clearTimeout(this.state.timeoutHandle)
+            this.state.checkImportRequest && this.state.checkImportRequest.abort()
          },
 
          onFileChange(evt){
@@ -96,79 +123,60 @@
                headwordElement: "",
                showProgress: false,
                isImporting: false,
-               isUploading: false,
                infoMessage: "",
                errorMessage: ""
             })
          },
 
-         doUpload() {
+         onImportClick() {
             var fd = new FormData()
-            fd.append("myfile", this.state.file)
-            if ($("#purge").is(":checked")){
-               fd.append("purge", "on")
-            }
+            fd.append("filename", this.state.file)
+            fd.append("purge", $("#purge").is(":checked"))
+            fd.append("hwNode", this.state.headwordElement)
+            //fd.append("generateSchema", $("#generateSchema").is(":checked")),
+            fd.append("deduplicate", $("#deduplicate").is(":checked"))
+
             this.update({
-               isUploading: true,
+               isImporting: true,
                showProgress: true,
-               errorMessage: "",
-               infoMessage: "Upload started, please keep the window open."
+               infoMessage: "Import started, please keep the window open."
             })
-            this.store.uploadXML(fd)
-                  .done((response) => {
-                        if(response.success){
-                           this.startImport(response.file, response.uploadStart)
-                        } else {
-                           this.update({errorMessage: "Error while uploading file"})
-                        }
-                     })
-                  .always(() => {
-                     this.update({isUploading: false})
+            this.store.importFile(fd)
+                  .done(response => {
+                     if (response.errors) {
+                        this.state.infoMessage = "There were some errors during processing the uploaded file"
+                     } else {
+                        this.state.infoMessage = response.progressMessage
+                        this.checkImportProgress(response.upload_file_path)
+                     }
+                     this.update()
                   })
          },
 
-         startImport(file, uploadStart) {
-            if(file) {
-               this.update({
-                  isImporting: true,
-                  showProgress: true,
-                  infoMessage: "Import started, please keep the window open."
-               })
-               this.store.importXML({
-                  filename: file,
-                  uploadStart: uploadStart,
-                  hwNode: this.state.headwordElement
-               })
-                     .done(response => {
-                        clearTimeout(this.state.timeutHandle)
-                        this.state.infoMessage = response.progressMessage
-                        if (response.finished) {
-                           this.state.isImporting = false
-                           this.state.infoMessage += ` <br/>Dictionary import finished. <a href="#${this.dictData.dictId}">See dictionary</a>`
-                        } else if (response.errors) {
-                           this.state.infoMessage = "There were some errors during processing the uploaded file"
-                           this.store.importXML({
-                              filename: file,
-                              uploadStart: uploadStart,
-                              showErrors: true,
-                              truncate: 10000
+         checkImportProgress(upload_file_path){
+            this.state.checkImportRequest = this.store.checkImportProgress(upload_file_path)
+                  .done(response => {
+                     clearTimeout(this.state.timeoutHandle)
+                     if(response.error.length){
+                        this.update({errorMessage: response.errors.join(", ")})
+                     } else {
+                        if(response.finished){
+                           this.update({
+                              isImporting: false,
+                              isFinished: true,
+                              infoMessage: ` <br/>Dictionary import finished. <a href="#${this.dictData.dictId}">See dictionary</a>`
                            })
-                                 .done(response => {
-                                    this.update({errorMessage: response.errorData})
-                                 })
-                           this.state.isImporting = false
                         } else {
-                           this.state.timeutHandle = setTimeout(this.startImport.bind(this, file, uploadStart), 2000)
+                           this.state.timeoutHandle = setTimeout(this.checkImportProgress.bind(this, response.upload_file_path), 2000)
                         }
-                        this.update()
-                     })
-            }
+                     }
+                  })
          },
+
 
          refreshStartImportBtnDisabled(){
             let disabled = !this.state.file
                   || !this.state.headwordElement
-                  || this.state.isUploading
                   || this.state.isImporting
             $("#startImportBtn").toggleClass("disabled", disabled)
          }
