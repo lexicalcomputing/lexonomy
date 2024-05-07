@@ -180,10 +180,7 @@
          },
 
          saveEntry(){
-            if(this.nvhStore.data.customEditor && this.dictData.editorMode != "edit"){
-               this.nvhStore.validateAllElements()
-            }
-            if(this.nvhData.isValid){
+            if(this.nvhStore.isValid()){
                if(this.nvhStore.getAvailableActions().save){
                   return this.nvhStore.saveEntry()
                }
@@ -202,7 +199,7 @@
                      this.goToNextEntry()
                   }
                })
-            } else if(this.nvhData.isValid){
+            } else if(this.nvhStore.isValid()){
                this.goToNextEntry()
             }
          },
