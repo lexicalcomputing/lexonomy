@@ -88,22 +88,16 @@
          },
 
          onEditorChange(){
-            if(this.nvhData.isValid){
+            if(this.nvhData.customEditorIsValid){
                this.nvhStore.setEntryFromCustomEditor()
                this.nvhStore.history.addState()
             }
          },
 
          onValidChange(isValid){
-            this.nvhData.isValid = isValid
+            this.nvhData.customEditorIsValid = isValid
             this.nvhStore.trigger("isValidChanged")
          }
       }
    </script>
-
-   <style type="scss">
-      :host{
-
-      }
-   </style>
 </nvh-custom-editor>

@@ -430,36 +430,53 @@ class NVHStoreClass {
       }
    }
 
+   isValid(){
+      return this.data.elementsMatchStructure
+            && (!this.data.customEditor || this.data.legacyCustomEditor || this.data.customEditorIsValid)
+   }
+
    getAvailableActions(){
       let revisions = !!this.data.revision
       let hasEntry = !!this.data.entry
+      let uA = window.store.data.userAccess
       return {
-         new: window.store.data.entryId != "new"
+         new: uA.canEdit
+               && window.store.data.entryId != "new"
                && !revisions,
-         save: hasEntry
+         save: uA.canEdit
+               && hasEntry
                && !this.data.isSaving
-               && this.data.isValid
+               && this.isValid()
                && (this.history.actualIdx != this.history.lastSavedIdx
                         || window.store.data.entryId == "new"
                         || window.store.data.editorMode == "code"
-                        // TODO: hot fix - changing value in custom editor input without leaving the field
-                        //       does not trigger onchange, so no new state is added to the history
-                        || (this.data.customEditor/* && this.data.legacyCustomEditor*/)
+                        || this.data.customEditor
                   )
                && !revisions,
-         undo: this.history.actualIdx > 0
+         undo: uA.canEdit
+               && this.history.actualIdx > 0
                && !revisions,
-         redo: (this.history.actualIdx < this.history.records.length - 1)
+         redo: uA.canEdit
+               && (this.history.actualIdx < this.history.records.length - 1)
                && !revisions,
-         add: true,
-         duplicate: hasEntry && window.store.data.entryId != "new"
+         add: uA.canEdit,
+         duplicate: uA.canEdit
+               && hasEntry
+               && window.store.data.entryId != "new"
                && !revisions,
-         delete: hasEntry && window.store.data.entryId != "new"
+         delete: uA.canEdit
+               && hasEntry
+               && window.store.data.entryId != "new"
                && !revisions,
-         view: hasEntry && window.store.data.entryId != "new",
-         edit: hasEntry,
-         code: hasEntry,
-         history: hasEntry && window.store.data.entryId != "new"
+         view: hasEntry
+               && window.store.data.entryId != "new",
+         edit: uA.canEdit
+               && hasEntry,
+         code: uA.canEdit
+               && hasEntry,
+         history: uA.canEdit
+               && hasEntry
+               && window.store.data.entryId != "new"
       }
    }
 
@@ -1016,8 +1033,8 @@ class NVHStoreClass {
       element.warnings = [...new Set(warnings)] // remove duplicities
       element.isValid = !warnings.length
       let isValid = !this.findElement(e => !e.isValid)
-      if(this.data.isValid != isValid){
-         this.data.isValid = isValid
+      if(this.data.elementsMatchStructure != isValid){
+         this.data.elementsMatchStructure = isValid
          this.trigger("isValidChanged")
       }
    }
