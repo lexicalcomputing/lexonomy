@@ -445,8 +445,8 @@ class NVHStoreClass {
                && !revisions,
          save: uA.canEdit
                && hasEntry
-               && this.data.isSaving
-               //&& !this.isValid()  // temporarily turn off structure validation
+               && !this.data.isSaving
+               //&& this.isValid()  // temporarily turn off structure validation
                && (!this.data.customEditor || this.data.legacyCustomEditor ? this.data.elementsMatchStructure : this.data.customEditorIsValid)
                && (this.history.actualIdx != this.history.lastSavedIdx
                         || window.store.data.entryId == "new"
