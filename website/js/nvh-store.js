@@ -1182,8 +1182,8 @@ class NVHStoreClass {
 
    _getNewEntry(){
       let entry
-      if(store.data.config.structure._newEntryNvh){
-         entry = this.nvhToJson(store.data.config.structure._newEntryNvh)
+      if(store.data.config.structure.custom_newEntryTemplate){
+         entry = this.nvhToJson(store.data.config.structure.custom_newEntryTemplate)
       } else {
          entry = {
             id: this._getNewElementId(),
