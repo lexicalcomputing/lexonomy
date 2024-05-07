@@ -4,12 +4,14 @@
    <template if={!state.isLoading}>
       <div class="entryLimit input-field mb-6">
          <input id="entryLimit"
-               value={state.entries}/>
+               oninput={onLimitInput}
+               value={state.entries || ""}/>
          <label for="elements"
                class="noWrap">Maximum number of entries</label>
       </div>
 
-      <dict-config-buttons save-data={saveData}></dict-config-buttons>
+      <dict-config-buttons save-data={saveData}
+            btn-class={state.isSaveDisabled ? "disabled" : ""}></dict-config-buttons>
    </template>
 
 
@@ -18,6 +20,7 @@
          state: {
             isLoading: true,
             isSaving: false,
+            isSaveDisabled: false,
             entries: 5000
          },
 
@@ -37,10 +40,14 @@
             this.update({isSaving: true})
             this.store.updateDictionarySettings({
                limits: {
-                  entries: $("#entryLimit").val()
+                  entries: $("#entryLimit").val() * 1
                }
             })
                   .always(() => this.update({isSaving: false}))
+         },
+
+         onLimitInput(evt){
+            this.update({isSaveDisabled: evt.target.value && isNaN(evt.target.value)})
          }
       }
    </script>
