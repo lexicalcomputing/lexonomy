@@ -182,7 +182,12 @@
          },
 
          changeActualOptions(options){
-            this.update({actualOptions: options})
+            let parentItem = options && options[0] ? options[0].parentItem : null
+            this.update({
+               actualOptions: options,
+               parentItem: parentItem
+
+            })
             $(".nvh-highlight").removeClass("nvh-highlight")
             $(".nvh-focusable-option", this.root).first().addClass("nvh-highlight")
          },
