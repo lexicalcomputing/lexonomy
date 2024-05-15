@@ -171,7 +171,7 @@ class NVHStoreClass {
             && (this.data.entryId == "new"
                   || (window.store.data.entry
                            && this.data.entry
-                           && !this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
+                           && this.hasEntryChanged()
                      )
                )
             ){
@@ -185,6 +185,10 @@ class NVHStoreClass {
          }
       }
       return false
+   }
+
+   hasEntryChanged(){
+      return !this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
    }
 
    showRevision(revision){
