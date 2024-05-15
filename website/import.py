@@ -227,7 +227,12 @@ def main():
         #import_nvh.check_schema(schema, outfile=sys.stderr)
 
         # Splitting into individual entries
-        import_entries, tl_name = import_nvh.get_entries()
+        import_entries, tl_node_names, tl_node_contains_pos = import_nvh.get_entries()
+        if len(tl_node_names) == 1:
+            tl_name = tl_node_names.pop()
+        else:
+            log_err(f'Only one top level name is supported. {list(tl_node_names)} found.')
+            raise Exception('Too many top lavel names')
         entry_count = len(import_entries)
 
         entry_inserted = 0
@@ -275,6 +280,7 @@ def main():
         needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
 
         log_info('Importing into dictionary')
+        cut_pos_re = re.compile('(.*)-.*')
         for entry in import_entries:
             entry_str = entry.dump_string()
             if entry_inserted >= max_import:
@@ -300,6 +306,10 @@ def main():
             searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
             db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
             db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle.lower(), 1))
+            if tl_node_contains_pos:
+                searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
+                db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos, 1))
+                db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos.lower(), 1))
             entry_inserted += 1
 
             if entry_inserted % 100 == 0:

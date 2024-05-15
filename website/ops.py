@@ -265,7 +265,17 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
         params = (entryNvh, title, sortkey, needs_refresh, entryJson, doctype)
     c = dictDB.execute(sql, params)
     entryID = c.lastrowid
-    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, getEntryTitle(nvhParsed, configs["titling"], True), 1))
+
+    searchTitle = getEntryTitle(nvhParsed, configs["titling"], True)
+    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
+    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle.lower(), 1))
+
+    rm_pos = re.match('(.*)-.*', searchTitle)
+    if rm_pos:
+        searchTitle_no_pos = rm_pos.group(1)
+        dictDB.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos, 1))
+        dictDB.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos.lower(), 1))
+
     dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
     dictDB.commit()
     if configs["links"]:
@@ -667,6 +677,7 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
             for idx, example in enumerate(examples):
                 dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
+                dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"].lower(), 1))
 
     dictDB.commit()
 
