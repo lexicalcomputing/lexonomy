@@ -108,12 +108,15 @@ def authDict(checkRights, errorRedirect=False):
 # authentication decorator
 # use @auth to check that user is authenticated
 # assumes that the decorated function has a "user" parameter which is used to pass the user info
-def auth(func):
+def auth(func, errorRedirect=False):
     @functools.wraps(func)
     def wrapper_verifyLogin(*args, **kwargs):
         res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
         if not res["loggedin"]:
-            redirect("/")
+            if errorRedirect:
+                redirect("/")
+            else:
+                return res
         kwargs["user"] = res
         return func(*args, **kwargs)
     return wrapper_verifyLogin
