@@ -180,12 +180,14 @@
          },
 
          saveEntry(){
-            if(this.nvhStore.isValid()){
-               if(this.nvhStore.getAvailableActions().save){
-                  return this.nvhStore.saveEntry()
+            if(this.nvhStore.hasEntryChanged()){
+               if(this.nvhStore.isValid()){
+                  if(this.nvhStore.getAvailableActions().save){
+                     return this.nvhStore.saveEntry()
+                  }
+               } else {
+                  M.toast({html: "Cannot save an invalid entry."})
                }
-            } else {
-               M.toast({html: "Cannot save an invalid entry."})
             }
             return false
          },
@@ -199,7 +201,7 @@
                      this.goToNextEntry()
                   }
                })
-            } else if(this.nvhStore.isValid()){
+            } else if(!this.nvhStore.hasEntryChanged()){
                this.goToNextEntry()
             }
          },
