@@ -59,7 +59,7 @@ class TestQueries(unittest.TestCase):
         self.assertListEqual(result_id_list('i_quality="good" where i_license="general" where i_author="LCC"', self.db), [3, 5])
     
     def test_where_operator_4(self):
-        # TODO the restriction on tree.fullpath is not enough need to somehow apply the count again
+        # TODO [FAIL for now] the restriction on tree.fullpath is not enough need to somehow apply the count again
         self.assertListEqual(result_id_list('sense#="2" where (s_e_quality="good")', self.db), [1])
 
     def test_where_operator_with_or(self):
@@ -85,6 +85,16 @@ class TestQueries(unittest.TestCase):
             result_id_list('headword="a" and headword="b" or headword="c"', self.db)
         except ValueError as e:
             self.assertEqual(str(e), 'More than one type of logic operator without any brackets')
+
+    def test_any_key_has_value(self):
+        self.assertListEqual(result_id_list('.*="test_5"', self.db), [5])
+
+    def test_any_key_ends_by(self):
+        self.assertListEqual(result_id_list('.*~=".*example of test_1.1$"', self.db), [1])
+
+    def test_any_key_not_contains(self):
+        self.assertListEqual(result_id_list('.*!="ADJ"', self.db), [1, 2, 3, 5])
+
 
 if __name__ == '__main__':
     sys.stderr.write('SQLite version: ' + sqlite3.connect(':memory:').execute('SELECT sqlite_version();').fetchall()[0][0] + '\n')
