@@ -28,11 +28,24 @@
 
          <select id="modifier"
                onchange={onModifierChange}>
-            <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
-            <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
-            <option value="wordstart" selected={dictData.search.modifier == "wordstart"}>contains a word that starts like this</option>
-            <option value="substring" selected={dictData.search.modifier == "substring"}>contains this sequence of characters</option>
-            <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
+            <template if={dictData.config.searchability.templates.length}>
+               <optgroup label="Custom templates">
+                  <option each={template in dictData.config.searchability.templates}
+                        value="template_{template.label}" selected={dictData.search.modifier == "template_" + template.label}>{template.label}</option>
+               </optgroup>
+               <optgroup label="Default options">
+                  <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
+                  <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
+                  <option value="substring" selected={dictData.search.modifier == "substring"}>contains</option>
+                  <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
+               </optgroup>
+            </template>
+            <template if={!dictData.config.searchability.templates.length}>
+               <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
+               <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
+               <option value="substring" selected={dictData.search.modifier == "substring"}>contains</option>
+               <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
+            </template>
          </select>
       </div>
       <div if={dictData.search.tab == "advanced"}>
@@ -198,6 +211,7 @@
 
          onModifierChange(){
             $("input", this.root).val() && this.search()
+            localStorage.setItem("entryFilterModifier", $("#modifier", this.root).val())
          },
 
          initSelect(){

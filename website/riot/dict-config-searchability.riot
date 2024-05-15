@@ -1,26 +1,87 @@
 <dict-config-searchability>
    <loading-overlay if={state.isLoading || state.isSaving}/>
-   <h1>Searching</h1>
-   <div if={!state.isLoading && !state.hasElements}
-         class="center-align grey-text">
-      <h1>No elements found</h1>
-   </div>
-   <div if={!state.isLoading && state.hasElements}>
-      <label for="search-element">Searchable elements</label>
-      <div class="helper-text">
-         The contents of elements you select here will be searchable (in addition to each entry's headword).
+   <template if={!state.isLoading}>
+
+      <h1>Searching</h1>
+      <h2>Searchable elements</h2>
+      <div if={!state.hasElements}
+            class="grey-text">
+         <h3>No elements found</h3>
       </div>
-      <br>
-      <div each={obj in elementOptionList}>
-         <label>
-            <input type="checkbox"
-                  value={obj.elementName}
-                  checked={state.data.searchableElements && state.data.searchableElements.includes(obj.elementName)}
-                  disabled={obj.elementName == dictData.config.titling.headword}/>
-            <span style="{obj.style}">{store.getElementDisplayedName(obj.elementName)}</span>
-         </label>
+      <div if={state.hasElements}>
+         <div class="grey-text">
+            The contents of elements you select here will be searchable (in addition to each entry's headword).
+         </div>
+         <br>
+         <div each={obj in elementOptionList}>
+            <label>
+               <input type="checkbox"
+                     value={obj.elementName}
+                     checked={state.data.searchableElements && state.data.searchableElements.includes(obj.elementName)}
+                     disabled={obj.elementName == dictData.config.titling.headword}/>
+               <span style="{obj.style}">{store.getElementDisplayedName(obj.elementName)}</span>
+            </label>
+         </div>
       </div>
-   </div>
+      <br><br>
+
+      <h2>Search templates</h2>
+      <div class="grey-text">
+         Define your own entry search templates to make frequent searches easier. In Template field you can use %query% string which will be replaced with actual search term.
+         <br>Example: Label='Adjectives', Template='headword~=".*%query%.*" and partOfSpeech="-j"' will search for all adjectives containing search term in the headword. You can learn more about template syntax in Entry editor -> Advanced search.
+      </div>
+      <div if={!state.data.templates.length}
+            class="grey-text">
+         <h3 class="mt-4">no search templates</h3>
+         <br>
+         <a class="btn btn-primary waves-effect waves-light"
+               onclick={onAddTemplateClick}>
+            add template
+            <i class="material-icons right">add</i>
+         </a>
+      </div>
+      <template if={state.data.templates.length}>
+         <table>
+            <thead>
+               <tr>
+                  <th style="width: 250px;">Label</th>
+                  <th>Template</th>
+                  <th style="width: 1px;"></th>
+               </tr>
+            </thead>
+            <tbody>
+               <tr each={(template, idx) in state.data.templates}>
+                  <td>
+                     <input type="text"
+                           name="label"
+                           value={template.label}
+                           oninput={onTemplateValueInput.bind(this, idx)}>
+                  </td>
+                  <td>
+                     <input type="text"
+                           name="template"
+                           value={template.template}
+                           oninput={onTemplateValueInput.bind(this, idx)}>
+                  </td>
+                  <td>
+                     <a class="btn btn-flat"
+                        onclick={onDeleteTemplateClick.bind(this, idx)}>
+                     <i class="material-icons">delete</i>
+                  </a>
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+         <div>
+            <a class="btn waves-effect waves-light"
+                  onclick={onAddTemplateClick}>
+               add template
+               <i class="material-icons right">add</i>
+            </a>
+      </template>
+      </div>
+   </template>
+
    <br><br>
    <dict-config-buttons save-data={saveData}
          show-save={state.hasElements}></dict-config-buttons>
@@ -31,7 +92,7 @@
             isLoading: true,
             isSaving: false,
             hasElements: false,
-            data: {searchableElements: []}
+            data: null
          },
 
          onBeforeMount() {
@@ -52,23 +113,47 @@
             this.store.loadDictionaryConfig("searchability")
                   .done(response => {
                      this.state.data = response.content
+                     this.state.data.templates = this.state.data.templates || []
                   }).always(() => {
                      this.update({isLoading: false})
                   })
+         },
+
+         onAddTemplateClick(evt) {
+            this.state.data.templates.push({
+               label: "",
+               template: ""
+            })
+            this.update()
+         },
+
+         onDeleteTemplateClick(idx) {
+            this.state.data.templates.splice(idx, 1)
+            this.update()
+         },
+
+         onTemplateValueInput(idx, evt){
+            this.state.data.templates[idx][evt.target.name] = evt.target.value
          },
 
          getConfigData() {
             return {
                searchableElements: $('input[type="checkbox"]:checked').toArray().map(function(elem){
                   return $(elem).attr("value")
-               })
+               }),
+               templates: this.state.data.templates
             }
          },
 
          saveData() {
-            this.update({isSaving: true})
-            this.store.updateDictionaryConfig("searchability", this.getConfigData())
-                  .always(() => this.update({isSaving: false}))
+            let templates = this.state.data.templates.map(template => template.label.toLowerCase())
+            if(templates.length != new Array(...new Set(templates)).length){
+               M.toast({html: "Each template label must be unique."})
+            } else {
+               this.update({isSaving: true})
+               this.store.updateDictionaryConfig("searchability", this.getConfigData())
+                     .always(() => this.update({isSaving: false}))
+            }
          }
       }
    </script>
