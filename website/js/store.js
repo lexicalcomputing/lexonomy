@@ -351,6 +351,9 @@ class StoreClass {
                   if(!response.configs.formatting.elements){
                      response.configs.formatting = {elements: response.configs.formatting}
                   }
+                  if(!response.configs.searchability.templates){
+                     response.configs.searchability.templates = []
+                  }
                   if(elements){
                      Object.keys(elements).forEach(elementName => {
                         if(!response.configs.formatting.elements[elementName]){
@@ -387,6 +390,7 @@ class StoreClass {
                   this.data.isDictionaryLoading = false
                   document.title = `Lexonomy - ${this.data.title}`
                   this.trigger("dictionaryChanged")
+                  this.data.search.modifier = localStorage.getItem("entryFilterModifier") || "substring"
                   this.loadEntryList()
                   window.CustomStyles.add("customDictionaryStyle", this.data.config.styles.css)
                } else {
@@ -1392,6 +1396,17 @@ class StoreClass {
             data.id = this.data.search.searchtext.substring(1)
          } else if(this.data.search.modifier == "id"){
             data.id = this.data.search.searchtext
+         } else if(this.data.search.modifier.startsWith("template_")){
+            if(this.data.search.searchtext){
+               let templateLabel = this.data.search.modifier.split("template_")[1]
+               let template = this.data.config.searchability.templates.find(t => t.label.toLowerCase() == templateLabel)
+               if(template){
+                  template = template.template.replaceAll("%query%", this.data.search.searchtext)
+                  data.advance_query = template
+               } else {
+                  M.toast({html: "Search template not found."})
+               }
+            }
          } else {
             data.searchtext = this.data.search.searchtext
             data.modifier = this.data.search.modifier
