@@ -704,7 +704,7 @@ def dictconfig(dictID):
         doctypes = list(set(doctypes))
 
         # WARNING consider if new config item does show personal data, than add to this list
-        hide_items = ["siteconfig", "searchability", "download", "autonumber", "users"]
+        hide_items = ["siteconfig", "download", "autonumber", "users"]
         for item in hide_items:
             configs.pop(item)
 
