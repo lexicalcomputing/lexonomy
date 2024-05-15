@@ -508,7 +508,8 @@ def makedictjson(user):
         if supported_formats.match(upload.filename):
             res = ops.makeDict(request.forms.url, None, None, request.forms.title,
                                request.forms.language, "", user["email"],
-                               addExamples=False, deduplicate=json.loads(request.forms.deduplicate),
+                               addExamples=False,
+                               deduplicate=True if request.forms.deduplicate=='on' else False,
                                bottle_file_object=upload, hwNode=request.forms.hwNode)
         else:
             return{"success": False, "url": request.forms.url,
