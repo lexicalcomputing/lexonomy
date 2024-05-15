@@ -26,17 +26,27 @@ def condition2sql(condition, all_json_trees, queried_trees=[]):
     json_tree = all_json_trees.pop(0)
     key_not_exists = "(entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) WHERE json_tree.key='" + key + "'))"
 
+
     match operator:
         case '=':
-            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value = '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
+            if key == '.*':
+                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '\\b" + value + "\\b')"
+            else:
+                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value = '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
         case '!=':
-            sql = "((" + json_tree + ".key='_value' AND " + json_tree + ".value != '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "') OR " + key_not_exists + ")"
+            if key == '.*':
+                sql = "(entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) WHERE json_tree.key='_value' AND json_tree.value REGEXP '\\b" + value + "\\b'))"
+            else:
+                sql = "((" + json_tree + ".key='_value' AND " + json_tree + ".value != '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "') OR " + key_not_exists + ")"
         case 'exist':
             sql = "(" + json_tree + ".key='" + key + "')"
         case 'not_exist':
             sql = key_not_exists
         case '~=':
-            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
+            if key == '.*':
+                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "')"
+            else:
+                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
         case '#=':
             sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)=" + value + ")"
         case '#>':
