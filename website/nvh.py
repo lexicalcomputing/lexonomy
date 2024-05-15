@@ -282,10 +282,18 @@ class nvh:
             c.dump(outfile)
 
     def get_entries(self):
+        pos_re = re.compile('.*-.*')
+        tl_nodes = set()
         entries = []
+        tl_node_contains_pos = True
         for c in self.children:
+            tl_nodes.add(c.name)
             entries.append(c)
-        return entries, self.children[0].name
+            pos = pos_re.match(c.value)
+            if not pos:
+                tl_node_contains_pos = False
+
+        return entries, tl_nodes, tl_node_contains_pos
 
     def generate_schema (self, schema, firstParent=True, tln=False):
         """
