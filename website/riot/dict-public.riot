@@ -214,6 +214,7 @@
          },
 
          search(){
+            this.store.loadEntryList()
             route(`/${this.dictData.dictId}/edit${this.store.getEntrySearchUrlQueryString()}`)
          },
 
