@@ -820,8 +820,8 @@ def importjson(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/getImportProgress.json") # OK
 @authDict(["canUpload"])
 def getImportProgress(dictID, user, dictDB, configs):
-    progress, finished, err, upload_file_path = ops.getImportProgress(request.forms.upload_file_path)
-    return{"finished": finished, "progress": progress, "error": err, 'upload_file_path': upload_file_path}
+    progress, finished, err, warns, upload_file_path = ops.getImportProgress(request.forms.upload_file_path)
+    return{"finished": finished, "progress": progress, "error": err, "warnings": warns, 'upload_file_path': upload_file_path}
 
 
 @post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
