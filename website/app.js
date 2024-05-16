@@ -1,5 +1,6 @@
 import {register as riot_register, component} from 'riot'
 
+import './js/connection.js'
 import './js/store.js'
 import './js/auth.js'
 import './js/extend-riot.js'

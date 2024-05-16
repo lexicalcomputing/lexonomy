@@ -143,8 +143,8 @@
             })
             this.store.importFile(fd)
                   .done(response => {
-                     if (response.errors) {
-                        this.state.infoMessage = "There were some errors during processing the uploaded file"
+                     if (response.error) {
+                        this.state.infoMessage = "There were some errors during processing the uploaded file: <br>" + response.error.join("<br>")
                      } else {
                         this.state.infoMessage = response.progressMessage
                         this.checkImportProgress(response.upload_file_path)
@@ -158,7 +158,7 @@
                   .done(response => {
                      clearTimeout(this.state.timeoutHandle)
                      if(response.error.length){
-                        this.update({errorMessage: response.errors.join(", ")})
+                        this.update({errorMessage: response.error.join("<br>")})
                      } else {
                         if(response.finished){
                            this.update({

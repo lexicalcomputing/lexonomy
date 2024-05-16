@@ -6,10 +6,9 @@
             { dictData.title }
          </h1>
          <div class="dictBtns buttons ml-auto">
-            <a if={dictData.userAccess.canEdit}
-                  href="#/{dictData.dictId}/edit"
+            <a href="#/{dictData.dictId}/edit"
                   class="btn btn-primary btn-large">
-               open editor
+               {dictData.userAccess.canEdit ? "open editor" : "open viewer"}
             </a>
             <dict-favorite-toggle if={authData.authorized}
                   dict-id={dictData.dictId}/>
@@ -100,7 +99,7 @@
                      <a if={state.displayedEntryId }
                            href={getEntryUrl()}
                            class="btn btnOpenInEditor">
-                        open in editor
+                        {dictData.userAccess.canEdit ? "open in editor" : "open in viewer"}
                      </a>
                      <loading-overlay if={dictData.isEntryLoading}/>
                      <template if={nvhData.entry}>
@@ -235,12 +234,10 @@
          },
 
          getEntryUrl(){
-            if(this.dictData.userAccess && this.dictData.userAccess.canEdit){
-               let editorMode = window.nvhStore.data.customEditor ? "edit" : "view"
-               return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${this.state.displayedEntryId}/${editorMode}`
-            } else {
-               return `#/${this.dictData.dictId}/${this.state.displayedEntryId}`
-            }
+            let editorMode = this.dictData.userAccess
+                  && this.dictData.userAccess.canEdit
+                  && window.nvhStore.data.customEditor ? "edit" : "view"
+            return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${this.state.displayedEntryId}/${editorMode}`
          },
 
          initializeDropdown(){
