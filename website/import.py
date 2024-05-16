@@ -32,8 +32,8 @@ def purge(db, historiography, args):
         db.execute("delete from history")
     else:
         log_info("Copying all entries to history...")
-        db.execute("insert into history(entry_id, action, [when], email, xml, historiography) "
-                   "select id, 'purge', ?, ?, xml, ? from entries", 
+        db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) "
+                   "SELECT id, 'purge', ?, ?, nvh, ? from entries",
                    (str(datetime.datetime.utcnow()), args.email, json.dumps(historiography)))
         
     log_info("Purging entries...")
@@ -238,12 +238,12 @@ def main():
         entry_inserted = 0
         limit_reached = False
 
+        historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(args.filename)}
+
         db = sqlite3.connect(args.dbname)
         db.row_factory = sqlite3.Row
         if args.purge:
             purge(db, historiography, args)
-
-        historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(args.filename)}
 
         elements = {}
         ops.get_gen_schema_elements(schema, elements)

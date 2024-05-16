@@ -1537,6 +1537,7 @@ def getImportProgress(file_path):
     """
     if os.path.isfile(file_path + ".log"):
         errors = []
+        warnings = []
         progress = {}
         finished = False
         with open(file_path + ".log", "r") as log_f:
@@ -1547,19 +1548,19 @@ def getImportProgress(file_path):
                 if prg:
                     progress = {'per': int(prg.group(2)), 'done': int(prg.group(3)), 'total': int(prg.group(4))}
                 elif warn:
-                    errors.append(warn.group(1))
+                    warnings.append(warn.group(1))
                 elif err:
                     errors.append(err.group(1))
 
         if progress.get('per', 0) == 100:
             finished = True
 
-        return progress, finished, errors, file_path
+        return progress, finished, errors, warnings, file_path
     else:
-        return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], file_path
+        return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], ['No log file found'], file_path
 
 
-def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upload_obj=None):
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_upload_obj=None):
     """
     return progress, finished status, error messages
     """
@@ -1587,31 +1588,12 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, bottle_upl
         params.append('-d')
     elif purge:
         params.append('-p')
+    elif purge_all:
+        params.append('-pp')
 
     p = subprocess.Popen([currdir + "/import.py", dbpath, file_path, email, hwNode] + params,
                           stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
     return '', "Import started. You may close the window, import will run in the background. Please wait...", file_path
-
-def checkImportStatus(pidfile, errfile):
-    content = ''
-    while content == '':
-        with open(pidfile, "r") as content_file:
-            content = content_file.read()
-    pid_data = re.split(r"[\n\r]", content)
-    finished = False
-    if len(pid_data) > 1:
-        if pid_data[-1] == "":
-            progress = pid_data[-2]
-        else:
-            progress = pid_data[-1]
-        if "100%" in progress:
-            finished = True
-    else:
-        progress = "Import started. Please wait..."
-    errors = False
-    if os.path.isfile(errfile) and os.stat(errfile).st_size:
-        errors = True
-    return {"progressMessage": progress, "finished": finished, "errors": errors}
 
 def readDoctypesUsed(dictDB):
     c = dictDB.execute("select doctype from entries group by doctype order by count(*) desc")

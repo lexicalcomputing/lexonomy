@@ -106,7 +106,7 @@ class TestImportXML(unittest.TestCase):
         data = {'upload_file_path': self.upload_file_path}
         r = requests.post(url=self.website + f"/{self.dicID}/getImportProgress.json", data=data, cookies=self.cookies)
         self.assertEqual(r.json()['finished'], True)
-        self.assertEqual(len(r.json()['error']), 11)
+        self.assertEqual(len(r.json()['warnings']), 11)
         self.assertEqual(r.json()['progress']['per'], 100)
 
     def test_3(self):
