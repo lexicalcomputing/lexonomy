@@ -4,6 +4,9 @@
       <option if={props.showEmptyValue}
             selected={props.riotValue == ""}
             value="">{props.emptyValue || '-select element-'}</option>
+      <option if={props.showAnyElement}
+            selected={props.riotValue == ".*"}
+            value=".*">Any element</option>
       <option each={option in elementOptionList}
             selected={props.multiple ? props.riotValue.includes(option.elementName) : option.elementName == props.riotValue}
             value={option.elementName}>

@@ -3,6 +3,7 @@
       <element-select show-empty-value={true}
             riot-value={props.rule.attr}
             name="element"
+            show-any-element={true}
             on-change={onElementChange}/>
       <select id="operatorSelect"
             onchange={onRowOperatorChange}>
@@ -60,14 +61,15 @@
    <script>
       export default{
          onBeforeMount(){
-            this.operatorList = this.store.const.QUERY_OPERATORS.map(o => ({
-               value: o[0],
-               label: o[2]
-            }))
+            this.updateOperatorList()
          },
 
          onMounted(){
             window.initFormSelects(this.root)
+         },
+
+         onBeforeUpdate(){
+            this.updateOperatorList()
          },
 
          onUpdated(){
@@ -110,6 +112,16 @@
          onValueInput(evt){
             this.props.rule.value = evt.target.value
             this.props.builder.onChange(this.props.rule)
+         },
+
+         updateOperatorList(){
+            this.operatorList = this.store.const.QUERY_OPERATORS.filter(o => {
+               return this.props.rule.attr == ".*" ? o[3] : true
+            })
+                  .map(o => ({
+                     value: o[0],
+                     label: o[2]
+                  }))
          }
       }
    </script>

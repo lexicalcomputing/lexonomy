@@ -2,18 +2,18 @@ class StoreClass {
    constructor(){
       observable(this);
       this.const = {
-         QUERY_OPERATORS: [
-            ["is", "=", "is equal to"],
-            ["is_not", "!=", "is not equal to"],
-            ["regex", "~=", "match regular expression"],
-            ["contains", "~=", "contains"],
-            ["starts_with", "~=", "starts with"],
-            ["ends_with", "~=", "ends with"],
-            ["count_is", "#=", "count is"],
-            ["count_more", "#>", "count is more than"],
-            ["count_less", "#<", "count is less than"],
-            ["exists", "#>", "exists"],
-            ["not_exists", "#<", "not exists"]
+         QUERY_OPERATORS: [            // true/false - can be used with "Any element" option
+            ["is", "=", "is equal to", true],
+            ["is_not", "!=", "is not equal to", true],
+            ["regex", "~=", "match regular expression", true],
+            ["contains", "~=", "contains", true],
+            ["starts_with", "~=", "starts with", true],
+            ["ends_with", "~=", "ends with", true],
+            ["count_is", "#=", "count is", false],
+            ["count_more", "#>", "count is more than", false],
+            ["count_less", "#<", "count is less than", false],
+            ["exists", "#>", "exists", false],
+            ["not_exists", "#<", "not exists", false]
          ],
          ENTRY_TYPES: {
             string: "Text",
@@ -1561,7 +1561,7 @@ class StoreClass {
    }
 
    advancedSearchParseRule(rule, groupArray){
-      if(!this.data.config.structure.elements[rule.attr]){
+      if(rule.attr != ".*" && !this.data.config.structure.elements[rule.attr]){
          let suggestion = Object.keys(this.data.config.structure.elements).find(element =>  element.startsWith(rule.attr))
          throw `Unknown element "${rule.attr}".${suggestion ? ' Did you mean "' + suggestion + '"?' : ''}`
       }
