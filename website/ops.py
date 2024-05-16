@@ -268,13 +268,11 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
 
     searchTitle = getEntryTitle(nvhParsed, configs["titling"], True)
     dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
-    dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle.lower(), 1))
 
     rm_pos = re.match('(.*)-.*', searchTitle)
     if rm_pos:
         searchTitle_no_pos = rm_pos.group(1)
         dictDB.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos, 1))
-        dictDB.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos.lower(), 1))
 
     dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
     dictDB.commit()
@@ -677,7 +675,6 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
             for idx, example in enumerate(examples):
                 dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
-                dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"].lower(), 1))
 
     dictDB.commit()
 
@@ -1668,9 +1665,9 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?)"
         params2 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
     elif modifier == "exact":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt LIKE ? GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
         params1 = (doctype, searchtext, howmany, offset)
-        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt=?"
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt LIKE ?"
         params2 = (doctype, searchtext)
     c1 = dictDB.execute(sql1, params1)
     entries = []
