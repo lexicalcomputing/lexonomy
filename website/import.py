@@ -305,11 +305,9 @@ def main():
             db.execute("DELETE FROM searchables WHERE entry_id=? and level=?", (entryID, 1))
             searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
             db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
-            db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle.lower(), 1))
             if tl_node_contains_pos:
                 searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
                 db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos, 1))
-                db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos.lower(), 1))
             entry_inserted += 1
 
             if entry_inserted % 100 == 0:
