@@ -12,7 +12,7 @@ window.nvhPlugins.imageSearch = {
          window.nvhStore.trigger("toggleWidgetPanelLoading", true, "Searching...")
          window.nvhStore.trigger("toggleWidgetPanelOpen", true, "Image Search")
 
-         $.get(`${window.API_URL}/${window.store.data.dictId}/getmedia/${headword}`, function(json) {
+         window.connection.get(`${window.API_URL}/${window.store.data.dictId}/getmedia/${headword}`, function(json) {
             if(json.images && json.images.length > 0) {
                let content = $("<div class=\"nvh-gmedia-container\"></div>")
                json.images.forEach(image => {

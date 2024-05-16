@@ -17,7 +17,8 @@
          bindings: [["auth", "authChanged", "onAuthChanged"],
                     ["auth", "checkingAuthChanged", "onCheckingAuthChange"],
                     ["store", "isDictionaryLoadingChanged", "update"],
-                    ["store", "dictionaryChanged", "update"]],
+                    ["store", "dictionaryChanged", "onDictionaryChanged"],
+                    ["store", "unauthorizedDictionary", "onUnauthorizedRequest"]],
 
          state: {
             isLoading: true,
@@ -35,6 +36,7 @@
                this.update()
                this.checkConsentAndShowConsentDialog()
             })
+            this.connection = window.connection
             let appUpdater = new window.AppUpdaterClass({
                url: window.window.API_URL + 'version.txt',
                windowVersionKey: 'LEXONOMY_VERSION'
@@ -95,11 +97,11 @@
             route('/*/edit/*(\?*){0,1}', (dictId, doctype) => {
                this.goTo('dict-edit', [dictId, doctype])
             })
-            route('/*/edit/*/*/*(\?*){0,1}', (dictId, doctype, entryId, editorMode) => {
-               this.goTo('dict-edit', [dictId, doctype, entryId, editorMode])
+            route('/*/edit/*/([0-9]+|new)(\?*){0,1}', (dictId, doctype, entryId) => {
+               this.goTo('dict-edit', [dictId, doctype, entryId, "view"])
             })
-            route('/*/([0-9]+)(\?*){0,1}', (dictId, entryId) => {
-               this.goTo('dict-public-entry', [dictId, null, entryId])
+            route('/*/edit/*/([0-9]+|new)/*(\?*){0,1}', (dictId, doctype, entryId, editorMode) => {
+               this.goTo('dict-edit', [dictId, doctype, entryId, editorMode])
             })
             route('/*/config/*', (dictId, configId) => {
                this.goTo('dict-config-' + configId, [dictId])
@@ -147,11 +149,15 @@
          },
 
          onAuthChanged(){
-            if(route.query().next){
-               window.location.href = decodeURIComponent(route.query().next)
+            if(this.authData.authorized){
+               if(route.query().next){
+                  window.location.href = decodeURIComponent(route.query().next)
+               } else {
+                  this.store.resetDictionary()  // dictionary cloud be loaded as unauthorized with userAccess: false
+                  this.update()
+               }
             } else {
-               this.store.resetDictionary()  // dictionary cloud be loaded as unauthorized with userAccess: false
-               this.update()
+               this.update({page: "unauthorized"})
             }
          },
 
@@ -165,31 +171,33 @@
             route.exec()
          },
 
+         onUnauthorizedRequest(){
+            this.update({page: "unauthorized"})
+         },
+
+         onDictionaryChanged(){
+            if(!this.dictData.userAccess && !this.dictData.public && !this.authData.authorized){
+               this.state.page = "unauthorized"
+            }
+            this.update()
+         },
+
          goTo(page, storeParams, pageProps){
-            if(!this.authData.authorized && this.needAuthorization(page)){
-               this.update({
-                  page: 'unauthorized'
-               })
+            if(!storeParams){
+               this.checkAccessAndOpenPage(page)
             } else {
-               if(!storeParams){
-                  this.update({
-                     page: page,
-                     pageProps: pageProps || {}
-                  })
-               } else {
-                  this.store.open(...storeParams)
-                  let query = route.query()
-                  this.store.changeSearchParams({
-                     tab: query.t,
-                     searchtext: decodeURIComponent(query.s || ""),
-                     modifier: query.m,
-                     advanced_query: decodeURIComponent(query.q || "")
-                  })
-                  if(this.store.data.isDictionaryLoading){
-                     this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, pageProps))
-                  } else{
-                     this.checkAccessAndOpenPage(page, pageProps)
-                  }
+               this.store.open(...storeParams)
+               let query = route.query()
+               this.store.changeSearchParams({
+                  tab: query.t,
+                  searchtext: decodeURIComponent(query.s || ""),
+                  modifier: query.m,
+                  advanced_query: decodeURIComponent(query.q || "")
+               })
+               if(this.store.data.isDictionaryLoading){
+                  this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, pageProps))
+               } else{
+                  this.checkAccessAndOpenPage(page, pageProps)
                }
             }
          },
@@ -211,10 +219,11 @@
             let uA = this.store.data.userAccess
             if(this.authData.isAdmin
                || !this.needAuthorization(page)
+               || ['dict-public', 'dict-edit'].includes(page) && uA
                || (page == "dict-download" && uA.canDownload)
                || (page == "dict-upload" && uA.canUpload)
                || (page != "dict-config-limits" && page.startsWith("dict-config") && uA.canConfig)
-               || (page.startsWith("dict-edit")/* && (uA.canEdit)*/)
+               || (page.startsWith("dict-edit") && uA)
                || (page.startsWith("dict-links") && (uA.canEdit))){
                return true
             }
@@ -222,7 +231,7 @@
          },
 
          needAuthorization(page){
-            return !['e404', 'open-dictionaries', 'dict-public', 'dict-public-entry',
+            return !['e404', 'open-dictionaries',
                'api', 'login', 'register', 'register-password', 'forgot',
                'forgot-password'].includes(page)
          },

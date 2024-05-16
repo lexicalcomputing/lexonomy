@@ -49,7 +49,7 @@ class NVHStoreClass {
                      M.toast({html: "Entry updated"})
                      this.history.lastSavedIdx = this.history.actualIdx
                   } else {
-                     M.toast({html: `Entry was not updated: ${response.feedback}`})
+                     M.toast({html: `Entry was not updated: ${response.feedback || ""}`})
                   }
                   this.data.isSaving = false
                   this.trigger("isSavingChanged")
@@ -107,9 +107,8 @@ class NVHStoreClass {
    }
 
    saveStyle(){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${window.store.data.dictId}/dictconfigupdate.json`,
-         method: 'POST',
          data: {
             id: "formatting",
             content: JSON.stringify(this.data.formatting)

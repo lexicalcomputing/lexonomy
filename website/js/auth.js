@@ -190,6 +190,15 @@ class AuthClass {
             })
    }
 
+   invalidateSession(){
+      if(this.data.authorized){
+         this.data.authorized = false;
+         this.resetUser()
+         this.trigger("authChanged")
+         M.toast({html: "Your session has expired."})
+      }
+   }
+
    _getCookie(val) {
       if (document.cookie != undefined) {
          if (document.cookie.split('; ').find(row => row.startsWith(val+'=')) != undefined) {

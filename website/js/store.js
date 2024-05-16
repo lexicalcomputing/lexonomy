@@ -145,9 +145,8 @@ class StoreClass {
       let entry = this.data.entryList.find(e => e.id == entryId)
       entry.isSaving = true
       this.trigger("entryListChanged", entryId)
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/entryflag.json`,
-         method: 'POST',
          data: {
             id: entryId,
             flag: flag
@@ -258,13 +257,7 @@ class StoreClass {
             advanced_query: ''
          },
          editorMode: 'view',
-         userAccess: {
-            canView: false,
-            canEdit: false,
-            canConfig: false,
-            canUpload: false,
-            canDownload: false
-         },
+         userAccess: false,
          dictionaryExamples: null,
          dictionaryExamplesHasMore: null
       })
@@ -272,7 +265,7 @@ class StoreClass {
 
    loadSiteconfig(){
       this.data.isSiteconfigLoading = true
-      return $.ajax({url: `${window.API_URL}siteconfigread.json`})
+      return window.connection.get({url: `${window.API_URL}siteconfigread.json`})
             .done(response => {
                this.data.siteconfig = response
                this.trigger("siteconfigChanged")
@@ -291,10 +284,12 @@ class StoreClass {
       }
       this.data.isDictionaryListLoading = true
       this.trigger("dictionaryListLoadingChanged")
-      return $.ajax(`${window.API_URL}userdicts.json`)
+      return window.connection.get(`${window.API_URL}userdicts.json`)
             .done(response => {
-               this._setDictionaryList(response.dicts)
-               this.data.isDictionaryListLoaded = true
+               if(response.dicts){
+                  this._setDictionaryList(response.dicts)
+                  this.data.isDictionaryListLoaded = true
+               }
             })
             .fail(response => {
                M.toast({html: "Dictionary list could not be loaded."})
@@ -308,18 +303,20 @@ class StoreClass {
    loadPublicDictionaryList(){
       this.data.isPublicDictionaryListLoading = true
       this.trigger("isPublicDictionaryListLoadingChanged")
-      return $.ajax(`${window.API_URL}publicdicts.json`)
+      return window.connection.get(`${window.API_URL}publicdicts.json`)
             .done(response => {
-               this.data.isPublicDictionaryListLoaded = true
-               this.data.publicDictionaryList = response.entries || []
-               this.data.publicDictionaryLanguageList = [...new Set(this.data.publicDictionaryList.map(d => d.lang))].filter(l => !!l)
-               if(this.data.isDictionaryListLoaded){
-                  let favouriteIds = this.data.dictionaryList.filter(d => d.favorite).map(d => d.id)
-                  this.data.publicDictionaryList.forEach(d => {
-                     if(favouriteIds.includes(d.id)){
-                        d.favorite = true
-                     }
-                  })
+               if(response.success){
+                  this.data.isPublicDictionaryListLoaded = true
+                  this.data.publicDictionaryList = response.entries || []
+                  this.data.publicDictionaryLanguageList = [...new Set(this.data.publicDictionaryList.map(d => d.lang))].filter(l => !!l)
+                  if(this.data.isDictionaryListLoaded){
+                     let favouriteIds = this.data.dictionaryList.filter(d => d.favorite).map(d => d.id)
+                     this.data.publicDictionaryList.forEach(d => {
+                        if(favouriteIds.includes(d.id)){
+                           d.favorite = true
+                        }
+                     })
+                  }
                }
             })
             .fail(response => {
@@ -342,6 +339,14 @@ class StoreClass {
       this.loadDictionary(this.data.dictId)
             .done(response => {
                if(response.success){
+                  // TODO just temporary fix until backend is be updated
+                  if(!response.userAccess && response.publicInfo && response.publicInfo.public){
+                     response.userAccess = {canView: true}
+                  }
+                  if(!response.userAccess){
+                     this.trigger("unauthorizedDictionary")
+                     return
+                  }
                   let elements = response.configs.structure.elements
                   if(!response.configs.formatting){
                      response.configs.formatting = {
@@ -403,8 +408,9 @@ class StoreClass {
                route("#/")
             })
             .always(response => {
+               this.data.isDictionaryLoading = false
                this.trigger("isDictionaryLoadingChanged")
-               if(!["dict-config-structure", "unauthorized"].includes(this.data.actualPage)
+               if(response.userAccess && !["dict-config-structure", "unauthorized"].includes(this.data.actualPage)
                      && (!this.data.doctypes
                               || !this.data.doctypes.length
                               || !this.data.doctypes[0]
@@ -417,7 +423,7 @@ class StoreClass {
    }
 
    loadDictionary(dictId){
-      return $.ajax(`${window.API_URL}${dictId}/config.json`)
+      return window.connection.get(`${window.API_URL}${dictId}/config.json`)
             .done(response => {
                !response.success && M.toast({html: `Could not load ${dictId} dictionary.`})
             })
@@ -476,9 +482,8 @@ class StoreClass {
       } else {
          url = `${window.API_URL}${this.data.dictId}/search.json`
       }
-      return $.ajax({
+      return window.connection.post({
          url: url,
-         method: "POST",
          data: data
       })
             .fail(response => {
@@ -492,19 +497,20 @@ class StoreClass {
       }
       this.data.isEntryLoading = true
       this.trigger("isEntryLoadingChanged")
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/entryread.json`,
-         method: "POST",
          data: {
             id: this.data.entryId
          }
       })
             .done(response => {
-               this.data.entry = response
-               this.data.entryRevisions = []
-               this.data.isEntryRevisionsLoaded = false
-               this.data.isEntryLoaded = true
-               this.trigger("entryChanged")
+               if(response.success){
+                  this.data.entry = response
+                  this.data.entryRevisions = []
+                  this.data.isEntryRevisionsLoaded = false
+                  this.data.isEntryLoaded = true
+                  this.trigger("entryChanged")
+               }
             })
             .fail(response => {
                M.toast({html: "Entry could not be loaded."})
@@ -516,49 +522,50 @@ class StoreClass {
    }
 
    createEntry(nvh){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/entrycreate.json`,
-         method: "POST",
          data: {
             nvh: nvh
          }
       })
             .done(response => {
-               this.data.entry = {
-                  id: response.id,
-                  nvh: response.content
+               if(response.success){
+                  this.data.entry = {
+                     id: response.id,
+                     nvh: response.content
+                  }
+                  this.data.entryId = response.id
+                  this.data.entryRevisions = []
+                  this.data.isEntryRevisionsLoaded = false
+                  this.data.isEntryLoaded = true
+                  this.loadEntryList()
+                  this.trigger("entryChanged")
                }
-               this.data.entryId = response.id
-               this.data.entryRevisions = []
-               this.data.isEntryRevisionsLoaded = false
-               this.data.isEntryLoaded = true
-               this.loadEntryList()
-               this.trigger("entryChanged")
             })
    }
 
    updateEntry(nvh){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/entryupdate.json`,
-         method: "POST",
          data: {
             id: this.data.entryId,
             nvh: nvh
          }
       })
             .done(response => {
-               this.data.entry.nvh = response.content
-               if(this.data.entryRevisions.length){
-                  this.loadEntryRevisions()
+               if(response.success){
+                  this.data.entry.nvh = response.content
+                  if(this.data.entryRevisions.length){
+                     this.loadEntryRevisions()
+                  }
+                  this.updateFlagInEntryList(nvh)
                }
-               this.updateFlagInEntryList(nvh)
             })
    }
 
    deleteEntry(){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/entrydelete.json`,
-         method: "POST",
          data: {
                id: this.data.entryId
          }
@@ -575,18 +582,19 @@ class StoreClass {
       if(!this.data.isEntryRevisionsLoading){
          this.data.isEntryRevisionsLoading = true
          this.trigger("isEntryRevisionsLoadingChanged")
-         return $.ajax({
+         return window.connection.post({
             url: `${window.API_URL}${this.data.dictId}/history.json`,
-            method: "POST",
             data: {
                   id: this.data.entryId
             }
          })
                .done(response => {
-                  this.data.entryRevisions = response.history
-                  this.data.entryRevisions.forEach((r, idx) => {r.idx = idx})
-                  this.data.isEntryRevisionsLoaded = true
-                  this.trigger("entryRevisionChanged")
+                  if(response.history){
+                     this.data.entryRevisions = response.history
+                     this.data.entryRevisions.forEach((r, idx) => {r.idx = idx})
+                     this.data.isEntryRevisionsLoaded = true
+                     this.trigger("entryRevisionChanged")
+                  }
                })
                .fail(response => {
                   M.toast({html: "Revisions could not be loaded."})
@@ -599,7 +607,7 @@ class StoreClass {
    }
 
    loadEntryLinks(){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/entrylinks.json`,
          data: {
             id: this.data.entryId
@@ -611,7 +619,7 @@ class StoreClass {
    }
 
    createEntryLink(source_el, target_dict, target_id, target_el){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/links/add`,
          data: {
             source_el: source_el,
@@ -622,7 +630,9 @@ class StoreClass {
          }
       })
             .done(response => {
-               M.toast({html: "Link created."})
+               if(response.success){
+                  M.toast({html: "Link created."})
+               }
             })
             .fail(response => {
                M.toast({html: "Could not create link."})
@@ -630,11 +640,13 @@ class StoreClass {
    }
 
    deleteEntryLink(linkId){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/links/delete/${linkId}`
       })
-            .fail(response => {
-               M.toast({html: "Link deleted."})
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Link deleted."})
+               }
             })
             .fail(response => {
                M.toast({html: "Link could not be deleted."})
@@ -642,13 +654,13 @@ class StoreClass {
    }
 
    loadLinkables(dictId){
-       return $.ajax({
+       return window.connection.get({
          url: `${window.API_URL}${dictId}/linkablelist.json`
       })
    }
 
    loadDictionaryLinks(){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/links.json`
       })
             .fail(response => {
@@ -657,7 +669,7 @@ class StoreClass {
    }
 
    loadSchemas(){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}schemaitems.json`
       })
             .fail(response => {
@@ -666,9 +678,8 @@ class StoreClass {
    }
 
    loadFinalSchema(schemaItems){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}schemafinal.json`,
-         method: "POST",
          data: {
             schema_items: JSON.stringify(schemaItems)
          }
@@ -681,9 +692,8 @@ class StoreClass {
    }
 
    schemaToJSON(schema){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}schema_to_json.json`,
-         method: "POST",
          data: {
             schema: JSON.stringify(schema)
          }
@@ -694,16 +704,17 @@ class StoreClass {
    }
 
    loadDictionaryConfig(configId){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/configread.json`,
-         method: "POST",
          data: {
             id: configId
          }
       })
             .done(response => {
-               if(response.id == "structure"){
-                  this.migrateConfigStructure(response.content)
+               if(response.success){
+                  if(response.id == "structure"){
+                     this.migrateConfigStructure(response.content)
+                  }
                }
             })
             .fail(response => {
@@ -720,17 +731,18 @@ class StoreClass {
          this.data.isPublicDictionaryListLoaded = false
          this.data.publicDictionaryList = []
       }
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/dictconfigupdate.json`,
-         method: 'POST',
          data: {
             id: configId,
             content: JSON.stringify(data)
          }
       })
             .done(response => {
-               this.loadActualDictionary()
-               M.toast({html: "Saved"})
+               if(response.success){
+                  this.loadActualDictionary()
+                  M.toast({html: "Saved"})
+               }
             })
             .fail(response => {
                M.toast({html: `Could not save the data ('${configId}'): ${response.statusText}`})
@@ -739,16 +751,17 @@ class StoreClass {
    }
 
    updateDictionaryAccess(users){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/dictaccessupdate.json`,
-         method: 'POST',
          data: {
             users: JSON.stringify(users)
          }
       })
             .done(response => {
-               this.loadActualDictionary()
-               M.toast({html: "Saved"})
+               if(response.success){
+                  this.loadActualDictionary()
+                  M.toast({html: "Saved"})
+               }
             })
             .fail(response => {
                M.toast({html: `Could not save the data ('users'): ${response.statusText}`})
@@ -758,16 +771,17 @@ class StoreClass {
 
    updateDictionarySettings(data){
       // only for admins
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/dictsettingsupdate.json`,
-         method: 'POST',
          data: {
             configs: JSON.stringify(data)
          }
       })
             .done(response => {
-               this.loadActualDictionary()
-               M.toast({html: "Saved"})
+               if(response.success){
+                  this.loadActualDictionary()
+                  M.toast({html: "Saved"})
+               }
             })
             .fail(response => {
                M.toast({html: `Could not save the settings: ${response.statusText}`})
@@ -776,9 +790,8 @@ class StoreClass {
    }
 
    changeDictionaryUrl(url){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/move.json`,
-         method: 'POST',
          data: {
             url: url
          }
@@ -793,20 +806,21 @@ class StoreClass {
    }
 
    isDictIdTaken(dictId){
-      return $.ajax(`${window.API_URL}${dictId}/config.json`)
+      return window.connection.get(`${window.API_URL}${dictId}/config.json`)
    }
 
    importDictionaryConfiguration(data){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/importconfigs.json`,
-         method: 'POST',
          data: data,
          processData: false,
          contentType: false
       })
             .done(() => {
-               this.loadActualDictionary()
-               M.toast({html: "Configuration was imoported."})
+               if(response.success){
+                  this.loadActualDictionary()
+                  M.toast({html: "Configuration was imoported."})
+               }
             })
             .fail(payload => {
                M.toast({html: "Could not import configuration."})
@@ -814,9 +828,8 @@ class StoreClass {
    }
 
    isDictionaryUrlTaken(url){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}exists.json`,
-         method: 'POST',
          data: {
             url: url
          }
@@ -827,13 +840,13 @@ class StoreClass {
    }
 
    createDictionary(data){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}make.json`,
          method: 'POST',
          data: data
       })
             .done(response => {
-               if (response.success) {
+               if(response.success) {
                   this.loadDictionaryList()
                   M.toast({html: "Dictionary was created."})
                }
@@ -844,17 +857,18 @@ class StoreClass {
    }
 
    cloneDictionary(dictId){
-      return $.ajax({
-         url: `${window.API_URL}${dictId}/clone.json`,
-         method: 'POST'
+      return window.connection.post({
+         url: `${window.API_URL}${dictId}/clone.json`
       })
             .done(response => {
-               this._setDictionaryList(response.dicts)
-               M.toast({html: "Dictionary was cloned."})
-               this.changeDictionary(response.dictID)
-               this.one("dictionaryChanged", () => {
-                  route(response.dictID)
-               })
+               if(response.success){
+                  this._setDictionaryList(response.dicts)
+                  M.toast({html: "Dictionary was cloned."})
+                  this.changeDictionary(response.dictID)
+                  this.one("dictionaryChanged", () => {
+                     route(response.dictID)
+                  })
+               }
             })
             .fail(response => {
                M.toast({html: "Dictionary clone creation failed."})
@@ -864,13 +878,14 @@ class StoreClass {
    }
 
    deleteDictionary(dictId){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${dictId}/destroy.json`,
-         method: 'POST'
       })
             .done(response => {
-               this._setDictionaryList(response.dicts)
-               M.toast({html: "Dictionary was deleted."})
+               if(response.success){
+                  this._setDictionaryList(response.dicts)
+                  M.toast({html: "Dictionary was deleted."})
+               }
             })
             .fail(response => {
                M.toast({html: "Could not delete the dictionary."})
@@ -883,20 +898,21 @@ class StoreClass {
    toggleDictionaryFavorite(dictId, favorite){
       this.setDictionaryAttribute(dictId, "isSaving", true)
       this.trigger("favoriteChanged")
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}changefavdict.json`,
-            method: 'POST',
             data: {
                dictId: dictId,
                status: favorite
             }
          })
                .done(function(dictId, response) {
-                  this.setDictionaryAttribute(dictId, "favorite", favorite)
-                  if(favorite && !this.getDictionary(dictId)){
-                     // if user add public dictionary to the favorite list, we need to reload
-                     // user dictionary list - it contains favorite dictionaries
-                     this.loadDictionaryList()
+                  if(response.success){
+                     this.setDictionaryAttribute(dictId, "favorite", favorite)
+                     if(favorite && !this.getDictionary(dictId)){
+                        // if user add public dictionary to the favorite list, we need to reload
+                        // user dictionary list - it contains favorite dictionaries
+                        this.loadDictionaryList()
+                     }
                   }
                }.bind(this, dictId))
                .fail(response => {
@@ -908,9 +924,8 @@ class StoreClass {
    }
 
    loadAdminDictionaryList(searchtext, howmany){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}dicts/dictlist.json`,
-            method: "POST",
             data: {
                searchtext: searchtext || "",
                howmany: howmany || 100
@@ -933,9 +948,8 @@ class StoreClass {
    }
 
    loadAdminUserList(searchtext, howmany){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}users/userlist.json`,
-            method: "POST",
             data: {
                searchtext: searchtext || "",
                howmany: howmany || 100
@@ -949,16 +963,17 @@ class StoreClass {
    }
 
    createUser(email, isManager){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}users/usercreate.json`,
-         method: 'POST',
          data: {
             id: email,
             manager: isManager
          }
       })
             .done(response => {
-               M.toast({html: "User was created."})
+               if(response.success){
+                  M.toast({html: "User was created."})
+               }
             })
             .fail(response => {
                M.toast({html: "User could not be created."})
@@ -966,15 +981,16 @@ class StoreClass {
    }
 
    resetUserPassword(email){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}users/userupdate.json`,
-         method: 'POST',
          data: {
             email: email
          }
       })
             .done(response => {
-               M.toast({html: "User password was reset."})
+               if(response.success){
+                  M.toast({html: "User password was reset."})
+               }
             })
             .fail(response => {
                M.toast({html: "User password could not be reset."})
@@ -982,9 +998,8 @@ class StoreClass {
    }
 
    loadUsers(searchtext, howmany){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}users/userlist.json`,
-         method: 'POST',
          data: {
             searchtext: searchtext,
             howmany: howmany
@@ -998,9 +1013,8 @@ class StoreClass {
    }
 
    getUser(email){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}users/userread.json`,
-         method: 'POST',
          data: {
             id: email
          }
@@ -1008,15 +1022,16 @@ class StoreClass {
    }
 
    deleteUser(email){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}users/userdelete.json`,
-         method: 'POST',
          data: {
             id: email
          }
       })
             .done(response => {
-               M.toast({html: "User was deleted."})
+               if(response.success){
+                  M.toast({html: "User was deleted."})
+               }
             })
             .fail(response => {
                M.toast({html: "User could not be deleted."})
@@ -1026,15 +1041,16 @@ class StoreClass {
    }
 
    changeSketchEngineUsername(ske_username){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}changeskeusername.json`,
-         method: 'POST',
          data: {
             ske_userName: ske_username
          }
       })
             .done(response => {
-               M.toast({html: "Sketch Engine username was changed."})
+               if(response.success){
+                  M.toast({html: "Sketch Engine username was changed."})
+               }
             })
             .fail(response => {
                M.toast({html: "Sketch Engine username could not be changed."})
@@ -1042,15 +1058,16 @@ class StoreClass {
    }
 
    changeSketchEngineApiKey(ske_apiKey){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}changeskeapi.json`,
-         method: 'POST',
          data: {
             ske_apiKey: ske_apiKey
          }
       })
             .done(response => {
-               M.toast({html: "Sketch Engine API key was changed."})
+               if(response.success){
+                  M.toast({html: "Sketch Engine API key was changed."})
+               }
             })
             .fail(response => {
                M.toast({html: "Sketch Engine API key could not be changed."})
@@ -1058,15 +1075,16 @@ class StoreClass {
    }
 
    changePassword(password){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}changepwd.json`,
-         method: 'POST',
          data: {
             ske_apiKey: ske_apiKey
          }
       })
             .done(response => {
-               M.toast({html: "Password was changed."})
+               if(response.success){
+                  M.toast({html: "Password was changed."})
+               }
             })
             .fail(response => {
                M.toast({html: "Password could not be changed."})
@@ -1074,9 +1092,8 @@ class StoreClass {
    }
 
    changeLexonomyApiKey(apiKey){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}changeoneclickapi.json`,
-         method: 'POST',
          data: {
             apiKey: apiKey
          }
@@ -1124,9 +1141,8 @@ class StoreClass {
    }
 
    importFile(data){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/import.json`,
-         method: 'POST',
          data: data,
          processData: false,
          contentType: false
@@ -1134,9 +1150,8 @@ class StoreClass {
    }
 
    checkImportProgress(upload_file_path){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/getImportProgress.json`,
-         method: 'POST',
          data: {upload_file_path: upload_file_path}
       })
             .done(response => {
@@ -1153,14 +1168,15 @@ class StoreClass {
       }
       this.data.isDictionaryExamplesLoading = true
       this.trigger("isDictionaryExamplesLoadingChanged")
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/random.json`,
-         method: 'POST'
       })
             .done(response => {
-               this.data.dictionaryExamples = response.entries
-               this.data.dictionaryExamplesHasMore = response.more
-               this.trigger("dictionaryExamplesChanged")
+               if(response.entries){
+                  this.data.dictionaryExamples = response.entries
+                  this.data.dictionaryExamplesHasMore = response.more
+                  this.trigger("dictionaryExamplesChanged")
+               }
             })
             .fail(response => {
                M.toast({html: "Could not load the examples."})
@@ -1177,18 +1193,19 @@ class StoreClass {
       }
       this.data.isEntryLoading = true
       this.trigger("isEntryLoadingChanged")
-      return $.ajax({
-         url: `${window.API_URL}${this.data.dictId}/randomone.json`,
-         method: 'POST'
+      return window.connection.post({
+         url: `${window.API_URL}${this.data.dictId}/randomone.json`
       })
             .done(response => {
-               this.data.entryId = response.id
-               this.data.entry = response
-               this.data.entryRevisions = []
-               this.data.isEntryRevisionsLoaded = false
-               this.data.isEntryLoaded = true
-               this.trigger("entryIdChanged")
-               this.trigger("entryChanged")
+               if(response.success){
+                  this.data.entryId = response.id
+                  this.data.entry = response
+                  this.data.entryRevisions = []
+                  this.data.isEntryRevisionsLoaded = false
+                  this.data.isEntryLoaded = true
+                  this.trigger("entryIdChanged")
+                  this.trigger("entryChanged")
+               }
             })
             .fail(response => {
                M.toast({html: "Could not load the example."})
@@ -1200,8 +1217,8 @@ class StoreClass {
    }
 
    loadProjects(){
-      return $.ajax({
-         url: `${window.API_URL}/projects`
+      return window.connection.get({
+         url: `${window.API_URL}projects/list.json`
       })
             .fail(response => {
                M.toast({html: "Could not load projects."})
@@ -1209,22 +1226,22 @@ class StoreClass {
    }
 
    loadProject(projectID){
-      return $.ajax({
-         url: `${window.API_URL}/projects/${projectID}`
+      return window.connection.get({
+         url: `${window.API_URL}projects/${projectID}/project.json`
       })
-            .fail(response => {
-               M.toast({html: "Could not load the project."})
-            })
    }
 
    createProject(project){
-      return $.ajax({
-         url: `${window.API_URL}/projects/new`,
-         method: "POST",
+      return window.connection.post({
+         url: `${window.API_URL}projects/create.json`,
          data: project
       })
             .done(response => {
-               M.toast({html: "Project was created."})
+               if(response.error){
+                  M.toast({html: `Could not create the project: ${response.error}`})
+               } else if(repsonse.success) {
+                  M.toast({html: "Project was created."})
+               }
             })
             .fail(response => {
                M.toast({html: "Could not create the project."})
@@ -1232,13 +1249,14 @@ class StoreClass {
    }
 
    updateProject(project){
-      return $.ajax({
-         url: `${window.API_URL}/projects/update`,
-         method: "POST",
+      return window.connection.post({
+         url: `${window.API_URL}projects/${project.id}/update.json`,
          data: project
       })
             .done(response => {
-               M.toast({html: "Project was updated."})
+               if(response.success){
+                  M.toast({html: "Project was updated."})
+               }
             })
             .fail(response => {
                M.toast({html: "Could not update the project."})
@@ -1246,8 +1264,8 @@ class StoreClass {
    }
 
    skeLoadCorpora(){
-      return $.ajax({
-         url: `${window.API_URL}/user_corpora.json`
+      return window.connection.get({
+         url: `${window.API_URL}user_corpora.json`
       })
             .fail(response => {
                M.toast({html: "Could not load Sketch Engine corpora."})
@@ -1256,7 +1274,7 @@ class StoreClass {
 
    skeLoadData(method, data){
       //$.get("/"+dictId+"/skeget/xampl/", {url: kex.apiurl, corpus: kex.corpus, username: ske_username, apikey: ske_apiKey, querytype: querytype, query: query, fromp: fromp}, function(json){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/skeget/${method}`,
          data: data
       })
@@ -1266,7 +1284,7 @@ class StoreClass {
    }
 
    loadKontextCorpora(){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/kontext/corpora`
       })
             .fail(response => {
@@ -1275,7 +1293,7 @@ class StoreClass {
    }
 
    suggestUrl(){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}makesuggest.json`
       })
             .fail(response => {
@@ -1284,9 +1302,8 @@ class StoreClass {
    }
 
    autoAddImages(addElem, addNumber){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/autoimage.json`,
-         method: 'POST',
          data: {
             "addElem": addElem,
             "addNumber": addNumber
@@ -1298,7 +1315,7 @@ class StoreClass {
    }
 
    autoAddImagesGetProgress(jobId){
-      return $.ajax({
+      return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/autoimageprogress.json`,
          data: {jobid: jobId}
       })
@@ -1309,9 +1326,8 @@ class StoreClass {
    }
 
    autonumberElements(countElem, storeElem){
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/autonumber.json`,
-         method: 'POST',
          data: {
             "countElem": countElem,
             "storeElem": storeElem
@@ -1323,9 +1339,8 @@ class StoreClass {
    }
 
    sendFeedback(email, text){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}feedback.json`,
-            method: "POST",
             data: {
                email: email,
                text: text

@@ -124,38 +124,40 @@
          onMounted() {
             this.store.loadDictionaryConfig("structure")
                   .done(response => {
-                     if(response.content.tab){
-                        // new data format (NVH lexonomy)
-                        this.state.tab = response.content.tab
-                        Object.assign(this.structureStore.data, {
-                           basic_modules: response.content.basic_modules || [],
-                           advanced_structure: response.content.advanced_structure || {elements: {}, root: null},
-                           custom_NVHSchema: response.content.custom_NVHSchema || "",
-                           custom_newEntryTemplate: response.content.custom_newEntryTemplate || ""
-                        })
-                        if(response.content.advanced_structure){
-                           this.structureStore.setConfigStructure(response.content.advanced_structure)
+                     if(response.success){
+                        if(response.content.tab){
+                           // new data format (NVH lexonomy)
+                           this.state.tab = response.content.tab
+                           Object.assign(this.structureStore.data, {
+                              basic_modules: response.content.basic_modules || [],
+                              advanced_structure: response.content.advanced_structure || {elements: {}, root: null},
+                              custom_NVHSchema: response.content.custom_NVHSchema || "",
+                              custom_newEntryTemplate: response.content.custom_newEntryTemplate || ""
+                           })
+                           if(response.content.advanced_structure){
+                              this.structureStore.setConfigStructure(response.content.advanced_structure)
+                           }
+                        } else {
+                           // old data format (XML lexonomy)
+                           this.state.tab = (response.content._nvh || response.content._nvhSchema) ? "custom" : "advanced"
+                           Object.assign(this.structureStore.data, {
+                              custom_NVHSchema: response.content._nvhSchema || "",
+                              custom_newEntryTemplate: response.content._nvh || "",
+                           })
+                           this.structureStore.setConfigStructure(response.content)
                         }
-                     } else {
-                        // old data format (XML lexonomy)
-                        this.state.tab = (response.content._nvh || response.content._nvhSchema) ? "custom" : "advanced"
-                        Object.assign(this.structureStore.data, {
-                           custom_NVHSchema: response.content._nvhSchema || "",
-                           custom_newEntryTemplate: response.content._nvh || "",
-                        })
-                        this.structureStore.setConfigStructure(response.content)
-                     }
-                     if(this.state.tab == "simple"){
-                        if(!this.store.isStructureValid()){
-                           this.state.brokenConfig = this.state.data
-                           this.state.data = {
-                              elements: {
-                                 entry: {
-                                    children: [],
-                                    type: "txt"
-                                 }
-                              },
-                              root: "entry"
+                        if(this.state.tab == "simple"){
+                           if(!this.store.isStructureValid()){
+                              this.state.brokenConfig = this.state.data
+                              this.state.data = {
+                                 elements: {
+                                    entry: {
+                                       children: [],
+                                       type: "txt"
+                                    }
+                                 },
+                                 root: "entry"
+                              }
                            }
                         }
                      }
