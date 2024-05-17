@@ -18,6 +18,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestQueries(unittest.TestCase):
     def setUp(self):
         self.db = sqlite3.connect(f'{current_dir}/../../data/dicts/test_import_nvh.sqlite')
+        self.db.row_factory = sqlite3.Row
 
     def test_key_exists(self):
         self.assertListEqual(result_id_list('sense', self.db), [1, 2, 3, 5])
