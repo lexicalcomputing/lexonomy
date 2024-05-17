@@ -2,11 +2,12 @@
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import re
+import json
 from ops import getLocale
 from icu import Locale, Collator
 
 
-def condition2sql(condition, all_json_trees, queried_trees=[]):
+def condition2sql(condition, all_json_trees, tl_element, queried_trees=[]):
     key = condition['attr']
     value = condition['val']
     operator = condition['op']
@@ -20,7 +21,10 @@ def condition2sql(condition, all_json_trees, queried_trees=[]):
     if '_' in key:
         valkey = f'"{key}"'
 
-    path = f'%.{valkey}[_]."_value"' # TODO resolve support for 0-9 items
+    if key == tl_element:
+        path = f'$."_value"'
+    else:
+        path = f'%.{valkey}[_]."_value"' # TODO resolve support for 0-9 items
 
     sql = ''
     json_tree = all_json_trees.pop(0)
@@ -64,37 +68,37 @@ def path_equal_check(queried_trees):
     return "(INSTR(" + t0 + "," + t1 + ") OR INSTR(" + t1 + "," + t0 + "))"
 
 
-def lex_query2sql(query, all_json_trees, queried_trees):
+def lex_query2sql(query, all_json_trees, tl_element, queried_trees):
     if isinstance(query, list):
         if 'where' in query:
-            sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
-            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
+            sub_sql_1 = lex_query2sql(query[0], all_json_trees, tl_element, queried_trees)
+            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, tl_element, queried_trees)
 
             sql = '(' + sub_sql_1 + ' AND ' + sub_sql_2 + ' AND ' + path_equal_check(queried_trees) + ')'
 
         elif 'and' in query:
-            sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
-            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
+            sub_sql_1 = lex_query2sql(query[0], all_json_trees, tl_element, queried_trees)
+            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, tl_element, queried_trees)
 
             sql = '(' + sub_sql_1 + ' AND ' + sub_sql_2 + ')'
             queried_trees.pop() # only one tree to compare with outer condition
 
         elif 'or' in query:
-            sub_sql_1 = lex_query2sql(query[0], all_json_trees, queried_trees)
-            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, queried_trees)
+            sub_sql_1 = lex_query2sql(query[0], all_json_trees, tl_element, queried_trees)
+            sub_sql_2 = lex_query2sql(query[2:], all_json_trees, tl_element, queried_trees)
 
             sql = '(' + sub_sql_1 + ' OR ' + sub_sql_2 + ')' # TODO check if it can interfere with inclusive AND
             queried_trees.pop()
 
         elif len(query)==1 and isinstance(query[0], dict):
-            sql = condition2sql(query[0], all_json_trees, queried_trees)
+            sql = condition2sql(query[0], all_json_trees, tl_element, queried_trees)
 
         elif len(query)==1 and isinstance(query[0], list):
-            sql = lex_query2sql(query[0], all_json_trees, queried_trees)
+            sql = lex_query2sql(query[0], all_json_trees, tl_element, queried_trees)
         else:
             raise ValueError('ERROR: not correctly created query')
     else:
-        sql = condition2sql(query, all_json_trees, queried_trees)
+        sql = condition2sql(query, all_json_trees, tl_element, queried_trees)
 
     return sql
 
@@ -179,7 +183,7 @@ def add_json_trees(query_tokens, sql, all_json_trees, tree_id=1):
     return tree_id
 
 
-def get_sql_query(query, collate="", orderby="ASC", howmany=10, offset=0):
+def get_sql_query(query, tl_element, collate="", orderby="ASC", howmany=10, offset=0):
     """
     Transform Lexonomy query into SQL query
     query: str, query form Lexonomy
@@ -189,7 +193,7 @@ def get_sql_query(query, collate="", orderby="ASC", howmany=10, offset=0):
     all_json_trees = ['tree0']
     queried_trees = []
     add_json_trees(query_tokens, sql, all_json_trees)
-    sql = ''.join(sql) + " WHERE " + lex_query2sql(query_tokens, all_json_trees, queried_trees) + \
+    sql = ''.join(sql) + " WHERE " + lex_query2sql(query_tokens, all_json_trees, tl_element, queried_trees) + \
           " ORDER BY entries.sortkey " + collate + " " + orderby + " LIMIT " + str(howmany) + " OFFSET " + str(offset) + ";"
 
     return sql
@@ -213,7 +217,9 @@ def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, 
     if sortdesc:
         orderby = "DESC"
 
-    sql_query = get_sql_query(query, collate, orderby, howmany, offset)
+    c0 = dictDB.execute("SELECT json FROM configs WHERE id='titling'")
+    r0 = c0.fetchone()
+    sql_query = get_sql_query(query, json.loads(r0['json'])['headword'], collate, orderby, howmany, offset)
     dictDB.create_function("REGEXP", 2, regexp)
     # IMPORTANT INFO: we relay on uniqueness of attribute names
     c = dictDB.execute(sql_query)
@@ -229,7 +235,9 @@ def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, 
 
 
 def result_id_list(query, db):
-    sql_query = get_sql_query(query, howmany=1000)
+    c0 = db.execute("SELECT json FROM configs WHERE id='titling'")
+    r0 = c0.fetchone()
+    sql_query = get_sql_query(query, json.loads(r0['json'])['headword'], howmany=1000)
     db.create_function("REGEXP", 2, regexp)
     c = db.execute(sql_query)
     return  [x[0] for x in c.fetchall()]
