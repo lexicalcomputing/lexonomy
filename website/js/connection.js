@@ -25,7 +25,7 @@ class ConnectionClass {
    sendRequest(params){
       return $.ajax(params)
             .done(response => {
-               if(response.loggedin === false || response.userAccess === false){
+               if(response.loggedin === false){
                   window.auth.invalidateSession()
                }
             })

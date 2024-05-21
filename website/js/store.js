@@ -398,14 +398,7 @@ class StoreClass {
                   this.data.search.modifier = localStorage.getItem("entryFilterModifier") || "substring"
                   this.loadEntryList()
                   window.CustomStyles.add("customDictionaryStyle", this.data.config.styles.css)
-               } else {
-                  this.data.isDictionaryLoading = false
-                  route("#/")
                }
-            })
-            .fail(response => {
-               this.data.isDictionaryLoading = false
-               route("#/")
             })
             .always(response => {
                this.data.isDictionaryLoading = false
@@ -425,10 +418,10 @@ class StoreClass {
    loadDictionary(dictId){
       return window.connection.get(`${window.API_URL}${dictId}/config.json`)
             .done(response => {
-               !response.success && M.toast({html: `Could not load ${dictId} dictionary.`})
+               !response.success && M.toast({html: `Could not load ${dictId || 'the'} dictionary.`})
             })
             .fail(function(response) {
-               M.toast({html: `Could not load ${dictId} dictionary.`})
+               M.toast({html: `Could not load ${dictId || 'the'} dictionary.`})
             }.bind(this, dictId))
    }
 
@@ -873,7 +866,7 @@ class StoreClass {
             .fail(response => {
                M.toast({html: "Dictionary clone creation failed."})
             })
-            .always(repsonse => {
+            .always(response => {
             })
    }
 
@@ -890,7 +883,7 @@ class StoreClass {
             .fail(response => {
                M.toast({html: "Could not delete the dictionary."})
             })
-            .always(repsonse => {
+            .always(response => {
 
             })
    }
@@ -1036,7 +1029,7 @@ class StoreClass {
             .fail(response => {
                M.toast({html: "User could not be deleted."})
             })
-            .always(repsonse => {
+            .always(response => {
             })
    }
 
@@ -1239,7 +1232,7 @@ class StoreClass {
             .done(response => {
                if(response.error){
                   M.toast({html: `Could not create the project: ${response.error}`})
-               } else if(repsonse.success) {
+               } else if(response.success) {
                   M.toast({html: "Project was created."})
                }
             })
