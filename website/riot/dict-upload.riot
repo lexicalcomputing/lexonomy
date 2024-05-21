@@ -71,25 +71,51 @@
    </div>
 
 
-   <div if={state.showProgress}>
-      <template if={state.isImporting}>
-         <h3>
-            Importing entries...
-         </h3>
+   <template if={state.isImporting}>
+      <h3>
+         Importing entries...
+      </h3>
+      <template if={state.progress}>
+         <div class="importProgress progress">
+            <div class="determinate"
+                  style="width: {(state.progress.per * 100).toFixed(0)}%"></div>
+         </div>
+         <div if={state.progress.total}>
+           <small class="grey-text">{state.progress.done} of {state.progress.total} entries</small>
+         </div>
       </template>
-      <div if={state.infoMessage}
-            classs="message messageInfo">
-         <raw-html content={state.infoMessage}></raw-html>
-      </div>
-      <div if={state.errorMessage}
-            class="message messageError">
-         <raw-html content={state.errorMessage}></raw-html>
-         <button class="btn btn-primary"
-               onclick={onTryAgainClick}>
-            try again
-         </button>
-      </div>
+   </template>
+
+   <div if={state.errorMessage}
+         class="message messageError">
+      <raw-html content={state.errorMessage}></raw-html>
+      <button class="btn btn-primary"
+             onclick={onTryAgainClick}>
+         try again
+      </button>
    </div>
+
+   <template if={!state.errorMessage}>
+      <div if={state.isFinished}
+            class="mb-12">
+         <h3>Dictionary import finished. </h3>
+         <a class="btn btn-primary" href="#{dictData.dictId}">See the dictionary</a>
+      </div>
+      <template if={state.warnings && state.warnings.length}>
+         <a if={!state.showLog}
+               href="javascrip:void(0);"
+               onclick={onShowLogClick}>show log</a>
+         <template if={state.showLog}>
+            <div class="warnings card-panel grey lighten-4">
+               <h4 class="mt-0">Import log</h4>
+               <div each={(warning, idx) in state.warnings}>
+                  <small class="warningNumber grey-text mr-2">{idx + 1}.</small>
+                  <span class="monospace">{warning}</span>
+               </div>
+            </div>
+         </template>
+      </template>
+   </template>
 
    <script>
       export default {
@@ -97,9 +123,9 @@
             file: null,
             headwordElement: null,
             isImporting: false,
-            showProgress: false,
             errorMessage: "",
-            infoMessage: ""
+            infoMessage: "",
+            showLog: false
          },
 
          onBeforeUnmount(){
@@ -121,10 +147,11 @@
             this.update({
                file: null,
                headwordElement: "",
-               showProgress: false,
                isImporting: false,
                infoMessage: "",
-               errorMessage: ""
+               errorMessage: "",
+               progress: null,
+               warnings: null
             })
          },
 
@@ -138,19 +165,27 @@
 
             this.update({
                isImporting: true,
-               showProgress: true,
                infoMessage: "Import started, please keep the window open."
             })
             this.store.importFile(fd)
                   .done(response => {
                      if (response.error) {
-                        this.state.infoMessage = "There were some errors during processing the uploaded file: <br>" + response.error.join("<br>")
+                        this.state.errorMessage = "There were some errors during processing the uploaded file: <br>" + response.error.join("<br>")
                      } else {
                         this.state.infoMessage = response.progressMessage
                         this.checkImportProgress(response.upload_file_path)
                      }
                      this.update()
                   })
+                  .fail(response => {
+                     this.update({
+                        errorMessage: "Import failed. " + (response && response.error || "")
+                     })
+                  })
+         },
+
+         onShowLogClick(){
+            this.update({showLog: true})
          },
 
          checkImportProgress(upload_file_path){
@@ -164,9 +199,14 @@
                            this.update({
                               isImporting: false,
                               isFinished: true,
-                              infoMessage: ` <br/>Dictionary import finished. <a href="#${this.dictData.dictId}">See dictionary</a>`
+                              progress: response.progress,
+                              warnings: response.warnings
                            })
                         } else {
+                           this.update({
+                              progress: response.progress,
+                              warnings: response.warnings
+                           })
                            this.state.timeoutHandle = setTimeout(this.checkImportProgress.bind(this, response.upload_file_path), 2000)
                         }
                      }
@@ -186,6 +226,18 @@
    <style type="scss">
       .uploadForm{
          max-width: 400px;
+      }
+      .importProgress{
+         max-width: 300px;
+      }
+      .warnings{
+         max-height: 500px;
+         overflow: auto;
+         .warningNumber{
+            min-width: 22px;
+            display: inline-block;
+            text-align: right;
+         }
       }
    </style>
 </dict-upload>
