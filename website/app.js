@@ -50,7 +50,6 @@ import dict_download from './riot/dict-download.riot'
 import dict_edit from './riot/dict-edit.riot'
 import dictionaries from './riot/dictionaries.riot'
 import new_dictionary from './riot/new-dictionary.riot'
-import dict_public_entry from './riot/dict-public-entry.riot'
 import dict_public from './riot/dict-public.riot'
 import dict_upload from './riot/dict-upload.riot'
 import dict_links from './riot/dict-links.riot'
@@ -146,7 +145,6 @@ riot_register('dict-download', dict_download)
 riot_register('dict-edit', dict_edit)
 riot_register('dictionaries', dictionaries)
 riot_register('new-dictionary', new_dictionary)
-riot_register('dict-public-entry', dict_public_entry)
 riot_register('dict-public', dict_public)
 riot_register('dict-upload', dict_upload)
 riot_register('dict-links', dict_links)

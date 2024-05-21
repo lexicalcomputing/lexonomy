@@ -184,7 +184,7 @@
 
          goTo(page, storeParams, pageProps){
             if(!storeParams){
-               this.checkAccessAndOpenPage(page)
+               this.checkAccessAndOpenPage(page, pageProps)
             } else {
                this.store.open(...storeParams)
                let query = route.query()
@@ -204,14 +204,20 @@
 
          checkAccessAndOpenPage(page, pageProps){
             if(this.hasUserAccessToThePage(page)){
-               this.update({
-                  page: page,
-                  pageProps: pageProps || {}
-               })
+               if(page.startsWith("dict-") && !this.dictData.config){
+                  if(this.authData.authorized){
+                     this.update({page: "dictionaries"})
+                  } else {
+                     this.update({page: "login"})
+                  }
+               } else {
+                  this.update({
+                     page: page,
+                     pageProps: pageProps || {}
+                  })
+               }
             } else {
-               this.update({
-                  page: "unauthorized"
-               })
+               this.update({page: "unauthorized"})
             }
          },
 
@@ -220,6 +226,7 @@
             if(this.authData.isAdmin
                || !this.needAuthorization(page)
                || ['dict-public', 'dict-edit'].includes(page) && uA
+               || ['dictionaries', 'user-profile', 'new-dictionary'].includes(page) && this.authData.authorized
                || (page == "dict-download" && uA.canDownload)
                || (page == "dict-upload" && uA.canUpload)
                || (page != "dict-config-limits" && page.startsWith("dict-config") && uA.canConfig)
