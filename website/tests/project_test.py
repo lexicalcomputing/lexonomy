@@ -286,7 +286,7 @@ class TestQueries(unittest.TestCase):
         for s in r2.json()['workflow']:
             for b in s['batches']:
                 if b['dictID'] == self.all_batches_dict_ids[0][1]:
-                    self.assertEqual(b['status'], 'reject')
+                    self.assertEqual(b['status'], 'rejected')
                     self.assertTrue(b['nvh'].endswith('.rejected'))
         # ================
 
@@ -310,7 +310,7 @@ class TestQueries(unittest.TestCase):
 
         for s in r2.json()['workflow']:
             for b in s['batches']:
-                self.assertEqual(b['status'], 'accept')
+                self.assertEqual(b['status'], 'accepted')
         # ================
 
     # MERGE SENSITIVE/IMAGES
