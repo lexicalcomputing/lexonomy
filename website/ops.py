@@ -1245,14 +1245,23 @@ def getProjectsByUser(user):
     active_projects = []
     archived_projects = []
     conn = getMainDB()
-    c = conn.execute("SELECT DISTINCT p.id, p.project_name, p.description, p.language, p.active FROM projects AS p INNER JOIN user_projects AS up ON p.id=up.project_id WHERE up.user_email=? ORDER BY p.project_name",
+    c = conn.execute("SELECT DISTINCT project_id FROM user_projects WHERE user_email=?",
                      (user["email"],))
 
     for r in c.fetchall():
-        if r["active"] == 1:
-            active_projects.append({"id": r["id"], "name": r["project_name"], "description": r["description"], "language": r["language"]})
+        project_info = getProject(r["project_id"])
+        if project_info["active"] == 1:
+            active_projects.append({"id": project_info["projectID"], "name": project_info["project_name"],
+                                    "description": project_info["description"], "language": project_info["language"],
+                                    "managers": project_info["managers"], "source_dict": project_info["source_dict"],
+                                    "stages": [x['stage'] for x in project_info["workflow"]],
+                                    "active": 1})
         else:
-            archived_projects.append({"id": r["id"], "name": r["project_name"], "description": r["description"], "language": r["language"]})
+            archived_projects.append({"id": project_info["projectID"], "name": project_info["project_name"],
+                                    "description": project_info["description"], "language": project_info["language"],
+                                    "managers": project_info["managers"], "source_dict": project_info["source_dict"],
+                                     "stages": [x['stage'] for x in project_info["workflow"]],
+                                     "archived": 1})
 
     total = len(active_projects) + len(archived_projects)
     return {"projects_active": active_projects, "projects_archived": archived_projects, "total": total}
@@ -1299,13 +1308,19 @@ def createProject(project_id, project_name, project_description, project_annotat
     return {'success': True , "projectID": project_id}
 
 
-def get_workflow_stages(project_id, src_dict_id):
-    result = []
+def getProject(projectID):
+    annotators = []
+    managers = []
+
+    conn = getMainDB()
+    c1 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active FROM projects WHERE id=?", (projectID,))
+    r1 = c1.fetchone()
+
+    workflow_stages = []
     taget_line_re = re.compile('^(.*?).nvh:\s*(.*?)$')
     project_targets = []
-    conn = getMainDB()
 
-    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'r') as f:
+    with open(os.path.join(siteconfig["dataDir"], "projects", projectID, 'Makefile'), 'r') as f:
         for line in f:
             target_line = taget_line_re.match(line)
             if target_line:
@@ -1317,88 +1332,75 @@ def get_workflow_stages(project_id, src_dict_id):
         input_dicts = []
         for s in sources:
             if s == '$(SOURCE_DICT)':
-                c = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, d.title "
-                                 "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
-                                 "WHERE p.dict_id=? AND p.project_id=?", (src_dict_id, project_id))
-                r = c.fetchone()
-                if json.loads(r['remaining']).get(stage, None):
-                    input_dicts.append({'nvh': r['source_nvh'], 'dictID': r['dict_id'],
-                                        'title': r['title'], 'remaining': json.loads(r['remaining'])[stage]})
-                else:
-                    input_dicts.append({'nvh': r['source_nvh'], 'dictID': r['dict_id'],
-                                        'title': r['title'], 'remaining': json.loads(r['remaining'])['total']})
-
-            elif s != '$(ACCEPTED_BATCHES)':
-                source_nvh = os.path.join(siteconfig["dataDir"], "projects", project_id, s)
                 c2 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, d.title "
                                   "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
-                                  "WHERE p.source_nvh=? AND p.project_id=?", (source_nvh, project_id))
+                                  "WHERE p.dict_id=? AND p.project_id=?", (r1['src_dic_id'], projectID))
                 r2 = c2.fetchone()
-                if r2:
-                    if json.loads(r2['remaining']).get(stage, None):
-                        input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
-                                            'title': r2['title'], 'remaining': json.loads(r2['remaining'])[stage]})
+                if json.loads(r2['remaining']).get(stage, None):
+                    input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
+                                        'title': r2['title'], 'remaining': json.loads(r2['remaining'])[stage]})
+                else:
+                    input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
+                                        'title': r2['title'], 'remaining': json.loads(r2['remaining'])['total']})
+
+            elif s != '$(ACCEPTED_BATCHES)':
+                source_nvh = os.path.join(siteconfig["dataDir"], "projects", projectID, s)
+                c3 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, d.title "
+                                  "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
+                                  "WHERE p.source_nvh=? AND p.project_id=?", (source_nvh, projectID))
+                r3 = c3.fetchone()
+                if r3:
+                    if json.loads(r3['remaining']).get(stage, None):
+                        input_dicts.append({'nvh': r3['source_nvh'], 'dictID': r3['dict_id'],
+                                            'title': r3['title'], 'remaining': json.loads(r3['remaining'])[stage]})
                     else:
-                        input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
-                                            'title': r2['title'], 'remaining': json.loads(r2['remaining'])['total']})
+                        input_dicts.append({'nvh': r3['source_nvh'], 'dictID': r3['dict_id'],
+                                            'title': r3['title'], 'remaining': json.loads(r3['remaining'])['total']})
                 else:
                     input_dicts.append({'nvh': source_nvh, 'dictID': None, 'remaining': None})
 
-        c2 = conn.execute("SELECT dict_id, remaining FROM project_dicts WHERE source_nvh=? AND project_id=?",
-                          (os.path.join(siteconfig["dataDir"], "projects", project_id, stage+'.nvh'), project_id))
-        r2 = c2.fetchone()
-        if r2:
-            output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", project_id, stage+'.nvh'),
-                           'dictID': r2['dict_id'], 'remaining': json.loads(r2['remaining'])['total']}
+        c4 = conn.execute("SELECT dict_id, remaining FROM project_dicts WHERE source_nvh=? AND project_id=?",
+                          (os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.nvh'), projectID))
+        r4 = c4.fetchone()
+        if r4:
+            output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.nvh'),
+                           'dictID': r4['dict_id'], 'remaining': json.loads(r4['remaining'])['total']}
         else:
-            output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", project_id, stage+'.nvh'),
+            output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.nvh'),
                            'dictID': None, 'remaining': 0}
 
         batches = []
-        c3 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, p.assignee, p.status, d.title "
+        c5 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, p.assignee, p.status, d.title "
                           "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
-                          "WHERE p.stage=? AND p.project_id=?", (stage, project_id))
-        for r3 in c3.fetchall():
-             batches.append({'nvh': r3['source_nvh'], 'dictID': r3['dict_id'], 'title': r3['title'],
-                             'remaining': json.loads(r3['remaining'])['total'],
-                             'assignee': r3['assignee'], 'status': r3['status']}) # TODO count remaining according to advance search on specific flag
+                          "WHERE p.stage=? AND p.project_id=?", (stage, projectID))
+        for r5 in c5.fetchall():
+             batches.append({'nvh': r5['source_nvh'], 'dictID': r5['dict_id'], 'title': r5['title'],
+                             'remaining': json.loads(r5['remaining'])['total'],
+                             'assignee': r5['assignee'], 'status': r5['status']}) # TODO count remaining according to advance search on specific flag
 
         if len(input_dicts) > 1:
             stage_type = 'merge'
         else:
             stage_type = 'single'
 
-        result.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
+        workflow_stages.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
                        'batches': batches, 'type': stage_type})
-    c.close()
 
-    return result
 
-def getProject(projectID):
-    annotators = []
-    managers = []
-
-    conn = getMainDB()
-    c1 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id FROM projects WHERE id=?", (projectID,))
-    r1 = c1.fetchone()
-
-    workflow = get_workflow_stages(projectID, r1['src_dic_id'])
-
-    c2 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
-    for r in c2.fetchall():
-        if r['role'] == 'annotator':
-            annotators.append(r['user_email'])
-        elif r['role'] == 'manager':
-            managers.append(r['user_email'])
+    c6 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
+    for r6 in c6.fetchall():
+        if r6['role'] == 'annotator':
+            annotators.append(r6['user_email'])
+        elif r6['role'] == 'manager':
+            managers.append(r6['user_email'])
         else:
             raise Exception('problem in user_projects databse')
 
-    c1.close()
-    c2.close()
+    conn.close()
 
     return {"projectID": projectID, 'project_name': r1['project_name'], 'description': r1['description'],
-            'annotators': annotators, 'managers': managers, 'workflow': workflow,
-            'language': r1['language'], 'source_dict': r1['src_dic_id']}
+            'annotators': annotators, 'managers': managers, 'workflow': workflow_stages,
+            'language': r1['language'], 'source_dict': r1['src_dic_id'], 'active': r1['active']}
 
 
 def editProject(project_id, project_name, project_description, project_annotators, project_managers, user):
@@ -1540,12 +1542,12 @@ def acceptBatch(project_id, dictID_list):
         r = c.fetchone()
         if r['source_nvh'].endswith('.in'):
             out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
-            mainDB.execute('UPDATE project_dicts SET status=? WHERE project_id=? AND dict_id=?', ('accept', project_id, dictID))
+            mainDB.execute('UPDATE project_dicts SET status=? WHERE project_id=? AND dict_id=?', ('accepted', project_id, dictID))
         elif r['source_nvh'].endswith('.rejected'):
             out_nvh_file_name = r['source_nvh'].rstrip('.rejected') + '.nvh'
             shutil.move(r['source_nvh'], r['source_nvh'].rstrip('.rejected') + '.in')
             mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?',
-                        ('accept', r['source_nvh'].rstrip('.rejected') + '.in', project_id, dictID))
+                           ('accepted', r['source_nvh'].rstrip('.rejected') + '.in', project_id, dictID))
         mainDB.commit()
 
         with open(out_nvh_file_name, 'w') as out_f:
@@ -1574,7 +1576,7 @@ def rejectBatch(project_id, dictID_list):
         if r['source_nvh'].endswith('.in'):
             rejected_file = r['source_nvh'].rstrip('.in') + '.rejected'
             shutil.move(r['source_nvh'], rejected_file)
-            mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?', ('reject', rejected_file, project_id, dictID))
+            mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?', ('rejected', rejected_file, project_id, dictID))
 
         mainDB.commit()
 
