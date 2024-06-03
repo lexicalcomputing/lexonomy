@@ -194,11 +194,12 @@ def main():
                 xml2nvh(args.filename, f)
             import_nvh = nvh.parse_file(fileinput.input(args.filename + ".xml2nvh.nvh"))
 
-        elif args.filename.endswith('.nvh'):
+        elif args.filename.endswith('.nvh') or args.filename.endswith('.in'):
             import_nvh = nvh.parse_file(fileinput.input(args.filename))
 
         else:
             log_err(f'NOT a supported format: {args.filename}')
+            sys.exit()
 
         ## Cleaning duplicate (name, value) nodes
         if args.deduplicate:
@@ -290,13 +291,15 @@ def main():
             entry_key = ops.getEntryHeadword(entry, args.main_node_name)
             title = "<span class='headword'>" + entry_key + "</span>"
             c = db.execute("SELECT id FROM entries WHERE sortkey=?", (entry_key,))
-            if not c.fetchone():
+            r = c.fetchone()
+
+            if not r:
                 sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
 
             else:
-                sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-                params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
+                sql = "UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, doctype=?, title=?, sortkey=? WHERE id=?"
+                params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"])
                 action = "update"
             c = db.execute(sql, params)
             entryID = c.lastrowid
