@@ -5,17 +5,23 @@ CREATE TABLE users (email TEXT PRIMARY KEY, passwordHash TEXT, sessionKey TEXT, 
 CREATE INDEX email_password ON users (email, passwordHash);
 CREATE INDEX email_session ON users (email, sessionKey, sessionLast);
 
-CREATE TABLE user_dict (id INTEGER PRIMARY KEY AUTOINCREMENT, dict_id TEXT, user_email TEXT, can_config INTEGER, can_download INTEGER, can_upload INTEGER, can_view INTEGER, can_edit INTEGER);
+CREATE TABLE user_dict (id INTEGER PRIMARY KEY AUTOINCREMENT, dict_id TEXT, user_email TEXT, can_view INTEGER, can_edit INTEGER, can_config INTEGER, can_download INTEGER, can_upload INTEGER, public INTEGER);
 CREATE INDEX dict_id ON user_dict (dict_id);
 CREATE INDEX user_email ON user_dict (user_email);
 
-CREATE TABLE projects (id TEXT PRIMARY KEY, project_name TEXT, description TEXT, ref_corpus TEXT, dictionaries JSON, workflow JSON, language TEXT, active INTEGER);
+CREATE TABLE projects (id TEXT PRIMARY KEY, project_name TEXT, description TEXT, ref_corpus TEXT, language TEXT, active INTEGER, src_dic_id TEXT);
 CREATE INDEX project_id ON projects (project_name);
 
 CREATE TABLE user_projects (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT, user_email TEXT, role TEXT, project_name TEXT);
 CREATE INDEX user_projects_id ON user_projects (project_id);
 CREATE INDEX user_projects_email ON user_projects (user_email);
 CREATE INDEX user_projects_role ON user_projects (role);
+
+CREATE TABLE project_dicts (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT, dict_id TEXT, source_nvh TEXT, stage TEXT, status TEXT, assignee TEXT, remaining JSON);
+CREATE INDEX project_dicts_dict_id ON project_dicts (dict_id);
+CREATE INDEX project_dicts_project_id ON project_dicts (project_id);
+CREATE INDEX project_dicts_dict_name ON project_dicts (dict_name);
+CREATE INDEX project_dicts_stage ON project_dicts (stage);
 
 CREATE TABLE workflows (name TEXT PRIMARY KEY, description TEXT);
 CREATE INDEX workflow_id ON workflows (name);

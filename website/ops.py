@@ -16,6 +16,7 @@ import markdown
 import re
 import secrets
 import pathlib
+import subprocess
 from collections import defaultdict
 from icu import Locale, Collator
 import requests
@@ -23,6 +24,7 @@ from nvh import nvh
 from bottle import request
 import sys
 import tempfile
+import glob
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -100,9 +102,19 @@ def readDictConfigs(dictDB):
                                              "canDownload": 1 if r['can_download'] else 0,
                                              "canUpload": 1 if r['can_upload'] else 0}
 
+    # alow access to all managers of project to all dicts that belong to the project
+    c3 = conn.execute("SELECT DISTINCT u.user_email FROM user_projects AS u INNER JOIN project_dicts AS d ON u.project_id=d.project_id WHERE d.dict_id=? AND u.role=?", (dictID, 'manager'))
+    for r2 in c3.fetchall():
+        configs['users'][r2['user_email']] = {"canEdit": 1,
+                                             "canView": 1,
+                                             "canConfig": 1,
+                                             "canDownload": 1,
+                                             "canUpload": 1}
+
+
     # admin configs like dict limit form 'dicts' table
-    c3 = conn.execute("SELECT configs FROM dicts WHERE id=?", (dictID,))
-    r = c3.fetchone()
+    c4 = conn.execute("SELECT configs FROM dicts WHERE id=?", (dictID,))
+    r = c4.fetchone()
     if r:
         configs['dict_settings'] = json.loads(r["configs"])
     # if r:
@@ -609,16 +621,7 @@ def checkDictExists(dictID):
         return True
     return False
 
-def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, addExamples=False, deduplicate=False, bottle_file_object=None, hwNode=None):
-    if title == "":
-        title = "?"
-    if blurb == "":
-        blurb = "Yet another Lexonomy dictionary."
-    if dictID in prohibitedDictIDs:
-        return {'url': dictID, 'success': False, 'error': "The entered name of the dictionary is prohibited"}
-    if dictExists(dictID):
-        return {'url': dictID, 'success': False, 'error': "The dict with the entered name already exists"}
-    #init db schema
+def initDict(dictID, title, lang, blurb, email):
     with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
         sql_schema = f.read()
 
@@ -632,6 +635,23 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
 
     ident = {"title": title, "blurb": blurb, "lang": lang}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
+
+    dictDB.commit()
+
+    return dictDB
+
+
+def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, addExamples=False, deduplicate=False, bottle_file_object=None, hwNode=None):
+    if title == "":
+        title = "?"
+    if blurb == "":
+        blurb = "Yet another Lexonomy dictionary."
+    if dictID in prohibitedDictIDs:
+        return {'url': dictID, 'success': False, 'error': "The entered name of the dictionary is prohibited"}
+    if dictExists(dictID):
+        return {'url': dictID, 'success': False, 'error': "The dict with the entered name already exists"}
+    #init db schema
+    dictDB = initDict(dictID, title, lang, blurb, email)
 
     if not bottle_file_object:
         if nvh_schema_string:
@@ -1238,34 +1258,39 @@ def getProjectsByUser(user):
     return {"projects_active": active_projects, "projects_archived": archived_projects, "total": total}
 
 
-def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict, worflow, langauge, user):
+def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict_id, worflow, langauge, user):
     if projectExists(project_id):
-        return {'success': False, "projectID": project_id, "error": "The dict with the entered name already exists"}
+        return {'success': False, "projectID": project_id, "error": "The project with the entered name already exists"}
     if not worflow:
         return {'success': False, "projectID": project_id, "error": "Workflow not specified."}
-    if not os.path.isfile(os.path.join(currdir, 'workflows', worflow, 'Makefile')):
+    if not os.path.isfile(os.path.join(currdir, 'workflows', worflow)):
         return {'success': False, "projectID": project_id, "error": "Can not find workflow template."}
 
     os.makedirs(os.path.join(siteconfig["dataDir"], "projects", project_id))
-    shutil.copytree(os.path.join(currdir, 'workflows', worflow),
-                    os.path.join(siteconfig["dataDir"], "projects", project_id), dirs_exist_ok=True)
 
-    # get all phases of the project
-    all_phases = []
-    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'r') as f:
-        for line in f:
-            res = phases_re.match(line)
-            if res:
-                all_phases = [x.strip() for x in res.group(1).split(',')]
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'w') as dest:
+        with open(os.path.join(currdir, 'workflows', worflow), 'r') as source:
+            for line in source:
+                dest.write(re.sub('%dir%', currdir, line))
 
     # for each phase create list of dictionaries
-    dicts = {"src_dict": src_dict}
-    for p in all_phases:
-        dicts[p] = []
+    workflow_path = os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile')
+
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
+        for nvh in download(getDB(src_dict_id), src_dict_id, 'nvh'):
+            f.write(nvh)
+
+    dict_db = getDB(src_dict_id)
+    c = dict_db.execute('SELECT COUNT(*) as total FROM entries')
+    r = c.fetchone()
+    total_entries = r['total']
 
     conn = getMainDB()
-    conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, dictionaries, workflow, language, active)"\
-                 " VALUES (?,?,?,?,?,?,?,?)", (project_id, project_name, project_description, ref_corpus, json.dumps(dicts), worflow, langauge, 1))
+    conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, src_dic_id, language, active)"\
+                 " VALUES (?,?,?,?,?,?,?)", (project_id, project_name, project_description, ref_corpus, src_dict_id, langauge, 1))
+    conn.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status, remaining) VALUES (?,?,?,?,?,?)", 
+                 (project_id, src_dict_id, os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 
+                  '__nvh_source__', '__nvh_source__', json.dumps({'total': total_entries})))
     conn.commit()
 
     add_project_staff(conn, project_id, project_name, project_annotators, 'annotator', user)
@@ -1274,13 +1299,90 @@ def createProject(project_id, project_name, project_description, project_annotat
     return {'success': True , "projectID": project_id}
 
 
+def get_workflow_stages(project_id, src_dict_id):
+    result = []
+    taget_line_re = re.compile('^(.*?).nvh:\s*(.*?)$')
+    project_targets = []
+    conn = getMainDB()
+
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'r') as f:
+        for line in f:
+            target_line = taget_line_re.match(line)
+            if target_line:
+                target = target_line.group(1)
+                prerequisites = target_line.group(2).split()
+                project_targets.append((target, prerequisites))
+
+    for stage, sources in project_targets:
+        input_dicts = []
+        for s in sources:
+            if s == '$(SOURCE_DICT)':
+                c = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, d.title "
+                                 "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
+                                 "WHERE p.dict_id=? AND p.project_id=?", (src_dict_id, project_id))
+                r = c.fetchone()
+                if json.loads(r['remaining']).get(stage, None):
+                    input_dicts.append({'nvh': r['source_nvh'], 'dictID': r['dict_id'],
+                                        'title': r['title'], 'remaining': json.loads(r['remaining'])[stage]})
+                else:
+                    input_dicts.append({'nvh': r['source_nvh'], 'dictID': r['dict_id'],
+                                        'title': r['title'], 'remaining': json.loads(r['remaining'])['total']})
+
+            elif s != '$(ACCEPTED_BATCHES)':
+                source_nvh = os.path.join(siteconfig["dataDir"], "projects", project_id, s)
+                c2 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, d.title "
+                                  "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
+                                  "WHERE p.source_nvh=? AND p.project_id=?", (source_nvh, project_id))
+                r2 = c2.fetchone()
+                if r2:
+                    if json.loads(r2['remaining']).get(stage, None):
+                        input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
+                                            'title': r2['title'], 'remaining': json.loads(r2['remaining'])[stage]})
+                    else:
+                        input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
+                                            'title': r2['title'], 'remaining': json.loads(r2['remaining'])['total']})
+                else:
+                    input_dicts.append({'nvh': source_nvh, 'dictID': None, 'remaining': None})
+
+        c2 = conn.execute("SELECT dict_id, remaining FROM project_dicts WHERE source_nvh=? AND project_id=?",
+                          (os.path.join(siteconfig["dataDir"], "projects", project_id, stage+'.nvh'), project_id))
+        r2 = c2.fetchone()
+        if r2:
+            output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", project_id, stage+'.nvh'),
+                           'dictID': r2['dict_id'], 'remaining': json.loads(r2['remaining'])['total']}
+        else:
+            output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", project_id, stage+'.nvh'),
+                           'dictID': None, 'remaining': 0}
+
+        batches = []
+        c3 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, p.assignee, p.status, d.title "
+                          "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
+                          "WHERE p.stage=? AND p.project_id=?", (stage, project_id))
+        for r3 in c3.fetchall():
+             batches.append({'nvh': r3['source_nvh'], 'dictID': r3['dict_id'], 'title': r3['title'],
+                             'remaining': json.loads(r3['remaining'])['total'],
+                             'assignee': r3['assignee'], 'status': r3['status']}) # TODO count remaining according to advance search on specific flag
+
+        if len(input_dicts) > 1:
+            stage_type = 'merge'
+        else:
+            stage_type = 'single'
+
+        result.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
+                       'batches': batches, 'type': stage_type})
+    c.close()
+
+    return result
+
 def getProject(projectID):
     annotators = []
     managers = []
 
     conn = getMainDB()
-    c1 = conn.execute("SELECT project_name, description, ref_corpus, workflow, language, dictionaries FROM projects WHERE id=?", (projectID,))
+    c1 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id FROM projects WHERE id=?", (projectID,))
     r1 = c1.fetchone()
+
+    workflow = get_workflow_stages(projectID, r1['src_dic_id'])
 
     c2 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
     for r in c2.fetchall():
@@ -1291,9 +1393,12 @@ def getProject(projectID):
         else:
             raise Exception('problem in user_projects databse')
 
+    c1.close()
+    c2.close()
+
     return {"projectID": projectID, 'project_name': r1['project_name'], 'description': r1['description'],
-            'annotators': annotators, 'managers': managers, 'workflow': r1['workflow'],
-            'language': r1['language'], 'source_dict': json.loads(r1['dictionaries']).get('src_dict', 'NONE')}
+            'annotators': annotators, 'managers': managers, 'workflow': workflow,
+            'language': r1['language'], 'source_dict': r1['src_dic_id']}
 
 
 def editProject(project_id, project_name, project_description, project_annotators, project_managers, user):
@@ -1313,6 +1418,169 @@ def archiveProject(project_id):
     conn.execute("UPDATE projects SET active=? WHERE id=?", (0, project_id))
     conn.commit()
     return {"success": True, "projectID": project_id}
+
+def deleteProject(project_id):
+    conn = getMainDB()
+    conn.execute("DELETE FROM projects WHERE id=?", (project_id,))
+    conn.execute("DELETE FROM user_projects WHERE project_id=?", (project_id, ))
+    c = conn.execute("SELECT dict_id FROM project_dicts WHERE project_id=?", (project_id,))
+    destroy_dicts = []
+    for r in c.fetchall():
+        destroy_dicts.append(r['dict_id'])
+    conn.execute("DELETE FROM project_dicts WHERE project_id=?", (project_id,))
+    conn.commit()
+
+    for did in destroy_dicts:
+        destroyDict(did)
+
+    shutil.rmtree(os.path.join(siteconfig["dataDir"], "projects/" + project_id))
+    return {"success": True, "projectID": project_id}
+
+def createBatch(project_id, stage, batch_size, max_batches, user_email):
+    project_info = getProject(project_id)
+    src_dict = project_info['source_dict']
+    workflow_dir = os.path.join(siteconfig['dataDir'], 'projects', project_id)
+    stage_path = os.path.join(siteconfig["dataDir"], 'projects', project_id , stage)
+    filemask = os.path.join(stage_path, '*.in')
+    logfile = stage_path + ".log"
+
+    logfile_f = open(logfile, "a")
+
+    subprocess.Popen(['make', stage+'_new_batches','-C', workflow_dir,
+                      f'SOURCE_DICT={src_dict}.nvh', f'BATCH_SIZE={batch_size}', f'USER={user_email}',
+                      f'MAX_BATCHES={max_batches}', f'GENERATED_BATCHES_FILEMASK={filemask}'],
+                     stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+
+    return {"success": True, "projectID": project_id, "upload_file_path": logfile,
+            "msg": 'Creating batches'}
+
+
+def makeStage(project_id, stage, user_email):
+    main_db = getMainDB()
+    project_info = getProject(project_id)
+
+    # DELETE previous stage version
+    for s in project_info['workflow']:
+        if s['stage'] == stage and s['outputDict']['dictID']:
+            destroyDict(s['outputDict']['dictID'])
+            main_db.execute("DELETE FROM project_dicts WHERE dict_id=?", (s['outputDict']['dictID'],))
+            main_db.commit()
+
+    workflow_dir = os.path.join(siteconfig['dataDir'], 'projects', project_id)
+    stage_path = os.path.join(siteconfig["dataDir"], 'projects', project_id , stage)
+    filemask = os.path.join(stage_path, '*.nvh')
+
+    dict_id = suggestDictId()
+    dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dict_id+".sqlite")
+
+    # ==================
+    # Init new stage dict
+    # ==================
+    dictDB = initDict(dict_id, stage, project_info['language'], "", user_email)
+    dict_config = {"limits": {"entries": 1000000000}} # TODO suggest size
+    attachDict(dictDB, dict_id, {}, dict_config)
+    dictDB.close()
+
+    # ==================
+    # Add new dict to project
+    # ==================
+    result_total_entries = 0
+    for s in project_info['workflow']:
+        if s['stage'] == stage:
+            for did in [x['dictID'] for x in s['batches'] if x['status'] == 'accept'] + [x['dictID'] for x in s['inputDicts']]:
+                b_db = getDB(did)
+                c = b_db.execute('SELECT COUNT(*) as total FROM entries')
+                r = c.fetchone()
+                result_total_entries += r['total']
+
+    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, remaining) VALUES (?,?,?,?,?)",
+                    (project_id, dict_id, os.path.join(workflow_dir, stage + '.nvh'), stage, json.dumps({'total': result_total_entries})))
+    main_db.commit()
+    main_db.close()
+
+    # ==================
+    # Run workflow
+    # ==================
+    logfile = stage_path + ".log"
+    logfile_f = open(logfile, "a")
+    subprocess.Popen(['make', stage+'.nvh','-C', workflow_dir,
+                      f'SOURCE_DICT={project_info["source_dict"]}.nvh',
+                      f'ACCEPTED_BATCHES={filemask}',
+                      f'DICT_DB={dbpath}',
+                      f'USER={user_email}'],
+                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+
+    return {"success": True, "projectID": project_id, "upload_file_path": logfile,
+            "msg": 'Creating stage dict'}
+
+
+def assignProjectDict(projectID, assignees): # TODO store channges to hystory?
+    mainDB = getMainDB()
+    for dictID, user_email in assignees:
+        user_credentials = {user_email: {'canView': 1, 'canEdit': 1,
+                                        'canConfig': 0, 'canDownload': 0, 'canUpload': 0}}
+        old_users = updateDictAccess(dictID, user_credentials)
+        notifyUsers(old_users, user_credentials, {'title': dictID}, dictID)
+
+        mainDB.execute("UPDATE project_dicts SET assignee=? WHERE project_id=? AND dict_id=?", (user_email, projectID, dictID))
+        mainDB.commit()
+
+    mainDB.close()
+    return {"success": True, "projectID": projectID,}
+
+
+def acceptBatch(project_id, dictID_list):
+    # remove batch form assignee
+    mainDB = getMainDB()
+    for dictID in dictID_list:
+        updateDictAccess(dictID, {})
+
+        # get output filename
+        c = mainDB.execute('SELECT source_nvh FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        r = c.fetchone()
+        if r['source_nvh'].endswith('.in'):
+            out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
+            mainDB.execute('UPDATE project_dicts SET status=? WHERE project_id=? AND dict_id=?', ('accept', project_id, dictID))
+        elif r['source_nvh'].endswith('.rejected'):
+            out_nvh_file_name = r['source_nvh'].rstrip('.rejected') + '.nvh'
+            shutil.move(r['source_nvh'], r['source_nvh'].rstrip('.rejected') + '.in')
+            mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?',
+                        ('accept', r['source_nvh'].rstrip('.rejected') + '.in', project_id, dictID))
+        mainDB.commit()
+
+        with open(out_nvh_file_name, 'w') as out_f:
+            dictDB = getDB(dictID)
+            for line in download(dictDB, dictID, 'nvh'):
+                out_f.write(line)
+
+    mainDB.close()
+    return {"success": True, "projectID": project_id}
+
+def rejectBatch(project_id, dictID_list):
+    mainDB = getMainDB()
+    for dictID in dictID_list:
+        # remove batch form assignee
+        updateDictAccess(dictID, {})
+
+        # get output filename
+        c = mainDB.execute('SELECT source_nvh FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        r = c.fetchone()
+
+        # rm exported NVH if was created by accept
+        out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
+        shutil.rmtree(out_nvh_file_name, ignore_errors=True)
+
+        # move batch to rejected
+        if r['source_nvh'].endswith('.in'):
+            rejected_file = r['source_nvh'].rstrip('.in') + '.rejected'
+            shutil.move(r['source_nvh'], rejected_file)
+            mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?', ('reject', rejected_file, project_id, dictID))
+
+        mainDB.commit()
+
+    mainDB.close()
+    return {"success": True, "projectID": project_id}
+
 
 def getWokflows():
     workflows = []
@@ -1486,7 +1754,7 @@ def download_xslt(configs):
     return transform
 
 
-def download(dictDB, dictID, configs, export_type):
+def download(dictDB, dictID, export_type):
     if export_type == 'nvh':
         c = dictDB.execute("select id, nvh from entries")
         for r in c.fetchall():
@@ -1523,15 +1791,46 @@ def purge(dictDB, email, historiography):
 #     else:
 #         return content
 
-
-done_re = re.compile(r'^INFO:\s*(DONE|DONE_IMPORT):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
-waring_re = re.compile(r'^WARNING:\s*(.+)$')
-err_re = re.compile(r'^ERROR:\s*(.*?)$')
-
 def getImportProgress(file_path):
     """
     return progress, finished status, error messages
     """
+    done_re = re.compile(r'^INFO:\s*(DONE|DONE_IMPORT):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
+    waring_re = re.compile(r'^WARNING:\s*(.+)$')
+    err_re = re.compile(r'^ERROR:\s*(.*?)$')
+    if os.path.isfile(file_path + ".log"):
+        errors = []
+        warnings = []
+        progress = {}
+        finished = False
+        with open(file_path + ".log", "r") as log_f:
+            for line in log_f:
+                prg = done_re.match(line)
+                warn = waring_re.match(line)
+                err = err_re.match(line)
+                if prg:
+                    progress = {'per': int(prg.group(2)), 'done': int(prg.group(3)), 'total': int(prg.group(4))}
+                elif warn:
+                    warnings.append(warn.group(1))
+                elif err:
+                    errors.append(err.group(1))
+
+        if progress.get('per', 0) == 100:
+            finished = True
+
+        return progress, finished, errors, warnings, file_path
+    else:
+        return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], ['No log file found'], file_path
+
+def getBatchStatus(project_id , stage):
+    """
+    return progress, finished status, error messages
+    """
+    done_re = re.compile(r'^INFO:\s*(DONE|DONE_BATCHES):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+),\s*BATCH:\s*(.*)$')
+    waring_re = re.compile(r'^WARNING:\s*(.+)$')
+    err_re = re.compile(r'^ERROR:\s*(.*?)$')
+
+    file_path = os.path.join(siteconfig["dataDir"], 'projects', project_id , stage)
     if os.path.isfile(file_path + ".log"):
         errors = []
         warnings = []
@@ -1561,8 +1860,6 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     """
     return progress, finished status, error messages
     """
-    import subprocess
-
     supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
     # XML file transforamtion
     if not supported_formats.match(bottle_upload_obj.filename):

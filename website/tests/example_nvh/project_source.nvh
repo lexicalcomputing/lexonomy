@@ -1,0 +1,30 @@
+entry: test-n
+  hw: test
+  lemma: test
+  pos: N
+  sense: A test sheet with exam questions.
+    translation: Test so skúškovími otázkami.
+entry: test-v
+  hw: test
+  lemma: test
+  pos: V
+  sense: I will test your skills.
+    translation: Vyskúšam si tvoje schopnosti.
+entry: car-n
+  hw: car
+  lemma: car
+  pos: N
+  sense: A machine for people transportation.
+    translation: Stroj na presúvanie ľudí.
+entry: bus-n
+  hw: bus
+  lemma: bus
+  pos: N
+  sense: A machine for public transportation.
+    translation: Stroj na hromadné presúvanie ľudí.
+entry: walk-n
+  hw: walk
+  lemma: walk
+  pos: V
+  sense: A movement of the feet to specific direction.
+    translation: Pohyb nôh konkrétnym smerom.

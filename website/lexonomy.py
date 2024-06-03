@@ -644,7 +644,7 @@ def project_list(user):
 def project_create(user):
     if user['isProjectManager']:
         res = ops.createProject(request.forms.id, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
-                                json.loads(request.forms.managers), request.forms.ref_corpus, request.forms.source_dict,
+                                json.loads(request.forms.managers), request.forms.ref_corpus, request.forms.source_dict_id,
                                 request.forms.workflow, request.forms.language, user)
         return res
     return {"success": False, "projectID": request.forms.id, 'error': 'User is not a manager. Can not create project.'}
@@ -676,6 +676,62 @@ def project_archive(projectID, user, configs):
         res = ops.archiveProject(projectID)
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/delete.json") # OK
+@authProject
+def project_delete(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = ops.deleteProject(projectID)
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/create_batch.json") # OK
+@authProject
+def create_batch(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = ops.createBatch(projectID, request.forms.stage, request.forms.size, request.forms.batch_number, user['email'])
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/make_stage.json") # OK
+@authProject
+def makeStage(projectID, user, configs):
+    if projectID in configs["manager_of"]: # TODO maybe should be alowed only to manegers by default
+        res = ops.makeStage(projectID, request.forms.stage, user['email'])
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
+
+@post(siteconfig["rootPath"]+"projects/<projectID>/assign_batch.json") # OK
+@authProject
+def assignProjectDict(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        ret = ops.assignProjectDict(projectID, json.loads(request.forms.assignees))
+        return ret
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
+
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/accept_batch.json") # OK
+@authProject
+def accept_batch(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = ops.acceptBatch(projectID, json.loads(request.forms.dictID_list))
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
+
+@post(siteconfig["rootPath"] + "projects/<projectID>/reject_batch.json") # OK
+@authProject
+def reject_batch(projectID, user, configs):
+    if projectID in configs["manager_of"]: # TODO maybe should be alowed only to manegers by default
+        res = ops.rejectBatch(projectID, json.loads(request.forms.dictID_list))
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
+
+@post(siteconfig["rootPath"]+"projects/<projectID>/getBatchesStatus.json") # OK
+@authProject
+def getBatchesStatus(projectID, user, configs):
+    progress, finished, err, warns, upload_file_path = ops.getBatchStatus(projectID, request.forms.stage)
+    return{"finished": finished, "progress": progress, "error": err, "warnings": warns, 'upload_file_path': upload_file_path}
+
 
 @get(siteconfig["rootPath"] + "wokflows/list.json") # TODO
 @auth
@@ -800,11 +856,11 @@ def download(dictID, user, dictDB, configs):
     if request.query.type == 'xml':
         response.content_type = "text/xml; charset=utf-8"
         response.set_header("Content-Disposition", "attachment; filename="+dictID+".xml")
-        return ops.download(dictDB, dictID, configs, 'xml')
+        return ops.download(dictDB, dictID, 'xml')
     elif request.query.type == 'nvh':
         response.content_type = "text/xml; charset=utf-8"
         response.set_header("Content-Disposition", "attachment; filename="+dictID+".nvh")
-        return ops.download(dictDB, dictID, configs, 'nvh')
+        return ops.download(dictDB, dictID, 'nvh')
     else:
         return {'error': 'Unsupported export type.'}
 
