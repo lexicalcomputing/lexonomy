@@ -1,12 +1,12 @@
 all: clean test_create test_import test_clean_nvh test_configs test_projects
 
 test_import.nvh:
-	for i in example_nvh/test_*.nvh; do (cat $$i; echo) >> $@; done
+	@for i in example_nvh/test_*.nvh; do (cat $$i; echo) >> $@; done
 
 test_import.xml:
-	echo "<DICTIONARY>" > $@
-	for i in example_xml/*.xml; do (cat $$i; echo) >> $@; done
-	echo "</DICTIONARY>" >> $@
+	@echo "<DICTIONARY>" > $@
+	@for i in example_xml/*.xml; do (cat $$i; echo) >> $@; done
+	@echo "</DICTIONARY>" >> $@
 
 # ============================================
 # TESTS
