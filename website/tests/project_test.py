@@ -16,6 +16,7 @@ class TestQueries(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.verbose = False
+        cls.time = True
         cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         cls.website = config.website
 
@@ -169,6 +170,9 @@ class TestQueries(unittest.TestCase):
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
 
+        if self.time:
+            time.sleep(10)
+
         API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/create_batch.json"
         data = {'stage': 'images',
                 'size': 1,
@@ -176,6 +180,9 @@ class TestQueries(unittest.TestCase):
                 }
         r2 = requests.post(url=API_ENDPOINT_2, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r2.json()['success'], True)
+
+        if self.time:
+            time.sleep(10)
 
         # TODO
         # API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/getBatchesStatus.json"
@@ -320,16 +327,40 @@ class TestQueries(unittest.TestCase):
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
 
+        API_ENDPOINT_4 = self.website + f"/projects/{self.new_project_id}/project.json"
+        r4 = requests.get(url=API_ENDPOINT_4, headers=self.headers, cookies=self.cookies)
+        if self.verbose:
+            print('================================')
+            print('MERGE SENSITIVE')
+            print('================================')
+            pprint(r4.json())
+
+        if self.time:
+            time.sleep(10)
+
         API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/make_stage.json"
         data = {'stage': 'images'}
         r2 = requests.post(url=API_ENDPOINT_2, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r2.json()['success'], True)
+
+        API_ENDPOINT_4 = self.website + f"/projects/{self.new_project_id}/project.json"
+        r4 = requests.get(url=API_ENDPOINT_4, headers=self.headers, cookies=self.cookies)
+        if self.verbose:
+            print('================================')
+            print('MERGE IMAGES')
+            print('================================')
+            pprint(r4.json())
+
+        if self.time:
+            time.sleep(10)
 
         API_ENDPOINT_3 = self.website + f"/projects/{self.new_project_id}/make_stage.json"
         data = {'stage': 'final'}
         r3 = requests.post(url=API_ENDPOINT_3, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r3.json()['success'], True)
 
+        if self.time:
+            time.sleep(10)
         # ================
         # PROJECT STATE
         # ================
@@ -337,7 +368,7 @@ class TestQueries(unittest.TestCase):
         r4 = requests.get(url=API_ENDPOINT_4, headers=self.headers, cookies=self.cookies)
         if self.verbose:
             print('================================')
-            print('MERGE SENSITIVE')
+            print('MERGE FINAL')
             print('================================')
             pprint(r4.json())
 

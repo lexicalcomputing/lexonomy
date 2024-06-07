@@ -100,16 +100,16 @@ def update_project_info(batch_size, user, new_batches, project_id, stage, tl_nod
         dict_config = {"limits": {"entries": int(batch_size)}}
         ops.attachDict(dictDB, dict_id, {}, dict_config)
 
-        logfile_f = open(nvh_file_path + ".log", "w")
+        logfile_f = open(os.path.join(siteconfig["dataDir"], 'projects', project_id , stage) + ".log", "a")
         dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dict_id+".sqlite")
         subprocess.Popen([currdir + "/import.py", dbpath, nvh_file_path, project_id, tl_node],
                           stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
 
         log_info('IMPORTED: ' + nvh_file_path)
 
-        insert_project_dicts.append((project_id, dict_id, nvh_file_path, stage, json.dumps({'total': batch_size}), 'inProgress'))
+        insert_project_dicts.append((project_id, dict_id, nvh_file_path, stage, 'inProgress'))
 
-    main_db.executemany("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, remaining, status) VALUES (?,?,?,?,?,?)", insert_project_dicts)
+    main_db.executemany("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status) VALUES (?,?,?,?,?)", insert_project_dicts)
     c3 = main_db.execute('SELECT remaining FROM project_dicts WHERE dict_id=?', (src_dict_id,))
     r3 = c3.fetchone()
     try:
@@ -135,6 +135,8 @@ def main():
                         required=False, default=False,
                         help='Only splits the input nvh into batches without project database update')
     args = parser.parse_args()
+
+    log_info('GEN BATCHES')
 
     # ==========================
     # INIT
@@ -163,6 +165,9 @@ def main():
     # ==========================
     if not args.split_only:
         update_project_info(args.batch_size, args.user, new_batches, project_id, stage, tl_node, remaining_hws, args.src_dict_id.rstrip('.nvh'))
+
+    log_info('DONE')
+
 
 if __name__ == '__main__':
     main()
