@@ -41,7 +41,8 @@ defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
                      "structure": {"elements": {}},
                      "titling": {"headwordAnnotations": []},
-                     "flagging": {"flag_element": "", "flags": []}}
+                     "flagging": {"flag_element": "", "flags": []},
+                     "entry_count": 0}
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
@@ -123,7 +124,8 @@ def readDictConfigs(dictDB):
 
     add_items = ["ident", "publico", "kontext", "titling", "flagging", "styles",
                  "searchability", "xampl", "thes", "collx", "defo", "structure",
-                 "formatting", "editing", "download", "links", "autonumber", "gapi", "metadata"]
+                 "formatting", "editing", "download", "links", "autonumber", "gapi",
+                 "metadata", "entry_count"]
     for conf in set(add_items):
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
@@ -232,11 +234,22 @@ def mergeSchemaItems(keys):
 def deleteEntry(db, entryID, email):
     # tell my parents that they need a refresh:
     db.execute ("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
+    # update completed:
+    c = db.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
+    row = c.fetchone()
+    c2 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
+    r2 = c2.fetchone()
+    if '__lexonomy_completed__' in row['nvh']:
+        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1), 'completed_entries')
     # delete me:
     db.execute ("delete from entries where id=?", (entryID,))
     # tell history that I have been deleted:
     db.execute ("insert into history(entry_id, action, [when], email, nvh) values(?,?,?,?,?)",
                 (entryID, "delete", datetime.datetime.utcnow(), email, None))
+
+    c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
+    r2 = c2.fetchone()
+    db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1), 'entry_count')
     db.commit()
 
 def readEntry(db, configs, entryID):
@@ -290,6 +303,16 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
     dictDB.commit()
     if configs["links"]:
         entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, False, False)
+
+    c2 = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+    r2 = c2.fetchone()
+    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1), 'entry_count')
+
+    if '__lexonomy_completed__' in entryNvh:
+        c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
+        r3 = c3.fetchone()
+        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1), 'completed_entries')
+
     return entryID, entryNvh, feedback
 
 def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
@@ -304,13 +327,22 @@ def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
         sortkey = getSortTitle(nvhParsed, configs["titling"])
         doctype = getDoctype(nvhParsed)
         needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
-        c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
-        r = c.fetchone()
-        feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
+        c2 = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
+        r2 = c2.fetchone()
+        feedback = {"type": "saveFeedbackHeadwordExists", "info": r2["id"]} if r2 else None
         dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, entryNvh, title, sortkey, needs_refresh, entryJson, entryID))
         dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvhParsed, configs["titling"], True), entryID))
         dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
+
+        c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
+        r3 = c3.fetchone()
+        if '__lexonomy_completed__' not in row['nvh'] and '__lexonomy_completed__' in entryNvh:
+            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1, 'completed_entries'))
+        elif '__lexonomy_completed__' in row['nvh'] and '__lexonomy_completed__' not in entryNvh:
+            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) - 1, 'completed_entries'))
+
         dictDB.commit()
+
         if configs["links"]:
             entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, True, True)
         return entryID, entryNvh, True, feedback
@@ -695,6 +727,8 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
             for idx, example in enumerate(examples):
                 dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
+
+            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (len(examples), 'entry_count'))
 
     dictDB.commit()
 
@@ -1282,24 +1316,16 @@ def createProject(project_id, project_name, project_description, project_annotat
             for line in source:
                 dest.write(re.sub('%dir%', currdir, line))
 
-    # for each phase create list of dictionaries
-    workflow_path = os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile')
-
     with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
         for nvh in download(getDB(src_dict_id), src_dict_id, 'nvh'):
             f.write(nvh)
 
-    dict_db = getDB(src_dict_id)
-    c = dict_db.execute('SELECT COUNT(*) as total FROM entries')
-    r = c.fetchone()
-    total_entries = r['total']
-
     conn = getMainDB()
     conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, src_dic_id, language, active)"\
                  " VALUES (?,?,?,?,?,?,?)", (project_id, project_name, project_description, ref_corpus, src_dict_id, langauge, 1))
-    conn.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status, remaining) VALUES (?,?,?,?,?,?)", 
+    conn.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status) VALUES (?,?,?,?,?)", 
                  (project_id, src_dict_id, os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 
-                  '__nvh_source__', '__nvh_source__', json.dumps({'total': total_entries})))
+                  '__nvh_source__', '__nvh_source__'))
     conn.commit()
 
     add_project_staff(conn, project_id, project_name, project_annotators, 'annotator', user)
@@ -1329,6 +1355,9 @@ def getProject(projectID):
                 project_targets.append((target, prerequisites))
 
     for stage, sources in project_targets:
+        # ======================
+        # INPUT DICTS
+        # ======================
         input_dicts = []
         for s in sources:
             if s == '$(SOURCE_DICT)':
@@ -1336,12 +1365,20 @@ def getProject(projectID):
                                   "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
                                   "WHERE p.dict_id=? AND p.project_id=?", (r1['src_dic_id'], projectID))
                 r2 = c2.fetchone()
+
+                dictDB = getDB(r1['src_dic_id'])
+                q = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+                r_q = q.fetchone()
+                dictDB.close()
+
                 if json.loads(r2['remaining']).get(stage, None):
                     input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
-                                        'title': r2['title'], 'remaining': json.loads(r2['remaining'])[stage]})
+                                        'title': r2['title'], 'remaining': json.loads(r2['remaining'])[stage], 
+                                        'total': int(r_q['json'])})
                 else:
                     input_dicts.append({'nvh': r2['source_nvh'], 'dictID': r2['dict_id'],
-                                        'title': r2['title'], 'remaining': json.loads(r2['remaining'])['total']})
+                                        'title': r2['title'], 'remaining': int(r_q['json']), 
+                                        'total': int(r_q['json'])})
 
             elif s != '$(ACCEPTED_BATCHES)':
                 source_nvh = os.path.join(siteconfig["dataDir"], "projects", projectID, s)
@@ -1349,42 +1386,72 @@ def getProject(projectID):
                                   "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
                                   "WHERE p.source_nvh=? AND p.project_id=?", (source_nvh, projectID))
                 r3 = c3.fetchone()
+
                 if r3:
+                    dictDB = getDB(r3['dict_id'])
+                    q = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+                    r_q = q.fetchone()
+                    dictDB.close()
+
                     if json.loads(r3['remaining']).get(stage, None):
                         input_dicts.append({'nvh': r3['source_nvh'], 'dictID': r3['dict_id'],
-                                            'title': r3['title'], 'remaining': json.loads(r3['remaining'])[stage]})
+                                            'title': r3['title'], 'remaining': json.loads(r3['remaining'])[stage],
+                                            'total': int(r_q['json'])})
                     else:
                         input_dicts.append({'nvh': r3['source_nvh'], 'dictID': r3['dict_id'],
-                                            'title': r3['title'], 'remaining': json.loads(r3['remaining'])['total']})
+                                            'title': r3['title'], 'remaining': int(r_q['json']),
+                                            'total': int(r_q['json'])})
                 else:
                     input_dicts.append({'nvh': source_nvh, 'dictID': None, 'remaining': None})
 
+        # ======================
+        # OUTPUT DICTS
+        # ======================
         c4 = conn.execute("SELECT dict_id, remaining FROM project_dicts WHERE source_nvh=? AND project_id=?",
                           (os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.nvh'), projectID))
         r4 = c4.fetchone()
+
         if r4:
+            dictDB = getDB(r4['dict_id'])
+            q = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+            r_q = q.fetchone()
+            dictDB.close()
+
             output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.nvh'),
-                           'dictID': r4['dict_id'], 'remaining': json.loads(r4['remaining'])['total']}
+                           'dictID': r4['dict_id'], 'total': int(r_q['json'])}
         else:
             output_dict = {'nvh': os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.nvh'),
-                           'dictID': None, 'remaining': 0}
+                           'dictID': None, 'total': 0}
 
+        # ======================
+        # BATCH DICTS
+        # ======================
         batches = []
         c5 = conn.execute("SELECT p.dict_id, p.source_nvh, p.remaining, p.assignee, p.status, d.title "
                           "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
                           "WHERE p.stage=? AND p.project_id=?", (stage, projectID))
+
         for r5 in c5.fetchall():
-             batches.append({'nvh': r5['source_nvh'], 'dictID': r5['dict_id'], 'title': r5['title'],
-                             'remaining': json.loads(r5['remaining'])['total'],
-                             'assignee': r5['assignee'], 'status': r5['status']}) # TODO count remaining according to advance search on specific flag
+
+            dictDB = getDB(r5['dict_id'])
+            q = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+            r_q = q.fetchone()
+            q2 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
+            r_q2 = q2.fetchone()
+            dictDB.close()
+
+            batches.append({'nvh': r5['source_nvh'], 'dictID': r5['dict_id'], 'title': r5['title'],
+                            'competed': int(r_q2['json']), 'total': int(r_q['json']), 'to_do': int(r_q['json']) - int(r_q2['json']),
+                            'completed_per': (int(r_q2['json']) / int(r_q['json'])) * 100, 'to_do_per': 100 - ((int(r_q2['json']) / int(r_q['json'])) * 100),
+                            'assignee': r5['assignee'], 'status': r5['status']})
 
         if len(input_dicts) > 1:
             stage_type = 'merge'
         else:
-            stage_type = 'single'
+            stage_type = 'batches'
 
         workflow_stages.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
-                       'batches': batches, 'type': stage_type})
+                                'batches': batches, 'type': stage_type})
 
 
     c6 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
@@ -1448,7 +1515,7 @@ def createBatch(project_id, stage, batch_size, max_batches, user_email):
 
     logfile_f = open(logfile, "a")
 
-    subprocess.Popen(['make', stage+'_new_batches','-C', workflow_dir,
+    subprocess.Popen(['make', stage+'_new_batches','-C', workflow_dir, '--silent',
                       f'SOURCE_DICT={src_dict}.nvh', f'BATCH_SIZE={batch_size}', f'USER={user_email}',
                       f'MAX_BATCHES={max_batches}', f'GENERATED_BATCHES_FILEMASK={filemask}'],
                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
@@ -1496,7 +1563,7 @@ def makeStage(project_id, stage, user_email):
                 result_total_entries += r['total']
 
     main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, remaining) VALUES (?,?,?,?,?)",
-                    (project_id, dict_id, os.path.join(workflow_dir, stage + '.nvh'), stage, json.dumps({'total': result_total_entries})))
+                    (project_id, dict_id, os.path.join(workflow_dir, stage + '.nvh'), f'{stage}_stage', json.dumps({'total': result_total_entries})))
     main_db.commit()
     main_db.close()
 
@@ -1505,12 +1572,23 @@ def makeStage(project_id, stage, user_email):
     # ==================
     logfile = stage_path + ".log"
     logfile_f = open(logfile, "a")
-    subprocess.Popen(['make', stage+'.nvh','-C', workflow_dir,
-                      f'SOURCE_DICT={project_info["source_dict"]}.nvh',
-                      f'ACCEPTED_BATCHES={filemask}',
-                      f'DICT_DB={dbpath}',
-                      f'USER={user_email}'],
-                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    for p in project_info['workflow']:
+        if p['stage'] == stage:
+            stage_type = p['type']
+
+    if stage_type == 'merge': # The ACCEPTED_BATCHES variable is not used and couse problem in dependecies
+        subprocess.Popen(['make', stage+'.nvh','-C', workflow_dir, '--silent',
+                        f'SOURCE_DICT={project_info["source_dict"]}.nvh',
+                        f'DICT_DB={dbpath}',
+                        f'USER={user_email}'],
+                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    else:
+        subprocess.Popen(['make', stage+'.nvh','-C', workflow_dir, '--silent',
+                        f'SOURCE_DICT={project_info["source_dict"]}.nvh',
+                        f'ACCEPTED_BATCHES={filemask}',
+                        f'DICT_DB={dbpath}',
+                        f'USER={user_email}'],
+                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
 
     return {"success": True, "projectID": project_id, "upload_file_path": logfile,
             "msg": 'Creating stage dict'}

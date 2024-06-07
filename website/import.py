@@ -15,15 +15,15 @@ from nvh import nvh
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 def log_info(msg):
-    sys.stderr.write(f'INFO: {msg}\n')
+    sys.stderr.write(f'INFO {datetime.datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
 
 
 def log_err(msg):
-    sys.stderr.write(f'ERROR: {msg}\n')
+    sys.stderr.write(f'ERROR {datetime.datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
 
 
 def log_warning(msg):
-    sys.stderr.write(f'WARNING: {msg}\n')
+    sys.stderr.write(f'WARNING {datetime.datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
 
 
 def purge(db, historiography, args):
@@ -40,6 +40,7 @@ def purge(db, historiography, args):
     db.execute("delete from entries")
     db.execute("delete from linkables")
     db.execute("delete from searchables")
+    db.execute("UPDATE configs SET json=? WHERE id=?", (0, 'entry_count'))
     db.commit()
 
     log_info("Compressing database...")
@@ -184,8 +185,8 @@ def main():
 
     args = parser.parse_args()
 
-    sys.stderr.write(f'PID: {str(os.getpid())}\n')
-    log_info("Import started. You may close the window, import will run in the background. Please wait...")
+    log_info('IMPORT')
+    log_info(f'PID: {str(os.getpid())}')
 
     try:
         if args.filename.endswith('.xml'):
@@ -267,7 +268,7 @@ def main():
 
         main_db = ops.getMainDB()
         dict_name = args.dbname.strip().split('/')[-1][:-7]
-        log_info(f"Marek: {dict_name}")
+        log_info(f"Importing {args.filename} into {dict_name}")
         d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_name,))
         limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
@@ -280,8 +281,14 @@ def main():
         needs_refac = 0
         needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
 
-        log_info('Importing into dictionary')
         cut_pos_re = re.compile('(.*)-.*')
+
+        # ids = []
+        # entry_updates = []
+        # searchable_updates = []
+        entries_inserted = 0
+        completed_entries = 0
+
         for entry in import_entries:
             entry_str = entry.dump_string()
             if entry_inserted >= max_import:
@@ -290,17 +297,24 @@ def main():
             action = "create"
             entry_key = ops.getEntryHeadword(entry, args.main_node_name)
             title = "<span class='headword'>" + entry_key + "</span>"
-            c = db.execute("SELECT id FROM entries WHERE sortkey=?", (entry_key,))
+            c = db.execute("SELECT id, nvh FROM entries WHERE sortkey=?", (entry_key,))
             r = c.fetchone()
 
             if not r:
                 sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
+                if '__lexonomy_completed__' in entry_str:
+                    completed_entries += 1
+                entries_inserted += 1
 
             else:
                 sql = "UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, doctype=?, title=?, sortkey=? WHERE id=?"
                 params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"])
                 action = "update"
+
+                if '__lexonomy_completed__' in entry_str and '__lexonomy_completed__' not in r['nvh']:
+                    completed_entries += 1
+
             c = db.execute(sql, params)
             entryID = c.lastrowid
             db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)",
@@ -320,7 +334,19 @@ def main():
             log_info("DONE_IMPORT: PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
                     "email inquiries@sketchengine.eu and give details of your dictionary project." % (entry_inserted, entry_count))
 
+        # db.executemany("update entries set needs_resave=0, title=?, sortkey=? where id=?", entry_updates)
+        # db.execute("delete from searchables where entry_id in (%s)" % (",".join(map(str, ids))))
+        # db.executemany("insert into searchables(entry_id, txt, level) values(?, ?, ?)", searchable_updates)
         log_info("DONE_IMPORT: PER:100, COUNT:%d/%d"  % (entry_inserted, entry_count))
+
+        c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
+        r2 = c2.fetchone()
+        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + entries_inserted, 'entry_count'))
+
+        c3 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
+        r3 = c3.fetchone()
+        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + completed_entries, 'completed_entries'))
+
         db.commit()
     except Exception as e:
         log_err(f"Import crashed on: {e}")
