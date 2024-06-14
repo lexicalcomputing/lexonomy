@@ -21,6 +21,6 @@ images.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 
 ### stage merge ####################################################
 final.nvh: $(SOURCE_DICT) sensitive.nvh images.nvh
-	$(DIR)/nvh.py put $< sensitive.nvh > $@.s1
-	$(DIR)/nvh.py put $@.s1 images.nvh > $@
+	$(DIR)/nvh.py put $< sensitive.nvh > $@.patch
+	$(DIR)/nvh.py put $@.patch images.nvh > $@
 	$(DIR)/import.py $(DICT_DB) $@ $(USER) 'entry'

@@ -7,21 +7,10 @@ import glob
 import ops
 import json
 import subprocess
-from datetime import datetime
+from log_subprocess import log_err, log_info, log_warning, log_end, log_start
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="utf-8"))
-
-def log_info(msg):
-    sys.stderr.write(f'INFO {datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
-
-
-def log_err(msg):
-    sys.stderr.write(f'ERROR {datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
-
-
-def log_warning(msg):
-    sys.stderr.write(f'WARNING {datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
 
 
 def get_already_exported(batch_list, tl_name):
@@ -73,8 +62,7 @@ def split_to_batches(input, max_batches, batch_size , batch_list, tl_node, alrea
                     curr_batch = open(new_filename, 'w')
                     next_batch_num += 1
                     new_batches.append(new_filename)
-                    log_info("SPLITTING_BATCHES: PER:%.2d, COUNT:%d/%d, BATCH: %s" % ((batches_generated/ max_batches*100),
-                                                                                      batches_generated,  max_batches, new_filename))
+                    log_info("splitting batches: NO:%d/%d, BATCH: %s" % (batches_generated,  max_batches, new_filename))
             # WRITING TO CURRENT BATCH
             if hw not in already_exported:
                 curr_batch.write(line)
@@ -105,7 +93,6 @@ def update_project_info(batch_size, user, new_batches, project_id, stage, tl_nod
         subprocess.Popen([currdir + "/import.py", dbpath, nvh_file_path, project_id, tl_node],
                           stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
 
-        log_info('IMPORTED: ' + nvh_file_path)
 
         insert_project_dicts.append((project_id, dict_id, nvh_file_path, stage, 'inProgress'))
 
@@ -136,7 +123,7 @@ def main():
                         help='Only splits the input nvh into batches without project database update')
     args = parser.parse_args()
 
-    log_info('GEN BATCHES')
+    log_start('BATCHES')
 
     # ==========================
     # INIT
@@ -166,7 +153,7 @@ def main():
     if not args.split_only:
         update_project_info(args.batch_size, args.user, new_batches, project_id, stage, tl_node, remaining_hws, args.src_dict_id.rstrip('.nvh'))
 
-    log_info('DONE')
+    log_end('BATCHES')
 
 
 if __name__ == '__main__':

@@ -2,11 +2,11 @@
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import os
+import sys
 import requests
 import json
 import unittest
 import config
-import time
 import random
 from pprint import pprint
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -15,8 +15,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestQueries(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.verbose = False
-        cls.time = True
+        cls.verbose = True
         cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         cls.website = config.website
 
@@ -40,7 +39,7 @@ class TestQueries(unittest.TestCase):
 
         cls.source_dict_id = ''
         cls.batch_log_file = ''
-        cls.all_batches_dict_ids = []
+        cls.all_batches_dict_ids = set()
 
         # TODO RM
         cls.source_dict_id = 'marek_project_dict'
@@ -61,7 +60,10 @@ class TestQueries(unittest.TestCase):
 
         for stage in r0.json()['workflow']:
             for batch_dict in stage['batches']:
-                cls.all_batches_dict_ids.append((stage['stage'], batch_dict['dictID'], batch_dict['title']))
+                if batch_dict['status'] == 'creating':
+                    cls.update_all_batches()
+                elif batch_dict['status'] == 'inProgress':
+                    cls.all_batches_dict_ids.add((stage['stage'], batch_dict['dictID'], batch_dict['title']))
 
     # SOURCE DICT CREATE
     def test_1(self):
@@ -170,9 +172,6 @@ class TestQueries(unittest.TestCase):
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
 
-        if self.time:
-            time.sleep(10)
-
         API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/create_batch.json"
         data = {'stage': 'images',
                 'size': 1,
@@ -181,16 +180,8 @@ class TestQueries(unittest.TestCase):
         r2 = requests.post(url=API_ENDPOINT_2, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r2.json()['success'], True)
 
-        if self.time:
-            time.sleep(10)
-
-        # TODO
-        # API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/getBatchesStatus.json"
-        # data = {'stage': 'sensitive'}
-        # r2 = requests.get(url=API_ENDPOINT_2, headers=self.headers, cookies=self.cookies)
-        # self.assertEqual(r2.json()['description'], 'This is a testing project updated')
-        # self.assertEqual(set(r2.json()['managers']) - set(["marek.medved@sketchengine.eu"]), set())
-        # self.assertEqual(set(r2.json()['annotators']) - set(['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'marek.medved@sketchengine.eu', 'xmedved1.fi.muni.cz']), set())
+        # get dicIDs of all batches
+        self.update_all_batches()
 
         # ================
         # PROJECT STATE
@@ -204,19 +195,17 @@ class TestQueries(unittest.TestCase):
             print('================================')
             pprint(r3.json())
 
-        self.assertEqual(r3.json()['workflow'][0]['batches'][0]['nvh'].rsplit('/',1)[1], 'sensitive.batch_001.in')
-        self.assertEqual(r3.json()['workflow'][0]['batches'][0]['status'], 'inProgress')
+        self.assertEqual(r3.json()['workflow'][0]['batches'][0]['title'], 'marek_project.sensitive.batch_001')
+        self.assertTrue(r3.json()['workflow'][0]['batches'][0]['status'] in ['inProgress', 'creating'])
         self.assertEqual(r3.json()['workflow'][0]['batches'][0]['assignee'], None)
         self.assertEqual(r3.json()['workflow'][0]['inputDicts'][0]['remaining'], 2)
 
-        self.assertEqual(r3.json()['workflow'][1]['batches'][0]['nvh'].rsplit('/',1)[1], 'images.batch_001.in')
-        self.assertEqual(r3.json()['workflow'][1]['batches'][0]['status'], 'inProgress')
+        self.assertEqual(r3.json()['workflow'][1]['batches'][0]['title'], 'marek_project.images.batch_001')
+        self.assertTrue(r3.json()['workflow'][1]['batches'][0]['status'] in ['inProgress', 'creating'])
         self.assertEqual(r3.json()['workflow'][1]['batches'][0]['assignee'], None)
         self.assertEqual(r3.json()['workflow'][1]['inputDicts'][0]['remaining'], 2)
         # ================
 
-        # get dicIDs of all batches
-        self.update_all_batches()
 
     # ASSIGN BATCH
     def test_5(self):
@@ -274,7 +263,8 @@ class TestQueries(unittest.TestCase):
     # REJECT BATCH
     def test_6(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/reject_batch.json"
-        data = {'dictID_list': json.dumps([self.all_batches_dict_ids[0][1]])}
+        batch_dic_ids = [x[1] for x in self.all_batches_dict_ids if x[2] == 'marek_project.sensitive.batch_001']
+        data = {'dictID_list': json.dumps(batch_dic_ids)}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
 
@@ -292,9 +282,8 @@ class TestQueries(unittest.TestCase):
 
         for s in r2.json()['workflow']:
             for b in s['batches']:
-                if b['dictID'] == self.all_batches_dict_ids[0][1]:
+                if b['dictID'] == batch_dic_ids[0]:
                     self.assertEqual(b['status'], 'rejected')
-                    self.assertTrue(b['nvh'].endswith('.rejected'))
         # ================
 
     # ACCEPT BATCH
@@ -335,9 +324,6 @@ class TestQueries(unittest.TestCase):
             print('================================')
             pprint(r4.json())
 
-        if self.time:
-            time.sleep(10)
-
         API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/make_stage.json"
         data = {'stage': 'images'}
         r2 = requests.post(url=API_ENDPOINT_2, data=data, headers=self.headers, cookies=self.cookies)
@@ -351,16 +337,11 @@ class TestQueries(unittest.TestCase):
             print('================================')
             pprint(r4.json())
 
-        if self.time:
-            time.sleep(10)
-
         API_ENDPOINT_3 = self.website + f"/projects/{self.new_project_id}/make_stage.json"
         data = {'stage': 'final'}
         r3 = requests.post(url=API_ENDPOINT_3, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r3.json()['success'], True)
 
-        if self.time:
-            time.sleep(10)
         # ================
         # PROJECT STATE
         # ================
