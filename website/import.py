@@ -12,19 +12,9 @@ import fileinput
 import xml.sax
 import xml.dom.minidom
 from nvh import nvh
+from log_subprocess import log_err, log_info, log_warning, log_end, log_start
+
 current_dir = os.path.dirname(os.path.realpath(__file__))
-
-def log_info(msg):
-    sys.stderr.write(f'INFO {datetime.datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
-
-
-def log_err(msg):
-    sys.stderr.write(f'ERROR {datetime.datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
-
-
-def log_warning(msg):
-    sys.stderr.write(f'WARNING {datetime.datetime.now().strftime("[%Y-%m-%d, %H:%M:%S]")}: {msg}\n')
-
 
 def purge(db, historiography, args):
     if args.purge_all:
@@ -157,9 +147,9 @@ def xml2nvh(input_xml , fd):
 
         entry_processed += 1
         if entry_processed % 100 == 0:
-            log_info("DONE_XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
+            log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
 
-    log_info("DONE_XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
+    log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
 
 
 def main():
@@ -182,11 +172,16 @@ def main():
     parser.add_argument('-d', '--deduplicate', action='store_true',
                         required=False, default=False,
                         help='Deduplicate nodes with same name and value on the same level')
-
+    parser.add_argument('-c', '--clean', action='store_true',
+                        required=False, default=False,
+                        help='Renaming node names that appear under different parents')
     args = parser.parse_args()
 
-    log_info('IMPORT')
-    log_info(f'PID: {str(os.getpid())}')
+    log_start('IMPORT')
+    log_info(f'pid: {str(os.getpid())}')
+
+    dict_id = args.dbname.strip().split('/')[-1][:-7]
+    log_info('IMPORTING (%s)' % (dict_id))
 
     try:
         if args.filename.endswith('.xml'):
@@ -208,17 +203,18 @@ def main():
             import_nvh.clean_duplicate_nodes(out=sys.stderr)
 
         ## Renaming node names that appear under different parents
-        log_info('Renaming duplicate NVH nodes')
         rename_dict = {}
-        import_nvh.rename_nodes(rename_dict, out=sys.stderr)
-
-        with open(args.filename + ".cleaned", 'w') as clean_f:
-            import_nvh.dump(clean_f)
-
         name_mapping = {}
-        for orig_name, rename_list in rename_dict.items():
-            for _, new_name in rename_list:
-                name_mapping[new_name] = orig_name
+        if args.clean:
+            log_info('Renaming duplicate NVH nodes')
+            import_nvh.rename_nodes(rename_dict, out=sys.stderr)
+
+            with open(args.filename + ".cleaned", 'w') as clean_f:
+                import_nvh.dump(clean_f)
+
+            for orig_name, rename_list in rename_dict.items():
+                for _, new_name in rename_list:
+                    name_mapping[new_name] = orig_name
 
         # Generating schema form NVH
         schema = {}
@@ -267,14 +263,13 @@ def main():
         dict_stats = ops.getDictStats(db)
 
         main_db = ops.getMainDB()
-        dict_name = args.dbname.strip().split('/')[-1][:-7]
-        log_info(f"Importing {args.filename} into {dict_name}")
-        d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_name,))
+        log_info(f"Importing {args.filename} into {dict_id}")
+        d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_id,))
         limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
         max_import = limit - dict_stats["entryCount"]
         if max_import < entry_count:
-            log_info("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
+            log_warning("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
         else:
             log_info("Detected %d entries in '%s' element" % (entry_count, tl_name))
 
@@ -328,16 +323,17 @@ def main():
             entry_inserted += 1
 
             if entry_inserted % 100 == 0:
-                log_info("DONE_IMPORT: PER:%.2d, COUNT:%d/%d" % ((entry_inserted/entry_count*100), entry_inserted, entry_count))
+                log_info("IMPORTED: PER:%.2d, COUNT:%d/%d" % ((entry_inserted/entry_count*100), entry_inserted, entry_count))
 
         if limit_reached:
-            log_info("DONE_IMPORT: PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
-                    "email inquiries@sketchengine.eu and give details of your dictionary project." % (entry_inserted, entry_count))
+            log_info("IMPORTED (%s): PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
+                    "email inquiries@sketchengine.eu and give details of your dictionary project." % (dict_id, entry_inserted, entry_count))
+        else:
+            log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entry_inserted, entry_count))
 
         # db.executemany("update entries set needs_resave=0, title=?, sortkey=? where id=?", entry_updates)
         # db.execute("delete from searchables where entry_id in (%s)" % (",".join(map(str, ids))))
         # db.executemany("insert into searchables(entry_id, txt, level) values(?, ?, ?)", searchable_updates)
-        log_info("DONE_IMPORT: PER:100, COUNT:%d/%d"  % (entry_inserted, entry_count))
 
         c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
         r2 = c2.fetchone()
@@ -350,6 +346,8 @@ def main():
         db.commit()
     except Exception as e:
         log_err(f"Import crashed on: {e}")
+
+    log_end("IMPORT")
 
 
 if __name__ == '__main__':

@@ -726,14 +726,7 @@ def reject_batch(projectID, user, configs):
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
 
-@post(siteconfig["rootPath"]+"projects/<projectID>/getBatchesStatus.json") # OK
-@authProject
-def getBatchesStatus(projectID, user, configs):
-    progress, finished, err, warns, upload_file_path = ops.getBatchStatus(projectID, request.forms.stage)
-    return{"finished": finished, "progress": progress, "error": err, "warnings": warns, 'upload_file_path': upload_file_path}
-
-
-@get(siteconfig["rootPath"] + "wokflows/list.json") # TODO
+@get(siteconfig["rootPath"] + "wokflows/list.json")
 @auth
 def workflow_list(user):
     return ops.getWokflows()
