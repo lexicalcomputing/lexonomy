@@ -35,6 +35,7 @@
             this.store.loadSiteconfig().always(() => {
                this.update()
                this.checkConsentAndShowConsentDialog()
+               $("#appOverlay").fadeOut()
             })
             this.connection = window.connection
             let appUpdater = new window.AppUpdaterClass({
