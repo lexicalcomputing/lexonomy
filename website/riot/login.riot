@@ -47,15 +47,17 @@
                   Log in
                   <i class="material-icons right">send</i>
                </button>
-               <span class="buttonsOr">
-                  or
-               </span>
-               <a href="#register"
-                     class="btn"
-                     tabindex="-1">
-                  Sign up
-                  <i class="material-icons right">person_add</i>
-               </a>
+               <template if={!dictData.siteconfig.disableRegistration}>
+                  <span class="buttonsOr">
+                     or
+                  </span>
+                  <a href="#register"
+                        class="btn"
+                        tabindex="-1">
+                     Sign up
+                     <i class="material-icons right">person_add</i>
+                  </a>
+               </template>
             </div>
          </div>
          <div if={ dictData.siteconfig && dictData.siteconfig.sketchengineLoginPage }
