@@ -35,6 +35,9 @@
             this.store.loadSiteconfig().always(() => {
                this.update()
                this.checkConsentAndShowConsentDialog()
+               if(this.dictData.siteconfig.customStyle){
+                  $("head").append(`<link rel="stylesheet" type="text/css" href="${this.dictData.siteconfig.customStyle}">`)
+               }
                $("#appOverlay").fadeOut()
             })
             this.connection = window.connection

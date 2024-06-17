@@ -20,6 +20,8 @@
   "notifyRegister": false,
   "ske_url": "https://app.sketchengine.eu/",
   "api_url": "https://api.sketchengine.eu/bonito/run.cgi",
+  "customStyle": null,
+  "homepage": null,
   "licences": {
     "cc-by-4.0": {
       "title": "Creative Commons Attribution 4.0 International",
