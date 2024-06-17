@@ -20,6 +20,7 @@
   "notifyRegister": false,
   "ske_url": "https://app.sketchengine.eu/",
   "api_url": "https://api.sketchengine.eu/bonito/run.cgi",
+  "disableRegistration": false,
   "customStyle": null,
   "homepage": null,
   "licences": {
