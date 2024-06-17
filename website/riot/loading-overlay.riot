@@ -4,6 +4,7 @@
             class="spinner {props.small ? 'small' : ''}">
          <div class="spinner-icon"></div>
       </div>
+      <div class="spinner-message">{props.message}</div>
    </div>
 
    <style type="scss">
@@ -20,7 +21,7 @@
          position: fixed;
       }
 
-      #loading-bar-spinner.spinner {
+      #loading-bar-spinner.spinner{
          left: 50%;
          top: 40%;
          margin-left: -30px;
@@ -32,9 +33,6 @@
             margin-left: -15px;
             margin-top: -15px;
          }
-      }
-
-      #loading-bar-spinner.spinner{
          .spinner-icon {
             width: 60px;
             height: 60px;
@@ -47,6 +45,18 @@
             width: 30px;
             height: 30px;
          }
+      }
+      .spinner-message{
+         width: 50%;
+         left: 50%;
+         top: 40%;
+         margin-left: -25%;
+         margin-top: 35px;
+         position: absolute;
+         z-index: 9990 !important;
+         text-align: center;
+         font-size: 1.3rem;
+         text-shadow: 0px 0px 5px #fff, 0px 0px 5px #fff, 0px 0px 10px #fff, 0px 0px 5px #fff;
       }
 
       @keyframes loading-bar-spinner {

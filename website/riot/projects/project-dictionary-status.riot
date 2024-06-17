@@ -1,0 +1,31 @@
+<project-dictionary-status>
+   <div if={props.isImporting}
+         class="dictionaryStatus center-align grey-text">
+      Importing batches...
+   </div>
+   <div if={props.isExporting}
+         class="dictionaryStatus center-align grey-text">
+      Exporting batches...
+   </div>
+   <div if={props.isMerging}
+         class="dictionaryStatus center-align grey-text">
+      Merging batches...
+   </div>
+   <div if={props.isBusy}
+         class="progress mt-0">
+      <div class="indeterminate"></div>
+   </div>
+
+   <script>
+
+   </script>
+
+   <style type="scss">
+      .dictionaryStatus{
+         font-size: 1.3rem;
+      }
+      .progress{
+         height: 2px;
+      }
+   </style>
+</project-dictionary-status>

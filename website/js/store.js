@@ -379,6 +379,7 @@ class StoreClass {
                      })
                   }
                   Object.assign(this.data, {
+                     // TODO configs and dictConfigs?
                         config: response.configs,
                         userAccess: response.userAccess,
                         dictConfigs: response.configs,
@@ -1253,6 +1254,141 @@ class StoreClass {
             })
             .fail(response => {
                M.toast({html: "Could not update the project."})
+            })
+   }
+
+   archiveProject(projectID){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/archive.json`
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Project was archived."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "Could not archive the project."})
+            })
+   }
+
+   unarchiveProject(projectID){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/unarchive.json`
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Project was unarchived."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "Could not unarchive the project."})
+            })
+   }
+
+   deleteProject(projectID){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/delete.json`
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Project was deleted."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "Could not delete the project."})
+            })
+   }
+
+   loadWorkflows(){
+      return window.connection.get({
+         url: `${window.API_URL}wokflows/list.json`
+      })
+            .fail(response => {
+               M.toast({html: "Could not load list of workflows."})
+            })
+   }
+
+   projectExportBatches(projectID, stage, size, count){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/create_batch.json`,
+         data: {
+            stage: stage,
+            size: size,
+            batch_number: count,
+         }
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Batches were created."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "Could not create batches."})
+            })
+   }
+
+   projectAssignBatch(projectID, assignees){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/assign_batch.json`,
+         data: {
+            assignees: JSON.stringify(assignees)
+         }
+      })
+            .done(response => {
+               if(response.error){
+                  M.toast({html: "Could not assign editor to the batch."})
+               } else {
+                  M.toast({html: "Editor was asigned to the batch."})
+               }
+            })
+   }
+
+   projectAcceptBatches(projectID, dictID_list){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/accept_batch.json`,
+         data: {
+            dictID_list: JSON.stringify(dictID_list)
+         }
+      })
+            .done(response => {
+               if(response.error){
+                  M.toast({html: "Could not accept the batch."})
+               } else {
+                  M.toast({html: "Batch was accepted."})
+               }
+            })
+   }
+
+   projectRejectBatches(projectID, dictID_list){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/reject_batch.json`,
+         data: {
+            dictID_list: JSON.stringify(dictID_list)
+         }
+      })
+            .done(response => {
+               if(response.error){
+                  M.toast({html: "Could not reject the batch."})
+               } else {
+                  M.toast({html: "Batch was rejected."})
+               }
+            })
+   }
+
+   projectImportAcceptedBatches(projectID, stage){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/make_stage.json`,
+         data: {
+            stage: stage
+         }
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "Batches were improted."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "Could not import batches."})
             })
    }
 

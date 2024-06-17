@@ -2,7 +2,7 @@
    <loading-overlay if={state.isBusy}/>
    <lazy-dropdown load-data={loadUsers}
          riot-value={props.riotValue}
-         filter={props.filter}
+         data-processor={props.dataProcessor}
          placeholder={props.placeholder}
          on-change={onChange}
          on-submit={onSubmit}></lazy-dropdown>

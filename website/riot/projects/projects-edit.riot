@@ -5,6 +5,15 @@
       Missing project ID. <a href="#projects/dashboard">Go to projects dashboard</a>.
    </div>
 
+   <div if={state.error}
+         class="message error">
+      <h2 class="mt-8">Could not load the project</h2>
+      {state.error}
+      <div class="mt-4">
+         <a href="#projects/dashboard">Go to projects dashboard</a>
+      </div>
+   </div>
+
    <loading-overlay if={state.isBusy || dictData.isDictionaryListLoading}/>
    <div if={state.project}>
    <h1>
@@ -15,25 +24,50 @@
             arrow_back
          </i>
       </a>
-      {state.project.name}
+      {state.project.project_name}
    </h1>
    <div class="displayFlex">
       <div>
          <h3>Project</h3>
-         <div class="input-field mb-12">
+         <div class="input-field mb-8">
             <input type="text"
                   id="name"
-                  value={state.project.name}
+                  value={state.project.project_name}
                   oninput={onNameInput}>
             <label>Name</label>
          </div>
 
-         <div class="input-field mb-12">
+         <div class="input-field mb-8">
+            <textarea id="description"
+                  class="materialize-textarea"
+                  oninput={onDescriptionInput}
+                  rows="3">{state.project.description}</textarea>
+            <label>Description</label>
+         </div>
+
+         <div class="input-field mb-8">
             <input disabled
-                  value={state.project.centralDictionary}/>
+                  value={store.getLanguageName(state.project.language)}
+                  id="language">
+            <label>Language</label>
+         </div>
+
+         <div class="input-field mb-8">
+            <input disabled
+                  value={state.project.workflow.name}/>
+            <label>Workflow</label>
+         </div>
+
+         <div class="sourceDictInput input-field mb-8">
+            <input disabled
+                  value={state.project.source_dict}/>
+            <a href="#{state.project.source_dict}"
+                  target="_blank">
+               <i class="material-icons">open_in_new</i>
+            </a>
             <label>Central dictionary</label>
          </div>
-         <div class="input-field inputFieldWithProgressBar mb-12">
+         <div class="input-field inputFieldWithProgressBar mb-8">
             <input if={auth.data.ske_apiKey}
                   type="text"
                   id="referenceCorpus"
@@ -51,62 +85,54 @@
                class="warning">
             To select reference corpus you need to set up Sketch Engine connection first. You can do it on your <a href="#/member-profile">profile page</a>.
          </div>
-
-         <div class="input-field mb-12">
-            <input disabled
-                  value={state.project.workflow.name}/>
-            <label>Workflow</label>
-         </div>
       </div>
 
       <div class="columnTeam">
          <h3>Team</h3>
-         <div class="teamRole displayFlex">
+         <div class="teamRole displayFlex mb-8">
             <label>Managers</label>
             <div>
                <div>
-                  <div if={!state.project.team.filter(u => u.role == "manager").length}
+                  <div if={!state.project.managers.length}
                         class="noTeamMember grey-text">
                      No manager selected.
                   </div>
-                  <span if={member.role == "manager"}
-                        each={member in state.project.team}
+                  <span each={email in state.project.managers}
                         class="chip">
-                     {member.email}
+                     {email}
                      <i class="close material-icons"
-                           onclick={onRemoveMemberClick.bind(this, member)}>close</i>
+                           onclick={onRemoveMemberClick.bind(this, "managers", email)}>close</i>
                   </span>
                </div>
                <div class="input-field mt-2">
-                  <member-dropdown id="managerMemberDropdown"
-                        on-change={onAddMember.bind(this, "manager")}
-                        filter={filterMembers}/>
+                  <user-dropdown id="managersMemberDropdown"
+                        on-change={onAddMember.bind(this, "managers")}
+                        dataProcessor={getMemberList.bind(this, "managers")}/>
                   <span class="helper-text">
                      Enter email address to add a new manager.
                   </span>
                </div>
             </div>
          </div>
-         <div class="teamRole displayFlex mb-12">
+         <div class="teamRole displayFlex">
             <label>Editors</label>
             <div>
                <div>
-                  <div if={!state.project.team.filter(u => u.role == "editor").length}
+                  <div if={!state.project.annotators.length}
                         class="noTeamMember grey-text">
                      No editor selected.
                   </div>
-                  <span if={member.role == "editor"}
-                        each={member in state.project.team}
+                  <span each={email in state.project.annotators}
                         class="chip">
-                     {member.email}
+                     {email}
                      <i class="close material-icons"
-                           onclick={onRemoveMemberClick.bind(this, member)}>close</i>
+                           onclick={onRemoveMemberClick.bind(this, "annotators", email)}>close</i>
                   </span>
                </div>
                <div class="input-field mt-2">
-                  <member-dropdown id="editorMemberDropdown"
-                        on-change={onAddMember.bind(this, "editor")}
-                        filter={filterMembers}/>
+                  <user-dropdown id="editorsMemberDropdown"
+                        on-change={onAddMember.bind(this, "annotators")}
+                        data-processor={getMemberList.bind(this, "annotators")}/>
                   <span class="helper-text">
                      Enter email address to add a new editor.
                   </span>
@@ -117,7 +143,7 @@
    </div>
 
    <div class="buttons mt-6">
-      <a href="#projects/view/{props.projectID}"
+      <a href="javascript:window.history.back()"
             class="btn btn-secondary">
          back
       </a>
@@ -134,19 +160,23 @@
 
          state: {
             project: null,
-            isCorporaLoading: true
+            isCorporaLoading: true,
+            corpora: [],
+            isBusy: true
          },
 
          onMounted(){
             if(this.props.projectID){
                this.store.loadProject(this.props.projectID)
-
-            // TODO
-                  .fail(response => {
-                     this.state.project = response.project
-                     this.state.project = {
+                     .done(response => {
+                        if(response.error){
+                           this.state.project = null
+                           this.state.error = response.error
+                           /*this.state.project = {
                         name: "English-Nepali dictionary",
-                        team: [{email: "asda@asdad.asd", role: "manager"}, {email: "aaaaa@asdad.com", role: "editor"}],
+                        description: "adsasd ad\nadasdsdfas\nafdgssaf\nsfsfsafdsfasfd\n",
+                        managers: ["asda@asdad.asd", "aaaaa@asdad.com"],
+                        editors: ["asda@asdad.asd", "aaaaa@asdad.com"],
                         workflow: [{
                            name: "headword annotation",
                            inputDict: {
@@ -168,10 +198,16 @@
                         }],
                         centralDictionary: "someDictionary",
                         referenceCorpus: "preloaded/bnc2_tt31"
-                     }
-                  })
+                     }*/
+                        } else {
+                           this.state.error = null
+                           this.state.project = response
+                        }
+                     })
                   .always(response => {
                      this.update({isBusy: false})
+                     M.updateTextFields()
+                     M.textareaAutoResize($("textarea", this.root))
                   })
             }
 
@@ -198,6 +234,7 @@
                   .always(() => {
                      this.update({isCorporaLoading: false})
                   })
+
             $("#name", this.root).focus()
             window.initFormSelects(this.root)
          },
@@ -211,19 +248,22 @@
             this.refreshUpdateBtnDisabled()
          },
 
-         onAddMember(role, member){
-            this.state.project.team.push({
-               email: member.email,
-               role: role
-            })
-            this.update()
-            $(`#${role}MemberDropdown input`).val("")
+         onDescriptionInput(evt){
+            this.state.project.description = evt.target.value
          },
 
-         onRemoveMemberClick(member, evt){
-            evt.stopPropagation()
-            this.state.project.team = this.state.project.team.filter(u => u.email != member.email)
+         onAddMember(type, member){
+            this.state.project[type].push(member.email)
             this.update()
+            $(`#${type}MemberDropdown input`).val("")
+            this.refreshCreateBtnDisabled()
+         },
+
+         onRemoveMemberClick(type, email, evt){
+            evt.stopPropagation()
+            this.state.project[type] = this.state.project[type].filter(u => u.email != email)
+            this.update()
+            this.refreshCreateBtnDisabled()
          },
 
          onUpdateProjectClick(){
@@ -238,21 +278,44 @@
          },
 
          getReferenceCorpusValue(){
-            if(this.state.project && this.state.corpusList){
-               return this.state.corpusList.find(c => c.value == this.state.project.referenceCorpus).label
+            if(this.state.project && this.state.corpusList && this.state.project.referenceCorpus){
+               let corpus = this.state.corpusList.find(c => c.value == this.state.project.referenceCorpus)
+               if(corpus){
+                  return corpus.label
+               }
             }
             return ""
          },
 
-         filterMembers(members){
-            let takenEmails = this.state.project.team.map(member => member.email)
-            return members.filter(member => !takenEmails.includes(member.value))
+         getMemberList(type, members, query){
+            if(!members.length && window.isEmail(query) && !this.state.project[type].includes(query)){
+               return [{
+                  html: `create  user <b>${query}</b>`,
+                  value: query,
+                  user: {
+                     email: query
+                  }
+               }]
+            }
+            return members.filter(member => !this.state.project[type].includes(member.email))
+         },
+
+         refreshReferenceCorporaList(){
+            let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
+                  .map(corpus => {
+                     return {
+                           value: corpus.corpname,
+                           label: corpus.name,
+                           info: corpus.language_name
+                        }
+                     })
+            M.Autocomplete.getInstance($("#ref_corpus")).updateData(corpora)
          },
 
          refreshUpdateBtnDisabled(){
             let disabled = !this.state.project.name
-                  || !this.state.project.team.filter(member => member.role == "manager").length
-                  || !this.state.project.team.filter(member => member.role == "editor").length
+                  || !this.state.project.managers.length
+                  || !this.state.project.annotators.length
                   || !this.state.project.referenceCorpus
             $("#btnUpdateProject").toggleClass("disabled", disabled)
          }
@@ -263,6 +326,11 @@
    <style type="scss">
       .input-field{
          width: 400px;
+      }
+      .sourceDictInput{
+         display: flex;
+         gap: 5px;
+         align-items: center;
       }
       .columnTeam{
          margin-left: 30px;

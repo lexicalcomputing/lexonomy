@@ -1,27 +1,41 @@
 <project-dict-name>
-   <h5 class="projectDictName dictName_{props.dict.id} inlineBlock"
+   <h3 class="projectDictName dictName_{window.idEscape(props.dict.title)} borderBottom"
          onmouseover={onMouseOver}
          onmouseout={onMouseOut}>
-      {props.dict.name}
-      <a href="#{props.dict.id}"
+      <trim-text text={state.name}
+            max={30}/>
+      <a if={props.dict.dictID}
+            href="#{props.dict.dictID}"
             target="_blank"
             class="clickable">
          <i class="material-icons ml-2">open_in_new</i>
       </a>
-   </h5>
-   <div class="grey-text projectDictSize">
-      {props.dict.size ? window.Formatter.num(props.dict.size) + ' entries' : 'empty'}
+   </h3>
+   <div class="projectDictSize displayFlex">
+      <span>
+         {!props.dict.total ? 'empty' : window.Formatter.num(this.props.dict.total) + " entries"}
+      </span>
+      <span if={props.dict.total}
+            class="grey-text ml-auto">
+         assigned: {window.Formatter.num(props.dict.total - props.dict.remaining)}, remaining: {window.Formatter.num(props.dict.remaining)}
+      </span>
    </div>
 
 
    <script>
       export default{
-         onMouseOver(){
-            let dictNames = $(`.dictName_${this.props.dict.id}`)
-            if(dictNames.length > 1){
-               dictNames.addClass("highlightDictName")
-               dictNames.closest(".card-panel").addClass("highlightDictPanel")
+         onBeforeMount(){
+            let name = this.props.dict.title || ""
+            if(/^\d+\..*/.test(this.props.dict.title)){
+               name = name.substr(name.indexOf(".") + 1)  // remove project ID
             }
+            this.state.name = name
+         },
+
+         onMouseOver(){
+            $(`.dictName_${window.idEscape(this.props.dict.title)}`)
+                  .addClass("highlightDictName")
+                  .closest(".card-panel").addClass("highlightDictPanel")
          },
 
          onMouseOut(){
@@ -40,6 +54,8 @@
          font-size: 1.2rem;
          margin-bottom: 0;
          cursor: default;
+         padding-bottom: 0.5em;
+         margin-bottom: 0.5em;
          i{
             font-size: 1rem;
          }
@@ -47,6 +63,7 @@
       .projectDictSize{
          font-size: 0.8rem;
          margin-bottom: 15px;
+         gap: 20px;
       }
    </style>
 </project-dict-name>

@@ -5,15 +5,37 @@
       create project
       <i class="material-icons left">add</i>
    </a>
+   <label if={state.archived_projects.length > 0}
+         class="checkbox mr-8 mt-2 right">
+      <input type="checkbox"
+            checked={state.showArchived}
+            onclick={onShowArchivedChange}/>
+      <span>
+         show archived ({state.archived_projects.length})
+      </span>
+   </label>
    <h1>
       Projects
    </h1>
-   <template if={state.projectsLoaded}>
-      <table class="projectTable highlight">
+   <div if={state.error}
+         class="center-align grey-text grey lighten-5 pt-8 pb-8">
+      <h3>
+         Could not load projects
+      </h3>
+      <div>
+         {state.error}
+      </div>
+   </div>
+   <template if={!state.error && state.projectsLoaded}>
+      <table if={state.displayedProjects.length && state.displayedProjects}
+            class="projectTable highlight">
          <thead>
             <tr>
-               <th>
+               <th class="pl-8">
                   Name
+               </th>
+               <th>
+                  Language
                </th>
                <th>
                   Central Dictionary
@@ -25,18 +47,33 @@
                   Managers
                </th>
                <th>
-                  Editors
                </th>
             </tr>
          </thead>
          <tbody>
-            <tr each={project in state.projects}
+            <tr each={project in state.displayedProjects}
+                  class="positionRelative {project.isBusy ? 'pointerEventsNone' : ''} {project.archived ? 'grey lighten-4' : ''}"
                   onclick={onProjectClick.bind(this, project.id)}>
                <td>
+                  <span class="{project.active ? 'green-text' : 'red-text'} ml-2 mr-2 tooltipped"
+                        data-tooltip={project.active ? 'active' : 'inactive'}>
+                     ●
+                  </span>
                   {project.name}
+                  <div if={project.isBusy}
+                        class="projectLoadingOverlay">
+                     <i class="material-icons spin grey-text">donut_large</i>
+                  </div>
                </td>
                <td>
-                  {project.centralDictionary}
+                  {store.getLanguageName(project.language)}
+               </td>
+               <td>
+                  {project.source_dict_name}
+                  <a href="#{project.source_dict}"
+                        onclick={window.stopEvtPropagation}>
+                     <i class="material-icons">open_in_new</i>
+                  </a>
                </td>
                <td>
                   <table class="workflowTable">
@@ -59,20 +96,45 @@
                   </table>
                </td>
                <td>
-                  {project.team.filter(m =>  m.role == "manager").map(m => m.email).join(", ")}
+                  {project.managers.join(", ")}
                </td>
                <td>
-                  {project.team.filter(m =>  m.role == "editor").length}
+                  <div class="buttons">
+                     <button if={!!project.description}
+                           class="btn btn-flat btn-floating tooltipped"
+                           data-tooltip="Description"
+                           onclick={onShowDescriptionClick.bind(this, project)}>
+                        <i class="material-icons">
+                           info_outline
+                        </i>
+                     </button>
+                     <button if={project.archived}
+                           class="btn btn-flat btn-floating tooltipped"
+                           data-tooltip="Unarchive project"
+                           onclick={onUnarchiveClick.bind(this, project)}>
+                        <i class="material-icons">
+                           restore
+                        </i>
+                     </button>
+                     <button if={!project.archived}
+                           class="btn btn-flat btn-floating tooltipped"
+                           data-tooltip="Archive project"
+                           onclick={onArchiveClick.bind(this, project)}>
+                        <i class="material-icons">
+                           archive
+                        </i>
+                     </button>
+                  </div>
                </td>
             </tr>
          </tbody>
       </table>
 
-      <div if={!state.projects.length}
-            class="noProjects grey-text">
-         <div class="noProjects-title mb-2">
+      <div if={!state.displayedProjects.length && !state.error}
+            class="center-align grey-text grey lighten-5 pt-8 pb-8">
+         <h3>
             No projects
-         </div>
+         </h3>
          <div>
             Create a <a href="#projects/new">new project</a>.
          </div>
@@ -87,80 +149,97 @@
          state:{
             isBusy: true,
             projectsLoaded: false,
-            projects: []
+            projects: [],
+            error: null,
+            showArchived: false,
+            displayedProjects: [],
+            archived_projects: []
          },
 
          onBeforeMount(){
             this.reloadProjects()
          },
 
+         onShowArchivedChange(evt){
+            this.state.showArchived = !this.state.showArchived
+            this.refreshDisplayedProjects()
+            this.update()
+         },
+
          onProjectClick(projectID){
             route(`projects/view/${projectID}`)
          },
 
+         onShowDescriptionClick(project, evt){
+            evt.stopPropagation()
+            window.modal.open({
+               title: project.name,
+               tag: "raw-html",
+               props: {
+                  content: project.description
+               }
+            })
+         },
+
+         onArchiveClick(project, evt){
+            evt.stopPropagation()
+            project.isBusy = true
+            this.store.archiveProject(project.projectId)
+                  .done(response => {
+                     if(response.success){
+                        this.reloadProjects()
+                     }
+                  })
+                  .always(response => {
+                     project.isBusy = false
+                     this.update()
+                  })
+         },
+
+         onUnarchiveClick(project, evt){
+            evt.stopPropagation()
+            project.isBusy = true
+            this.store.unarchiveProject(project.projectId)
+                  .done(response => {
+                     if(response.success){
+                        this.reloadProjects()
+                     }
+                  })
+                  .always(response => {
+                     project.isBusy = false
+                     this.update()
+                  })
+         },
+
          reloadProjects(){
             this.store.loadProjects()
-
-
-            // TODO
+                  .done(response => {
+                     if(!response.error){
+                        this.state.error = null
+                        this.state.projects = response.projects_active
+                        this.state.archived_projects = response.projects_archived.map(project => {
+                           project.archived = true
+                           return project
+                        })
+                        this.state.projectsLoaded = true
+                        this.refreshDisplayedProjects()
+                     } else {
+                        this.state.error = response.error
+                     }
+                  })
                   .fail(response => {
-                     this.state.projects = response.projects
-                     this.state.projectsLoaded = true
-                     this.state.projects = [{
-                        id: "en_nep",
-                        name: "English-Nepali dictionary",
-                        team: [{email: "asda@asdad.asd", role: "manager"}, {email: "aaaaa@asdad.com", role: "editor"}],
-                        workflow: [{
-                           status: "active",
-                           name: "review",
-                           inputDict: "entry dict",
-                           outputDict: "output dict",
-                           progress: 0.6,
-                           batches: [{
-                              editor: "bbbbb@asdad.com",
-                              progress: 0.6
-                           }]
-
-                        }, {
-                           status: "active",
-                           name: "headword annotation",
-                           inputDict: "entry dict",
-                           outputDict: "output dict",
-                           progress: 1,
-                           batches: [{
-                              editor: "bbbbb@asdad.com",
-                              progress: 1
-                           }]
-
-                        }],
-                        centralDictionary: "someDictionary",
-                        referenceCorpus: "bnc"
-                     }, {
-                        id: "test",
-                        name: "Test dictionary",
-                        team: [{email: "john@asdad.com", role: "manager"}, {email: "bbbbb@asdad.com", role: "editor"}, {email: "cccc@asdad.com", role: "editor"}],
-                        workflow: [{
-                           status: "active",
-                           name: "headword annotation",
-                           inputDict: "entry dict",
-                           outputDict: "output dict",
-                           progress: 0.1,
-                           batches: [{
-                              editor: "bbbbb@asdad.com",
-                              progress: 0.1
-                           }, {
-                              editor: "cccc@asdad.com",
-                              progress: 0.1
-                           }]
-
-                        }],
-                        centralDictionary: "another dictionary",
-                        referenceCorpus: "bnc"
-                     }]
+                     this.state.error = response && response.error ? response.error : "Unknown error"
                   })
                   .always(response => {
                      this.update({isBusy: false})
                   })
+         },
+
+         refreshDisplayedProjects(){
+            this.state.displayedProjects = [...this.state.projects]
+            if(this.state.showArchived){
+               this.state.displayedProjects.push(...this.state.archived_projects)
+            }
          }
       }
    </script>
@@ -194,10 +273,38 @@
          }
       }
       .projectTable{
+         thead{
+            th:last-child{
+               width: 1px;
+            }
+         }
          tbody{
             tr{
                cursor: pointer;
+               button{
+                  opacity: 0.5
+               }
+               &:hover{
+                  button{
+                     opacity: 1
+                  }
+               }
             }
+         }
+      }
+      .projectLoadingOverlay{
+         position: absolute;
+         left: 0;
+         right: 0;
+         top: 0;
+         bottom: 0;
+         background-color: rgb(250 250 250 / 85%);
+         z-index: 100;
+         text-align: center;
+         i{
+            position: absolute;
+            top: calc(50% - 12px);
+            left: calc(50% - 12px);
          }
       }
    </style>

@@ -201,7 +201,10 @@ window.capitalize = (str) => {
 }
 
 window.trim = (str, max) => {
-   return str.length > max ? (str.substr(0, max) + "…") : str
+   if(!str){
+      return ""
+   }
+   return (str + "").length > max ? ((str + "").substr(0, max) + "…") : str
 }
 
 window.initFormSelects = (context, selector) => {
@@ -214,11 +217,22 @@ window.initFormSelects = (context, selector) => {
 }
 
 window.getProgressColorClass = progress => {
-   if(progress == 1){
+   if(progress == 100){
       return "green"
    }
-   if(progress < 0.5){
+   if(progress < 50){
       return "red"
    }
    return "orange"
 }
+
+
+window.stopEvtPropagation = (evt) => {
+   evt.stopPropagation()
+}
+
+
+window.idEscape = str => {
+   return encodeURIComponent(str).replace(/\W/g,'_') // valid HTML and jQuery ID
+}
+

@@ -113,6 +113,7 @@ import projects_view from './riot/projects/projects-view.riot'
 import projects_edit from './riot/projects/projects-edit.riot'
 import project_dict_name from './riot/projects/project-dict-name.riot'
 import project_batches from './riot/projects/project-batches.riot'
+import project_dictionary_status from './riot/projects/project-dictionary-status.riot'
 import dict_config_styles from './riot/dict-config-styles.riot'
 import nvh_schema_textarea from './riot/nvh-schema-textarea.riot'
 import nvh_schema_syntax_help from './riot/nvh-schema-syntax-help.riot'
@@ -209,6 +210,7 @@ riot_register('projects-view', projects_view)
 riot_register('projects-edit', projects_edit)
 riot_register('project-dict-name', project_dict_name)
 riot_register('project-batches', project_batches)
+riot_register('project-dictionary-status', project_dictionary_status)
 riot_register('dict-config-styles', dict_config_styles)
 riot_register('nvh-schema-textarea', nvh_schema_textarea)
 riot_register('nvh-schema-syntax-help', nvh_schema_syntax_help)
