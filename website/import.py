@@ -70,7 +70,7 @@ def xml_entry2nvh_entry(dom, fd, indent=0, idx=0, reported=set()):
         if not isinstance(ch, xml.dom.minidom.Text):
             if isinstance(ch.firstChild, xml.dom.minidom.Text) and ch.firstChild.nodeValue.strip():
                 # content in tag value
-                nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.firstChild.nodeValue.strip()))
+                nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n\r]+', ' ', ch.firstChild.nodeValue.strip()))
             elif ch.attributes.length > 0:
                 # content in tag attribute
                 if entryTag == ch.tagName:
@@ -88,12 +88,12 @@ def xml_entry2nvh_entry(dom, fd, indent=0, idx=0, reported=set()):
                         if ch.attributes.length > 1 and (ch.tagName not in reported):
                             log_warning(f'Only one attribute allowed in XML item. {str(ch.tagName)}. Processing the first one.')
                             reported.add(ch.tagName)
-                        nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.attributes.items()[0][1].strip()))
+                        nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n\r]+', ' ', ch.attributes.items()[0][1].strip()))
                 else:
                     if ch.attributes.length > 1 and (ch.tagName not in reported):
                         log_warning(f'Only one attribute allowed in XML item. {str(ch.tagName)}. Processing the first one.')
                         reported.add(ch.tagName)
-                    nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n]+', ' ', ch.attributes.items()[0][1].strip()))
+                    nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n\r]+', ' ', ch.attributes.items()[0][1].strip()))
             else:
                 # wrapper without value
                 if entryTag == ch.tagName:
@@ -168,7 +168,7 @@ def main():
                         help='Backup and purge dictionary history')
     parser.add_argument('-pp', '--purge_all', action='store_true',
                         required=False, default=False,
-                        help='Purge dictionary history without backup')
+                        help='Purge dictionary with history and all configs without backup')
     parser.add_argument('-d', '--deduplicate', action='store_true',
                         required=False, default=False,
                         help='Deduplicate nodes with same name and value on the same level')
@@ -240,14 +240,28 @@ def main():
 
         db = sqlite3.connect(args.dbname)
         db.row_factory = sqlite3.Row
-        if args.purge:
+        if args.purge or args.purge_all:
             purge(db, historiography, args)
 
         elements = {}
         ops.get_gen_schema_elements(schema, elements)
         structure = {"root": args.main_node_name, "elements": elements}
-        db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure))) # TODO should be INSERT or IGNORE if exists
-        db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
+        if args.purge_all:
+            db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
+            db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
+        else:
+            c0 = db.execute("SELECT json FROM configs WHERE id=?", ("structure",))
+            r0 = c0.fetchone()
+            if r0:
+                log_warning(json.dumps(structure))
+                log_warning(r0['json'])
+
+                if json.dumps(structure) != r0['json']:
+                    log_warning('Old structure is not compatible with new data. Use "Purge All" option')
+
+            db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
+            db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
+
 
         formatting = {}
         with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
@@ -257,7 +271,11 @@ def main():
                     formatting[key] = styles[key]
                 else:
                     formatting[key] = styles['__other__']
-        db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
+
+        if args.purge_all:
+            db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
+        else:
+            db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
 
         configs = ops.readDictConfigs(db)
         dict_stats = ops.getDictStats(db)

@@ -846,11 +846,11 @@ def importconfigs(dictID, user, dictDB, configs):
 @get(siteconfig["rootPath"]+"<dictID>/download.json") # OK
 @authDict(["canDownload"], True)
 def download(dictID, user, dictDB, configs):
-    if request.query.type == 'xml':
+    if request.query.format == 'xml':
         response.content_type = "text/xml; charset=utf-8"
         response.set_header("Content-Disposition", "attachment; filename="+dictID+".xml")
         return ops.download(dictDB, dictID, 'xml')
-    elif request.query.type == 'nvh':
+    elif request.query.format == 'nvh':
         response.content_type = "text/xml; charset=utf-8"
         response.set_header("Content-Disposition", "attachment; filename="+dictID+".nvh")
         return ops.download(dictDB, dictID, 'nvh')
