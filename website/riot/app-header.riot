@@ -78,7 +78,7 @@
       <li>
          <a href="#/">Log in</a>
       </li>
-      <li>
+      <li if={dictData.siteconfig && !dictData.siteconfig.disableRegistration}>
          <a href="#/register">Get an account</a>
       </li>
       <li>
@@ -238,7 +238,7 @@
          <li>
             <a href="#/">Log in</a>
          </li>
-         <li>
+         <li if={dictData.siteconfig && !dictData.siteconfig.disableRegistration}>
             <a href="#/register">Get an account</a>
          </li>
          <li>
