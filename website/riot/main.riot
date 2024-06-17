@@ -38,6 +38,9 @@
                if(this.dictData.siteconfig.customStyle){
                   $("head").append(`<link rel="stylesheet" type="text/css" href="${this.dictData.siteconfig.customStyle}">`)
                }
+               if(["", "/"].includes(route._.getPathFromBase()) && this.dictData.siteconfig.homepage){
+                  window.location.href = this.dictData.siteconfig.homepage
+               }
                $("#appOverlay").fadeOut()
             })
             this.connection = window.connection
