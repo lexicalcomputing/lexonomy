@@ -105,7 +105,11 @@
                </td>
                <td>
                   <span id="i_{idx}">
-                     {row.licence}
+                     <a href={dictData.siteconfig.licences[row.licence].url}
+                           class="verticalMiddle"
+                           target="_blank">
+                        <img src="{dictData.siteconfig.licences[row.licence].icon}">
+                     </a>
                   </span>
                </td>
                <td class="btns">
