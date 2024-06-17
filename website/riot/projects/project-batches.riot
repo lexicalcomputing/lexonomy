@@ -5,35 +5,26 @@
                placeholder="search"
                oninput={onBatchSearchInput}>
          <i onclick={onBatchSearchCancelClick}
-               class="material-icons clearFilterIcon grey-text clickable">close</i>
+               class="material-icons rightIcon grey-text clickable">close</i>
          <div class="helper-text">
             showing {props.workflow.displayedBatchCount} of {props.workflow.batches.length} batches
          </div>
       </div>
-      <span class="grey-text ml-auto">
-         batch size:&nbsp;{window.Formatter.num(props.workflow.batchSize)}
-      </span>
    </div>
    <div if={!props.workflow.displayedBatchCount && props.workflow.batches.length}>
-      <h4 class="grey-text center-align mt-6 mb-6">
+      <h3 class="grey-text center-align mt-6 mb-6">
          no batches found
-      </h4>
+      </h3>
    </div>
-   <div class="batchTableWrapper {props.workflow.showAllBatches ? 'showAllBatches' : 'borderBottom'}">
+   <div class="batchTableWrapper {props.workflow.showAllBatches ? 'showAllBatches' : ''}">
       <table if={props.workflow.displayedBatchCount}
             class="batchTable">
          <thead>
             <tr>
                <th></th>
-               <th>
+               <th class="bathcEditorColumn">
                   <a href="javascript:void(0);"
-                        onclick={onBatchSortClick.bind(this, "name")}>
-                     #
-                  </a>
-               </th>
-               <th>
-                  <a href="javascript:void(0);"
-                        onclick={onBatchSortClick.bind(this, "editor")}>
+                        onclick={onBatchSortClick.bind(this, "assignee")}>
                      editor
                   </a>
                </th>
@@ -43,15 +34,33 @@
                      status
                   </a>
                </th>
+               <th>
+                  <a href="javascript:void(0);"
+                        onclick={onBatchSortClick.bind(this, "size")}>
+                     size
+                  </a>
+               </th>
+               <th>
+                  <a href="javascript:void(0);"
+                        onclick={onBatchSortClick.bind(this, "dictionary")}>
+                     dictionary
+                  </a>
+               </th>
                <th class="batchActionColumn"></th>
             </tr>
          </thead>
          <tbody>
             <tr each={(batch, idx) in props.workflow.batches}
                   if={batch.show}
-                  class="batch{window.capitalize(batch.status)} {batch.selected ? 'selectedBatch' : ''}">
+                  class="batch{batch.status ? window.capitalize(batch.status) : "In progress"}
+                        {batch.selected ? 'selectedBatch' : ''}
+                        {batch.isBusy ? 'pointerEventsNone' : ''} positionRelative">
                <td>
-                  <label if={batch.status == "inProgress"}
+                  <div if={batch.isBusy}
+                        class="batchLoadingOverlay">
+                     <i class="material-icons spin grey-text">donut_large</i>
+                  </div>
+                  <label if={batch.status != "rejected"}
                         class="checkbox">
                      <input type="checkbox"
                            checked={batch.selected}
@@ -60,58 +69,62 @@
                   </label>
                </td>
                <td>
-                  <a href="#{batch.dictId}">
-                     {batch.name}
-                  </a>
-               </td>
-               <td>
-                  <span if={batch.status == "inProgress"}
+                  <span if={batch.edit}
                         class="input-field">
                      <input type="text"
-                           class="editorAutocomplete autocomplete"
-                           value={batch.editor}
-                           valid_value={batch.editor}
-                           onfocus={onBatchEditorFocus}
-                           onblur={onBatchEditorBlur}
-                           onchange={onBatchEditorChange.bind(this, batch)}
-                           onkeyup={onBatchEditorKeyUp.bind(this, batch)}>
+                           class="assigneeAutocomplete autocomplete {!batch.assignee ? 'grey-text' : ''}"
+                           onblur={onBatchAssigneeBlur.bind(this, batch)}>
                   </span>
-                  <span if={batch.status != "inProgress"}
-                        class="editorReadOnly">
-                     {batch.editor}
+                  <span if={!batch.edit}
+                        title={batch.assignee}
+                        class="assigneeReadOnly {!batch.assignee && batch.status != "rejected" ? 'grey-text' : ''}
+                              {batch.status == "rejected" ? 'disabled' : ''}"
+                        onclick={onBatchAssigneeClick.bind(this, batch)}>
+                     {batch.assignee ? window.trim(batch.assignee, 30)/*.split("@")[0]*/ : "--unassigned--"}
+                     <i if={batch.status != "rejected"}
+                           class="material-icons tiny">edit</i>
                   </span>
                </td>
                <td>
-                  <div if={batch.status == "inProgress"}
-                        class="batchProgress">
+                  <div class="batchProgress">
                      <div class="batchProgressBar progress">
-                        <div class="determinate {window.getProgressColorClass(batch.progress)}"
-                              style="width: {(batch.progress * 100).toFixed(0)}%"></div>
+                        <div class="determinate {window.getProgressColorClass(batch.completed_per)}"
+                              style="width: {batch.completed_per}%"></div>
                      </div>
                      <span class="batchProgressPercentage">
-                        {(batch.progress * 100).toFixed(0)} %
+                        {batch.completed_per} %
                      </span>
-                  </div>
-                  <div if={batch.status == "rejected"}>
-                     REJECTED
-                  </div>
-                  <div if={batch.status == "approved"}
-                        class="green-text">
-                     APPROVED
+                     <span if={batch.status == "rejected"}
+                           class="progressIcon grey tooltipped"
+                           data-tooltip="Rejected batch">
+                        <i class="material-icons">close</i>
+                     </span>
+                     <span if={batch.status == "accepted"}
+                           class="progressIcon green tooltipped"
+                           data-tooltip="Accepted batch">
+                        <i class="material-icons">check</i>
+                     </span>
                   </div>
                </td>
                <td>
-                  <div if={batch.status == "inProgress"}
-                        class="batchActionButtons displayFlex">
-                     <button class="btn btn-flat btn-floating btn-small tooltipped"
+                  {window.Formatter.num(batch.total)}
+               </td>
+               <td>
+                  <a href="#/{batch.dictID}"
+                        title={batch.dictID.length > 15 ? batch.dictID : null}>{window.shortenText(batch.dictID, 15)}</a>
+               </td>
+               <td>
+                  <div class="batchActionButtons displayFlex">
+                     <button if={batch.status != "rejected"}
+                           class="btn btn-flat btn-floating btn-small tooltipped"
                            data-tooltip="Reject batch"
                            onclick={onBatchRejectClick.bind(this, batch)}>
                         <i class="material-icons">close</i>
                      </button>
-                     <button if={batch.progress == 1}
+                     <button if={batch.completed_per == 100 && batch.status != "accepted"}
                            class="btn btn-flat btn-floating btn-small tooltipped"
-                           data-tooltip="Approve batch"
-                           onclick={onBatchApproveClick.bind(this, batch)}>
+                           data-tooltip="Accept batch"
+                           onclick={onBatchAcceptClick.bind(this, batch)}>
                         <i class="material-icons">check</i>
                      </button>
                   </div>
@@ -133,8 +146,8 @@
                class="dropdown-content">
             <li>
                <a href="javascript:void(0);"
-                     onclick={onBulkActionClick.bind(this, "approve")}>
-                  Approve
+                     onclick={onBulkActionClick.bind(this, "accepted")}>
+                  Accept
                   <i class="material-icons">check</i>
                </a>
             </li>
@@ -147,7 +160,7 @@
             </li>
             <li>
                <a href="javascript:void(0);"
-                     onclick={onBulkActionClick.bind(this, "setEditor")}>
+                     onclick={onBulkActionClick.bind(this, "setAssignee")}>
                   Set editor
                   <i class="material-icons">person</i>
                </a>
@@ -156,12 +169,13 @@
       </div>
       <div class="ml-auto">
          <a href="javascript:void(0)"
-               class="displayInlineBlock mr-4"
+               class="displayInlineBlock"
                onclick={props.parentTag.onToggleShowBatches.bind(null, props.workflow)}>
             <i class="material-icons right">keyboard_arrow_up</i>
             hide batches
          </a>
-         <a href="javascript:void(0)"
+         <a if={props.workflow.batches.length >= 12}
+               href="javascript:void(0)"
                class="displayInlineBlock"
                onclick={onToggleShowMoreBatches}>
             <i class="material-icons right">
@@ -175,15 +189,6 @@
    <script>
       export default{
          onMounted(){
-            $(".editorAutocomplete", this.root).autocomplete({
-               data: this.props.project.team.filter(member => member.role == "editor")
-                     .map(editor => {
-                        return {
-                           value: editor.email,
-                           label: editor.email
-                        }
-               })
-            })
             $(".dropdown-trigger", this.root).dropdown({
                coverTrigger: false,
                alignment: "top",
@@ -197,24 +202,19 @@
          },
 
          onBatchRejectClick(batch){
-            // TODO
-
-            batch.status = "rejected"
-            this.update()
+            this._rejectBatches([batch])
          },
 
-         onBatchApproveClick(batch){
-            // TODO
-            batch.status = "approved"
-            this.update()
+         onBatchAcceptClick(batch){
+            this._acceptBatches([batch])
          },
 
          onBatchSearchInput(evt){
             this.props.workflow.batchFilter = evt.target.value
             this.props.workflow.batches.forEach(batch => {
                batch.show = !this.props.workflow.batchFilter
-                  || batch.editor.indexOf(this.props.workflow.batchFilter) != -1
-                  || batch.name.indexOf(this.props.workflow.batchFilter) != -1
+                  || batch.assignee.indexOf(this.props.workflow.batchFilter) != -1
+                  || batch.dictID.indexOf(this.props.workflow.batchFilter) != -1
                   || batch.status.indexOf(this.props.workflow.batchFilter) != -1
                if(!batch.show){
                   batch.selected = false
@@ -241,8 +241,14 @@
                this.props.workflow.desc = false
             }
             this.props.workflow.batches.sort((a, b) => {
-               if(this.props.workflow.orderBy == "editor" && a.editor != b.editor){
-                  return a.editor.localeCompare(b.editor)
+               if(this.props.workflow.orderBy == "size" && a.total != b.total){
+                  return Math.sign(a.total - b.total)
+               }
+               if(this.props.workflow.orderBy == "assignee" && a.assignee != b.assignee){
+                  return a.assignee.localeCompare(b.assignee)
+               }
+               if(this.props.workflow.orderBy == "dictionary" && a.dictID != b.dictID){
+                  return a.dictID.localeCompare(b.dictID)
                }
                if(this.props.workflow.orderBy == "status"){
                   if(a.status != b.status){
@@ -250,17 +256,17 @@
                         return -1
                      } else if(b.status == "rejected"){
                         return 1
-                     } else if(a.status == "approved"){
+                     } else if(a.status == "accepted"){
                         return 1
-                     } else if(b.status == "approved"){
+                     } else if(b.status == "accepted"){
                         return -1
                      }
                   }
-                  if(a.progress != b.progress){
-                     return Math.sign(a.progress - b.progress)
+                  if(a.completed_per != b.completed_per){
+                     return Math.sign(a.completed_per - b.completed_per)
                   }
                }
-               return a.name.localeCompare(b.name, undefined, {numeric: true})
+               return a.dictID.localeCompare(b.dictID, undefined, {numeric: true})
             })
             if(this.props.workflow.desc){
                this.props.workflow.batches.reverse()
@@ -271,6 +277,78 @@
          onBatchCheckboxClick( idx, evt){
             this.toggleBatchSelection(idx, evt.shiftKey)
             this.props.workflow.lastSelectedBatchIdx = idx
+         },
+
+         onBatchAssigneeClick(batch, evt){
+            batch.edit = true
+            let td = $(evt.target).closest("td") // find td before update. After update evt.target does no exist anymore
+            this.update()
+            td.find("input").focus()
+            $(".assigneeAutocomplete", this.root).autocomplete({
+               data: this.props.project.annotators.map(email => {
+                     return {
+                        value: email,
+                        label: email
+                     }
+               }),
+               dropdownOptions: {
+                  container: this.root,
+                  constrainWidth: false
+               },
+               onAutocomplete: function(batch, assignee){
+                  this.onBatchAssigneeChange(batch, assignee.value)
+               }.bind(this, batch)
+            })
+         },
+
+         onBatchAssigneeBlur(batch){
+            batch.edit = false
+            this.update()
+
+         },
+
+         onBatchAssigneeChange(batch, email){
+            batch.edit = false
+            if(this.props.project.annotators.includes(email)){
+               batch.assignee = email
+               this._setAssignees([batch], email)
+            }
+         },
+
+         onBulkActionClick( action, evt){
+            let selectedBatches = this.props.workflow.batches.filter(b => b.selected)
+            if(action == "accepted"){
+               this._acceptBatches(selectedBatches)
+            } else if(action == "reject"){
+               this._rejectBatches(selectedBatches)
+            } else if(action == "setAssignee"){
+               window.modal.open({
+                  title: "Set editor",
+                  tag: "user-dropdown",
+                  small: true,
+                  overflowVisible: true,
+                  props: {
+                     onChange: user => {
+                        $("#btnBulkChangeAssignee").toggleClass("disabled", !user.email)
+                     }
+                  },
+                  buttons: [{
+                     label: "set editor",
+                     id: "btnBulkChangeAssignee",
+                     class: "btn-primary disabled",
+                     onClick: function(selectedBatches, modal, dialog){
+                        let assignee = $(".modal-content lazy-dropdown input").val()
+                        selectedBatches.forEach(batch => batch.selected = false)
+                        this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
+                        this._setAssignees(selectedBatches, assignee)
+                        dialog.close()
+                     }.bind(this, selectedBatches)
+                  }]
+               })
+               setTimeout(() => {
+                  $(".modal-dialog lazy-dropdown input").focus()
+               }, 400)
+            }
          },
 
          toggleBatchSelection(idx, shiftKey){
@@ -285,82 +363,57 @@
             window.initFormSelects(this.root)
          },
 
-         onBatchEditorFocus(evt){
-            evt.target.value = ""
-         },
-
-         onBatchEditorBlur(evt){
-            evt.target.value = evt.target.getAttribute("valid_value")
-         },
-
-         onBatchEditorChange(batch, evt){
-            let editor = this.props.project.team.find(member => member.role == "editor" && member.email == evt.target.value)
-            if(editor){
-               batch.editor = editor.email
-               evt.target.setAttribute("valid_value", editor.email)
-            } else {
-               M.toast({html: "Editor not found."})
-               evt.target.value = evt.target.getAttribute("valid_value")
+         _acceptBatches(batches){
+            let completedBatches = batches.filter(batch => batch.completed_per == 100)
+            if(completedBatches.length){
+               this.store.projectAcceptBatches(this.props.project.projectID, completedBatches.map(batch => batch.dictID))
+                     .always(response => {
+                        if(!response.error){
+                           //completedBatches.forEach(batch => batch.status = "accepted")
+                           this.props.parentTag.loadProject()
+                        } else {
+                           completedBatches.forEach(batch => {
+                              batch.isBusy = false
+                              batch.selected = false
+                           })
+                           this.update()
+                        }
+                     })
+               completedBatches.forEach(batch => batch.isBusy = true)
+               this.update()
             }
          },
 
-         onBatchEditorKeyUp(batch, evt){
-            if(evt.keyCode == 13){
-               this.onBatchEditorChange(batch, evt)
-               $(evt.target).blur()
-            }
-         },
-
-         onBulkActionClick( action, evt){
-            let selectedBatches = this.props.workflow.batches.filter(b => b.selected)
-            if(action == "approve"){
-               selectedBatches.forEach(b => {
-                  if(b.progress == 1) {
-                     b.status = "approved"
-                     b.selected = false
-                  }
-               })
-               this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
-               this.update()
-            } else if(action == "reject"){
-               selectedBatches.forEach(b => {
-                  if(b.status == "inProgress"){
-                     b.status = "rejected"
-                     b.selected = false
-                  }
-               })
-               this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
-               this.update()
-            } else if(action == "setEditor"){
-               window.modal.open({
-                  title: "Set editor",
-                  tag: "user-dropdown",
-                  small: true,
-                  props: {
-                     onChange: user => {
-                        $("#btnBulkChangeEditor").toggleClass("disabled", !user.email)
-                     }
-                  },
-                  buttons: [{
-                     label: "set editor",
-                     id: "btnBulkChangeEditor",
-                     class: "btn-primary disabled",
-                     onClick: function(selectedBatches, modal, dialog){
-                        let editor = $(".modal-content lazy-dropdown input").val()
-                        selectedBatches.forEach(b => {
-                           b.editor = editor
-                           b.selected = false
+         _rejectBatches(batches){
+            this.store.projectRejectBatches(this.props.project.projectID, batches.map(batch => batch.dictID))
+                  .always(response => {
+                     if(!response.error){
+                        this.props.parentTag.loadProject()
+                     } else {
+                        batches.forEach(batch => {
+                           batch.isBusy = false
+                           batch.selected = false
                         })
-                        dialog.close()
-                        this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
                         this.update()
-                     }.bind(this, selectedBatches)
-                  }]
-               })
-               setTimeout(() => {
-                  $(".modal-dialog lazy-dropdown input").focus()
-               }, 400)
-            }
+                     }
+                  })
+            batches.forEach(batch => batch.isBusy = true)
+            this.update()
+         },
+
+         _setAssignees(batches, email){
+            let assignees = batches.map(batch => [batch.dictID, email])
+            this.store.projectAssignBatch(this.props.project.projectID, assignees)
+                  .always(response => {
+                     if(!response.error){
+                        batches.forEach(batch => batch.assignee = email)
+                     }
+                     batches.forEach(batch => batch.isBusy = false)
+                     this.update()
+                  })
+            batches.forEach(batch => batch.isBusy = true)
+            this.update()
+
          }
       }
    </script>
@@ -404,6 +457,12 @@
                background-color: whitesmoke;
                border-bottom: 0;
                outline: 1px solid #dfdfdf;
+               th:first-child{
+                  width: 1px
+               }
+            }
+            .bathcEditorColumn{
+               width: 100%
             }
             .batchActionColumn{
                width: 80px;
@@ -424,17 +483,60 @@
                      opacity: 1
                   }
                }
+               .progressIcon{
+                  border-radius: 50%;
+                  display: inline-block;
+                  width: 20px;
+                  height: 20px;
+                  line-height: 20px;
+                  text-align: center;
+                  i{
+                     color: #fff;
+                     font-size: 15px;
+                     line-height: 20px;
+                  }
+               }
             }
             td{
                height: 39px;
             }
          }
-         .editorReadOnly{
-            padding-left: 5px;
+         .batchLoadingOverlay{
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background-color: rgb(250 250 250 / 85%);
+            z-index: 100;
+            text-align: center;
+            i{
+               position: absolute;
+               top: calc(50% - 16px);
+               left: calc(50% - 16px);
+            }
          }
-         .editorAutocomplete{
+         .assigneeReadOnly{
+            margin-right: 3px;
+            &.disabled{
+               pointer-events: none;
+            }
+            &:not(.disabled){
+               cursor: pointer;
+            }
+            i{
+               opacity: 0.3;
+               margin-left: 3px;
+            }
+            &:hover{
+               i{
+                  opacity: 1
+               }
+            }
+         }
+         .assigneeAutocomplete{
             cursor: pointer;
-            border: 0!important;
+            //border: 0!important;
             padding: 2px 5px;
             height: 25px;
             line-height: 25px;
@@ -443,22 +545,33 @@
             opacity: 0.5;
             background-color: #dcdcdc;
          }
-         .batchApproved{
+         .batchAccepted{
             background-color: #C8E6C9;
          }
          .batchProgress{
             display: inline-flex;
+            align-items: center;
             gap: 10px;
+            position: relative;
+            min-height: 34px;
             .batchProgressBar{
                width: 40px;
+               top: 5px;
+               margin: 0;
             }
             .batchProgressPercentage{
+               position: absolute;
+               display: block;
+               top: 3px;
+               left: 0;
+               width: 40px;
+               text-align: center;
                font-size: 0.8rem;
                color: grey;
             }
          }
          .batchActionButtons{
-            opacity: 0.3;
+            opacity: 0.6;
          }
          .selectedBatch{
             background-color: #E3F2FD;

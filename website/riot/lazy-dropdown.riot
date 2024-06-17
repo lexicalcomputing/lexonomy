@@ -166,8 +166,8 @@
          },
 
          getMenuItems(){
-            if(this.props.filter){
-               return this.props.filter(this.state.data)
+            if(this.props.dataProcessor){
+               return this.props.dataProcessor(this.state.data, this.state.query)
             } else {
                return this.state.data
             }
@@ -263,7 +263,7 @@
          background-color: #e5edf0;
       }
       .progress{
-         bottom: -14px!important;
+         bottom: -10px!important;
       }
    </style>
 </lazy-dropdown>

@@ -13,29 +13,54 @@
    <div class="displayFlex">
       <div>
          <h3>Project</h3>
-         <div class="input-field mb-12">
+         <div class="input-field mb-8">
             <input type="text"
                   id="name"
                   oninput={onNameInput}>
             <label>Name</label>
          </div>
 
-         <div class="input-field mb-12">
-            <select id="centralDictionary"
-                  onchange={onCentralDictionaryChange}>
+         <div class="input-field mb-8">
+            <textarea id="description"
+                  class="materialize-textarea"
+                  oninput={onDescriptionInput}
+                  rows="3"></textarea>
+            <label>Description</label>
+         </div>
+
+         <div class="input-field mb-8">
+            <input type="text"
+                  id="language">
+            <label>Language</label>
+         </div>
+
+         <div class="input-field mb-8">
+            <select id="workflow"
+                  onchange={onWorkflowChange}>
+               <option value="" selected>-select-</option>
+               <option each={workflow in state.workflows}
+                     value={workflow.name}>{workflow.name}</option>
+            </select>
+            <label>Workflow</label>
+         </div>
+
+         <div class="input-field mb-8">
+            <select id="source_dict"
+                  onchange={onSourceDictionaryChange}>
                <option value="" selected>-select-</option>
                <option each={dict in dictData.dictionaryList}
                      value={dict.id}
-                     selected={dict.id == state.project.centralDictionary}>{dict.title}</option>
+                     selected={dict.id == state.project.source_dict}>{dict.title}</option>
             </select>
             <label>Central dictionary</label>
          </div>
 
-         <div class="input-field inputFieldWithProgressBar mb-12">
+         <div class="input-field inputFieldWithProgressBar mb-8">
             <input if={auth.data.ske_apiKey}
                   type="text"
-                  id="referenceCorpus"
-                  placeholder="Type to search in the list of corpora"
+                  id="ref_corpus"
+                  class="{state.project.language ? '' : 'disabled'}"
+                  placeholder={state.project.language ? "Type to search in the list of corpora" : "Select language first"}
                   disabled={state.isCorporaLoading}
                   placeholder="Retrieving available corpora from Sketch Engine, please wait..."/>
             <label>Reference corpus</label>
@@ -48,39 +73,29 @@
                class="warning">
             To select reference corpus you need to set up Sketch Engine connection first. You can do it on your <a href="#/member-profile">profile page</a>.
          </div>
-
-         <div class="input-field mb-12">
-            <select id="workflow"
-                  onchange={onWorkflowChange}>
-               <option each={workflow in workflowOptionList}
-                     value={workflow.value}>{workflow.label}</option>
-            </select>
-            <label>Workflow</label>
-         </div>
       </div>
 
       <div class="columnTeam">
          <h3>Team</h3>
-         <div class="teamRole displayFlex mb-12">
+         <div class="teamRole displayFlex mb-8">
             <label>Managers</label>
             <div>
                <div>
-                  <div if={!state.project.team.filter(u => u.role == "manager").length}
+                  <div if={!state.project.managers.length}
                         class="noTeamMember grey-text">
                      No manager selected.
                   </div>
-                  <span if={member.role == "manager"}
-                        each={member in state.project.team}
+                  <span each={email in state.project.managers}
                         class="chip">
-                     {member.email}
+                     {email}
                      <i class="close material-icons"
-                           onclick={onRemoveMemberClick.bind(this, member)}>close</i>
+                           onclick={onRemoveMemberClick.bind(this, "managers", email)}>close</i>
                   </span>
                </div>
                <div class="input-field mt-2">
-                  <user-dropdown id="managerMemberDropdown"
-                        on-change={onAddMember.bind(this, "manager")}
-                        filter={filterMembers}/>
+                  <user-dropdown id="managersMemberDropdown"
+                        on-change={onAddMember.bind(this, "managers")}
+                        dataProcessor={getMemberList.bind(this, "managers")}/>
                   <span class="helper-text">
                      Enter email address to add a new manager.
                   </span>
@@ -91,22 +106,21 @@
             <label>Editors</label>
             <div>
                <div>
-                  <div if={!state.project.team.filter(u => u.role == "editor").length}
+                  <div if={!state.project.editors.length}
                         class="noTeamMember grey-text">
                      No editor selected.
                   </div>
-                  <span if={member.role == "editor"}
-                        each={member in state.project.team}
+                  <span each={email in state.project.editors}
                         class="chip">
-                     {member.email}
+                     {email}
                      <i class="close material-icons"
-                           onclick={onRemoveMemberClick.bind(this, member)}>close</i>
+                           onclick={onRemoveMemberClick.bind(this, "editors", email)}>close</i>
                   </span>
                </div>
                <div class="input-field mt-2">
-                  <user-dropdown id="editorMemberDropdown"
-                        on-change={onAddMember.bind(this, "editor")}
-                        filter={filterMembers}/>
+                  <user-dropdown id="editorsMemberDropdown"
+                        on-change={onAddMember.bind(this, "editors")}
+                        data-processor={getMemberList.bind(this, "editors")}/>
                   <span class="helper-text">
                      Enter email address to add a new editor.
                   </span>
@@ -117,7 +131,7 @@
    </div>
 
    <div class="buttons mt-6">
-      <a href="#projects/dashboard"
+      <a href="javascript:window.history.back()"
             class="btn btn-secondary">
          back
       </a>
@@ -134,44 +148,44 @@
 
          state: {
             project: null,
-            isCorporaLoading: true
+            isCorporaLoading: true,
+            isWorkflowsLoading: true,
+            corpora: []
          },
 
+
+
+
+
+
+
+
+         // TODO add option "create user" if manager/editor email is not found
+
+
+
+
+
          onBeforeMount(){
-            this.workflowOptionList = [{
-               label: "headword annotation",
-               value: "hw_an"
-            }, {
-               label: "review",
-               value: "review"
-            }]
             this.state.project = {
                name: null,
-               team: [{
-                  email: this.authData.email,
-                  role: "manager"
-               }],
+               description: null,
+               managers: [window.auth.data.email],
+               editors: [],
                workflow: null,
-               centralDictionary: null,
-               referenceCorpus: null
+               source_dict: null,
+               ref_corpus: null
             }
          },
 
          onMounted(){
             window.initFormSelects(this.root)
-
             this.store.skeLoadCorpora()
                   .done(response => {
-                     $("#referenceCorpus").autocomplete({
-                        data: response.data.map(corpus => {
-                        return {
-                              value: corpus.corpname,
-                              label: corpus.name,
-                              info: corpus.language_name
-                           }
-                        }),
+                     this.state.corpora = response.data
+                     $("#ref_corpus").autocomplete({
                         onAutocomplete: corpus => {
-                           this.state.project.referenceCorpus = corpus.value
+                           this.state.project.ref_corpus = corpus.value
                            this.refreshCreateBtnDisabled()
                         },
                         dropdownOptions: {
@@ -182,6 +196,31 @@
                   .always(() => {
                      this.update({isCorporaLoading: false})
                   })
+            this.store.loadWorkflows()
+                  .done(response => {
+                     this.state.workflows = response.workflows
+                     this.state.workflows[0].name = "test_workflow_new"
+                  })
+                  .always(() => {
+                     this.update({isWorkflowLoading: false})
+                  })
+
+            $("#language").autocomplete({
+               data: this.store.data.siteconfig.langs.map(lang => {
+                  return {
+                     value: lang.code,
+                     label: lang.lang
+                  }
+               }),
+               onAutocomplete: language => {
+                  this.state.project.language = language.value
+                  this.state.project.ref_corpus = null
+                  this.update()
+                  $("#ref_corpus").val("")
+                  this.refreshReferenceCorporaList()
+               }
+            })
+
             $("#name", this.root).focus()
          },
 
@@ -194,23 +233,38 @@
             this.refreshCreateBtnDisabled()
          },
 
-         onAddMember(role, member){
-            this.state.project.team.push({
-               email: member.email,
-               role: role
-            })
-            this.update()
-            $(`#${role}MemberDropdown input`).val("")
+         onDescriptionInput(evt){
+            this.state.project.description = evt.target.value
          },
 
-         onRemoveMemberClick(member, evt){
+         refreshReferenceCorporaList(){
+            let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
+                  .map(corpus => {
+                     return {
+                           value: corpus.corpname,
+                           label: corpus.name,
+                           info: corpus.language_name
+                        }
+                     })
+            M.Autocomplete.getInstance($("#ref_corpus")).updateData(corpora)
+         },
+
+         onAddMember(type, member){
+            this.state.project[type].push(member.email)
+            this.update()
+            $(`#${type}MemberDropdown input`).val("")
+            this.refreshCreateBtnDisabled()
+         },
+
+         onRemoveMemberClick(type, email, evt){
             evt.stopPropagation()
-            this.state.project.team = this.state.project.team.filter(u => u.email != member.email)
+            this.state.project[type] = this.state.project[type].filter(u => u.email != email)
             this.update()
+            this.refreshCreateBtnDisabled()
          },
 
-         onCentralDictionaryChange(evt){
-            this.state.project.centralDictionary = evt.target.value
+         onSourceDictionaryChange(evt){
+            this.state.project.source_dict = evt.target.value
             this.refreshCreateBtnDisabled()
          },
 
@@ -221,26 +275,52 @@
 
          onCreateProjectClick(){
             this.update({isBusy: true})
-            this.store.createProject(this.state.project)
-                  .done(() => {
-                     route("projects/dashboard")
+            let project = {
+
+
+
+               //TODO
+               id: Math.round(Math.random() * 10000000),
+               name: this.state.project.name,
+               description: this.state.project.description,
+               source_dict_id: this.state.project.source_dict,
+               ref_corpus: this.state.project.ref_corpus,
+               language: this.state.project.language,
+               workflow: this.state.project.workflow,
+               managers: JSON.stringify(this.state.project.managers),
+               annotators: JSON.stringify(this.state.project.editors)
+            }
+            this.store.createProject(project)
+                  .done(response => {
+                     if(!response.error){
+                        route("projects/dashboard")
+                     }
                   })
                   .always(() => {
                      this.update({isBusy: false})
                   })
          },
 
-         filterMembers(members){
-            let takenEmails = this.state.project.team.map(member => member.email)
-            return members.filter(member => !takenEmails.includes(member.value))
+         getMemberList(type, members, query){
+            if(!members.length && window.isEmail(query) && !this.state.project[type].includes(query)){
+               return [{
+                  html: `create  user <b>${query}</b>`,
+                  value: query,
+                  user: {
+                     email: query
+                  }
+               }]
+            }
+            return members.filter(member => !this.state.project[type].includes(member.email))
          },
 
          refreshCreateBtnDisabled(){
             let disabled = !this.state.project.name
-                  || !this.state.project.team.filter(member => member.role == "manager").length
-                  || !this.state.project.team.filter(member => member.role == "editor").length
-                  || !this.state.project.centralDictionary
-                  || !this.state.project.referenceCorpus
+                  || !this.state.project.managers.length
+                  || !this.state.project.editors.length
+                  || !this.state.project.source_dict
+                  || !this.state.project.workflow
+                  //|| !this.state.project.ref_corpus
             $("#btnCreateProject").toggleClass("disabled", disabled)
          }
       }

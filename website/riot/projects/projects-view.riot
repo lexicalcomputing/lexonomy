@@ -5,23 +5,57 @@
       Missing project ID. <a href="#projects/dashboard">Go to projects dashboard</a>.
    </div>
 
-   <loading-overlay if={state.isBusy}/>
-   <template if={state.project}>
+   <div if={state.error}
+         class="message error">
+      <h2 class="mt-8">Could not load the project</h2>
+      {state.error}
+      <div class="mt-4">
+         <a href="#projects/dashboard">Go to projects dashboard</a>
+      </div>
+   </div>
+
+   <loading-overlay if={state.isBusy}
+         fullscreen={true}
+         message={state.busyMessage}/>
+   <template if={!state.error && state.project}>
       <h1>
          <a href="#projects/dashboard"
                class="clickable mr-2 tooltipped"
                data-tooltip="Back to the projects">
             <i class="material-icons grey-text">arrow_back</i>
          </a>
-         {state.project.name}
-         <a href="#projects/edit/{state.project.id}"
+         {state.project.project_name}
+         <a href="#projects/edit/{state.project.projectID}"
                class="grey-text ml-2">
             <i class="material-icons">edit</i>
          </a>
+         <i if={state.isReloadingProject}
+               class="spin grey-text text-lighten-1 ml-4 material-icons">
+            donut_large
+         </i>
       </h1>
       <div class="mb-4">
-         <label class="managersLabel mr-2 inlineBlock">Managers:</label>
-         {state.project.team.filter(m => m.role == "manager").map(m => m.email).join(", ")}
+         <div if={state.showDetails}
+               class="projectDetails grey lighten-4 mb-2 p-4">
+            <label>Language</label>
+            {store.getLanguageName(state.project.language)}
+            <label>Description</label>
+            {state.project.description}
+            <label>Source dictionary:</label>
+            <a href="#/{state.project.source_dict}">Open dictionary</a>
+            <label>Managers:</label>
+            {state.project.managers.join(", ")}
+            <label>Project ID</label>
+            {state.project.projectID}
+         </div>
+         <a href="javascript:void(0)"
+               class="displayInlineBlock mr-4"
+               onclick={onToggleShowDetailsClick}>
+            <i class="material-icons right">
+               {state.showDetails ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+            </i>
+            {state.showDetails ? 'hide project details' : 'show project details'}
+         </a>
       </div>
 
       <table class="workflowTable">
@@ -29,13 +63,35 @@
             <tr if={workflow.type != "merge"}>
                <td>
                   <div class="card-panel grey lighten-4">
-                     <project-dict-name dict={workflow.inputDict}/>
-                     <div class={!workflow.inputDict.size ? 'tooltipped' : ''}
-                           data-tooltip={!workflow.inputDict.size ? 'No entries to export, dictionary is empty.' :''}>
-                        <button class="btn {!workflow.inputDict.size ? 'disabled' : ''}"
-                              onclick={onExportToBatchesClick}>
-                           export batches
-                        </button>
+                     <project-dict-name dict={workflow.inputDicts[0]}/>
+                     <div class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
+                           data-tooltip={!workflow.inputDicts[0].total ? 'No entries to export, dictionary is empty.' :''}>
+                        <div if={!getDictionaryStatus(workflow.inputDicts[0]).isBusy}
+                              class="exportBatchesForm">
+                           <div class="exportBatchesSettings displayFlex">
+                              <div class="input-field mb-0">
+                                 <input type="number"
+                                       min=1
+                                       value={workflow.batch_size || 100}
+                                       disabled={workflow.inputDicts[0].total <= 0 || workflow.isExportingBatches}
+                                       oninput={onBatchSizeInput.bind(this, workflow)}>
+                                 <label>Size</label>
+                              </div>
+                              <div class="input-field mb-0">
+                                 <input type="number"
+                                       value={workflow.batch_count || 1}
+                                       min=1
+                                       disabled={workflow.inputDicts[0].total <= 0 || workflow.isExportingBatches}
+                                       oninput={onBatchCountInput.bind(this, workflow)}>
+                                 <label>Count</label>
+                              </div>
+                           </div>
+                           <button class="exportBtn btn {!workflow.inputDicts[0].total ? 'disabled' : ''}"
+                                 onclick={onExportToBatchesClick.bind(this, workflow)}>
+                              export batches
+                           </button>
+                        </div>
+                        <project-dictionary-status {...getDictionaryStatus(workflow.inputDicts[0])}/>
                      </div>
                   </div>
                </td>
@@ -45,18 +101,18 @@
                   </div>
                </td>
                <td>
-                  <div class="workflowWithBatchPanel card-panel grey lighten-4">
+                  <div class="workflowWithBatchPanel positionRelative card-panel grey lighten-4">
                      <div class="workflowBar borderBottom mb-2 displayFlex">
-                        <h5 class="workflowName">
-                           {workflow.name}
-                        </h5>
+                        <h3 class="workflowName">
+                           {workflow.stage}
+                        </h3>
                         <div class="workflowStatus displayFlex alignCenter grey-text ml-auto">
                            <div class="workflowProgress progress">
-                              <div class="determinate {window.getProgressColorClass(workflow.progress)}"
-                                    style="width: {workflow.progress * 100}%;"></div>
+                              <div class="determinate {window.getProgressColorClass(workflow.completed_per)}"
+                                    style="width: {workflow.completed_per}%;"></div>
                            </div>
                            <span>
-                              {(workflow.progress * 100).toFixed(0)}%
+                              {workflow.completed_per}%
                            </span>
                         </div>
                      </div>
@@ -69,10 +125,12 @@
                            show batches
                         </a>
                      </div>
-                     <h6 if={!workflow.batches.length}
+                     <h4 if={!workflow.batches.length}
                            class="grey-text pt-4 center-align">
                         no batches have been generated
-                     </h6>
+                     </h4>
+                     <loading-overlay if={workflow.isExportingBatches}
+                           message="Exporting batches..."/>
                      <project-batches if={workflow.batches.length && workflow.showBatches}
                            parent-tag={this}
                            project={state.project}
@@ -87,14 +145,16 @@
                <td>
                   <div class="card-panel grey lighten-4">
                      <project-dict-name dict={workflow.outputDict}/>
-                     <span class={!workflow.isImportAvailable ? "tooltipped" : ""}
-                           data-tooltip={!workflow.isImportAvailable ? "At least one batch must be approved to allow import." : ""}>
+                     <span if={!getDictionaryStatus(workflow.outputDict).isBusy}
+                           class={!workflow.isImportAvailable ? "tooltipped" : ""}
+                           data-tooltip={!workflow.isImportAvailable ? "At least one batch must be accepted to allow import." : ""}>
                         <button class="btn {!workflow.isImportAvailable ? 'disabled' : ''}"
-                              onclick={onImportApprovedBatchesClick}>
-                           Import approved batches
+                              onclick={onImportAcceptedBatchesClick.bind(this, workflow)}>
+                           Import accepted batches
                         </button>
-                     </div>
-                  </span>
+                     </span>
+                     <project-dictionary-status {...getDictionaryStatus(workflow.outputDict)}/>
+                  </div>
                </td>
             </tr>
 
@@ -102,8 +162,10 @@
             <tr if={workflow.type == "merge"}>
                <td>
                   <div class="card-panel grey lighten-4">
-                     <project-dict-name each={dict in workflow.inputDicts}
-                           dict={dict}/>
+                     <template each={dict in workflow.inputDicts}>
+                        <project-dict-name dict={dict}/>
+                        <project-dictionary-status {...getDictionaryStatus(dict)}/>
+                     </template>
                   </div>
                </td>
                <td>
@@ -113,19 +175,19 @@
                </td>
                <td>
                   <div class="card-panel grey lighten-4">
-                     <h5 class="workflowName borderBottom">Merge dicitonaries</h5>
+                     <h3 class="workflowName borderBottom">Merge dicitonaries</h3>
                      <span class="alignCenter {!workflow.isMergeAvailable ? 'tooltipped' :''}"
                            data-tooltip={!workflow.isMergeAvailable ? 'Dicitonaries to merge must not be empty.' : ''}>
                         <button if={workflow.isMergeAvailable}
-                              class="btn {!workflow.isMergeAvailable ? 'disabled' : ''}"
-                              onclick={onMergeDictionariesClick}>
+                              class="btn mt-4 {!workflow.isMergeAvailable ? 'disabled' : ''}"
+                              onclick={onMergeDictionariesClick.bind(this, workflow)}>
                            Merge
                         </button>
                      </span>
-                     <h6 if={!workflow.isMergeAvailable}
+                     <h4 if={!workflow.isMergeAvailable}
                            class="grey-text pt-4 center-align">
                         Dicitonaries to merge must not be empty
-                     </h6>
+                     </h4>
                   </div>
                </td>
                <td>
@@ -136,6 +198,7 @@
                <td>
                   <div class="card-panel grey lighten-4">
                      <project-dict-name dict={workflow.outputDict}/>
+                     <project-dictionary-status {...getDictionaryStatus(workflow.outputDict)}/>
                   </div>
                </td>
             </tr>
@@ -147,129 +210,48 @@
    <script>
       export default{
          state:{
-            isBusy: true,
-            project: null
+            isBusy: false,
+            isReloadingProject: false,
+            project: null,
+            error: null,
+            lastLoadedProjectID: null
          },
 
          onBeforeMount(){
-            if(this.props.projectID){
-               this.store.loadProject(this.props.projectID)
-
-
-
-            // TODO
-                  .fail(response => {
-                     this.state.project = response.project
-                     this.state.project = {
-                        name: "English-Nepali dictionary",
-                        id: "xxxx",
-                        team: [{email: "asda@asdad.asd", role: "manager"}, {email: "aaaaa@asdad.com", role: "editor"}, {email: "john@test.com", role: "editor"}, {email: "paul@domain.com", role: "editor"}],
-                        workflow: [{
-                           name: "headword annotation",
-                           batchSize: 1000,
-                           inputDict: {
-                              id: "fap4jkbg",
-                              name: "EN-NEP v.1",
-                              size: 1000
-                           },
-                           outputDict: {
-                              id: "fap4jkbg2",
-                              name: "EN-NEP v.2"
-                           },
-                           batches: [{
-                              name: "1",
-                              editor: "bbbbb@asdad.com",
-                              dictId: "fap4jkbg",
-                              status: "rejected",
-                              progress: 0.75
-                           }, {
-                              name: "1.1",
-                              editor: "bbbbb@asdad.com",
-                              dictId: "fap4jkbg",
-                              status: "inProgress",
-                              progress: 0.75
-                           }, {
-                              name: "2",
-                              editor: "cccc@asdad.com",
-                              status: "inProgress",
-                              progress: 1
-                           }, {
-                              name: "3",
-                              editor: "ddd@asdad.com",
-                              status: "inProgress",
-                              progress: 0.05
-                           }]
-
-                        }, {
-                           name: "another annotation",
-                           batchSize: 150,
-                           inputDict: {
-                              id: "fap4jkbg2",
-                              name: "EN-NEP v.2",
-                              size: 0
-                           },
-                           outputDict: {
-                              id: "fap4jkbg3",
-                              name: "EN-NEP v.3",
-                              size: 0
-                           },
-                           batches: []
-                        }, {
-                           name: "merge dictionaries",
-                           type: "merge",
-                           inputDicts: [{
-                              id: "fap4jkbg2",
-                              name: "EN-NEP v.2",
-                              size: 1500
-                           }, {
-                              id: "fap4jkbg3",
-                              name: "EN-NEP v.3",
-                              size: 0
-                           }],
-                           outputDict: {
-                              id: "fap4jkbg4",
-                              name: "EN-NEP v.4"
-                           }
-                        }],
-                        centralDictionary: "someDictionary",
-                        referenceCorpus: "bnc"
-                     }
-                     for(let i =0 ; i < 100; i++){
-                        this.state.project.workflow[0].batches.push({
-                           name: (i + 2) + "",
-                           editor: (Math.random() + 1).toString(36).substring(4) + "@domain.com",
-                           status: "inProgress",
-                           progress: Math.round(Math.random() * 100) / 100
-                        })
-                     }
-                     this.state.project.workflow.forEach(workflow => {
-                        if(workflow.batches){
-                           workflow.displayedBatchCount = workflow.batches.length
-                           let hasActiveBatch = false
-                           workflow.batches.forEach(batch => {
-                              batch.show = true
-                              hasActiveBatch = hasActiveBatch || (batch.progress > 0 && batch.progress < 1)
-                           })
-                           workflow.showBatches = hasActiveBatch
-                        }
-                     })
-                  })
-                  .always(response => {
-                     this.update({isBusy: false})
-                  })
-            }
+            this.reset()
+            this.loadProject()
          },
 
          onBeforeUpdate(){
-            this.state.project.workflow.forEach(workflow => {
-               if(workflow.batches){
-                  workflow.isImportAvailable = workflow.batches.some(batch => batch.status == "approved")
-                  workflow.progress = workflow.batches.length ? workflow.batches.reduce((sum, batch) => sum + batch.progress, 0) / workflow.batches.length : 0
-               }
-               if(workflow.type == "merge"){
-                  workflow.isMergeAvailable = workflow.inputDicts.every(dict => dict.size != 0)
-               }
-            })
+            if(!this.state.isBusy && this.state.lastLoadedProjectID != this.props.projectID){
+               // user navigated to another project -> reload
+               this.reset()
+               this.loadProject()
+            } else if(this.state.project){
+               this.state.project.workflow.forEach(workflow => {
+                  if(workflow.batches){
+                     workflow.completed_per = 0
+                     workflow.isImportAvailable = workflow.batches.some(batch => batch.status == "accepted")
+                     if(workflow.batches.length){
+                        let tmp = workflow.batches.filter(batch => batch.status != "rejected")
+                              .reduce((arr, batch) => {
+                                 arr[0] += batch.completed
+                                 arr[1] += batch.total
+                                 return arr
+                              }, [0, 0])
+                        workflow.completed_per = Math.floor(tmp[0] / tmp[1] * 100)
+                     }
+                  }
+                  if(workflow.type == "merge"){
+                     workflow.isMergeAvailable = workflow.inputDicts.every(dict => dict.total != 0 && !this.state.runningExports.has(dict.title))
+                           && !this.state.runningImports.has(workflow.outputDict)
+                  }
+               })
+            }
+         },
+
+         onToggleShowDetailsClick(){
+            this.update({showDetails: !this.state.showDetails})
          },
 
          onToggleShowBatches(workflow){
@@ -277,42 +259,144 @@
             this.update()
          },
 
-         /*onToggleShowMoreBatches(workflow){
-            workflow.showAllBatches = !workflow.showAllBatches
-            this.update()
+         onBatchSizeInput(workflow, evt){
+            workflow.batch_size = evt.target.value
+            this.refreshExportBatchesBtnDisabled(workflow, evt.target)
          },
 
-         onBatchRejectClick(batch){
-            // TODO
-
-            batch.status = "rejected"
-            this.update()
+         onBatchCountInput(workflow, evt){
+            workflow.batch_count = evt.target.value
+            this.refreshExportBatchesBtnDisabled(workflow, evt.target)
          },
 
-         onBatchApproveClick(batch){
-            // TODO
-            batch.status = "approved"
+         onExportToBatchesClick(workflow, evt){
+            this.state.runningExports.add(workflow.inputDicts[0].title)
             this.update()
-         },*/
-
-         onExportToBatchesClick(workflow){
-            // TODO
+            this.store.projectExportBatches(this.props.projectID, workflow.stage, workflow.batch_size, workflow.batch_count)
+                  .always(response => {
+                     this.state.runningExports.delete(workflow.inputDicts[0].title)
+                     this.loadProject()
+                     this.update()
+                  })
          },
 
-         onImportApprovedBatchesClick(workflow){
-            // TODO
+         onImportAcceptedBatchesClick(workflow){
+            this.state.runningImports.add(workflow.outputDict.title)
+            this.update()
+            this.store.projectImportAcceptedBatches(this.props.projectID, workflow.stage)
+                  .always(response => {
+                     this.state.runningImports.delete(workflow.outputDict.title)
+                     this.loadProject()
+                     this.update()
+                  })
          },
 
          onMergeDictionariesClick(workflow){
-            // TODO
+            let dictList = [...workflow.inputDicts, workflow.outputDict].map(d => d.dictID)
+            dictList.forEach(dictID => this.state.runningMerges.add(dictID))
+            this.store.projectMergeDictionaries(this.props.projectID, workflow.stage)
+                  .always(response => {
+                     dictList.forEach(dictID => this.state.runningMerges.delete(dictID))
+                     this.loadProject()
+                     this.update()
+                  })
+         },
+
+         reset(){
+            this.state.project = null
+            this.state.runningExports = new Set()
+            this.state.runningImports = new Set()
+            this.state.runningMerges = new Set()
+         },
+
+         loadProject(){
+            if(!this.props.projectID){
+               return
+            }
+            if(this.state.lastLoadedProjectID == this.props.projectID){
+               this.state.isReloadingProject = true
+            } else {
+               this.state.isBusy = true
+               this.state.lastLoadedProjectID = this.props.projectID
+            }
+            this.store.loadProject(this.props.projectID)
+               .always(response => {
+                  if(!response.error){
+                     this.state.project = response
+                     this.state.project.workflow.forEach(workflow => {
+                        workflow.batch_size = 100
+                        workflow.batch_count = 1
+                        if(workflow.batches){
+                           workflow.displayedBatchCount = workflow.batches.length
+                           let hasActiveBatch = false
+                           workflow.batches.forEach(batch => {
+                              // TODO
+                              batch.completed = batch.competed
+                              batch.assignee = batch.assignee || ""
+                              batch.status = batch.status || "inProgress"
+                              batch.show = true
+                              hasActiveBatch = hasActiveBatch || batch.status == "inProgress"
+                           })
+                           workflow.showBatches = hasActiveBatch
+                        }
+                     })
+                  } else {
+                     this.state.error = response.error
+                     this.state.project = null
+                  }
+               })
+               .fail(response => {
+                  this.state.error = response.error
+                  this.state.project = null
+               })
+               .always(response => {
+                  this.update({
+                     isBusy: false,
+                     isReloadingProject: false
+                  })
+               })
+         },
+
+         getDictionaryStatus(dictionary){
+            let isImporting = this.state.runningImports.has(dictionary.title)
+            let isExporting = this.state.runningExports.has(dictionary.title)
+            return {
+               isBusy: isImporting || isExporting,
+               isImporting: isImporting,
+               isExporting: isExporting
+            }
+         },
+
+         refreshExportBatchesBtnDisabled(workflow, input){
+            let disabled = isNaN(workflow.batch_size)
+                  || workflow.batch_size <= 0
+                  || isNaN(workflow.batch_count)
+                  || workflow.batch_count <= 0
+            $(input).closest(".exportBatchesForm")
+                  .find(".exportBtn")
+                  .toggleClass("disabled", disabled)
          }
       }
    </script>
 
 
    <style type="scss">
-      .managersLabel{
-         min-width: 90px;
+      .exportBatchesForm{
+         .exportBatchesSettings{
+            gap: 10px;
+         }
+         input{
+            height: 30px;
+            line-height: 30px;
+            max-width: 100px;
+         }
+         .btn{
+            min-width: 210px;
+         }
+      }
+      .projectDetails{
+         display: grid;
+         grid-template-columns: 180px auto;
       }
       .workflowTable{
          width: auto!important;
@@ -329,6 +413,9 @@
             &.workflowWithBatchPanel{
                min-width: 600px;
                padding-bottom: 10px;
+               .batchTableWrapper{
+                  margin: 0 -24px;
+               }
             }
          }
          .taskIcon{
