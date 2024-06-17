@@ -140,8 +140,16 @@
 
       <div if={ dictData.public || dictData.userAccess }>
          <div class="divider"></div>
-         <div class="licence section right">
-            { dictData.licence }
+         <div class="section right grey-text ">
+            Licence:
+            <span class="mr-2">
+               {dictData.licence.toUpperCase()}
+            </span>
+            <a href={dictData.siteconfig.licences[dictData.licence].url}
+                  class="verticalMiddle"
+                  target="_blank">
+               <img src="{dictData.siteconfig.licences[dictData.licence].icon}">
+            </a>
          </div>
       </div>
    </template>
@@ -320,9 +328,6 @@
       .loadingExamples{
          min-height: 20px;
          margin: 15px 10px;
-      }
-      .licence{
-         opacity: .5;
       }
    </style>
 </dict-public>

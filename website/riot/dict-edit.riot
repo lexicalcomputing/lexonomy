@@ -42,8 +42,16 @@
       </div>
       <template if={dictData.config.publico.public}>
          <div class="divider"></div>
-         <div class="section grey-text">
-            Licence: { dictData.licence }
+         <div class="section right grey-text mr-2">
+            Licence:
+            <span class="mr-2">
+               {dictData.licence.toUpperCase()}
+            </span>
+            <a href={dictData.siteconfig.licences[dictData.licence].url}
+                  class="verticalMiddle"
+                  target="_blank">
+               <img src="{dictData.siteconfig.licences[dictData.licence].icon}">
+            </a>
          </div>
       </template>
    </template>
