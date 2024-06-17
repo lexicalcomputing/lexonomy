@@ -13,8 +13,48 @@
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+      <style>
+         .appOverlay{
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 1);
+            z-index: 9990;
+            position: fixed;
+         }
+         .appSpinner{
+            left: 50%;
+            top: 40%;
+            margin-left: -30px;
+            margin-top: -30px;
+            position: absolute;
+            z-index: 9990 !important;
+            animation: appSpinnerAnimation 400ms linear infinite;
+         }
+         .appSpinnerIcon{
+            width: 60px;
+            height: 60px;
+            border: solid 1px transparent;
+            border-top-color: #000000 !important;
+            border-left-color: #000000 !important;
+            border-radius: 50%;
+         }
+
+         @keyframes appSpinnerAnimation {
+           0%   { transform: rotate(0deg);   transform: rotate(0deg); }
+           100% { transform: rotate(360deg); transform: rotate(360deg); }
+         }
+      </style>
    </head>
    <body>
+      <div id="appOverlay"
+            class="appOverlay">
+         <div class="appSpinner">
+            <div class="appSpinnerIcon"></div>
+         </div>
+      </div>
       <main id="root"></main>
       <script>
         window.LEXONOMY_VERSION = '@VERSION@';
