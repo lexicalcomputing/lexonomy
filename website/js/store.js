@@ -810,7 +810,7 @@ class StoreClass {
          processData: false,
          contentType: false
       })
-            .done(() => {
+            .done(response => {
                if(response.success){
                   this.loadActualDictionary()
                   M.toast({html: "Configuration was imoported."})
