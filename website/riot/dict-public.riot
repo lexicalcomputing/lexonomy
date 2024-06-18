@@ -4,6 +4,7 @@
       <div class="header displayFlex">
          <h1>
             { dictData.title }
+            <span if={dictData.entryCount} class="totalEntries">total {dictData.entryCount} entries</span>
          </h1>
          <div class="dictBtns buttons ml-auto">
             <a href="#/{dictData.dictId}/edit"
@@ -268,6 +269,12 @@
          h1{
             margin: 0;
          }
+      }
+      .totalEntries{
+         font-size: 0.85rem;
+         color: #b8b8b8;
+         margin-left: 1.3rem;
+         text-transform: none;
       }
       advanced-query-builder{
          h2{
