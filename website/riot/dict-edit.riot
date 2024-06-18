@@ -42,7 +42,8 @@
       </div>
       <template if={dictData.config.publico.public}>
          <div class="divider"></div>
-         <div class="section right grey-text mr-2">
+         <div if={dictData.licence}
+               class="section right grey-text mr-2">
             Licence:
             <span class="mr-2">
                {dictData.licence.toUpperCase()}

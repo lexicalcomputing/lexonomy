@@ -141,7 +141,8 @@
 
       <div if={ dictData.public || dictData.userAccess }>
          <div class="divider"></div>
-         <div class="section right grey-text ">
+         <div if={dictData.licence}
+               class="section right grey-text ">
             Licence:
             <span class="mr-2">
                {dictData.licence.toUpperCase()}
