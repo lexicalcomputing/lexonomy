@@ -593,6 +593,10 @@ table.striped thead tr{
    overflow: visible;
 }
 
+.pageTitle{
+   margin: 0;
+}
+
 /* flag in entry list  */
 .flagDropdown li{
    display: flex;

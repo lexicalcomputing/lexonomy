@@ -2,7 +2,7 @@
    <loading-overlay if={state.isLoading || dictData.isDictionaryLoading}/>
    <template if={!dictData.isDictionaryLoading}>
       <div class="header displayFlex">
-         <h1>
+         <h1 class="pageTitle">
             { dictData.title }
             <span if={dictData.entryCount} class="totalEntries">total {dictData.entryCount} entries</span>
          </h1>
@@ -266,9 +266,6 @@
       .header{
          border-bottom: 1px solid #e0e0e0;
          padding-bottom: 0.5rem;
-         h1{
-            margin: 0;
-         }
       }
       .totalEntries{
          font-size: 0.85rem;
