@@ -1,5 +1,5 @@
 <app-header>
-   <ul if={ authData.authorized && authData.isAdmin}
+   <ul if={authData.authorized && authData.isAdmin}
          id="dropdown-menu-admin"
          class="dropdown-content">
       <li>
@@ -15,7 +15,7 @@
          </a>
       </li>
    </ul>
-   <ul if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }
+   <ul if={authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess}
          id="dropdown-menu-dict"
          class="dropdown-content">
       <li class="pointerEventsNone"
@@ -26,45 +26,51 @@
       </li>
       <li class="divider"
             tabindex="-1"></li>
-      <li if={ dictData.userAccess.canView && !dictData.userAccess.canEdit }>
-         <a href="#/{ dictData.dictId }">
+      <li>
+         <a href="#/{dictData.dictId}">
+            <i class="material-icons left">dashboard</i>
+            Overview
+         </a>
+      </li>
+      <li if={dictData.userAccess.canView && !dictData.userAccess.canEdit}>
+         <a href="#/{dictData.dictId}">
             <i class="material-icons left">visibility</i>
             View
          </a>
       </li>
-      <li if={ dictData.userAccess.canEdit }>
-         <a href="#/{ dictData.dictId }/edit">
+      <li if={dictData.userAccess.canEdit}>
+         <a href="#/{dictData.dictId}/edit">
             <i class="material-icons left">edit</i>
             Edit
          </a>
       </li>
-      <li if={ dictData.userAccess.canConfig }>
-         <a href="#/{ dictData.dictId }/config">
+      <li if={dictData.userAccess.canConfig}>
+         <a href="#/{dictData.dictId}/config">
             <i class="material-icons left">settings</i>
             Configure
          </a>
       </li>
-      <li if={ dictData.userAccess.canDownload }>
-         <a href="#/{ dictData.dictId }/download">
+      <li if={dictData.userAccess.canDownload}>
+         <a href="#/{dictData.dictId}/download">
             <i class="material-icons left">download</i>
             Download
          </a>
       </li>
-      <li if={ dictData.userAccess.canUpload }>
-         <a href="#/{ dictData.dictId }/upload">
+      <li if={dictData.userAccess.canUpload}>
+         <a href="#/{dictData.dictId}/upload">
             <i class="material-icons left">upload</i>
             Upload
          </a>
       </li>
-      <li if={ dictData.userAccess.canEdit }>
-         <a href="#/{ dictData.dictId }/links">
+      <li if={dictData.userAccess.canEdit}>
+         <a href="#/{dictData.dictId}/links">
             <i class="material-icons left">link</i>
             Links
          </a>
       </li>
       <li class="divider"
             tabindex="-1"></li>
-      <li if={ dictData.userAccess.canEdit }>
+      <li if={dictData.userAccess.canEdit}>
          <a href="#"
                class="allDictLink">
             All dictionaries
@@ -72,7 +78,7 @@
          </a>
       </li>
    </ul>
-   <ul if={ !authData.authorized }
+   <ul if={!authData.authorized}
          id="dropdown-menu-anon"
          class="dropdown-content">
       <li>
@@ -85,7 +91,7 @@
          <a href="#/forgot">Forgot your password?</a>
       </li>
    </ul>
-   <ul if={ authData.authorized }
+   <ul if={authData.authorized}
          id="dropdown-menu-user"
          class="dropdown-content">
       <li class="pointerEventsNone"
@@ -104,7 +110,7 @@
       </li>
       <li>
          <a href="#/"
-               onclick={ doLogout }>
+               onclick={doLogout}>
             <i class="material-icons left">exit_to_app</i>
             Log out
          </a>
@@ -124,7 +130,7 @@
          </a>
 
          <ul class="right hide-on-med-and-down">
-            <li if={ authData.authorized && authData.isAdmin }>
+            <li if={authData.authorized && authData.isAdmin}>
                <a class="dropdown-trigger"
                      href="#/"
                      data-target="dropdown-menu-admin">
@@ -132,17 +138,17 @@
                   <i class="material-icons right">arrow_drop_down</i>
                </a>
             </li>
-            <li if={ authData.authorized && authData.isProjectManager }>
+            <li if={authData.authorized && authData.isProjectManager}>
                <a href="#projects/dashboard">
                   Projects
                </a>
             </li>
-            <li if={ authData.authorized && (!dictData.isDictionaryLoaded || !dictData.userAccess)}>
+            <li if={authData.authorized && (!dictData.isDictionaryLoaded || !dictData.userAccess)}>
                <a href="#{authData.authorized ? '' : 'opendictionaries'}">
                   Dictionaries
                </a>
             </li>
-            <li if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess }>
+            <li if={authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess}>
                <a class="dropdown-trigger tooltipped"
                      href="#/"
                      data-tooltip={dictData.title}
@@ -166,14 +172,14 @@
                   <i class="material-icons">feedback</i>
                </a>
             </li>
-            <li if={ !authData.authorized }>
+            <li if={!authData.authorized}>
                <a class="dropdown-trigger iconLink"
                      href="#/"
                      data-target="dropdown-menu-anon">
                   <i class="material-icons">account_circle</i>
                </a>
             </li>
-            <li if={ authData.authorized }
+            <li if={authData.authorized}
                   class="tooltipped"
                   data-tooltip="Your account">
                <a class="dropdown-trigger"
@@ -192,7 +198,7 @@
 
    <ul id="nav-mobile"
          class="sidenav">
-      <template if={ authData.authorized && authData.isAdmin} >
+      <template if={authData.authorized && authData.isAdmin} >
          <li class="sideNavSection">
             <span>Admin</span>
          </li>
@@ -205,36 +211,41 @@
                   class="sidenav-close">Dictionaries</a>
          </li>
       </template>
-      <template if={ authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess} >
+      <template if={authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess} >
          <li class="sideNavSection">
             <span>Dictionary</span>
          </li>
-         <li if={ dictData.userAccess.canView && !dictData.userAccess.canEdit }>
-            <a href="#/{ dictData.dictId }"
+         <li>
+            <a href="#/{dictData.dictId}"
+                  class="sidenav-close">Overview</a>
+         </li>
+
+         <li if={dictData.userAccess.canView && !dictData.userAccess.canEdit}>
+            <a href="#/{dictData.dictId}"
                   class="sidenav-close">View</a>
          </li>
-         <li if={ dictData.userAccess.canEdit }>
-            <a href="#/{ dictData.dictId }/edit"
+         <li if={dictData.userAccess.canEdit}>
+            <a href="#/{dictData.dictId}/edit"
                   class="sidenav-close">Edit</a>
          </li>
-         <li if={ dictData.userAccess.canConfig }>
-            <a href="#/{ dictData.dictId }/config"
+         <li if={dictData.userAccess.canConfig}>
+            <a href="#/{dictData.dictId}/config"
                   class="sidenav-close">Configure</a>
          </li>
-         <li if={ dictData.userAccess.canDownload }>
-            <a href="#/{ dictData.dictId }/download"
+         <li if={dictData.userAccess.canDownload}>
+            <a href="#/{dictData.dictId}/download"
                   class="sidenav-close">Download</a>
          </li>
-         <li if={ dictData.userAccess.canUpload }>
-            <a href="#/{ dictData.dictId }/upload"
+         <li if={dictData.userAccess.canUpload}>
+            <a href="#/{dictData.dictId}/upload"
                   class="sidenav-close">Upload</a>
          </li>
-         <li if={ dictData.userAccess.canEdit }>
-            <a href="#/{ dictData.dictId }/links"
+         <li if={dictData.userAccess.canEdit}>
+            <a href="#/{dictData.dictId}/links"
                   class="sidenav-close">Links</a>
          </li>
       </template>
-      <template if={ !authData.authorized }>
+      <template if={!authData.authorized}>
          <li>
             <a href="#/">Log in</a>
          </li>
@@ -245,7 +256,7 @@
             <a href="#/forgot">Forgot your password?</a>
          </li>
       </template>
-      <template if={ authData.authorized }>
+      <template if={authData.authorized}>
          <li class="sideNavSection">
             <span>User</span>
          </li>
@@ -256,7 +267,7 @@
          <li>
             <a href="#/"
                   class="sidenav-close"
-                  onclick={ doLogout }>Log out</a>
+                  onclick={doLogout}>Log out</a>
          </li>
       </template>
    </ul>
@@ -295,7 +306,7 @@
 
          onMounted(){
             $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
-            $('#nav-mobile').sidenav()
+            $("#nav-mobile").sidenav()
          }
       }
    </script>
