@@ -2,43 +2,26 @@
    <loading-overlay if={state.isBusy}/>
    <h1 class="pageTitle">Entry formatting</h1>
    <div class="displayFlex mb-12">
-      <div class="leftSideWrapper displayFlex borderRight mr-6" style="flex-direction: column;">
-         <div class="displayFlex borderBottom mb-6">
-            <div class="elementListColumn pb-6">
-               <h2>Element</h2>
-               <div each={element in elementOptionList}
-                     class="element pointer {element.elementName == state.elementName ? 'selectedElement' : ''}"
-                     onclick={onElementClick.bind(this, element.elementName)}
-                     onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
-                     onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
-                     style="{element.style}">
-                  {store.getElementDisplayedName(element.elementName)}
-                  <i if={element.elementName == state.elementName}
-                        class="selectedElementArrow grey-text material-icons">chevron_right</i>
-               </div>
-            </div>
-            <div class="elementStyleColumn borderLeft ml-6 mr-6 pl-6 pb-6">
-               <h2>Style</h2>
-               <element-style-options element-name={state.elementName}/>
-            </div>
-         </div>
-         <div>
-            <label class="checkbox">
-               <input type="checkbox"
-                     id="custom_css"
-                     checked={state.useCustomCss}
-                     onchange={onUseCustomCssClick}/>
-               <span>Add custom style</span>
-            </label>
-            <div if={state.useCustomCss}
-                  class="cssCode input-field ml-8">
-               <label for="editor_css">CSS</label>
-               <pre id="editor_css"
-                     class="codeEditor language-css"></pre>
+      <div class="elementListColumn pb-6">
+         <h2>Element</h2>
+         <div class="elementWrapper">
+            <div each={element in elementOptionList}
+                  class="element pointer {element.elementName == state.elementName ? 'selectedElement' : ''}"
+                  onclick={onElementClick.bind(this, element.elementName)}
+                  onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
+                  onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
+                  style="{element.style}">
+               {store.getElementDisplayedName(element.elementName)}
+               <i if={element.elementName == state.elementName}
+                     class="selectedElementArrow grey-text material-icons">chevron_right</i>
             </div>
          </div>
       </div>
-      <div class="exampleColumn">
+      <div class="elementStyleColumn borderLeft borderRight pl-6 pr-6 pb-6">
+         <h2>Style</h2>
+         <element-style-options element-name={state.elementName}/>
+      </div>
+      <div class="exampleColumn pl-6">
          <h2>Example</h2>
          <div class="exampleBar grey lighten-4 displayFlex mb-2">
             <entry-dropdown on-change={onExampleEntryChanged}/>
@@ -56,6 +39,21 @@
                   element={nvhStore.data.entry}
                   read-only={true}/>
          </div>
+      </div>
+   </div>
+   <div>
+      <label class="checkbox">
+         <input type="checkbox"
+               id="custom_css"
+               checked={state.useCustomCss}
+               onchange={onUseCustomCssClick}/>
+         <span>Add custom style</span>
+      </label>
+      <div if={state.useCustomCss}
+            class="cssCode input-field ml-8">
+         <label for="editor_css">CSS</label>
+         <pre id="editor_css"
+               class="codeEditor language-css"></pre>
       </div>
    </div>
 
@@ -192,8 +190,9 @@
    </script>
 
    <style type="scss">
-      .leftSideWrapper{
-         flex-direction: column;
+      .elementWrapper{
+         max-height: calc(100vh - 215px);
+         overflow: auto;
       }
       .element{
          padding: 0px 15px;
