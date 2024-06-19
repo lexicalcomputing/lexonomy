@@ -2,7 +2,8 @@ class NVHStoreClass {
    constructor(){
       this.lastId = 0
       this.const = {
-         markDownNewLine: "\\\\n"
+         markDownNewLine: "\\\\n",
+         serviceElementPrefix: "__lexonomy__"
       }
       this.data = {
          entry: null,
@@ -543,15 +544,23 @@ class NVHStoreClass {
    }
 
    canHaveAnotherChild(element, childName){
-      let childConfig = this.data.structure.elements[childName]
-      return !childConfig.max || childConfig.max > element.children.filter(c => c.name == childName).length
+      if(this.isServiceElement(childName)){
+         return true
+      } else {
+         let childConfig = this.data.structure.elements[childName]
+         return !childConfig.max || childConfig.max > element.children.filter(c => c.name == childName).length
+      }
    }
 
    getAvailableParentElementNames(element){
       let elements = this.data.structure.elements
-      return Object.keys(elements).filter(elementName => {
-         return elements[elementName].children.some(child => child == element.name)
-      })
+      if(this.isServiceElement(element)){
+         return Object.keys(elements)
+      } else {
+         return Object.keys(elements).filter(elementName => {
+            return elements[elementName].children.some(child => child == element.name)
+         })
+      }
    }
 
    getAvailableParentElements(element){
@@ -625,6 +634,14 @@ class NVHStoreClass {
          el = el.parent
       }
       return false
+   }
+
+   isServiceElement(element){
+      if(typeof element == "string"){
+         return element.startsWith(this.const.serviceElementPrefix)
+      } else {
+         return element.name.startsWith(this.const.serviceElementPrefix)
+      }
    }
 
    copyElementAndItsChildren(element, parent=null){
@@ -989,6 +1006,11 @@ class NVHStoreClass {
    }
 
    validateElement(element){
+      if(element == this.data.detachedEntry || this.isServiceElement(element)){
+         element.warnings = []
+         element.isValid = true
+         return
+      }
       let config = this.getElementConfig(element.name)
       let warnings = []
       if(!config || !config.type){  // has valid configuration
@@ -1026,10 +1048,12 @@ class NVHStoreClass {
             }
          })
          element.children.forEach(child => {
-            if(!window.store.data.config.structure.elements[child.name]){
-               warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
-            } else if(!config.children.includes(child.name)){
-               warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
+            if(!this.isServiceElement(child)){
+               if(!window.store.data.config.structure.elements[child.name]){
+                  warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
+               } else if(!config.children.includes(child.name)){
+                  warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
+               }
             }
          })
       }
