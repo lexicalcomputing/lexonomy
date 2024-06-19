@@ -48,7 +48,7 @@
          </div>
       </div>
       <div if={structureStore.data.editedElement}
-            class="grey lighten-4 p-6 structureForm"
+         class="grey lighten-4 p-6 structureForm z-depth-2"
             style="min-width: 400px;">
          <div class="displayFlex alignCenter">
             <h3>
@@ -84,7 +84,7 @@
 
          <div class="displayFlex" style="gap: 20px;">
             <div class="input-field inlineBlock"
-                  style="max-width: 50px;">
+                  style="max-width: 60px;">
                <input id="min"
                      value={structureStore.data.editedElement.min}
                      min=0
@@ -99,7 +99,7 @@
             </div>
 
             <div class="input-field"
-                  style="max-width: 50px;">
+                  style="max-width: 60px;">
                <input id="max"
                      value={structureStore.data.editedElement.max}
                      min=1
@@ -204,6 +204,7 @@
             document.addEventListener("mousedown", this.onDocumentMouseDown)
             $("select", this.root).formSelect()
             $("input", this.root).first().focus()
+            this.initStructureForm()
          },
 
          onBeforeUnmount(){
@@ -216,6 +217,7 @@
 
          onUpdated(){
             $("select", this.root).formSelect()
+            this.initStructureForm()
          },
 
          onElementChange(){
@@ -244,6 +246,8 @@
          onNameKeyUp(evt){
             if(evt.keyCode == 13 && Object.values(this.state.errors).every(e => !e)){
                this.saveElement()
+            } else if(evt.keyCode == 27){
+               this.structureStore.stopElementEditing()
             }
          },
 
@@ -368,6 +372,42 @@
             let rootElement = this.structureStore.getRootElement()
             rootElement && addElementAndItsChildren(rootElement)
             return list
+         },
+
+         initStructureForm(){
+            if(this.structureStore.data.editedElement)
+               window.makeElementDraggable($(".structureForm", this.root))
+               this.updateFormPosition()
+            }
+         },
+
+         updateFormPosition(){
+            if(this.structureStore.data.editedElement){
+               let structureForm = $(".structureForm", this.root)
+               let formHeight = structureForm.outerHeight()
+               let formWidth = structureForm.outerWidth()
+               let windowHeight = $(window).height()
+               let windowWidth = $(window).width()
+               let left = 0
+               let top = 0
+               if(this.structureStore.data.editedElement.name){
+                  let boundingRect = $("structure-editor-item.selected .valueWrapper ")[0].getBoundingClientRect()
+                  let editorOffsetLeft = boundingRect.left
+                  top = Math.min(Math.max(10, boundingRect.top - (formHeight / 2)), windowHeight - formHeight - 30)
+                  if(boundingRect.right + formWidth > windowWidth - 30){ // not enough space to the right -> show form on the left side of selected item
+                     left = Math.max(10, boundingRect.left - formWidth - 30)
+                  } else {
+                     left = Math.min(boundingRect.right + 30, windowWidth - formWidth - 10)
+                  }
+               } else {
+                  top = (windowHeight - formHeight) / 2
+                  left = (windowWidth - formWidth) / 2
+               }
+               structureForm.css({
+                  left: Math.round(left) + "px",
+                  top: Math.round(top) +  "px"
+               })
+            }
          }
       }
    </script>
@@ -392,6 +432,9 @@
          .structure-delete-zone-text{
             margin-left: 5px;
          }
+      }
+      .structureForm{
+         z-index: 100
       }
       .valueTable{
          .input-field{

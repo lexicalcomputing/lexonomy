@@ -1,4 +1,4 @@
-<structure-editor-item
+<structure-editor-item class={structureStore.data.editedElement == props.element ? "selected" : ""}
       draggable="true"
       ondragstart={onDragStart}
       ondragend={onDragEnd}
@@ -8,7 +8,7 @@
          style="padding-left: {props.element.indent * 40}px;">
       <i if={props.element.name != structureStore.data.root}
                class="structure-drag-handle material-icons grey-text">drag_handle</i>
-      <div class="valueWrapper pr-2 {structureStore.data.editedElement == props.element ? "grey lighten-3" : ""}"
+      <div class="valueWrapper positionRelative pr-2 {structureStore.data.editedElement == props.element ? "yellow lighten-3" : ""}"
             onclick={onEditClick}>
          <span class="structure-item-name"
                style="color: {getElementColor()};">
@@ -25,7 +25,7 @@
                class="pl-2 monospace">
             /{props.element.re}/
          </span>
-         <span if={props.element.values}
+         <span if={props.element.values && props.element.values.length}
                class="pl-2">
             <trim-text text={props.element.values.join(", ")}
                   max=30/>
@@ -117,6 +117,11 @@
          &.structure-dragged-element{
             opacity: 0.3;
          }
+         &.selected{
+            .elementActions{
+               display: none
+            }
+         }
       }
       .structure-item-wrapper{
          display: flex
@@ -130,9 +135,10 @@
       }
       .valueWrapper{
          cursor: pointer;
-         width: 100%;
          .elementActions{
             opacity: 0;
+            position: absolute;
+            right: -50px;
          }
          &:hover{
             background-color: whitesmoke;

@@ -11,7 +11,7 @@
 
    <div if={!state.isLoading}
          class="contentWrapper displayFlex">
-      <div class="settingsRadio borderRight">
+      <div class="settingsRadio borderRight pr-4">
          <div>
             <label>
               <input name="structure"
@@ -337,6 +337,9 @@
       }
       .settingsRadio{
          width: 250px;
+         span{
+            white-space: nowrap;
+         }
       }
       .tabsContent{
          width: 100%;
