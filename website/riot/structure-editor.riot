@@ -375,8 +375,8 @@
          },
 
          initStructureForm(){
-            if(this.structureStore.data.editedElement)
-               window.makeElementDraggable($(".structureForm", this.root))
+            if(this.structureStore.data.editedElement){
+               window.makeElementDraggable($(".structureForm", this.root), $(".structureForm h3", this.root))
                this.updateFormPosition()
             }
          },
@@ -434,7 +434,10 @@
          }
       }
       .structureForm{
-         z-index: 100
+         z-index: 100;
+         .input-field input{
+            background-color: #fff;
+         }
       }
       .valueTable{
          .input-field{
