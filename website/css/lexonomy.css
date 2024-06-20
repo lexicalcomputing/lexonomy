@@ -390,7 +390,8 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    outline: 1px solid #000;
 }
 .select-wrapper .caret{
-   top: -0.375rem
+   top: -0.375rem;
+   z-index: 1;
 }
 
 .input-field{
