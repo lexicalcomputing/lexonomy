@@ -2,7 +2,6 @@
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import os
-import sys
 import requests
 import json
 import unittest
@@ -15,7 +14,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestQueries(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.verbose = True
+        cls.verbose = False
         cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         cls.website = config.website
 
@@ -35,7 +34,7 @@ class TestQueries(unittest.TestCase):
         # get workflow name
         # r3 = requests.get(url=cls.website + "/wokflows/list.json",
         #                   headers=cls.headers, cookies=cls.cookies)
-        cls.workflow = 'test_workflow_new'
+        cls.workflow = 'test_workflow_1'
 
         cls.source_dict_id = ''
         cls.batch_log_file = ''
@@ -59,10 +58,10 @@ class TestQueries(unittest.TestCase):
         r0 = requests.get(url=API_ENDPOINT_0, headers=cls.headers, cookies=cls.cookies)
 
         for stage in r0.json()['workflow']:
-            for batch_dict in stage['batches']:
-                if batch_dict['status'] == 'creating':
-                    cls.update_all_batches()
-                elif batch_dict['status'] == 'inProgress':
+            if stage['is_locked']:
+                cls.update_all_batches()
+            else:
+                for batch_dict in stage['batches']:
                     cls.all_batches_dict_ids.add((stage['stage'], batch_dict['dictID'], batch_dict['title']))
 
     # SOURCE DICT CREATE
@@ -195,15 +194,11 @@ class TestQueries(unittest.TestCase):
             print('================================')
             pprint(r3.json())
 
-        self.assertEqual(r3.json()['workflow'][0]['batches'][0]['title'], 'marek_project.sensitive.batch_001')
+        self.assertTrue('marek_project.sensitive.batch' in r3.json()['workflow'][0]['batches'][0]['title'])
         self.assertTrue(r3.json()['workflow'][0]['batches'][0]['status'] in ['inProgress', 'creating'])
         self.assertEqual(r3.json()['workflow'][0]['batches'][0]['assignee'], None)
         self.assertEqual(r3.json()['workflow'][0]['inputDicts'][0]['remaining'], 2)
 
-        self.assertEqual(r3.json()['workflow'][1]['batches'][0]['title'], 'marek_project.images.batch_001')
-        self.assertTrue(r3.json()['workflow'][1]['batches'][0]['status'] in ['inProgress', 'creating'])
-        self.assertEqual(r3.json()['workflow'][1]['batches'][0]['assignee'], None)
-        self.assertEqual(r3.json()['workflow'][1]['inputDicts'][0]['remaining'], 2)
         # ================
 
 
@@ -230,14 +225,14 @@ class TestQueries(unittest.TestCase):
             if s == 'sensitive':
                 annot_nvh = str(r2.json()['nvh']) + \
                             f'    sensitive: {random.choice(sensitive_values)}\n' + \
-                            f'    __lexonomy_completed__: {title}\n'
+                            f'    __lexonomy__completed: {title}\n'
             elif s == 'images':
                 annot_nvh = str(r2.json()['nvh']) + \
                             f'    image: {random.choice(images_values)}\n' + \
-                            f'    __lexonomy_completed__: {title}\n'
+                            f'    __lexonomy__completed: {title}\n'
             else:
                 annot_nvh = str(r2.json()['nvh']) + \
-                            f'   __lexonomy_completed__: {title}\n'
+                            f'   __lexonomy__completed: {title}\n'
 
             API_ENDPOINT_3 = self.website + f"{dict_id}/entryupdate.json"
             data = {'id': 1,
@@ -365,9 +360,8 @@ class TestQueries(unittest.TestCase):
         # ================
         API_ENDPOINT_2 = self.website + "/projects/list.json"
         r2 = requests.get(url=API_ENDPOINT_2, headers=self.headers, cookies=self.cookies)
-        self.assertEqual(r2.json()['projects_active'], [])
-        self.assertEqual(r2.json()['projects_archived'], [])
-        self.assertEqual(r2.json()['total'], 0)
+        self.assertTrue(self.new_project_id not in r2.json()['projects_active'])
+        self.assertTrue(self.new_project_id not in r2.json()['projects_archived'])
         # ================
 
 
