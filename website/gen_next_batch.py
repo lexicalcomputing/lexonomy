@@ -4,9 +4,8 @@
 import os
 import sys
 import glob
-import ops
 import json
-import subprocess
+import ops
 from log_subprocess import log_err, log_info, log_warning, log_end, log_start
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -70,42 +69,22 @@ def split_to_batches(input, max_batches, batch_size , batch_list, tl_node, alrea
     return new_batches, remaining_hws
 
 
-def update_project_info(batch_size, user, new_batches, project_id, stage, tl_node, remaining_hws, src_dict_id):
+def update_remaining(project_id, stage, remaining_hws):
     main_db = ops.getMainDB()
-    insert_project_dicts = []
+    c1 =  main_db.execute('SELECT src_dic_id FROM projects WHERE id=?', (project_id,))
+    r1 = c1.fetchone()
 
-    for nvh_file_path in new_batches:
-        file_name = nvh_file_path.rsplit('/', 1)[1]
+    c2 = main_db.execute('SELECT remaining FROM project_dicts WHERE dict_id=?', (r1['src_dic_id'],))
+    r2 = c2.fetchone()
 
-        dict_id = ops.suggestDictId()
-        batch_name = file_name.rstrip('.in')
-
-        c = main_db.execute('SELECT * FROM projects WHERE id=?', (project_id,))
-        r = c.fetchone()
-        language = r['language']
-
-        dictDB = ops.initDict(dict_id, project_id + '.' + batch_name, language, "", user)
-        dict_config = {"limits": {"entries": int(batch_size)}}
-        ops.attachDict(dictDB, dict_id, {}, dict_config)
-
-        logfile_f = open(os.path.join(siteconfig["dataDir"], 'projects', project_id , stage) + ".log", "a")
-        dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dict_id+".sqlite")
-        subprocess.Popen([currdir + "/import.py", dbpath, nvh_file_path, project_id, tl_node],
-                          stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
-
-
-        insert_project_dicts.append((project_id, dict_id, nvh_file_path, stage, 'inProgress'))
-
-    main_db.executemany("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status) VALUES (?,?,?,?,?)", insert_project_dicts)
-    c3 = main_db.execute('SELECT remaining FROM project_dicts WHERE dict_id=?', (src_dict_id,))
-    r3 = c3.fetchone()
     try:
-        is_remaining = json.loads(r3['remaining'])
+        is_remaining = json.loads(r2['remaining'])
     except TypeError:
         is_remaining = {}
     is_remaining[stage] = remaining_hws
-    main_db.execute('UPDATE project_dicts SET remaining=? WHERE dict_id=?', (json.dumps(is_remaining), src_dict_id))
+    main_db.execute('UPDATE project_dicts SET remaining=? WHERE dict_id=?', (json.dumps(is_remaining), r1['src_dic_id']))
     main_db.commit()
+
 
 def main():
     import argparse
@@ -113,14 +92,10 @@ def main():
     parser.add_argument('batch_size', type=int, help='Size of one batch')
     parser.add_argument('max_batches', type=int, help='Number of batches')
     parser.add_argument('generated_batches_filemask', type=str, help='Already annotated batches file mask')
-    parser.add_argument('user', type=str, help='User email')
-    parser.add_argument('src_dict_id', type=str, help='Source dict id')
+    parser.add_argument('tl_node', type=str, help='Top level NVh node (main entry node)')
     parser.add_argument('-i', '--input', type=argparse.FileType('r'),
                         required=False, default=sys.stdin,
                         help='Input NVH')
-    parser.add_argument('--split_only', action='store_true',
-                        required=False, default=False,
-                        help='Only splits the input nvh into batches without project database update')
     args = parser.parse_args()
 
     log_start('BATCHES')
@@ -131,10 +106,8 @@ def main():
     batch_list = glob.glob(args.generated_batches_filemask)
     path_spl = args.generated_batches_filemask.split('/')
     batch_dir = '/'.join(path_spl[:-1])
-    project_id = path_spl[-3]
     stage = path_spl[-2]
-    tl_node = 'entry' # TODO load form db
-
+    project_id = path_spl[-3]
 
     if not os.path.exists(batch_dir):
         os.makedirs(batch_dir)
@@ -143,15 +116,12 @@ def main():
     # ==========================
     # SPLIT TO BATCHES
     # ==========================
-    already_exported = get_already_exported(batch_list, tl_node)
-    new_batches, remaining_hws = split_to_batches(args.input, args.max_batches, args.batch_size , batch_list, tl_node, already_exported, batch_dir, stage)
-    # ==========================
+    already_exported = get_already_exported(batch_list, args.tl_node)
+    new_batches, remaining_hws = split_to_batches(args.input, args.max_batches, args.batch_size , batch_list, args.tl_node, already_exported, batch_dir, stage)
+    update_remaining(project_id, stage, remaining_hws)
 
-    # ==========================
-    # INSERT TO DB
-    # ==========================
-    if not args.split_only:
-        update_project_info(args.batch_size, args.user, new_batches, project_id, stage, tl_node, remaining_hws, args.src_dict_id.rstrip('.nvh'))
+    for batch_name in new_batches:
+        sys.stdout.write(f'{batch_name}\n')
 
     log_end('BATCHES')
 

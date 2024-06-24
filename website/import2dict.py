@@ -16,15 +16,15 @@ from log_subprocess import log_err, log_info, log_warning, log_end, log_start
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
-def purge(db, historiography, args):
-    if args.purge_all:
+def purge_dict(db, historiography, purge_all, email):
+    if purge_all:
         log_info("Purging history...")
         db.execute("delete from history")
     else:
         log_info("Copying all entries to history...")
         db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) "
                    "SELECT id, 'purge', ?, ?, nvh, ? from entries",
-                   (str(datetime.datetime.utcnow()), args.email, json.dumps(historiography)))
+                   (str(datetime.datetime.utcnow()), email, json.dumps(historiography)))
         
     log_info("Purging entries...")
     db.execute("delete from entries")
@@ -152,64 +152,40 @@ def xml2nvh(input_xml , fd):
     log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
 
 
-def main():
-    import argparse
-    parser = argparse.ArgumentParser(description='Import entries from NVH into Lexonomy SQLite database')
-    parser.add_argument('dbname', type=str, 
-                        help='database file name')
-    parser.add_argument('filename', type=str, 
-                        help='import file name')
-    parser.add_argument('email', type=str,
-                        default='IMPORT@LEXONOMY', help='user email')
-    parser.add_argument('main_node_name', type=str, default='',
-                        help='Name of the mani node of the entry (headword, entry, ...)')
-    parser.add_argument('-p', '--purge', action='store_true',
-                        required=False, default=False,
-                        help='Backup and purge dictionary history')
-    parser.add_argument('-pp', '--purge_all', action='store_true',
-                        required=False, default=False,
-                        help='Purge dictionary with history and all configs without backup')
-    parser.add_argument('-d', '--deduplicate', action='store_true',
-                        required=False, default=False,
-                        help='Deduplicate nodes with same name and value on the same level')
-    parser.add_argument('-c', '--clean', action='store_true',
-                        required=False, default=False,
-                        help='Renaming node names that appear under different parents')
-    args = parser.parse_args()
-
+def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', purge=False, purge_all=False, deduplicate=False, clean=False):
     log_start('IMPORT')
     log_info(f'pid: {str(os.getpid())}')
 
-    dict_id = args.dbname.strip().split('/')[-1][:-7]
+    dict_id = dbname.strip().split('/')[-1][:-7]
     log_info('IMPORTING (%s)' % (dict_id))
 
     try:
-        if args.filename.endswith('.xml'):
+        if filename.endswith('.xml'):
             log_info('XML to NVH processing')
-            with open(args.filename + ".xml2nvh.nvh", 'w') as f:
-                xml2nvh(args.filename, f)
-            import_nvh = nvh.parse_file(fileinput.input(args.filename + ".xml2nvh.nvh"))
+            with open(filename + ".xml2nvh.nvh", 'w') as f:
+                xml2nvh(filename, f)
+            import_nvh = nvh.parse_file(fileinput.input(filename + ".xml2nvh.nvh"))
 
-        elif args.filename.endswith('.nvh') or args.filename.endswith('.in'):
-            import_nvh = nvh.parse_file(fileinput.input(args.filename))
+        elif filename.endswith('.nvh') or filename.endswith('.in'):
+            import_nvh = nvh.parse_file(fileinput.input(filename))
 
         else:
-            log_err(f'NOT a supported format: {args.filename}')
+            log_err(f'NOT a supported format: {filename}')
             sys.exit()
 
         ## Cleaning duplicate (name, value) nodes
-        if args.deduplicate:
+        if deduplicate:
             log_info('Cleaning NVH')
             import_nvh.clean_duplicate_nodes(out=sys.stderr)
 
         ## Renaming node names that appear under different parents
         rename_dict = {}
         name_mapping = {}
-        if args.clean:
+        if clean:
             log_info('Renaming duplicate NVH nodes')
             import_nvh.rename_nodes(rename_dict, out=sys.stderr)
 
-            with open(args.filename + ".cleaned", 'w') as clean_f:
+            with open(filename + ".cleaned", 'w') as clean_f:
                 import_nvh.dump(clean_f)
 
             for orig_name, rename_list in rename_dict.items():
@@ -219,7 +195,7 @@ def main():
         # Generating schema form NVH
         schema = {}
         import_nvh.generate_schema(schema, tln=True)
-        with open(args.filename + ".schema", 'w') as schema_f:
+        with open(filename + ".schema", 'w') as schema_f:
             nvh.print_schema(schema, outfile=schema_f)
 
         #import_nvh.check_schema(schema, outfile=sys.stderr)
@@ -236,17 +212,17 @@ def main():
         entry_inserted = 0
         limit_reached = False
 
-        historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(args.filename)}
+        historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(filename)}
 
-        db = sqlite3.connect(args.dbname)
+        db = sqlite3.connect(dbname)
         db.row_factory = sqlite3.Row
-        if args.purge or args.purge_all:
-            purge(db, historiography, args)
+        if purge or purge_all:
+            purge_dict(db, historiography, purge_all, email)
 
         elements = {}
         ops.get_gen_schema_elements(schema, elements)
-        structure = {"root": args.main_node_name, "elements": elements}
-        if args.purge_all:
+        structure = {"root": main_node_name, "elements": elements}
+        if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
         else:
@@ -272,7 +248,7 @@ def main():
                 else:
                     formatting[key] = styles['__other__']
 
-        if args.purge_all:
+        if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
         else:
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
@@ -281,7 +257,7 @@ def main():
         dict_stats = ops.getDictStats(db)
 
         main_db = ops.getMainDB()
-        log_info(f"Importing {args.filename} into {dict_id}")
+        log_info(f"Importing {filename} into {dict_id}")
         d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_id,))
         limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
@@ -308,7 +284,7 @@ def main():
                 limit_reached = True
                 break
             action = "create"
-            entry_key = ops.getEntryHeadword(entry, args.main_node_name)
+            entry_key = ops.getEntryHeadword(entry, main_node_name)
             title = "<span class='headword'>" + entry_key + "</span>"
             c = db.execute("SELECT id, nvh FROM entries WHERE sortkey=?", (entry_key,))
             r = c.fetchone()
@@ -316,7 +292,7 @@ def main():
             if not r:
                 sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
-                if '__lexonomy_completed__' in entry_str:
+                if '__lexonomy__completed' in entry_str:
                     completed_entries += 1
                 entries_inserted += 1
 
@@ -325,13 +301,13 @@ def main():
                 params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"])
                 action = "update"
 
-                if '__lexonomy_completed__' in entry_str and '__lexonomy_completed__' not in r['nvh']:
+                if '__lexonomy__completed' in entry_str and '__lexonomy__completed' not in r['nvh']:
                     completed_entries += 1
 
             c = db.execute(sql, params)
             entryID = c.lastrowid
             db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)",
-                    (entryID, action, str(datetime.datetime.utcnow()), args.email, entry_str, json.dumps(historiography)))
+                    (entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
             db.execute("DELETE FROM searchables WHERE entry_id=? and level=?", (entryID, 1))
             searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
             db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
@@ -366,6 +342,34 @@ def main():
         log_err(f"Import crashed on: {e}")
 
     log_end("IMPORT")
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Import entries from NVH into Lexonomy SQLite database')
+    parser.add_argument('dbname', type=str,
+                        help='database file name')
+    parser.add_argument('filename', type=str,
+                        help='import file name')
+    parser.add_argument('email', type=str,
+                        default='IMPORT@LEXONOMY', help='user email')
+    parser.add_argument('main_node_name', type=str, default='',
+                        help='Name of the mani node of the entry (headword, entry, ...)')
+    parser.add_argument('-p', '--purge', action='store_true',
+                        required=False, default=False,
+                        help='Backup and purge dictionary history')
+    parser.add_argument('-pp', '--purge_all', action='store_true',
+                        required=False, default=False,
+                        help='Purge dictionary with history and all configs without backup')
+    parser.add_argument('-d', '--deduplicate', action='store_true',
+                        required=False, default=False,
+                        help='Deduplicate nodes with same name and value on the same level')
+    parser.add_argument('-c', '--clean', action='store_true',
+                        required=False, default=False,
+                        help='Renaming node names that appear under different parents')
+    args = parser.parse_args()
+
+    import_data(args.dbname, args.filename, args.email, args.main_node_name, args.purge, args.purge_all, args.deduplicate, args.clean)
 
 
 if __name__ == '__main__':

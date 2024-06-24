@@ -25,6 +25,8 @@ from bottle import request
 import sys
 import tempfile
 import glob
+import shlex
+
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -239,7 +241,7 @@ def deleteEntry(db, entryID, email):
     row = c.fetchone()
     c2 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
     r2 = c2.fetchone()
-    if '__lexonomy_completed__' in row['nvh']:
+    if '__lexonomy__completed' in row['nvh']:
         db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1), 'completed_entries')
     # delete me:
     db.execute ("delete from entries where id=?", (entryID,))
@@ -308,7 +310,7 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
     r2 = c2.fetchone()
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1), 'entry_count')
 
-    if '__lexonomy_completed__' in entryNvh:
+    if '__lexonomy__completed' in entryNvh:
         c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
         r3 = c3.fetchone()
         dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1), 'completed_entries')
@@ -336,9 +338,9 @@ def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
 
         c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
         r3 = c3.fetchone()
-        if '__lexonomy_completed__' not in row['nvh'] and '__lexonomy_completed__' in entryNvh:
+        if '__lexonomy__completed' not in row['nvh'] and '__lexonomy__completed' in entryNvh:
             dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1, 'completed_entries'))
-        elif '__lexonomy_completed__' in row['nvh'] and '__lexonomy_completed__' not in entryNvh:
+        elif '__lexonomy__completed' in row['nvh'] and '__lexonomy__completed' not in entryNvh:
             dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) - 1, 'completed_entries'))
 
         dictDB.commit()
@@ -1300,27 +1302,49 @@ def getProjectsByUser(user):
     total = len(active_projects) + len(archived_projects)
     return {"projects_active": active_projects, "projects_archived": archived_projects, "total": total}
 
+def project_init_git(path):
+    # TODO log git ??
+    subprocess.run(['git', 'init', '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'lfs', 'install'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'lfs', 'track', '*.nvh', '*.in', '*.rejected', '*.nvh.patch'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    with open(os.path.join(path, '.gitignore'), 'w') as f:
+        f.write('*.log')
+    subprocess.run(['git', 'add', '-A'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'commit', '-m', 'init', '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'config', 'advice.addIgnoredFile', 'false'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'config', 'user.email', 'apache'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'config', 'user.name', 'apache'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+
+def project_git_commit(path, msg, stage=''):
+    subprocess.run(['git', 'add', '-A', stage], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+    subprocess.run(['git', 'commit', '-m', msg, '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
 
 def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict_id, worflow, langauge, user):
     if projectExists(project_id):
         return {'success': False, "projectID": project_id, "error": "The project with the entered name already exists"}
     if not worflow:
         return {'success': False, "projectID": project_id, "error": "Workflow not specified."}
-    if not os.path.isfile(os.path.join(currdir, 'workflows', worflow)):
+    if not os.path.isdir(os.path.join(currdir, 'workflows', worflow)):
         return {'success': False, "projectID": project_id, "error": "Can not find workflow template."}
 
     os.makedirs(os.path.join(siteconfig["dataDir"], "projects", project_id))
 
-    # Copy workflow makefile
-    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'w') as dest:
-        with open(os.path.join(currdir, 'workflows', worflow), 'r') as source:
-            for line in source:
-                dest.write(re.sub('%dir%', currdir, line))
+    # Copy workflow
+    for file in os.listdir(os.path.join(currdir, 'workflows', worflow)):
+        if file == 'Makefile':
+            with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'w') as dest:
+                with open(os.path.join(currdir, 'workflows', worflow, 'Makefile'), 'r') as source:
+                    for line in source:
+                        dest.write(re.sub('%dir%', currdir, line))
+        else:
+            shutil.copy2(os.path.join(currdir, 'workflows', worflow, file), os.path.join(siteconfig["dataDir"], "projects", project_id))
 
     # Dump source dict to NVH
     with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
         for nvh in download(getDB(src_dict_id), src_dict_id, 'nvh'):
             f.write(nvh)
+
+    project_init_git(os.path.join(siteconfig["dataDir"], "projects", project_id))
 
     conn = getMainDB()
     conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, src_dic_id, language, active)"\
@@ -1340,23 +1364,12 @@ def getProjectStageState(projectID, stage):
     if os.path.isfile(log_filename):
         with open(log_filename, 'r') as sf:
             for line in sf:
-                if line.startswith('START'):
-                    phase_stack.append(line.rsplit(':', 1)[1])
-                elif line.startswith('END') and phase_stack[-1] == line.rsplit(':', 1)[1]:
+                if line.startswith('_LOCK_'):
+                    phase_stack.append(line.strip()[6:])
+                elif line.startswith('_UNLOCK_') and phase_stack[-1] == line.strip()[8:]:
                     phase_stack.pop()
     return phase_stack
 
-def isProjectStageDictImported(projectID, stage, dict_id):
-    is_dict_imported = True
-    log_filename = os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.log')
-    if os.path.isfile(log_filename):
-        with open(log_filename, 'r') as sf:
-            for line in sf:
-                if f'IMPORTING ({dict_id})' in line:
-                    is_dict_imported = False
-                elif f'IMPORTED ({dict_id})' in line:
-                    is_dict_imported = True
-    return is_dict_imported
 
 def getProject(projectID):
     annotators = []
@@ -1452,7 +1465,8 @@ def getProject(projectID):
             r_q2 = q2.fetchone()
             dictDB.close()
 
-            if int(r_q['json']) > 0 and isProjectStageDictImported(projectID, stage, r5['dict_id']):
+            # if int(r_q['json']) > 0 and isProjectStageDictImported(projectID, stage, r5['dict_id']):
+            if int(r_q['json']) > 0 and r5['status'] != 'creating':
                 batches.append({'dictID': r5['dict_id'], 'title': r5['title'],
                                 'competed': int(r_q2['json']), 'total': int(r_q['json']),
                                 'completed_per': (int(r_q2['json']) / int(r_q['json'])) * 100,
@@ -1460,7 +1474,7 @@ def getProject(projectID):
                                 })
             else:
                 batches.append({'dictID': r5['dict_id'], 'title': r5['title'],
-                                'assignee': r5['assignee'], 'status': 'creating',
+                                'assignee': r5['assignee'], 'status': r5['status'],
                                 })
 
         if len(input_dicts) > 1:
@@ -1540,10 +1554,14 @@ def createBatch(projectID, stage, batch_size, max_batches, user_email):
 
     logfile_f = open(logfile, "a")
 
-    subprocess.Popen(['make', stage+'_new_batches','-C', workflow_dir, '--silent',
-                      f'SOURCE_DICT={src_dict}.nvh', f'BATCH_SIZE={batch_size}', f'USER="{user_email}"',
-                      f'MAX_BATCHES={max_batches}', f'GENERATED_BATCHES_FILEMASK="{filemask}"'],
-                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    cmds = ';'.join(['echo "_LOCK_BATCH_CREATE"',
+                     'make %s_new_batches --silent SOURCE_DICT=%s.nvh BATCH_SIZE=%s MAX_BATCHES=%s USER="\\"%s\\"" GENERATED_BATCHES_FILEMASK="\\"%s\\""' % (shlex.quote(stage), src_dict, shlex.quote(batch_size),
+                                                                                                                                                             shlex.quote(max_batches), user_email, filemask),
+                     'git add -A %s' % stage,
+                     'git commit -m "New batches %s"' % stage,
+                     'echo "_UNLOCK_BATCH_CREATE"'])
+
+    subprocess.Popen(cmds, stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True, shell=True, cwd=workflow_dir)
 
     return {"success": True, "projectID": projectID, "msg": 'Creating batches'}
 
@@ -1601,18 +1619,24 @@ def makeStage(project_id, stage, user_email):
             stage_type = p['type']
 
     if stage_type == 'merge': # The ACCEPTED_BATCHES variable is not used and couse problem in dependecies
-        subprocess.Popen(['make', stage+'.nvh','-C', workflow_dir, '--silent',
-                        f'SOURCE_DICT={project_info["source_dict"]}.nvh',
-                        f'DICT_DB={dbpath}',
-                        f'USER={user_email}'],
-                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+        cmds = ';'.join(['echo "_LOCK_STAGE"',
+                         'make %s.nvh --silent SOURCE_DICT=%s.nvh DICT_DB=%s USER="\\"%s\\""' % (shlex.quote(stage), project_info["source_dict"],
+                                                                                                 dbpath, user_email),
+                         'git add -A %s*' % stage,
+                         'git commit -m "Stage %s" -q' % stage,
+                         'echo "_UNLOCK_STAGE"'])
+
+        subprocess.Popen(cmds, stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True, shell=True, cwd=workflow_dir)
+
     else:
-        subprocess.Popen(['make', stage+'.nvh','-C', workflow_dir, '--silent',
-                        f'SOURCE_DICT={project_info["source_dict"]}.nvh',
-                        f'ACCEPTED_BATCHES={filemask}',
-                        f'DICT_DB={dbpath}',
-                        f'USER={user_email}'],
-                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+        cmds = ';'.join(['echo "_LOCK_STAGE"',
+                         'make %s.nvh --silent SOURCE_DICT=%s.nvh ACCEPTED_BATCHES="%s" DICT_DB=%s USER="%s"' % (shlex.quote(stage), project_info["source_dict"],
+                                                                                                                 filemask, dbpath, user_email),
+                         'git add -A %s*' % stage,
+                         'git commit -m "Stage %s" -q' % stage,
+                         'echo "_UNLOCK_STAGE"'])
+
+        subprocess.Popen(cmds, stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True, shell=True, cwd=workflow_dir)
 
     return {"success": True, "projectID": project_id, "upload_file_path": logfile,
             "msg": 'Creating stage dict'}
@@ -1640,7 +1664,7 @@ def acceptBatch(project_id, dictID_list):
         updateDictAccess(dictID, {})
 
         # get output filename
-        c = mainDB.execute('SELECT source_nvh FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        c = mainDB.execute('SELECT source_nvh, stage FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
         r = c.fetchone()
         if r['source_nvh'].endswith('.in'):
             out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
@@ -1657,8 +1681,10 @@ def acceptBatch(project_id, dictID_list):
             for line in download(dictDB, dictID, 'nvh'):
                 out_f.write(line)
 
+        project_git_commit(os.path.join(siteconfig["dataDir"], "projects", project_id), f'Accepted batch {dictID}', r['stage'])
+
     mainDB.close()
-    return {"success": True, "projectID": project_id}
+    return {"success": True, "projectID": project_id, 'imported': dictID_list}
 
 def rejectBatch(project_id, dictID_list):
     mainDB = getMainDB()
@@ -1667,7 +1693,7 @@ def rejectBatch(project_id, dictID_list):
         updateDictAccess(dictID, {})
 
         # get output filename
-        c = mainDB.execute('SELECT source_nvh FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        c = mainDB.execute('SELECT source_nvh, stage FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
         r = c.fetchone()
 
         # rm exported NVH if was created by accept
@@ -1681,6 +1707,7 @@ def rejectBatch(project_id, dictID_list):
             mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?', ('rejected', rejected_file, project_id, dictID))
 
         mainDB.commit()
+        project_git_commit(os.path.join(siteconfig["dataDir"], "projects", project_id), f'Rejected batch {dictID}', r['stage'])
 
     mainDB.close()
     return {"success": True, "projectID": project_id}
@@ -1956,8 +1983,8 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     elif purge_all:
         params.append('-pp')
 
-    p = subprocess.Popen([currdir + "/import.py", dbpath, file_path, email, hwNode] + params,
-                          stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    subprocess.Popen([currdir + "/import2dict.py", dbpath, file_path, email, hwNode] + params,
+                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
     return '', "Import started. You may close the window, import will run in the background. Please wait...", file_path
 
 def readDoctypesUsed(dictDB):
