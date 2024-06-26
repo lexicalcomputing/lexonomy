@@ -37,7 +37,8 @@ class TestImportNVH(unittest.TestCase):
                 'title': self.dicID,
                 'addExamples': 'false',
                 'deduplicate': 'false',
-                'language': 'en'
+                'language': 'en',
+                'clean': 'on'
                 }
         f = open(os.path.join(current_dir, 'test_import.nvh'), 'rb')
         files = {'filename': f}
@@ -92,7 +93,8 @@ class TestImportXML(unittest.TestCase):
                 'title': self.dicID,
                 'addExamples': 'false',
                 'deduplicate': 'false',
-                'language': 'en'
+                'language': 'en',
+                'clean': 'on'
                 }
         f = open(os.path.join(current_dir, 'test_import.xml'), 'rb')
         files = {'filename': f}
