@@ -513,6 +513,7 @@ def makedictjson(user):
                                request.forms.language, "", user["email"],
                                addExamples=False,
                                deduplicate=True if request.forms.deduplicate=='on' else False,
+                               clean=True if request.forms.clean=='on' else False,
                                bottle_file_object=upload, hwNode=request.forms.hwNode)
         else:
             return{"success": False, "url": request.forms.url,
@@ -521,7 +522,7 @@ def makedictjson(user):
         res = ops.makeDict(request.forms.url, request.forms.nvhSchema, json.loads(request.forms.schemaKeys),
                            request.forms.title, request.forms.language, "", user["email"],
                            addExamples=request.forms.addExamples=="true",
-                           deduplicate=False, bottle_file_object=None, hwNode=None)
+                           deduplicate=False, clean=False, bottle_file_object=None, hwNode=None)
     return res
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
@@ -861,7 +862,9 @@ def download(dictID, user, dictDB, configs):
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
     err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
-                                                deduplicate=json.loads(request.forms.deduplicate),purge=json.loads(request.forms.purge),
+                                                deduplicate=json.loads(request.forms.deduplicate),
+                                                clean=json.loads(request.forms.clean),
+                                                purge=json.loads(request.forms.purge),
                                                 bottle_upload_obj=request.files.get("filename"))
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
