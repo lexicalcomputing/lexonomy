@@ -15,7 +15,7 @@
       <span>
          {!props.dict.total ? 'empty' : window.Formatter.num(this.props.dict.total) + " entries"}
       </span>
-      <span if={props.dict.total}
+      <span if={!props.hideAssigned && props.dict.total}
             class="grey-text ml-auto">
          assigned: {window.Formatter.num(props.dict.total - props.dict.remaining)}, remaining: {window.Formatter.num(props.dict.remaining)}
       </span>

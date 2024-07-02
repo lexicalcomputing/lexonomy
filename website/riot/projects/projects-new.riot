@@ -199,7 +199,6 @@
             this.store.loadWorkflows()
                   .done(response => {
                      this.state.workflows = response.workflows
-                     this.state.workflows[0].name = "test_workflow_new"
                   })
                   .always(() => {
                      this.update({isWorkflowLoading: false})

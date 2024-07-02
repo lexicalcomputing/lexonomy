@@ -54,9 +54,9 @@
                   if={batch.show}
                   class="batch{batch.status ? window.capitalize(batch.status) : "In progress"}
                         {batch.selected ? 'selectedBatch' : ''}
-                        {batch.isBusy ? 'pointerEventsNone' : ''} positionRelative">
+                        {batch.isBusy || batch.satus == 'creating' ? 'pointerEventsNone' : ''} positionRelative">
                <td>
-                  <div if={batch.isBusy}
+                  <div if={batch.isBusy || batch.status == 'creating'}
                         class="batchLoadingOverlay">
                      <i class="material-icons spin grey-text">donut_large</i>
                   </div>
@@ -86,7 +86,12 @@
                   </span>
                </td>
                <td>
-                  <div class="batchProgress">
+                  <div if={batch.status == "creating"}
+                        class="grey-text">
+                     creating...
+                  </div>
+                  <div if={batch.status != "creating"}
+                        class="batchProgress">
                      <div class="batchProgressBar progress">
                         <div class="determinate {window.getProgressColorClass(batch.completed_per)}"
                               style="width: {batch.completed_per}%"></div>
@@ -586,6 +591,10 @@
          border-bottom: 0;
          border-top: 1px solid #dfdfdf;
          z-index: 100;
+         margin-left: -24px;
+         margin-right: -24px;
+         padding-left: 24px;
+         padding-right: 24px;
       }
    </style>
 </project-batches>
