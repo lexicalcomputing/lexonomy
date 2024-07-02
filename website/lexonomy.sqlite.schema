@@ -17,7 +17,7 @@ CREATE INDEX user_projects_id ON user_projects (project_id);
 CREATE INDEX user_projects_email ON user_projects (user_email);
 CREATE INDEX user_projects_role ON user_projects (role);
 
-CREATE TABLE project_dicts (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT, dict_id TEXT, source_nvh TEXT, stage TEXT, status TEXT, assignee TEXT, remaining JSON DEFAULT '{}');
+CREATE TABLE project_dicts (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT, dict_id TEXT, source_nvh TEXT, stage TEXT, status TEXT, assignee TEXT, remaining JSON DEFAULT '{}', created DATETIME);
 CREATE INDEX project_dicts_dict_id ON project_dicts (dict_id);
 CREATE INDEX project_dicts_project_id ON project_dicts (project_id);
 CREATE INDEX project_dicts_dict_name ON project_dicts (dict_name);

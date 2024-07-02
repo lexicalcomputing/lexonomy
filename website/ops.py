@@ -1316,9 +1316,11 @@ def project_init_git(path):
     subprocess.run(['git', 'config', 'user.email', 'apache'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
     subprocess.run(['git', 'config', 'user.name', 'apache'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
 
+
 def project_git_commit(path, msg, stage=''):
     subprocess.run(['git', 'add', '-A', stage], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
     subprocess.run(['git', 'commit', '-m', msg, '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
+
 
 def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict_id, worflow, langauge, user):
     if projectExists(project_id):
@@ -1436,7 +1438,7 @@ def getProject(projectID):
         # ======================
         # OUTPUT DICTS
         # ======================
-        c4 = conn.execute("SELECT p.dict_id, p.stage, p.remaining, d.title FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id WHERE stage=? AND project_id=?", (f'{stage}_stage', projectID))
+        c4 = conn.execute("SELECT p.dict_id, p.stage, p.remaining, p.created, d.title FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id WHERE stage=? AND project_id=?", (f'{stage}_stage', projectID))
         r4 = c4.fetchone()
 
         if r4:
@@ -1445,15 +1447,15 @@ def getProject(projectID):
             r_q = q.fetchone()
             dictDB.close()
 
-            output_dict = {'dictID': r4['dict_id'], 'total': int(r_q['json']), 'title': r4['title']}
+            output_dict = {'dictID': r4['dict_id'], 'total': int(r_q['json']), 'title': r4['title'], 'created': r4['created']}
         else:
-            output_dict = {'dictID': None, 'total': 0, 'title': f'{projectID}.{stage}'}
+            output_dict = {'dictID': None, 'total': 0, 'title': f'{projectID}.{stage}', 'created': ''}
 
         # ======================
         # BATCH DICTS
         # ======================
         batches = []
-        c5 = conn.execute("SELECT p.dict_id, p.remaining, p.assignee, p.status, d.title "
+        c5 = conn.execute("SELECT p.dict_id, p.remaining, p.assignee, p.status, p.created, d.title "
                           "FROM project_dicts AS p INNER JOIN dicts AS d ON p.dict_id == d.id "
                           "WHERE p.stage=? AND p.project_id=?", (stage, projectID))
 
@@ -1472,6 +1474,7 @@ def getProject(projectID):
                                 'competed': int(r_q2['json']), 'total': int(r_q['json']),
                                 'completed_per': (int(r_q2['json']) / int(r_q['json'])) * 100,
                                 'assignee': r5['assignee'], 'status': r5['status'],
+                                'created': r5['created']
                                 })
             else:
                 batches.append({'dictID': r5['dict_id'], 'title': r5['title'],
@@ -1605,8 +1608,8 @@ def makeStage(project_id, stage, user_email):
                 r = c.fetchone()
                 result_total_entries += r['total']
 
-    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage) VALUES (?,?,?,?)",
-                    (project_id, dict_id, os.path.join(workflow_dir, stage + '.nvh'), f'{stage}_stage'))
+    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, created) VALUES (?,?,?,?,?)",
+                    (project_id, dict_id, os.path.join(workflow_dir, stage + '.nvh'), f'{stage}_stage', datetime.datetime.utcnow()))
     main_db.commit()
     main_db.close()
 
@@ -1659,22 +1662,38 @@ def assignProjectDict(projectID, assignees): # TODO store channges to hystory?
 
 
 def acceptBatch(project_id, dictID_list):
-    # remove batch form assignee
+    accepted_dicts = []
+    error_dicts = []
+
     mainDB = getMainDB()
+    def can_accept_from_rejected(d_created, d_stage):
+        conn = mainDB.execute('SELECT COUNT(DISTINCT dict_id) AS total FROM project_dicts WHERE project_id=? AND created>? AND stage=?', (project_id, d_created, d_stage))
+        if int(conn.fetchone()['total']) > 0:
+            return False
+        return True
+
+    # remove batch form assignee
     for dictID in dictID_list:
         updateDictAccess(dictID, {})
 
         # get output filename
-        c = mainDB.execute('SELECT source_nvh, stage FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        c = mainDB.execute('SELECT source_nvh, stage, created FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
         r = c.fetchone()
         if r['source_nvh'].endswith('.in'):
             out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
             mainDB.execute('UPDATE project_dicts SET status=? WHERE project_id=? AND dict_id=?', ('accepted', project_id, dictID))
+            accepted_dicts.append(dictID)
         elif r['source_nvh'].endswith('.rejected'):
-            out_nvh_file_name = r['source_nvh'].rstrip('.rejected') + '.nvh'
-            shutil.move(r['source_nvh'], r['source_nvh'].rstrip('.rejected') + '.in')
-            mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?',
-                           ('accepted', r['source_nvh'].rstrip('.rejected') + '.in', project_id, dictID))
+            if can_accept_from_rejected(r['created'], r['stage']):
+                out_nvh_file_name = r['source_nvh'].rstrip('.rejected') + '.nvh'
+                shutil.move(r['source_nvh'], r['source_nvh'].rstrip('.rejected') + '.in')
+                mainDB.execute('UPDATE project_dicts SET status=?, source_nvh=? WHERE project_id=? AND dict_id=?',
+                               ('accepted', r['source_nvh'].rstrip('.rejected') + '.in', project_id, dictID))
+                accepted_dicts.append(dictID)
+            else:
+                error_dicts.append(dictID)
+                continue
+
         mainDB.commit()
 
         with open(out_nvh_file_name, 'w') as out_f:
@@ -1685,7 +1704,10 @@ def acceptBatch(project_id, dictID_list):
         project_git_commit(os.path.join(siteconfig["dataDir"], "projects", project_id), f'Accepted batch {dictID}', r['stage'])
 
     mainDB.close()
-    return {"success": True, "projectID": project_id, 'imported': dictID_list}
+    if error_dicts:
+        return {"success": False, "projectID": project_id, 'accepted_dicts': accepted_dicts, 'error_dicts': error_dicts, 'msg': "Rejected batches can't be re-accepted after new batches are created."}
+    else:
+        return {"success": True, "projectID": project_id, 'accepted_dicts': accepted_dicts}
 
 def rejectBatch(project_id, dictID_list):
     mainDB = getMainDB()
@@ -1771,24 +1793,24 @@ def markdown_text(text):
 #     xml = re.sub(r"^(<[^>\/]*)\s+lxnm:linkable=['\"][^\"\']*[\"']", r"\1", xml)
 #     return xml
 
-def exportEntryXml(dictDB, dictID, entryID, configs, baseUrl):
-    c = dictDB.execute("select * from entries where id=?", (entryID,))
-    row = c.fetchone()
-    if row:
-        xml = setHousekeepingAttributes(entryID, row["xml"], configs["subbing"])
-        attribs = " this=\"" + baseUrl + dictID + "/" + str(row["id"]) + ".xml\""
-        c2 = dictDB.execute("select e1.id, e1.title from entries as e1 where e1.sortkey<(select sortkey from entries where id=?) order by e1.sortkey desc limit 1", (entryID, ))
-        r2 = c2.fetchone()
-        if r2:
-            attribs += " previous=\"" + baseUrl + dictID + "/" + str(r2["id"]) + ".xml\""
-        c2 = dictDB.execute("select e1.id, e1.title from entries as e1 where e1.sortkey>(select sortkey from entries where id=?) order by e1.sortkey asc limit 1", (entryID, ))
-        r2 = c2.fetchone()
-        if r2:
-            attribs += " next=\"" + baseUrl + dictID + "/" + str(r2["id"]) + ".xml\""
-        xml = "<lexonomy" + attribs + ">" + xml + "</lexonomy>"
-        return {"entryID": row["id"], "xml": xml}
-    else:
-        return {"entryID": 0, "xml": ""}
+# def exportEntryXml(dictDB, dictID, entryID, configs, baseUrl):
+#     c = dictDB.execute("select * from entries where id=?", (entryID,))
+#     row = c.fetchone()
+#     if row:
+#         xml = setHousekeepingAttributes(entryID, row["xml"], configs["subbing"])
+#         attribs = " this=\"" + baseUrl + dictID + "/" + str(row["id"]) + ".xml\""
+#         c2 = dictDB.execute("select e1.id, e1.title from entries as e1 where e1.sortkey<(select sortkey from entries where id=?) order by e1.sortkey desc limit 1", (entryID, ))
+#         r2 = c2.fetchone()
+#         if r2:
+#             attribs += " previous=\"" + baseUrl + dictID + "/" + str(r2["id"]) + ".xml\""
+#         c2 = dictDB.execute("select e1.id, e1.title from entries as e1 where e1.sortkey>(select sortkey from entries where id=?) order by e1.sortkey asc limit 1", (entryID, ))
+#         r2 = c2.fetchone()
+#         if r2:
+#             attribs += " next=\"" + baseUrl + dictID + "/" + str(r2["id"]) + ".xml\""
+#         xml = "<lexonomy" + attribs + ">" + xml + "</lexonomy>"
+#         return {"entryID": row["id"], "xml": xml}
+#     else:
+#         return {"entryID": 0, "xml": ""}
 
 def readNabesByEntryID(dictDB, dictID, entryID, configs):
     nabes_before = []
@@ -3064,98 +3086,98 @@ def elexisDictAbout(dictID):
     else:
         return None
 
-def elexisLemmaList(dictID, limit=None, offset=0):
-    dictDB = getDB(dictID)
-    if dictDB:
-        info = {"language": "en", "release": "PRIVATE"}
-        configs = readDictConfigs(dictDB)
-        configs = loadHandleMeta(configs)
-        if configs["metadata"].get("dc.language.iso") and len(configs["metadata"]["dc.language.iso"]) > 0:
-            info["language"] = configs["metadata"]["dc.language.iso"][0]
-        elif configs['ident'].get('lang'):
-            info["language"] = configs['ident'].get('lang')
-        if configs["metadata"].get("dc.rights"):
-            if configs["metadata"].get("dc.rights.label") == "PUB":
-                info["release"] = "PUBLIC"
-            else:
-                info["release"] = "PRIVATE"
-        else:
-            if configs["publico"]["public"]:
-                info["release"] = "PUBLIC"
-            else:
-                info["release"] = "PRIVATE"
-        lemmas = []
-        query = "SELECT id, xml FROM entries"
-        if limit != None and limit != "":
-            query += " LIMIT "+str(int(limit))
-        if offset != "" and int(offset) > 0:
-            query += " OFFSET "+str(int(offset))
-        c = dictDB.execute(query)
-        formats = []
-        firstentry = True
-        for r in c.fetchall():
-            if firstentry:
-                firstentry = False
-                jsonentry = elexisConvertTei(r["xml"])
-                if jsonentry != None:
-                    formats = ["tei", "json"]
-            lemma = {"release": info["release"], "language": info["language"], "formats": formats}
-            lemma["id"] = str(r["id"])
-            lemma["lemma"] = getEntryHeadword(r["xml"], configs["titling"].get("headword"))
-            pos = elexisGuessPOS(r["xml"])
-            if pos != "":
-                lemma["partOfSpeech"] = [pos]
-            lemmas.append(lemma)
-        return lemmas
-    else:
-        return None
+# def elexisLemmaList(dictID, limit=None, offset=0):
+#     dictDB = getDB(dictID)
+#     if dictDB:
+#         info = {"language": "en", "release": "PRIVATE"}
+#         configs = readDictConfigs(dictDB)
+#         configs = loadHandleMeta(configs)
+#         if configs["metadata"].get("dc.language.iso") and len(configs["metadata"]["dc.language.iso"]) > 0:
+#             info["language"] = configs["metadata"]["dc.language.iso"][0]
+#         elif configs['ident'].get('lang'):
+#             info["language"] = configs['ident'].get('lang')
+#         if configs["metadata"].get("dc.rights"):
+#             if configs["metadata"].get("dc.rights.label") == "PUB":
+#                 info["release"] = "PUBLIC"
+#             else:
+#                 info["release"] = "PRIVATE"
+#         else:
+#             if configs["publico"]["public"]:
+#                 info["release"] = "PUBLIC"
+#             else:
+#                 info["release"] = "PRIVATE"
+#         lemmas = []
+#         query = "SELECT id, xml FROM entries"
+#         if limit != None and limit != "":
+#             query += " LIMIT "+str(int(limit))
+#         if offset != "" and int(offset) > 0:
+#             query += " OFFSET "+str(int(offset))
+#         c = dictDB.execute(query)
+#         formats = []
+#         firstentry = True
+#         for r in c.fetchall():
+#             if firstentry:
+#                 firstentry = False
+#                 jsonentry = elexisConvertTei(r["xml"])
+#                 if jsonentry != None:
+#                     formats = ["tei", "json"]
+#             lemma = {"release": info["release"], "language": info["language"], "formats": formats}
+#             lemma["id"] = str(r["id"])
+#             lemma["lemma"] = getEntryHeadword(r["xml"], configs["titling"].get("headword"))
+#             pos = elexisGuessPOS(r["xml"])
+#             if pos != "":
+#                 lemma["partOfSpeech"] = [pos]
+#             lemmas.append(lemma)
+#         return lemmas
+#     else:
+#         return None
 
-def elexisGetLemma(dictID, headword, limit=None, offset=0):
-    dictDB = getDB(dictID)
-    if dictDB:
-        info = {"language": "en", "release": "PRIVATE"}
-        configs = readDictConfigs(dictDB)
-        configs = loadHandleMeta(configs)
-        if configs["metadata"].get("dc.language.iso") and len(configs["metadata"]["dc.language.iso"]) > 0:
-            info["language"] = configs["metadata"]["dc.language.iso"][0]
-        elif configs['ident'].get('lang'):
-            info["language"] = configs['ident'].get('lang')
-        if configs["metadata"].get("dc.rights"):
-            if configs["metadata"].get("dc.rights.label") == "PUB":
-                info["release"] = "PUBLIC"
-            else:
-                info["release"] = "PRIVATE"
-        else:
-            if configs["publico"]["public"]:
-                info["release"] = "PUBLIC"
-            else:
-                info["release"] = "PRIVATE"
-        lemmas = []
-        query = "SELECT e.id, e.xml FROM searchables AS s INNER JOIN entries AS e on e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER by s.level"
-        params = (configs["structure"]["root"], headword)
-        if limit != None and limit != "":
-            query += " LIMIT "+str(int(limit))
-        if offset != "" and int(offset) > 0:
-            query += " OFFSET "+str(int(offset))
-        c = dictDB.execute(query, params)
-        formats = []
-        firstentry = True
-        for r in c.fetchall():
-            if firstentry:
-                firstentry = False
-                jsonentry = elexisConvertTei(r["xml"])
-                if jsonentry != None:
-                    formats = ["tei", "json"]
-            lemma = {"release": info["release"], "language": info["language"], "formats": formats}
-            lemma["id"] = str(r["id"])
-            lemma["lemma"] = getEntryHeadword(r["xml"], configs["titling"].get("headword"))
-            pos = elexisGuessPOS(r["xml"])
-            if pos != "":
-                lemma["partOfSpeech"] = [pos]
-            lemmas.append(lemma)
-        return lemmas
-    else:
-        return None
+# def elexisGetLemma(dictID, headword, limit=None, offset=0):
+#     dictDB = getDB(dictID)
+#     if dictDB:
+#         info = {"language": "en", "release": "PRIVATE"}
+#         configs = readDictConfigs(dictDB)
+#         configs = loadHandleMeta(configs)
+#         if configs["metadata"].get("dc.language.iso") and len(configs["metadata"]["dc.language.iso"]) > 0:
+#             info["language"] = configs["metadata"]["dc.language.iso"][0]
+#         elif configs['ident'].get('lang'):
+#             info["language"] = configs['ident'].get('lang')
+#         if configs["metadata"].get("dc.rights"):
+#             if configs["metadata"].get("dc.rights.label") == "PUB":
+#                 info["release"] = "PUBLIC"
+#             else:
+#                 info["release"] = "PRIVATE"
+#         else:
+#             if configs["publico"]["public"]:
+#                 info["release"] = "PUBLIC"
+#             else:
+#                 info["release"] = "PRIVATE"
+#         lemmas = []
+#         query = "SELECT e.id, e.xml FROM searchables AS s INNER JOIN entries AS e on e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER by s.level"
+#         params = (configs["structure"]["root"], headword)
+#         if limit != None and limit != "":
+#             query += " LIMIT "+str(int(limit))
+#         if offset != "" and int(offset) > 0:
+#             query += " OFFSET "+str(int(offset))
+#         c = dictDB.execute(query, params)
+#         formats = []
+#         firstentry = True
+#         for r in c.fetchall():
+#             if firstentry:
+#                 firstentry = False
+#                 jsonentry = elexisConvertTei(r["xml"])
+#                 if jsonentry != None:
+#                     formats = ["tei", "json"]
+#             lemma = {"release": info["release"], "language": info["language"], "formats": formats}
+#             lemma["id"] = str(r["id"])
+#             lemma["lemma"] = getEntryHeadword(r["xml"], configs["titling"].get("headword"))
+#             pos = elexisGuessPOS(r["xml"])
+#             if pos != "":
+#                 lemma["partOfSpeech"] = [pos]
+#             lemmas.append(lemma)
+#         return lemmas
+#     else:
+#         return None
 
 # def elexisGuessPOS(xml):
 #     # try to guess frequent PoS element

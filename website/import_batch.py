@@ -4,6 +4,7 @@
 import os
 import ops
 import sys
+import nvh
 import json
 from import2dict import import_data
 
@@ -11,11 +12,12 @@ from import2dict import import_data
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="utf-8"))
 
-def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_node):
+def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_node, time_stamp):
     dict_id = ops.suggestDictId()
 
     main_db = ops.getMainDB()
-    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status) VALUES (?,?,?,?,?)", (project_id, dict_id, nvh_file_path, stage, 'creating'))
+    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status, created) VALUES (?,?,?,?,?,?)",
+                    (project_id, dict_id, nvh_file_path, stage, 'creating', time_stamp))
     main_db.commit()
 
     file_name = nvh_file_path.rsplit('/', 1)[1]
@@ -31,7 +33,41 @@ def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_n
 
     dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dict_id+".sqlite")
 
-    import_data(dbpath, nvh_file_path, project_id, tl_node)
+    # =======================================
+    # Create config from project config files
+    # =======================================
+    config = {}
+    project_path = os.path.join(siteconfig["dataDir"], "projects", project_id)
+
+    if os.path.isfile(os.path.join(project_path, stage+'_batch.json')):
+        with open(os.path.join(project_path, stage+'_batch.json'), 'r') as f:
+            config = json.load(f)
+
+    js_data = ''
+    if os.path.isfile(os.path.join(project_path, stage+'_batch.js')):
+        with open(os.path.join(project_path, stage+'_batch.js'), 'r') as fj:
+            js_data = fj.read()
+
+    css_data = ''
+    if os.path.isfile(os.path.join(project_path, stage+'_batch.css')):
+        with open(os.path.join(project_path, stage+'_batch.css'), 'r') as fc:
+            css_data = fc.read()
+
+    if js_data or css_data:
+        config['editing'] = {'useOwnEditor': True,
+                             'js': js_data,
+                             'css': css_data}
+
+    if os.path.isfile(os.path.join(project_path, stage+'_batch.nvh')):
+        with open(os.path.join(project_path, stage+'_batch.nvh'), 'r') as f:
+            schema = nvh.nvh.parse_file(f.readlines())
+            schema = schema.nvh2schema()
+            elements = {}
+            ops.get_gen_schema_elements(schema, elements)
+            config['structure'] = {"root": tl_node, "elements": elements}
+    # =======================================
+
+    import_data(dbpath, nvh_file_path, project_id, tl_node, config_data=config)
 
     main_db.execute("UPDATE project_dicts SET status=? WHERE project_id=? AND dict_id=?", ('inProgress', project_id, dict_id))
     main_db.commit()
@@ -42,6 +78,7 @@ def main():
     parser = argparse.ArgumentParser(description='Import one batch to project')
     parser.add_argument('user', type=str, help='User email')
     parser.add_argument('tl_node', type=str, help='Top Level NVH Node')
+    parser.add_argument('ts', type=str, help='Time stamp')
     parser.add_argument('-i', '--file_path', type=argparse.FileType('r'),
                         required=False, default=sys.stdin,
                         help='Input')
@@ -57,7 +94,7 @@ def main():
             if line.strip().startswith(f'{args.tl_node}:'):
                 batch_size += 1
 
-    update_project_info(batch_size, args.user, file_path, project_id, stage, args.tl_node)
+    update_project_info(batch_size, args.user, file_path, project_id, stage, args.tl_node, args.ts)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,35 @@
+{
+    "flagging": {
+        "flag_element": "__lexonomy__flag",
+        "flags": [
+            {
+                "color": "#0000ff",
+                "key": "d",
+                "label": "derogatory",
+                "name": "derogatory"
+            },
+            {
+                "color": "#ff0000",
+                "key": "o",
+                "label": "offensive",
+                "name": "offensive"
+            },
+            {
+                "color": "#008000",
+                "key": "v",
+                "label": "vulgar",
+                "name": "vulgar"
+            }
+        ]
+    },
+    "titling": {
+        "headword": "entry",
+        "headwordSorting": "entry",
+        "sortDesc": false,
+        "numberEntries": "1000",
+        "locale": "en",
+        "headwordAnnotationsType": "advanced",
+        "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span><br><small class=\"grey-text\">%(pos)</small>"
+    },
+    "formatting": {}
+}
