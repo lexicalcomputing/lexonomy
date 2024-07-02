@@ -152,7 +152,7 @@ def xml2nvh(input_xml , fd):
     log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
 
 
-def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', purge=False, purge_all=False, deduplicate=False, clean=False):
+def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', purge=False, purge_all=False, deduplicate=False, clean=False, config_data=''):
     log_start('IMPORT')
     log_info(f'pid: {str(os.getpid())}')
 
@@ -337,6 +337,10 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         r3 = c3.fetchone()
         db.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + completed_entries, 'completed_entries'))
 
+        if config_data:
+            for key, value in config_data.items():
+                db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", (key, json.dumps(value)))
+
         db.commit()
     except Exception as e:
         log_err(f"Import crashed on: {e}")
@@ -367,9 +371,17 @@ def main():
     parser.add_argument('-c', '--clean', action='store_true',
                         required=False, default=False,
                         help='Renaming node names that appear under different parents')
+    parser.add_argument('--config', type=str,
+                        required=False, default='',
+                        help='Dictionary config in JSON format')
     args = parser.parse_args()
 
-    import_data(args.dbname, args.filename, args.email, args.main_node_name, args.purge, args.purge_all, args.deduplicate, args.clean)
+    config_json = None
+    if args.config:
+        with open(args.config) as f:
+            config_json = json.load(f)
+
+    import_data(args.dbname, args.filename, args.email, args.main_node_name, args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)
 
 
 if __name__ == '__main__':

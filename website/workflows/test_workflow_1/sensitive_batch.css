@@ -1,0 +1,22 @@
+.myEditor .translationRow .input-field,
+.myEditor .exampleRow .input-field {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.myEditor input,
+.myEditor .select-wrapper input.select-dropdown {
+    background-color: #fff;
+}
+
+.myEditor .select-wrapper .caret {
+    z-index: 1;
+}
+
+.myEditor .el_translation {
+    width: 500px;
+}
+
+.myEditor .el_translation_register {
+    max-width: 200px;
+}

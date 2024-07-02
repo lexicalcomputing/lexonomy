@@ -1,10 +1,11 @@
 ACCEPTED_BATCHES=$(wildcard $(ACCEPTED_BATCHES_FILEMASK))
 DIR=%dir%
 TL_NODE=entry
+TS=$$(TZ=UTC date +%Y-%m-%d" "%H:%M:%S.%N)
 
 ### stage snesitive ####################################################
 sensitive_new_batches: $(SOURCE_DICT)
-	$(DIR)/nvh.py get $< entry.sense | $(DIR)/gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE) | parallel "echo {} | $(DIR)/import_batch.py $(USER) $(TL_NODE)"
+	$(DIR)/nvh.py get $< entry.sense | $(DIR)/gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE) | parallel "echo {} | $(DIR)/import_batch.py $(USER) $(TL_NODE) \"$(TS)\""
 
 sensitive.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 	cat $(filter-out $<,$^) > $@.patch
@@ -13,7 +14,7 @@ sensitive.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 
 ### stage images ####################################################
 images_new_batches: $(SOURCE_DICT)
-	$(DIR)/nvh.py get $< entry | $(DIR)/gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE) | parallel "echo {} | $(DIR)/import_batch.py $(USER) $(TL_NODE)"
+	$(DIR)/nvh.py get $< entry | $(DIR)/gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE) | parallel "echo {} | $(DIR)/import_batch.py $(USER) $(TL_NODE) \"$(TS)\""
 
 images.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 	cat $(filter-out $<,$^) > $@.patch

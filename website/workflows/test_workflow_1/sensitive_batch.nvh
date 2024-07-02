@@ -1,0 +1,9 @@
+entry: + string
+    hw: string
+    lemma: string
+    pos: string
+    sense: string
+        translation: string
+    sensitive: * string
+    __lexonomy__completed: * string
+    __lexonomy__flag: * string
