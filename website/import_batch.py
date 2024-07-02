@@ -12,12 +12,22 @@ from import2dict import import_data
 currdir = os.path.dirname(os.path.abspath(__file__))
 siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="utf-8"))
 
-def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_node, time_stamp):
+def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_node, time_stamp, initial_batch_path):
+    # =======================================
+    # Count batch size in initial batch split
+    # =======================================
+    initial_batch_size = 0
+    with open(initial_batch_path, 'r') as f:
+        for line in f:
+            if line.startswith(f'{tl_node}:'):
+                initial_batch_size += 1
+    # =======================================
+
     dict_id = ops.suggestDictId()
 
     main_db = ops.getMainDB()
-    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status, created) VALUES (?,?,?,?,?,?)",
-                    (project_id, dict_id, nvh_file_path, stage, 'creating', time_stamp))
+    main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, status, created, initial_batch_size) VALUES (?,?,?,?,?,?,?)",
+                    (project_id, dict_id, nvh_file_path, stage, 'creating', time_stamp, initial_batch_size))
     main_db.commit()
 
     file_name = nvh_file_path.rsplit('/', 1)[1]
@@ -79,6 +89,7 @@ def main():
     parser.add_argument('user', type=str, help='User email')
     parser.add_argument('tl_node', type=str, help='Top Level NVH Node')
     parser.add_argument('ts', type=str, help='Time stamp')
+    parser.add_argument('initial_batch_path', type=str, help='User email')
     parser.add_argument('-i', '--file_path', type=argparse.FileType('r'),
                         required=False, default=sys.stdin,
                         help='Input')
@@ -94,7 +105,7 @@ def main():
             if line.strip().startswith(f'{args.tl_node}:'):
                 batch_size += 1
 
-    update_project_info(batch_size, args.user, file_path, project_id, stage, args.tl_node, args.ts)
+    update_project_info(batch_size, args.user, file_path, project_id, stage, args.tl_node, args.ts, args.initial_batch_path)
 
 
 if __name__ == '__main__':
