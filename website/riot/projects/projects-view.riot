@@ -18,22 +18,38 @@
          fullscreen={true}
          message={state.busyMessage}/>
    <template if={!state.error && state.project}>
-      <h1 class="pageTitle">
+      <div class="titleBar displayFlex alignCenter">
          <a href="#projects/dashboard"
                class="clickable mr-2 tooltipped"
                data-tooltip="Back to the projects">
             <i class="material-icons grey-text">arrow_back</i>
          </a>
-         {state.project.project_name}
+         <h1 class="pageTitle">
+            {state.project.project_name}
+         </h1>
          <a href="#projects/edit/{state.project.projectID}"
-               class="grey-text ml-2">
+               class="grey-text ml-2 tooltipped"
+               data-tooltip="Edit project">
             <i class="material-icons">edit</i>
          </a>
-         <i if={state.isReloadingProject}
-               class="spin grey-text text-lighten-1 ml-4 material-icons">
-            donut_large
-         </i>
-      </h1>
+         <a if={!state.isReloadingProject}
+               href="javascript:void(0);"
+               class="grey-text ml-2"
+               onclick={onReloadProjectClick}
+               data-tooltip="Reload project">
+            <i class="material-icons">refresh</i>
+         </a>
+         <span>
+            <i if={state.isReloadingProject}
+                  class="spin grey-text text-lighten-1 ml-2 material-icons">
+               donut_large
+            </i>
+         </span>
+         <span if={!state.isReloadingProject && state.checkProjectTimeoutHandle}
+               class="ml-4 grey-text">
+            project is being updated...
+         </span>
+      </div>
       <div class="mb-4">
          <div if={state.showDetails}
                class="projectDetails grey lighten-4 mb-2 p-4">
@@ -75,7 +91,7 @@
                                        value={workflow.batch_size || 100}
                                        disabled={workflow.inputDicts[0].total <= 0 || workflow.isExportingBatches}
                                        oninput={onBatchSizeInput.bind(this, workflow)}>
-                                 <label>Size</label>
+                                 <label>Batch size</label>
                               </div>
                               <div class="input-field mb-0">
                                  <input type="number"
@@ -83,10 +99,10 @@
                                        min=1
                                        disabled={workflow.inputDicts[0].total <= 0 || workflow.isExportingBatches}
                                        oninput={onBatchCountInput.bind(this, workflow)}>
-                                 <label>Count</label>
+                                 <label>No. of batches</label>
                               </div>
                            </div>
-                           <button class="exportBtn btn {!workflow.inputDicts[0].total ? 'disabled' : ''}"
+                           <button class="exportBtn btn {!workflow.inputDicts[0].total || workflow.is_locked ? 'disabled' : ''}"
                                  onclick={onExportToBatchesClick.bind(this, workflow)}>
                               export batches
                            </button>
@@ -144,7 +160,8 @@
                </td>
                <td>
                   <div class="card-panel grey lighten-4">
-                     <project-dict-name dict={workflow.outputDict}/>
+                     <project-dict-name dict={workflow.outputDict}
+                           hide-assigned={true}/>
                      <span if={!getDictionaryStatus(workflow.outputDict).isBusy}
                            class={!workflow.isImportAvailable ? "tooltipped" : ""}
                            data-tooltip={!workflow.isImportAvailable ? "At least one batch must be accepted to allow import." : ""}>
@@ -197,7 +214,8 @@
                </td>
                <td>
                   <div class="card-panel grey lighten-4">
-                     <project-dict-name dict={workflow.outputDict}/>
+                     <project-dict-name dict={workflow.outputDict}
+                           hide-assigned={true}/>
                      <project-dictionary-status {...getDictionaryStatus(workflow.outputDict)}/>
                   </div>
                </td>
@@ -214,7 +232,8 @@
             isReloadingProject: false,
             project: null,
             error: null,
-            lastLoadedProjectID: null
+            lastLoadedProjectID: null,
+            checkProjectTimeoutHandle: null
          },
 
          onBeforeMount(){
@@ -250,6 +269,11 @@
             }
          },
 
+         onReloadProjectClick(){
+            this.loadProject()
+            this.update()
+         },
+
          onToggleShowDetailsClick(){
             this.update({showDetails: !this.state.showDetails})
          },
@@ -275,6 +299,7 @@
             this.store.projectExportBatches(this.props.projectID, workflow.stage, workflow.batch_size, workflow.batch_count)
                   .always(response => {
                      this.state.runningExports.delete(workflow.inputDicts[0].title)
+                     workflow.is_locked = true  // make sure user does not trigger another action until project status is checked
                      this.loadProject()
                      this.update()
                   })
@@ -319,9 +344,14 @@
                this.state.isBusy = true
                this.state.lastLoadedProjectID = this.props.projectID
             }
+            this.stopProjectChecking()
             this.store.loadProject(this.props.projectID)
+               .fail(response => {
+                  this.state.error = response.error
+                  this.state.project = null
+               })
                .always(response => {
-                  if(!response.error){
+                  if(response.workflow){
                      this.state.project = response
                      this.state.project.workflow.forEach(workflow => {
                         workflow.batch_size = 100
@@ -341,20 +371,33 @@
                         }
                      })
                   } else {
-                     this.state.error = response.error
+                     this.state.error = response.error || "unknown error"
                      this.state.project = null
                   }
-               })
-               .fail(response => {
-                  this.state.error = response.error
-                  this.state.project = null
-               })
-               .always(response => {
+                  if(this.shouldCheckProject()){
+                     this.state.checkProjectTimeoutHandle = setTimeout(this.loadProject.bind(this), 5000)
+                  } else {
+                     this.stopProjectChecking()
+                  }
                   this.update({
                      isBusy: false,
                      isReloadingProject: false
                   })
                })
+         },
+
+         stopProjectChecking(){
+            if(this.state.checkProjectTimeoutHandle){
+               clearTimeout(this.state.checkProjectTimeoutHandle)
+               this.state.checkProjectTimeoutHandle = null
+            }
+         },
+
+         shouldCheckProject(){
+            return this.state.project.workflow.some(workflow => workflow.is_locked)
+                  || this.state.project.workflow.some(workflow => {
+                     return workflow.batches.some(batch => batch.status == "creating")
+                  })
          },
 
          getDictionaryStatus(dictionary){
@@ -388,10 +431,10 @@
          input{
             height: 30px;
             line-height: 30px;
-            max-width: 100px;
+            max-width: 110px;
          }
          .btn{
-            min-width: 210px;
+            min-width: 230px;
          }
       }
       .projectDetails{
@@ -408,7 +451,7 @@
             }
          }
          .card-panel{
-            min-width: 250px;
+            min-width: 270px;
             min-height: 150px;
             &.workflowWithBatchPanel{
                min-width: 600px;
