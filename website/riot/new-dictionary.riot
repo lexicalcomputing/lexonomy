@@ -230,6 +230,10 @@
             }
          },
 
+         onBeforeUnmount(){
+            this.state.timeoutHandle && clearTimeout(this.state.timeoutHandle)
+         },
+
          onKeyUp(evt){
             if(evt.keyCode == 13 && this.state.isNextBtnEnable){
                this.onGoToStepTwoClick()
@@ -292,7 +296,7 @@
          },
 
          onUploadFileChange(evt){
-            this.state.file = evt.target.value
+            this.state.file = evt.target.files[0]
             this.refreshMakeDictFromFileButtonDisabled()
          },
 
@@ -324,21 +328,55 @@
          onCreateDictionaryFromFileClick(event) {
             if(this.state.title){
                this.update({isLoading: true})
-               this.store.createDictionary({
-                  title: this.state.title,
-                  url: this.state.url,
-                  filename: this.state.file,
-                  hwNode: this.state.headword
+               var fd = new FormData()
+               fd.append("filename", this.state.file)
+               if ($("#deduplicate").is(":checked")){
+                  fd.append("deduplicate", "on")
+               }
+               fd.append("title", this.state.title)
+               fd.append("url", this.state.url)
+               fd.append("hwNode", this.state.headword)
+               fd.append("addExamples", false)
+               this.store.createDictionary(fd, {
+                  processData: false,
+                  contentType: false
                })
                      .done(response => {
                         if (response.success) {
-                           route("/" + response.url)
-                        } else {
-                           this.state.errorMessage = response.error
-                           this.update({isLoading: false})
+                           this.checkImportProgress(response.upload_file_path)
                         }
                      })
+                     .always(response => {
+                        if(!response || !response.success){
+                           this.state.errorMessage = response.error || "Unknown error"
+                        }
+                        this.update({isLoading: false})
+                     })
             }
+         },
+
+         checkImportProgress(upload_file_path){
+            this.store.checkImportProgress(upload_file_path)
+                  .done(response => {
+                     clearTimeout(this.state.timeoutHandle)
+                     if(response.error.length){
+                        this.state.errorMessage = response.error.join(", ")
+                        this.update({isLoading: false})
+                     } else {
+                        if(response.finished){
+                           if (response.success) {
+                              route("/" + response.url)
+                           } else {
+                              this.update({
+                                 errorMessage: response.error.join(", "),
+                                 isLoading: false
+                              })
+                           }
+                        } else {
+                           this.state.timeoutHandle = setTimeout(this.checkImportProgress.bind(this, response.upload_file_path), 2000)
+                        }
+                     }
+                  })
          },
 
          refreshBtnNextDisabled(){

@@ -833,12 +833,12 @@ class StoreClass {
             })
    }
 
-   createDictionary(data){
-      return window.connection.post({
+   createDictionary(data, xhrParams={}){
+      return window.connection.post(Object.assign({
          url: `${window.API_URL}make.json`,
          method: 'POST',
          data: data
-      })
+      }, xhrParams))
             .done(response => {
                if(response.success) {
                   this.loadDictionaryList()
