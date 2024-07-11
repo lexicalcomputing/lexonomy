@@ -145,7 +145,7 @@
             if(this.state.config.type == "bool"){
                return value == 1 ? "yes" : "no"
             } else if(this.state.config.type == "string"){
-               return this.nvhStore.parseMarkDown(value)
+               return value.replace(/\\n/g, "<br>")
             }
             return value
          },

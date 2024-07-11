@@ -236,3 +236,32 @@ window.idEscape = str => {
    return encodeURIComponent(str).replace(/\W/g,'_') // valid HTML and jQuery ID
 }
 
+window.reEscape = str => {
+  return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
+}
+
+window.stringToElement = str => {
+   // string should have only one top level element
+   str = str.trim()
+   if(!str){
+      return null
+   }
+   const template = document.createElement("template")
+   template.innerHTML = str
+   return template.content.firstElementChild
+}
+
+window.getElementPreceedingText = element => {
+   const parent = element.parentElement
+   let text = ""
+   if(parent) {
+      let currentNode = parent.firstChild
+      for(;currentNode && currentNode != element; currentNode = currentNode.nextSibling){
+         if ([Node.ELEMENT_NODE, Node.TEXT_NODE].includes(currentNode.nodeType)) {
+            text += currentNode.textContent
+         }
+      }
+   }
+   return text.trim()
+}
+

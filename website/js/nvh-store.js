@@ -2,7 +2,7 @@ class NVHStoreClass {
    constructor(){
       this.lastId = 0
       this.const = {
-         markDownNewLine: "\\\\n",
+         nvhNewLine: "\\\\n",
          serviceElementPrefix: "__lexonomy__"
       }
       this.data = {
@@ -249,7 +249,7 @@ class NVHStoreClass {
    }
 
    jsonToNvh(element, indent=0){
-      let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.markDownNewLine)}\n`
+      let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.nvhNewLine)}\n`
          element.children && element.children.forEach(child => {
          nvh += this.jsonToNvh(child, indent + 1)
       }, this)
@@ -295,7 +295,7 @@ class NVHStoreClass {
             el = {
                id: this._getNewElementId(),
                name: line.name,
-               value: line.value.replaceAll(this.const.markDownNewLine, "\n"),
+               value: line.value.replaceAll(this.const.nvhNewLine, "\n"),
                indent: line.indent,
                parent: getParent(line.indent),
                children: [],
@@ -606,9 +606,17 @@ class NVHStoreClass {
          } else {
             this.data.formatting.elements[elementName][option] = value
          }
-         this.trigger("updateElements", this.findElements(e => e.name == elementName))
+         let elements = this.findElements(e => e.name == elementName)
+         if(this.getElementConfig(elementName).type == "markup"){
+            elements = elements.map(e => {
+               // markup element style changed - parent element must be updated
+               return [e, ...this.getAvailableParentElements(e.name)]
+            }).flat()
          }
+
+         this.trigger("updateElements", elements)
       }
+   }
 
    isElementVisible(element){
       let el = element
@@ -1024,6 +1032,7 @@ class NVHStoreClass {
                   warnings.push(`Element "${element.name}" should not have the value "${element.value}".`)
                }
             }
+            // TODO zruseno kvuli flagum, chceme zrejme umoznit definovat required u elementu
             /*if(config.type != "empty"){
                if(!element.value){
                   warnings.push(`Element "${element.name}" should have some text.`)
@@ -1137,55 +1146,6 @@ class NVHStoreClass {
       }
    }
 
-   parseMarkDown(md){
-      if(!md){
-         return md
-      }
-      return md
-         //links
-         .replace(/[\[]{1}([^\]]+)[\]]{1}[\(]{1}([^\)\"]+)[\)]{1}/g, '<a href="$2" target="_blank">$1</a>')
-         //font styles
-          .replace(/[\*]{2}([^\*]+)[\*]{2}/g, '<b>$1</b>')
-          .replace(/[\_]{1}([^\_]+)[\_]{1}/g, '<i>$1</i>')
-          .replace(/\\n/g, '<br>')
-         //  .replace(/[\~]{2}([^\~]+)[\~]{2}/g, '<del>$1</del>')
-         //blockquote
-         // .replace(/^\>(.+)/gm, '<blockquote>$1</blockquote>')
-         //h
-         // .replace(/[\#]{6}(.+)/g, '<h6>$1</h6>')
-         // .replace(/[\#]{5}(.+)/g, '<h5>$1</h5>')
-         // .replace(/[\#]{4}(.+)/g, '<h4>$1</h4>')
-         // .replace(/[\#]{3}(.+)/g, '<h3>$1</h3>')
-         // .replace(/[\#]{2}(.+)/g, '<h2>$1</h2>')
-         // .replace(/[\#]{1}(.+)/g, '<h1>$1</h1>')
-         //alt h
-         // .replace(/^(.+)\n\=+/gm, '<h1>$1</h1>')
-         // .replace(/^(.+)\n\-+/gm, '<h2>$1</h2>')
-         //images
-         // .replace(/\!\[([^\]]+)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" />')
-         // ul
-         // .replace(/^\s*\n\*/gm, '<ul>\n*')
-         // .replace(/^(\*.+)\s*\n([^\*])/gm, '$1\n</ul>\n\n$2')
-         // .replace(/^\*(.+)/gm, '<li>$1</li>')
-         //ol
-         // .replace(/^\s*\n\d\./gm, '<ol>\n1.')
-         // .replace(/^(\d\..+)\s*\n([^\d\.])/gm, '$1\n</ol>\n\n$2')
-         // .replace(/^\d\.(.+)/gm, '<li>$1</li>')
-         //pre
-         // .replace(/^\s*\n\`\`\`(([^\s]+))?/gm, '<pre class="$2">')
-         // .replace(/^\`\`\`\s*\n/gm, '</pre>\n\n')
-         //code
-         // .replace(/[\`]{1}([^\`]+)[\`]{1}/g, '<code>$1</code>')
-         //p
-         // .replace(/^\s*(\n)?(.+)/gm, function(m){
-         //    return  /\<(\/)?(h\d|ul|ol|li|blockquote|pre|img)/.test(m) ? m : m+'<br>';
-         // })
-         //strip p from pre
-         // .replace(/(\<pre.+\>)\s*\n\<p\>(.+)\<\/p\>/gm, '$1$2')
-         //remove trailing <br>
-         .replace(/<br>*$/,"")
-   }
-
    _getNewElementId(){
        // needed for riot to track changes properly
       return Math.round(Math.random() * 1000000)
@@ -1292,6 +1252,48 @@ class NVHStoreClass {
            .replace(/&lt;/g, "<")
            .replace(/&gt;/g, ">")
            .replace(/&amp;/g, "&")
+   }
+
+   replaceMarkupOccurrences(value, element, createReplaceString) {
+      let replaceList = []
+      element.children.filter(child => {
+         return !this.isServiceElement(child.name)
+               && this.getElementConfig(child.name).type == "markup"
+      })
+            .forEach(child => {
+               let tmp = child.value.split("#")
+               let find = tmp[0]
+               if(find.trim()){
+                  let replaceWith = createReplaceString(child.name, find)
+                  if(child.value.indexOf("#") == -1){
+                     replaceList.push({
+                        index: value.indexOf(find),
+                        find: find,
+                        replaceWith: replaceWith
+                     })
+                  } else {
+                     let occurrenceIndex = tmp[1]
+                     let regex = new RegExp(window.reEscape(find), 'g');
+                     let matches = Array.from(value.matchAll(regex))
+                     if(matches.length >= occurrenceIndex) {
+                        replaceList.push({
+                           index: matches[occurrenceIndex - 1].index,
+                           find: find,
+                           replaceWith: replaceWith
+                        })
+                     }
+                  }
+               }
+            })
+      replaceList.sort((a, b) => {
+         return b.index - a.index
+      }).forEach(replaceObj => {
+         // Replace occurrences from the end of the so the indexes will be still valid after each replacing.
+         // Using indexes and backward replacing to avoid matches in already replaced strings (ie. search for "an"
+         // would match "an" in "span" if previous "an" was already replaced with <span class="x">an</span>)
+         value = value.slice(0, replaceObj.index) + replaceObj.replaceWith + value.slice(replaceObj.index + replaceObj.find.length)
+      })
+      return value
    }
 
    getElementTreeList(elementName, indent=0){
