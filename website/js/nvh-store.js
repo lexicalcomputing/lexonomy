@@ -554,26 +554,26 @@ class NVHStoreClass {
       }
    }
 
-   getAvailableParentElementNames(element){
+   getAvailableParentElementNames(elementName){
       let elements = this.data.structure.elements
-      if(this.isServiceElement(element)){
+      if(this.isServiceElement(elementName)){
          return Object.keys(elements)
       } else {
-         return Object.keys(elements).filter(elementName => {
-            return elements[elementName].children.some(child => child == element.name)
+         return Object.keys(elements).filter(parentName => {
+            return elements[parentName].children.some(child => child == elementName)
          })
       }
    }
 
-   getAvailableParentElements(element){
-      let availableParentNames = this.getAvailableParentElementNames(element)
+   getAvailableParentElements(elementName){
+      let availableParentNames = this.getAvailableParentElementNames(elementName)
       return this.findElements(parent => {
          return availableParentNames.includes(parent.name)
       })
    }
 
    getNextAvailableParentInDirection(element, direction){
-      let availableParents = this.getAvailableParentElements(element)
+      let availableParents = this.getAvailableParentElements(element.name)
       let idx = availableParents.indexOf(element.parent) + direction
       while (availableParents[idx] && !this.canHaveAnotherChild(availableParents[idx], element.name)){
          idx += direction
@@ -607,8 +607,8 @@ class NVHStoreClass {
             this.data.formatting.elements[elementName][option] = value
          }
          this.trigger("updateElements", this.findElements(e => e.name == elementName))
+         }
       }
-   }
 
    isElementVisible(element){
       let el = element
@@ -638,12 +638,8 @@ class NVHStoreClass {
       return false
    }
 
-   isServiceElement(element){
-      if(typeof element == "string"){
-         return element.startsWith(this.const.serviceElementPrefix)
-      } else {
-         return element.name.startsWith(this.const.serviceElementPrefix)
-      }
+   isServiceElement(elementName){
+      return elementName.startsWith(this.const.serviceElementPrefix)
    }
 
    copyElementAndItsChildren(element, parent=null){
@@ -1008,60 +1004,60 @@ class NVHStoreClass {
    }
 
    validateElement(element){
-      if(element == this.data.detachedEntry || this.isServiceElement(element)){
+      if(element == this.data.detachedEntry || this.isServiceElement(element.name)){
          element.warnings = []
          element.isValid = true
-         return
-      }
-      let config = this.getElementConfig(element.name)
-      let warnings = []
-      if(!config || !config.type){  // has valid configuration
-         warnings.push(`Unknown element "${element.name}".`)
       } else {
-         if(config.type == "empty"){
-            if(element.value){
-               warnings.push(`Element "${element.name}" should not have any text.`)
+         let config = this.getElementConfig(element.name)
+         let warnings = []
+         if(!config || !config.type){  // has valid configuration
+            warnings.push(`Unknown element "${element.name}".`)
+         } else {
+            if(config.type == "empty"){
+               if(element.value){
+                  warnings.push(`Element "${element.name}" should not have any text.`)
+               }
+            } else if(config.type == "list"){
+               if(!element.value){
+                  warnings.push(`Element "${element.name}" should not be empty.`)
+               } else if(!config.values.includes(element.value)){
+                  warnings.push(`Element "${element.name}" should not have the value "${element.value}".`)
+               }
             }
-         } else if(config.type == "list"){
-            if(!element.value){
-               warnings.push(`Element "${element.name}" should not be empty.`)
-            } else if(!config.values.includes(element.value)){
-               warnings.push(`Element "${element.name}" should not have the value "${element.value}".`)
-            }
+            /*if(config.type != "empty"){
+               if(!element.value){
+                  warnings.push(`Element "${element.name}" should have some text.`)
+               }
+            }*/
+            let counts = element.children.reduce((counts, e) => {
+               counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
+               return counts
+            }, {})
+            config.children.forEach(childName => {
+               let childConfig = this.getElementConfig(childName)
+               if(childConfig){
+                  if (childConfig.max && (counts[childName] || 0) > childConfig.max){
+                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childName}"`)
+                  }
+                  if (childConfig.min && (counts[childName] || 0) < childConfig.min){
+                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childName}"`)
+                  }
+               }
+            })
+            element.children.forEach(child => {
+               if(!this.isServiceElement(child.name)){
+                  if(!window.store.data.config.structure.elements[child.name]){
+                     warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
+                  } else if(!config.children.includes(child.name)){
+                     warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
+                  }
+               }
+            })
          }
-         /*if(config.type != "empty"){
-            if(!element.value){
-               warnings.push(`Element "${element.name}" should have some text.`)
-            }
-         }*/
-         let counts = element.children.reduce((counts, e) => {
-            counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
-            return counts
-         }, {})
-         config.children.forEach(childName => {
-            let childConfig = this.getElementConfig(childName)
-            if(childConfig){
-               if (childConfig.max && (counts[childName] || 0) > childConfig.max){
-                  warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childName}"`)
-               }
-               if (childConfig.min && (counts[childName] || 0) < childConfig.min){
-                  warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childName}"`)
-               }
-            }
-         })
-         element.children.forEach(child => {
-            if(!this.isServiceElement(child)){
-               if(!window.store.data.config.structure.elements[child.name]){
-                  warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
-               } else if(!config.children.includes(child.name)){
-                  warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
-               }
-            }
-         })
-      }
 
-      element.warnings = [...new Set(warnings)] // remove duplicities
-      element.isValid = !warnings.length
+         element.warnings = [...new Set(warnings)] // remove duplicities
+         element.isValid = !warnings.length
+      }
       let isValid = !this.findElement(e => !e.isValid)
       if(this.data.elementsMatchStructure != isValid){
          this.data.elementsMatchStructure = isValid

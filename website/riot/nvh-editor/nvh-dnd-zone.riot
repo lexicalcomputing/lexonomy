@@ -28,7 +28,7 @@
             if(!this.state.active
                   && (this.props.element == this.nvhData.detachedEntry
                      || (this.nvhData.draggedElement != this.props.element
-                        && this.nvhStore.getAvailableParentElementNames(this.nvhData.draggedElement).includes(this.props.element.name)
+                        && this.nvhStore.getAvailableParentElementNames(this.nvhData.draggedElement.name).includes(this.props.element.name)
                         && (this.props.element == this.nvhData.draggedElement.parent || this.nvhStore.canHaveAnotherChild(this.props.element, this.nvhData.draggedElement.name))
                      )
                   )
