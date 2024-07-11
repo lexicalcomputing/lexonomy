@@ -268,10 +268,10 @@
             // Find word boundaries
             let start = startOffset
             let end = startOffset
-            while (start > 0 && !/\s/.test(text[start - 1])) {
+            while (start > 0 && !/[\s\.,\?!:;—\-\(\)\[\]\{\}"']/.test(text[start - 1])) {
                start--
             }
-            while (end < text.length && !/\s/.test(text[end])) {
+            while (end < text.length && !/[\s\.,\?!:;—\-\(\)\[\]\{\}"']/.test(text[end])) {
                end++
             }
             const wordRange = document.createRange();
@@ -418,23 +418,37 @@
             }
             .markupNode{
                position: relative;
-               padding-right: 15px;
-               margin-right: 3px;
-               border-bottom: 1px solid var(--bullet-background-color);
-               &::after{
+               padding-left: 16px;
+               padding-right: 2px;
+               &:hover{
+                  border-bottom: 1px solid var(--bullet-background-color);
+               }
+               &::before{
                   content: attr(markup_number);
                   position: absolute;
-                  right: 0px;
+                  left: 0px;
                   top: 3px;
                   display: inline-block;
                   background-color: var(--bullet-background-color);
                   color: #fff;
-                  border-radius: 50%;
+                  border-radius: 5px;
                   height: 14px;
                   width: 14px;
                   text-align: center;
                   line-height: 14px;
                   font-size: 12px;
+               }
+               &::after{
+                  content: '';
+                  position: absolute;
+                  left: 0px;
+                  right: 0px;
+                  top: 2px;
+                  bottom: 2px;
+                  background-color: var(--bullet-background-color);
+                  opacity: 0.1;
+                  border-radius: 5px;
+                  pointer-events:none;
                }
             }
          }
