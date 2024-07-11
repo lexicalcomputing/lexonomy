@@ -323,7 +323,7 @@
             if(element.parent){
                let moveOptions = []
                let childIdx = element.parent.children.indexOf(element)
-               let availableParents = this.nvhStore.getAvailableParentElements(element)
+               let availableParents = this.nvhStore.getAvailableParentElements(element.name)
                let parentIdx = availableParents.indexOf(element.parent)
                if(childIdx > 0 || parentIdx > 0){
                   moveOptions.push({
