@@ -527,6 +527,12 @@ class NVHStoreClass {
    }
 
    getElementConfig(elementName){
+      if(this.isServiceElement(elementName)){
+         return {
+            type: "string",
+            children: []
+         }
+      }
       return this.data.structure.elements[elementName]
    }
 
