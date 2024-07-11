@@ -5,7 +5,7 @@
       <span if={state.beforeElementContent}
             class="nvh-gutter">{state.beforeElementContent}</span>
       <span class="nvh-outer-wrapper {getOuterWrapperStyleClasses()}">
-         <span if={state.config.type != "empty" && !state.style.hideValue}
+         <span if={!["empty", "markup"].includes(state.config.type) && !state.style.hideValue}
                class="nvh-inner-wrapper {getInnerWrapperStyleClasses()}">
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper"
@@ -37,7 +37,7 @@
                class="nvh-children">
             <template each={(child, idx) in props.element.children}
                   key={child.id}
-                  if={!nvhStore.isServiceElement(child.name)}>
+                  if={!nvhStore.isServiceElement(child.name) && nvhStore.getElementConfig(child.name).type != "markup"}>
                <nvh-editor-view-item element={child}
                      read-only={props.readOnly}/>
                <nvh-dnd-zone if={isElementDisplayed(child.name)}
@@ -89,6 +89,7 @@
          onEditClick(evt){
             evt.nvhStartEditing = true
             this.nvhStore.startElementEditing(this.props.element)
+            evt.stopPropagation()
          },
 
          isElementDisplayed(elementName){
@@ -99,13 +100,18 @@
          getReadOnlyValue(){
             let value = this.props.element.value
             if (this.state.config.type == "string"){
-               value = this.nvhStore.parseMarkDown(value)
+               value = value.replace(/\\n/g, "<br>")
             } else if(this.state.config.type == "bool"){
                value = value ? "yes" : "no"
             }
             if(this.state.innerPunc){
                value = `${this.state.innerPunc[0]}${value}${this.state.innerPunc[1]}`
             }
+            value = this.nvhStore.replaceMarkupOccurrences(value, this.props.element, (markupElementName, find) => {
+               let style = this.nvhStore.getElementStyle(markupElementName) || {}
+               let styleClasses = this.getStyleClasses(["colour", "slant", "textsize", "weight", "direction", "border", "borderRadius", "background"], style)
+               return`<span class="${styleClasses}">${find}</span>`
+            })
             return value
          },
 
@@ -163,12 +169,13 @@
             return this.getStyleClasses(["colour", "slant", "textsize", "weight"])
          },
 
-         getStyleClasses(keys){
+         getStyleClasses(keys, style){
+            style = style || this.state.style
             return keys.filter(k => {
-                     return !!this.state.style[k]
+                     return !!style[k]
                   })
                   .map(k => {
-                     return `nvh_s_${k}_${this.state.style[k]}`
+                     return `nvh_s_${k}_${style[k]}`
                   })
                   .join(" ")
          }
@@ -315,16 +322,16 @@
       .nvh_s_borderRadius_large{
          border-radius: 15px;
       }
-      .nvh_s_colour_red .nvh-readonly-value{
+      .nvh_s_colour_red{
          color: #c62132;
       }
-      .nvh_s_colour_blue .nvh-readonly-value{
+      .nvh_s_colour_blue{
          color: #0277bd;
       }
-      .nvh_s_colour_green .nvh-readonly-value{
+      .nvh_s_colour_green{
          color: #388e3c;
       }
-      .nvh_s_colour_grey .nvh-readonly-value{
+      .nvh_s_colour_grey{
          color: #757575;
       }
       .nvh_s_gutter_indent{

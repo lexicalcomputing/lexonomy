@@ -363,15 +363,19 @@
             let config = this.nvhStore.getElementConfig(elementName)
             if(config){
                let options = []
-               if(this.nvhData.rootElement != elementName){
-                  options.push("hidden")
-               }
-               if(config.type != "empty"){
-                  options.push("hideValue")
-               }
-               options.push(...["layout", "separation", "gutter", "border", "borderRadius", "background", "outerPunc", "label"])
-               if(["string", "int", "bool", "list"].includes(config.type)){
+               if(config.type == "markup"){
+                  options = ["border", "borderRadius", "background", "colour", "slant", "weight", "textsize"]
+               } else {
+                  if(this.nvhData.rootElement != elementName){
+                     options.push("hidden")
+                  }
+                  if(config.type != "empty"){
+                     options.push("hideValue")
+                  }
+                  options.push(...["layout", "separation", "gutter", "border", "borderRadius", "background", "outerPunc", "label"])
+                  if(["string", "int", "bool", "list"].includes(config.type)){
                   options.push(...["colour", "slant", "weight", "textsize", "innerPunc"])
+                  }
                }
                return options
             }

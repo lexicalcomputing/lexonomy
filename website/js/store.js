@@ -17,6 +17,7 @@ class StoreClass {
          ],
          ENTRY_TYPES: {
             string: "Text",
+            markup: "Text markup",
             int: "Number",
             image: "Image",
             audio: "Audio",

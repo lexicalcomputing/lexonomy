@@ -2,11 +2,34 @@
    <div if={state.showEditor}
          class="nvh-text-value">
       <div class="nvh-toolbar">
+         <i class="material-icons tooltipped"
+               onclick={onUndoClick}
+               data-tooltip="Undo (Ctrl + Z)">undo</i>
+         <i class="material-icons tooltipped"
+               onclick={onRedoClick}
+               data-tooltip="Redo (Ctrl + Y)">redo</i>
+         <button each={elementName in state.markupChildrenNames}
+               class="btn markupBtn white-text tooltipped"
+               name="btn_{elementName}"
+               data-tooltip="Mark selected text as '{store.getElementDisplayedName(elementName)}'"
+               onclick={onMarkupButtonClick.bind(this, elementName)}
+               style="--background-color: {nvhStore.getElementColor(elementName)}">
+            {getMarkupNumber(elementName)}: {store.getElementDisplayedName(elementName)}
+         </button>
+
+         <span class="ml-auto"></span>
+         <i class="material-icons icon-close tooltipped"
+               onclick={onCloseClick}
+               data-tooltip="Close without saving (ESC)">close</i>
       </div>
       <div class="nvh-editable-div"
-            onkeydown={onKeyDown}
-            onkeyup={onKeyUp}
-            onblur={onBlur}>
+            contenteditable=true
+            onkeydown={onEditableDivKeyDown}
+            onkeyup={onEditableDivKeyUp}
+            oninput={onEditableDivInput}
+            onclick={onEditableDivClick}
+            onfocus={onEditableDivFocus}
+            onblur={onEditableDivBlur}>
       </div>
       <small class="nvh-save-note grey-text">
          Shift + Enter to add a new line
@@ -50,60 +73,133 @@
             this.nvhData = this.nvhStore.data
             this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
             this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
-            this.state.showEditor = ["string", "image", "audio", "url"].includes(this.state.config.type)
+            this.state.showEditor = ["string", "markup", "image", "audio", "url"].includes(this.state.config.type)
+            this.state.markupChildrenNames = this.state.config.children
+                  .filter(childName => this.nvhStore.getElementConfig(childName).type == "markup")
          },
 
          onMounted(){
             if(this.state.showEditor){
-               // TODO use this?
-               //let actionList = ["undo", "redo", "bold", "italic", /*"underline", "createlink", "inserthorizontalrule",*/ "close"]
-               let actionList = ["undo", "redo", "close"];
-               $(".nvh-editable-div", this.root).html(this.nvhStore.parseMarkDown(this.props.element.value))
-               this.state.editor = new Pen({
-                  editor: $(".nvh-editable-div", this.root)[0],
-                  toolbarNode: $(".nvh-toolbar", this.root)[0],
-                  linksInNewWindow: true,
-                  list: actionList,
-                  tooltip: {
-                     undo: "Undo (Ctrl + Z)",
-                     redo: "Redo (Ctrl + Y)",
-                     bold: "Bold (Ctrl + B)",
-                     italic: "Italic  (Ctrl + I)",
-                     underline: "Underline (Ctrl + U)",
-                     createlink: "Create link",
-                     inserthorizontalrule: "Insert line",
-                     close: "Close without saving (ESC)"
-                  },
-                  icons: {
-                     undo: "undo",
-                     redo: "redo",
-                     bold: "format_bold",
-                     italic: "format_italic",
-                     underline: "format_underline",
-                     createlink: "link",
-                     inserthorizontalrule: "remove",
-                     close: "close",
-                  },
-                  stay: false,
-                  customCommands: {
-                     //save: this.saveEditorValue.bind(this),
-                     close: this.nvhStore.stopElementEditing.bind(this.nvhStore)
-                  }
-               });
+               $(".nvh-editable-div", this.root).html(this.getValueForEditor())
             } else {
                this.initFormSelect()
             }
             this.focusInput()
+            if(this.state.showEditor){
+               document.addEventListener("click", this.handleClickOutside)
+               document.addEventListener("selectionchange", this.onSelectionChange)
+               document.addEventListener("selectstart", this.onSelectionStart)
+            }
          },
 
          onBeforeUnmount(){
-            this.state.showEditor && this.state.editor.destroy()
+            if(this.state.showEditor){
+               document.removeEventListener("click", this.handleClickOutside)
+               document.removeEventListener("selectionchange", this.onSelectionChange)
+               document.removeEventListener("selectstart", this.onSelectionStart)
+            }
          },
 
-         onKeyDown(evt){
+         onUndoClick(){
+            document.execCommand("undo")
+         },
+
+         onRedoClick(){
+            document.execCommand("redo")
+         },
+
+         onCloseClick(){
+            this.nvhStore.stopElementEditing()
+         },
+
+         onMarkupButtonClick(elementName){
+            let element = this.getElementUnderCaret()
+            if(element && element.classList.contains("markupNode")){
+               let sel = document.getSelection()
+               let saved = [ sel.focusNode, sel.focusOffset ]
+               element.outerHTML = element.innerHTML // remove markup tag
+               sel.collapse(saved[0], saved[1]);
+               this.state.elementUnderCaret = null
+            } else if(element.classList.contains("nvh-editable-div")) {
+               var sel = window.getSelection()
+               if (sel) {
+                 if(sel.rangeCount){
+                     if(!document.getSelection().toString().length){
+                        this.selectWordUnderCaret()
+                     }
+                     if(sel.toString().trim()){
+                        const span = window.stringToElement(this.getElementMarkupHTML(elementName))
+                        var range = sel.getRangeAt(0).cloneRange()
+                        range.surroundContents(span)
+                        sel.removeAllRanges()
+                        range.collapse()
+                        sel.addRange(range)
+                        this.state.elementUnderCaret = elementName
+                     }
+                  }
+               }
+            }
+            this.updateMarkupButtons()
+         },
+
+         onSelectionChange(evt){
+            if(this.state.selectionInComponent){
+               this.state.hasSelection = false
+               this.state.markupElementInSelection = false
+               if(document.getSelection().toString().length){
+                  this.state.hasSelection = true
+                  let range = document.getSelection().getRangeAt(0)
+                  this.state.markupElementInSelection = this.state.markupChildrenNames.some(elementName => {
+                     return $(".nvh-editable-div").find(`span[name="${elementName}"]`)
+                           .toArray()
+                           .some(node => range.intersectsNode(node))
+                     })
+                  this.onCaretPositionChange()
+               }
+               this.updateMarkupButtons()
+            }
+         },
+
+         onCaretPositionChange(){
+            let element = this.getElementUnderCaret()
+            this.state.elementUnderCaret = null
+            if(element && element.classList.contains("markupNode")){
+               this.state.elementUnderCaret = element.getAttribute("name")
+            }
+            this.updateMarkupButtons()
+         },
+
+         onSelectionStart(evt){
+            this.state.selectionInComponent = this.root.contains(evt.target)
+         },
+
+         onEditableDivKeyDown(evt){
             if(evt.keyCode == 13 && !evt.shiftKey){
                evt.preventDefault()
             }
+         },
+
+         onEditableDivKeyUp(evt){
+            this.onKeyUp(evt)
+            this.onCaretPositionChange()
+         },
+
+         onEditableDivClick(evt){
+            this.onCaretPositionChange()
+         },
+
+         onEditableDivInput(evt){
+            this.onCaretPositionChange()
+         },
+
+         onEditableDivFocus(evt){
+            this.state.focused = true
+            this.updateMarkupButtons()
+         },
+
+         onEditableDivBlur(evt){
+            this.state.focused = false
+            this.updateMarkupButtons()
          },
 
          onKeyUp(evt){
@@ -115,10 +211,6 @@
             }
          },
 
-         onBlur(evt){
-            this.changeValue()
-         },
-
          onSelectChange(evt){
             this.nvhStore.changeElementValue(this.props.element, evt.target.value)
             this.nvhStore.stopElementEditing()
@@ -126,6 +218,83 @@
 
          onBoolChange(evt){
             this.nvhStore.changeElementValue(this.props.element, evt.target.value)
+         },
+
+         getValueForEditor(){
+            let value = this.props.element.value.replace(/\\n/g, "<br>")
+            return this.nvhStore.replaceMarkupOccurrences(value, this.props.element, this.getElementMarkupHTML.bind(this))
+         },
+
+         getMarkupNumber(elementName){
+            return this.state.markupChildrenNames.lastIndexOf(elementName) + 1
+         },
+
+         getElementMarkupHTML(elementName, value=""){
+            return `<span name="${elementName}" class="markupNode" markup_number="${this.getMarkupNumber(elementName)}" style="--bullet-background-color:${this.nvhStore.getElementColor(elementName)}">${value}</span>`
+         },
+
+         getElementUnderCaret(){
+            let selection = window.getSelection()
+            if(selection.rangeCount){
+               let range = selection.getRangeAt(0)
+               let startContainer = range.startContainer
+               // If the startContainer is a text node, get its parent element
+               let element = startContainer.nodeType === Node.TEXT_NODE ? startContainer.parentElement : startContainer
+               // Check if the element is within the editable div
+               if ($(element).closest(".nvh-editable-div")) {
+                  return element
+               }
+            }
+            return null
+         },
+
+         selectWordUnderCaret(){
+            const selection = window.getSelection()
+            if (!selection.rangeCount) {
+               return null
+            }
+            const range = selection.getRangeAt(0)
+            const node = range.startContainer
+
+            if (node.nodeType !== Node.TEXT_NODE){
+               return null
+            }
+            const text = node.textContent;
+            const startOffset = range.startOffset
+
+            if(!text[startOffset].trim()){
+               return null
+            }
+            // Find word boundaries
+            let start = startOffset
+            let end = startOffset
+            while (start > 0 && !/\s/.test(text[start - 1])) {
+               start--
+            }
+            while (end < text.length && !/\s/.test(text[end])) {
+               end++
+            }
+            const wordRange = document.createRange();
+            wordRange.setStart(node, start)
+            wordRange.setEnd(node, end)
+
+            selection.removeAllRanges()
+            selection.addRange(wordRange)
+         },
+
+         handleClickOutside(evt){
+            if(!this.root.contains(evt.target)){
+               this.changeValue()
+            }
+         },
+
+         updateMarkupButtons(){
+            this.state.markupChildrenNames.forEach(markupElementName => {
+               $(`.btn[name="btn_${markupElementName}"]`, this.root)
+                     .toggleClass("selected", this.state.focused && this.state.elementUnderCaret == markupElementName)
+                     .toggleClass("disabled", this.state.elementUnderCaret != markupElementName
+                              && (this.state.markupElementInSelection || !!this.state.elementUnderCaret))
+            })
          },
 
          changeValue(){
@@ -139,11 +308,28 @@
 
          saveEditorValue(){
             let div = document.createElement("div")
-            div.innerHTML = this.state.editor.toMd().replaceAll("<br>", "\n")
+            div.innerHTML = $(".nvh-editable-div").html().replaceAll("<br>", "\\n")
             let value = div.textContent || div.innerText || ""
-            this.state.editor.destroy()
+            this.updateMarkupChildren()
             this.nvhStore.changeElementValue(this.props.element, value.trim())
             this.nvhStore.stopElementEditing()
+         },
+
+         updateMarkupChildren(){
+            this.state.markupChildrenNames.forEach(elementName => {
+               this.props.element.children = this.props.element.children.filter(child => child.name != elementName)
+               const markupElements = $(".nvh-editable-div").find(`span[name="${elementName}"]`)
+               markupElements.each((idx, el) => {
+                  let markupValue = el.textContent
+                  let preceedingText = window.getElementPreceedingText(el)
+                  let childElement = this.nvhStore._addChildElement(this.props.element, elementName)
+                  childElement.value = markupValue
+                  preceedingValueCount = Array.from(preceedingText.matchAll(window.reEscape(markupValue))).length
+                  if(preceedingValueCount){
+                     childElement.value += `#${preceedingValueCount + 1}`
+                  }
+               })
+            })
          },
 
          initFormSelect(){
@@ -188,15 +374,69 @@
             }
          }
       }
+      .markupBtn.btn{
+         transition: none;
+         height: 20px;
+         line-height: 20px;
+         margin: 5px 4px 0;
+         border-radius: 2px;
+         padding: 0px 5px;
+         text-transform: none;
+         font-size: 0.8em;
+         background-color: #343434;
+         &:hover{
+            background-color: var(--background-color);
+         }
+         &.selected{
+            background-color: var(--background-color);
+         }
+      }
       .nvh-text-value{
          border: 1px solid grey;
          display: block;
          background-color: #fff;
          position: relative;
+         /* reset possible element styles */
+         font-size: 1rem;
+         font-weight: normal;
+         font-style: normal;
          .nvh-editable-div{
             padding: 5px 8px 25px;
             min-height: 50px;
             outline: none;
+            b {
+               font-weight: normal;
+            }
+            i {
+               font-style: normal;
+            }
+            u {
+               text-decoration: none;
+            }
+            img {
+               display: none;
+            }
+            .markupNode{
+               position: relative;
+               padding-right: 15px;
+               margin-right: 3px;
+               border-bottom: 1px solid var(--bullet-background-color);
+               &::after{
+                  content: attr(markup_number);
+                  position: absolute;
+                  right: 0px;
+                  top: 3px;
+                  display: inline-block;
+                  background-color: var(--bullet-background-color);
+                  color: #fff;
+                  border-radius: 50%;
+                  height: 14px;
+                  width: 14px;
+                  text-align: center;
+                  line-height: 14px;
+                  font-size: 12px;
+               }
+            }
          }
          .nvh-save-note{
             position: absolute;
@@ -204,23 +444,13 @@
             bottom: 0px;
          }
          .nvh-toolbar{
+            display: flex;
             background-color: whitesmoke;
             border-bottom: #d9d9d8;
             position: sticky;
             width: 100%;
             top: 0;
             z-index: 999;
-            .pen-menu{
-               display: flex!important;
-               position: static;
-               border-radius: 0;
-               background-color: unset;
-               background: none;
-               border: none;
-               box-shadow: none;
-               height: 30px;
-               opacity: 1;
-            }
             i{
                color: grey;
                cursor: pointer;
@@ -241,9 +471,6 @@
                &.disabled{
                   pointer-events: none;
                   opacity: 0.3
-               }
-               &.icon-save{
-                  border-right: 1px solid #d9d9d8;
                }
                &.icon-close{
                   margin-left: auto;
