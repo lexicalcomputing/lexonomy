@@ -38,6 +38,18 @@
          </div>
       </div>
       <div class="row">
+         <div class="input-field"
+               style="width:300px">
+            <select id="ident_direction"
+                  onchange={onDirectionChange}>
+               <option each={option in directionOptions}
+                     value="{option[0]}"
+                     selected={option[0] == state.data.direction}>{option[1]}</option>
+            </select>
+            <label for="headwordSorting">Text direction</label>
+         </div>
+      </div>
+      <div class="row">
          <div class="input-field">
             <input value={ state.data.handle }
                   placeholder="URL"
@@ -59,6 +71,13 @@
             data: {}
          },
 
+         onBeforeMount(){
+            this.directionOptions = [
+               ["ltr", "left to right"],
+               ["rtl", "right to left"]
+            ]
+         },
+
          onMounted() {
             $("#ident_lang").autocomplete({
                data: this.store.data.siteconfig.langs.map(lang => {
@@ -71,12 +90,14 @@
             this.store.loadDictionaryConfig("ident")
                   .done(response => {
                      this.state.data = response.content
+                     this.state.data.direction = this.state.data.direction || "ltr"
                      if(this.state.data.lang){
                         $("#ident_lang").val(this.store.getLanguageName(this.state.data.lang))
                      }
                   })
                   .always(() => {
                      this.update({isLoading: false})
+                     window.initFormSelects(this.root)
                      M.updateTextFields()
                      M.textareaAutoResize($("#ident_blurb"))
                   })
@@ -88,6 +109,7 @@
                title: $("#ident_title").val(),
                blurb: $("#ident_blurb").val(),
                lang: this.store.getLanguageCode($("#ident_lang").val()),
+               direction: $("#ident_direction").val(),
                handle: $("#ident_handle").val()
             })
                   .done(this.store.loadDictionaryList.bind(this.store))
