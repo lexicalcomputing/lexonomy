@@ -91,10 +91,6 @@
                $(this.root).addClass("focused")
                $("dict-edit").removeClass("focused")
             }
-            if (!evt.nvhStartEditing && !this.root.contains(evt.target)){
-               this.nvhStore.blurElement()
-               this.nvhStore.trigger("closeContextMenu")
-            }
          },
 
          onKeyDown(evt){
