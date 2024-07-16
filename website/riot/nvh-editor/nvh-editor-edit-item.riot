@@ -35,7 +35,7 @@
                style={props.element.collapsed ? 'display: none;' : ''}>
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper"
-                  onclick={!props.readOnly && onEditClick}>
+                  onmousedown={!props.readOnly && onValueMouseDown}>
                <span class="nvh-readonly-value pointer">
                   <raw-html content={getReadOnlyValue()}/>
                </span>
@@ -130,14 +130,15 @@
          },
 
          onCollapseToggleClick(evt){
-            //evt.stopPropagation()
             this.nvhStore.toggleElementCollapsed(this.props.element)
          },
 
-         onEditClick(evt){
-            //evt.stopPropagation()
-            evt.nvhStartEditing = true
-            this.nvhStore.startElementEditing(this.props.element)
+         onValueMouseDown(evt){
+            // timeout used in case the user edited the markup of an element and editing
+            //  another element would cause the markup not to be saved
+            setTimeout(() => {
+               this.nvhStore.startElementEditing(this.props.element)
+            }, 0)
          },
 
          getReadOnlyValue(){

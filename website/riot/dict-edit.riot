@@ -78,7 +78,7 @@
 
          onMounted(){
             document.addEventListener('keydown', this.onDocumentKeyDown)
-            document.addEventListener('mousedown', this.onDocumentMouseDown)
+            document.addEventListener('mouseup', this.onDocumentMouseUp)
             window.addEventListener('resize', this.onResizeDebounced)
             this.refreshEntryListMenu()
             setTimeout(() => {$(".sidenav-trigger").removeClass("pulse")}, 3000)
@@ -92,7 +92,7 @@
 
          onBeforeUnmount(){
             document.removeEventListener('keydown', this.onDocumentKeyDown)
-            document.removeEventListener('mousedown', this.onDocumentMouseDown)
+            document.removeEventListener('mousedown', this.onDocumentMouseUp)
             window.removeEventListener('resize', this.onResizeDebounced)
          },
 
@@ -124,7 +124,7 @@
             $("#dictEditContainer", this.root).toggleClass("hideSideMenu")
          },
 
-         onDocumentMouseDown(evt){
+         onDocumentMouseUp(evt){
             let entryList = $("entry-list")
             let entryEditor = $("nvh-editor")
             if(entryList[0] && entryList[0].contains(evt.target)){

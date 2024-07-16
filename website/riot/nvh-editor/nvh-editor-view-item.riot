@@ -19,7 +19,7 @@
                      url={props.element.value}/>
                <span if={["string", "int", "bool", "list"].includes(state.config.type)}
                      class="nvh-readonly-value pointer"
-                     onclick={!props.readOnly && onEditClick}>
+                     onmousedown={!props.readOnly && onValueMouseDown}>
                   <raw-html content={getReadOnlyValue()}/>
                   <i if={!props.readOnly && state.config.type}
                         class="nvh-edit-icon material-icons tiny">edit</i>
@@ -86,8 +86,7 @@
             }
          },
 
-         onEditClick(evt){
-            evt.nvhStartEditing = true
+         onValueMouseDown(evt){
             this.nvhStore.startElementEditing(this.props.element)
             evt.stopPropagation()
          },

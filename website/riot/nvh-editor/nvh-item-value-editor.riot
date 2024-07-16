@@ -86,15 +86,18 @@
             }
             this.focusInput()
             if(this.state.showEditor){
-               document.addEventListener("click", this.handleClickOutside)
-               document.addEventListener("selectionchange", this.onSelectionChange)
-               document.addEventListener("selectstart", this.onSelectionStart)
+               setTimeout(() => {
+                  // timeout, so that clicking to open this editor does not cause it to close
+                  document.addEventListener("mousedown", this.handleMouseDownOutside)
+                  document.addEventListener("selectionchange", this.onSelectionChange)
+                  document.addEventListener("selectstart", this.onSelectionStart)
+               }, 0)
             }
          },
 
          onBeforeUnmount(){
             if(this.state.showEditor){
-               document.removeEventListener("click", this.handleClickOutside)
+               document.removeEventListener("mousedown", this.handleMouseDownOutside)
                document.removeEventListener("selectionchange", this.onSelectionChange)
                document.removeEventListener("selectstart", this.onSelectionStart)
             }
@@ -114,6 +117,7 @@
 
          onMarkupButtonClick(elementName){
             let element = this.getElementUnderCaret()
+            //TODO return caret to the same position after marking a word
             if(element && element.classList.contains("markupNode")){
                let sel = document.getSelection()
                let saved = [ sel.focusNode, sel.focusOffset ]
@@ -213,7 +217,6 @@
 
          onSelectChange(evt){
             this.nvhStore.changeElementValue(this.props.element, evt.target.value)
-            this.nvhStore.stopElementEditing()
          },
 
          onBoolChange(evt){
@@ -259,10 +262,10 @@
             if (node.nodeType !== Node.TEXT_NODE){
                return null
             }
-            const text = node.textContent;
+            const text = node.textContent
             const startOffset = range.startOffset
 
-            if(!text[startOffset].trim()){
+            if(!(text[startOffset] || "").trim()){
                return null
             }
             // Find word boundaries
@@ -274,7 +277,7 @@
             while (end < text.length && !/[\s\.,\?!:;—\-\(\)\[\]\{\}"']/.test(text[end])) {
                end++
             }
-            const wordRange = document.createRange();
+            const wordRange = document.createRange()
             wordRange.setStart(node, start)
             wordRange.setEnd(node, end)
 
@@ -282,7 +285,7 @@
             selection.addRange(wordRange)
          },
 
-         handleClickOutside(evt){
+         handleMouseDownOutside(evt){
             if(!this.root.contains(evt.target)){
                this.changeValue()
             }
@@ -299,20 +302,18 @@
 
          changeValue(){
             if(this.state.showEditor){
-               this.saveEditorValue()
+               let div = document.createElement("div")
+               div.innerHTML = $(".nvh-editable-div").html().replaceAll("<br>", "\\n")
+               let value = div.textContent || div.innerText || ""
+               this.updateMarkupChildren()
+               this.nvhStore.validateAllElements()
+               this.nvhStore.changeElementValue(this.props.element, value.trim())
             } else{
                this.nvhStore.changeElementValue(this.props.element, $(".nvh-select, .nvh-input").first().val().trim())
+            }
+            if(this.nvhStore.findElements(e => e.edit).includes(this.props.element)){
                this.nvhStore.stopElementEditing()
             }
-         },
-
-         saveEditorValue(){
-            let div = document.createElement("div")
-            div.innerHTML = $(".nvh-editable-div").html().replaceAll("<br>", "\\n")
-            let value = div.textContent || div.innerText || ""
-            this.updateMarkupChildren()
-            this.nvhStore.changeElementValue(this.props.element, value.trim())
-            this.nvhStore.stopElementEditing()
          },
 
          updateMarkupChildren(){
@@ -459,6 +460,7 @@
          }
          .nvh-toolbar{
             display: flex;
+            direction: ltr;
             background-color: whitesmoke;
             border-bottom: #d9d9d8;
             position: sticky;
