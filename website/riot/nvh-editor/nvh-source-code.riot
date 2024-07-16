@@ -110,7 +110,7 @@
             if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
                if(this.nvhStore.getAvailableActions().save){
                   this.validate()
-                  this.nvhData.isValid && this.nvhStore.saveEntry()
+                  this.nvhData.elementsMatchStructure && this.nvhStore.saveEntry()
                }
             } else if((evt.keyCode == 13 && this.state.suggestions.length)  //enter
                   || (evt.keyCode == 9 && this.state.autocompleteText)){ //tab
@@ -328,7 +328,7 @@
                })
             } catch (e){
                this.nvhData.entry.warnings = ["Syntax error"]
-               this.nvhData.isValid = false
+               this.nvhData.elementsMatchStructure = false
                this.nvhStore.trigger("isValidChanged")
                let lineNum = e.match(/on line (\d+):/)[1]
                this.state.warnings[lineNum] = e.replace(/ on line (\d+)/, "")
