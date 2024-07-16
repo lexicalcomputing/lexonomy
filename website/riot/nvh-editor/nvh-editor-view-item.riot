@@ -37,7 +37,7 @@
                class="nvh-children">
             <template each={(child, idx) in props.element.children}
                   key={child.id}
-                  if={!nvhStore.isServiceElement(child.name) && nvhStore.getElementConfig(child.name).type != "markup"}>
+                  if={isChildElementVisible(child)}>
                <nvh-editor-view-item element={child}
                      read-only={props.readOnly}/>
                <nvh-dnd-zone if={isElementDisplayed(child.name)}
@@ -89,6 +89,12 @@
          onValueMouseDown(evt){
             this.nvhStore.startElementEditing(this.props.element)
             evt.stopPropagation()
+         },
+
+         isChildElementVisible(childElement){
+            let config = this.nvhStore.getElementConfig(childElement.name)
+            return !this.nvhStore.isServiceElement(childElement.name)
+               && (!config || config.type != "markup")
          },
 
          isElementDisplayed(elementName){

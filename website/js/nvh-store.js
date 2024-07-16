@@ -613,7 +613,8 @@ class NVHStoreClass {
             this.data.formatting.elements[elementName][option] = value
          }
          let elements = this.findElements(e => e.name == elementName)
-         if(this.getElementConfig(elementName).type == "markup"){
+         let config = this.getElementConfig(elementName)
+         if(config && config.type == "markup"){
             elements = elements.map(e => {
                // markup element style changed - parent element must be updated
                return [e, ...this.getAvailableParentElements(e.name)]
@@ -1263,8 +1264,9 @@ class NVHStoreClass {
    replaceMarkupOccurrences(value, element, createReplaceString) {
       let replaceList = []
       element.children.filter(child => {
+         let config = this.getElementConfig(child.name)
          return !this.isServiceElement(child.name)
-               && this.getElementConfig(child.name).type == "markup"
+               && config && config.type == "markup"
       })
             .forEach(child => {
                let tmp = child.value.split("#")
