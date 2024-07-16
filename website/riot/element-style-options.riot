@@ -124,6 +124,19 @@
                      style="background-color: #757575;"></span>
             </span>
          </div>
+         <div if={state.availableOptions.includes("direction")}
+               class="nvh-option">
+            <span class="nvh-label">
+               Text direction
+            </span>
+            <span class="nvh-values">
+               <select onchange={onSelectOptionChangeClick.bind(this, "direction")}>
+                     <option each={option in directionOptions}
+                           value="{option[0]}"
+                           selected={option[0] == state.style.direction}>{option[1]}</option>
+               </select>
+            </span>
+         </div>
          <div if={state.availableOptions.includes("border")}
                class="nvh-option">
             <span class="nvh-label">
@@ -301,6 +314,11 @@
                ["sensenum3", "Sense number i, ii, iii..."],
                ["sensenum0", "Sense number I, II, III..."]
             ]
+            this.directionOptions = [
+               ["default", "default"],
+               ["ltr", "left to right"],
+               ["rtl", "right to left"]
+            ]
 
             this.state.style = this.nvhStore.getElementStyle(this.props.elementName) || {},
             this.state.availableOptions = this.getAvailableOptions(this.props.elementName)
@@ -374,7 +392,7 @@
                   }
                   options.push(...["layout", "separation", "gutter", "border", "borderRadius", "background", "outerPunc", "label"])
                   if(["string", "int", "bool", "list"].includes(config.type)){
-                  options.push(...["colour", "slant", "weight", "textsize", "innerPunc"])
+                     options.push(...["colour", "slant", "weight", "textsize", "direction","innerPunc"])
                   }
                }
                return options

@@ -108,7 +108,7 @@
             }
             value = this.nvhStore.replaceMarkupOccurrences(value, this.props.element, (markupElementName, find) => {
                let style = this.nvhStore.getElementStyle(markupElementName) || {}
-               let styleClasses = this.getStyleClasses(["colour", "slant", "textsize", "weight", "direction", "border", "borderRadius", "background"], style)
+               let styleClasses = this.getStyleClasses(["colour", "slant", "textsize", "weight", "border", "borderRadius", "background"], style)
                return`<span class="${styleClasses}">${find}</span>`
             })
             return value
@@ -165,7 +165,12 @@
          },
 
          getInnerWrapperStyleClasses(){
-            return this.getStyleClasses(["colour", "slant", "textsize", "weight"])
+            let direction = this.state.style.direction
+            if(!direction || direction == "default"){
+               direction = this.store.data.config.ident.direction
+            }
+            let style = Object.assign({}, this.state.style, {direction: direction || "ltr"})
+            return this.getStyleClasses(["colour", "slant", "textsize", "weight", "direction"], style)
          },
 
          getStyleClasses(keys, style){
@@ -332,6 +337,12 @@
       }
       .nvh_s_colour_grey{
          color: #757575;
+      }
+      .nvh_s_direction_ltr{
+         direction: ltr;
+      }
+      .nvh_s_direction_rtl{
+         direction: rtl;
       }
       .nvh_s_gutter_indent{
          margin-left: 20px;
