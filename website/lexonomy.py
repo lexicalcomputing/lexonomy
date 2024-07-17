@@ -162,10 +162,12 @@ def lexonomyconfig():
         "ske_url": siteconfig['ske_url'],
         "api_url": siteconfig['api_url'],
         "langs": ops.get_iso639_1(),
-        "version": version
+        "version": version,
+        "customStyle": siteconfig.get("customStyle"),
+        "disableRegistration": siteconfig.get("disableRegistration", False),
+        "sketchengineLoginPage": siteconfig.get("sketchengineLoginPage"),
+        "notification": siteconfig.get("notification")
     }
-    if 'sketchengineLoginPage' in siteconfig:
-        configData['sketchengineLoginPage'] = siteconfig['sketchengineLoginPage']
     if "consent" in siteconfig and siteconfig["consent"].get("terms") != "":
         configData["consent"] = siteconfig["consent"]
     return configData
