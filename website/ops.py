@@ -258,7 +258,7 @@ def readEntry(db, configs, entryID):
     c = db.execute("select * from entries where id=?", (entryID,))
     row = c.fetchone()
     if not row:
-        return 0, "", ""
+        return 0, "", "", ""
     nvh = row["nvh"]
     if row["json"] != "":
         json = row["json"]
