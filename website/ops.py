@@ -1599,15 +1599,6 @@ def makeStage(project_id, stage, user_email):
     # ==================
     # Add new dict to project
     # ==================
-    result_total_entries = 0
-    for s in project_info['workflow']:
-        if s['stage'] == stage:
-            for did in [x['dictID'] for x in s['batches'] if x['status'] == 'accept'] + [x['dictID'] for x in s['inputDicts']]:
-                b_db = getDB(did)
-                c = b_db.execute('SELECT COUNT(*) as total FROM entries')
-                r = c.fetchone()
-                result_total_entries += r['total']
-
     main_db.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage, created) VALUES (?,?,?,?,?)",
                     (project_id, dict_id, os.path.join(workflow_dir, stage + '.nvh'), f'{stage}_stage', datetime.datetime.utcnow()))
     main_db.commit()
