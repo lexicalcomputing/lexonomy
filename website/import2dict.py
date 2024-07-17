@@ -229,9 +229,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             c0 = db.execute("SELECT json FROM configs WHERE id=?", ("structure",))
             r0 = c0.fetchone()
             if r0:
-                log_warning(json.dumps(structure))
-                log_warning(r0['json'])
-
                 if json.dumps(structure) != r0['json']:
                     log_warning('Old structure is not compatible with new data. Use "Purge All" option')
 
@@ -331,11 +328,13 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
         c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
         r2 = c2.fetchone()
-        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + entries_inserted, 'entry_count'))
+        if r2:
+            db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + entries_inserted, 'entry_count'))
 
         c3 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
         r3 = c3.fetchone()
-        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + completed_entries, 'completed_entries'))
+        if r3:
+            db.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + completed_entries, 'completed_entries'))
 
         if config_data:
             for key, value in config_data.items():
@@ -344,6 +343,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         db.commit()
     except Exception as e:
         log_err(f"Import crashed on: {e}")
+        db.close()
 
     log_end("IMPORT")
 
