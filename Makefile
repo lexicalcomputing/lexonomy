@@ -15,7 +15,7 @@ build: website/bundle.js website/version.txt
 website/bundle.js: $(SOURCE_RIOT)
 	make -C website
 
-install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
+install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
 
