@@ -166,7 +166,8 @@ def lexonomyconfig():
         "customStyle": siteconfig.get("customStyle"),
         "disableRegistration": siteconfig.get("disableRegistration", False),
         "sketchengineLoginPage": siteconfig.get("sketchengineLoginPage"),
-        "notification": siteconfig.get("notification")
+        "notification": siteconfig.get("notification"),
+        "homepage": siteconfig.get("homepage")
     }
     if "consent" in siteconfig and siteconfig["consent"].get("terms") != "":
         configData["consent"] = siteconfig["consent"]
