@@ -58,6 +58,10 @@ make
 in the top-level directory. It produces `bundle.js` which contains a complete frontend for Lexonomy.
 
 # Backend configuration
+- After changing settings in siteconfig.json you need to force WSGI to reload it with touch command:
+```sh
+touch siteconfig.json
+```
 
 ## Base URL
 
