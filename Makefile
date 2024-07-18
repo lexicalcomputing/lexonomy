@@ -29,6 +29,21 @@ deploy:
 		cp website/config.js.template $(DEPLOYDIR)/website/config.js; \
 	fi
 
+	if [ -n "$(CUSTOMIZATION)" ]; then \
+		rm -rf $(DEPLOYDIR)/website/customization; \
+		if [ "$(CUSTOMIZATION)" = "*" ]; then \
+			cp -R customization $(DEPLOYDIR)/website/customization; \
+		else \
+			if [ -d customization/$(CUSTOMIZATION) ]; then \
+				mkdir -p $(DEPLOYDIR)/website/customization/$(CUSTOMIZATION); \
+				cp -R customization/$(CUSTOMIZATION) $(DEPLOYDIR)/website/customization/; \
+			else \
+				echo "Source customization folder not found at customization/$(CUSTOMIZATION)"; \
+			fi; \
+		fi; \
+	fi
+
+
 	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
 	chmod -R g+rwX $(DEPLOYDIR)/data
