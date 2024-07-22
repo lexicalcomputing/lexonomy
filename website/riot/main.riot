@@ -31,8 +31,14 @@
                xhrFields: { withCredentials: true }
             })
             route.parser(undefined, this.routeParser)
-            this.auth.checkAuthCookie()
-            this.store.loadSiteconfig().always(this.onSiteConfigLoaded)
+            let authPromise = this.auth.checkAuthCookie()
+            let siteConfigPromise = this.store.loadSiteconfig().always(this.onSiteConfigLoaded)
+            Promise.all([authPromise, siteConfigPromise]).then(() => {
+               // session is loaded -> router is initialized
+               if(["", "/"].includes(route._.getPathFromBase()) && this.dictData.siteconfig.homepage){
+                  window.location.href = this.dictData.siteconfig.homepage
+               }
+            })
             this.connection = window.connection
             let appUpdater = new window.AppUpdaterClass({
                url: window.window.API_URL + 'version.txt',
@@ -150,9 +156,6 @@
             this.checkConsentAndShowConsentDialog()
             if(this.dictData.siteconfig.customStyle){
                $("head").append(`<link rel="stylesheet" type="text/css" href="${this.dictData.siteconfig.customStyle}">`)
-            }
-            if(["", "/"].includes(route._.getPathFromBase()) && this.dictData.siteconfig.homepage){
-               window.location.href = this.dictData.siteconfig.homepage
             }
             $("#appOverlay").fadeOut().find(".appSpinner").hide()
          },
