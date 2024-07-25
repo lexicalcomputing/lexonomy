@@ -110,7 +110,7 @@
       </li>
       <li>
          <a href="#/"
-               onclick={doLogout}>
+               onclick={onLogoutClick}>
             <i class="material-icons left">exit_to_app</i>
             Log out
          </a>
@@ -119,7 +119,7 @@
 
    <nav class="white">
       <div class="nav-wrapper">
-         <a href="#"
+         <a href={logoLinkUrl}
                class="brand-logo">
             <img class="site-logo" src="img/logo_200.png"/>
          </a>
@@ -267,14 +267,37 @@
          <li>
             <a href="#/"
                   class="sidenav-close"
-                  onclick={doLogout}>Log out</a>
+                  onclick={onLogoutClick}>Log out</a>
          </li>
       </template>
    </ul>
 
    <script>
       export default {
-         doLogout(event) {
+         bindings: [["store", "siteconfigChanged", "onSiteConfigLoaded"]],
+
+         onBeforeMount(){
+            this.logoLinkUrl = this.dictData.siteconfig && this.dictData.siteconfig.homepage ? this.dictData.siteconfig.homepage : "#"
+         },
+
+         onMounted(){
+            $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
+            $("#nav-mobile").sidenav()
+         },
+
+         onUpdated() {
+            $(".dropdown-trigger").each((idx, el) => {
+               $el = $(el)
+               $el[0].M_Dropdown && $el[0].M_Dropdown.destroy()
+               $el.dropdown({coverTrigger: false, constrainWidth: false})
+            })
+         },
+
+         onSiteConfigLoaded(){
+            this.logoLinkUrl = this.dictData.siteconfig.homepage || "#"
+         },
+
+         onLogoutClick(event) {
             if(!window.nvhStore.editorNeedsSaving(event)){
                this.auth.logout()
             }
@@ -294,19 +317,6 @@
                tag: "feedback-dialog",
                showCloseButton: false
             })
-         },
-
-         onUpdated() {
-            $(".dropdown-trigger").each((idx, el) => {
-               $el = $(el)
-               $el[0].M_Dropdown && $el[0].M_Dropdown.destroy()
-               $el.dropdown({coverTrigger: false, constrainWidth: false})
-            })
-         },
-
-         onMounted(){
-            $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
-            $("#nav-mobile").sidenav()
          }
       }
    </script>
