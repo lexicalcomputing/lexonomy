@@ -1,5 +1,5 @@
 <nvh-editor-edit-item id="nvh-item-{props.element.id}"
-      class="nvh-editor-item {state.style.layout == 'inline' ? 'nvh-inline' : 'nvh-block'} {props.readOnly ? 'nvh-read-only' : ''} {!props.readOnly || props.allowDnd ? 'nvh-allow-dnd' : ''}"
+      class="nvh-editor-item nvh-editor-el-{window.idEscape(props.element.name)} {state.style.layout == 'inline' ? 'nvh-inline' : 'nvh-block'} {props.readOnly ? 'nvh-read-only' : ''} {!props.readOnly || props.allowDnd ? 'nvh-allow-dnd' : ''}"
       draggable="true"
       ondragstart={onDragStart}
       ondragend={onDragEnd}
