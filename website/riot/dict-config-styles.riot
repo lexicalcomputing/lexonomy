@@ -7,7 +7,12 @@
    <div class="cssCode input-field mb-12">
       <label for="editor_css">CSS</label>
       <pre id="editor_css"
-            class="codeEditor language-css"></pre>
+            class="codeEditor language-css"
+            onkeydown={onKeyDown}></pre>
+      <div id="codeStatus"
+            class="displayFlex">
+         <small class="ml-auto grey-text">Ctrl+s or ⌘+s to save</small>
+      </div>
    </div>
 
    <dict-config-buttons save-data={save}/>
@@ -32,6 +37,13 @@
          onCustomCssUpdate(){
             this.state.customCss = this.codeEditorCSS.toString()
             this.refreshCustomStyles()
+         },
+
+         onKeyDown(evt){
+            if(evt.keyCode == 83 && (evt.ctrlKey || evt.metaKey)){
+               evt.preventDefault()
+               this.save()
+            }
          },
 
          refreshCustomStyles(){
@@ -61,9 +73,16 @@
       }
    </script>
 
-   <style type="scss">
-      .cssCode{
-         max-width: 550px;
+   <style>
+      #codeStatus{
+         position: sticky;
+         bottom: 0px;
+         right: 1px;
+         left: 1px;
+         background-color: #dfdfdf;
+         padding: 3px 8px;
+         margin-bottom: 5px;
+         align-items: center;
       }
    </style>
 </dict-config-styles>
