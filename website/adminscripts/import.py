@@ -1,172 +1,66 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.10
 
 import os
-import os.path
-import sqlite3
 import sys
-import datetime
 import json
-import xml.sax
-import re
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import ops
+import import2dict
 
-if len(sys.argv) < 3:
-    print("Usage: ./import.py [-p] PATH_TO_DICTIONARY.sqlite FILE_TO_IMPORT.xml [AUTHOR_EMAIL]")
-    print("       -p   purge dictionary before importing but keep backup in history")
-    print("       -pp  like -p but do not keep purged content in history and purge any existing history as well")
-    sys.exit()
+current_dir = os.path.dirname(os.path.realpath(__file__))
 
-print("PID "+ str(os.getpid()))
-print("Import started. You may close the window, import will run in the background. Please wait...")
-args = sys.argv[1:]
-purge = False
-purge_history = False
-if args[0] == "-p":
-    purge = True
-    args.pop(0)
-elif args[0] == "-pp":
-    purge = True
-    purge_history = True
-    args.pop(0)
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Import NVH/XML to dictionary with init and config')
+    parser.add_argument('filename', type=str,
+                        help='import file name')
+    parser.add_argument('email', type=str,
+                        default='IMPORT@LEXONOMY', help='user email')
+    parser.add_argument('main_node_name', type=str,
+                        help='Name of the mani node of the entry (headword, entry, ...)')
+    parser.add_argument('title', type=str,
+                        help='Dictionary title')
+    parser.add_argument('dict_id', type=str,
+                        help='Dictionary ID')
+    parser.add_argument('lang', type=str,
+                        help='language')
+    parser.add_argument('--config', type=str,
+                        required=False, default='',
+                        help='Dictionary config in JSON format')
+    parser.add_argument('-p', '--purge', action='store_true',
+                        required=False, default=False,
+                        help='Backup and purge dictionary history')
+    parser.add_argument('-pp', '--purge_all', action='store_true',
+                        required=False, default=False,
+                        help='Purge dictionary with history and all configs without backup')
+    parser.add_argument('-d', '--deduplicate', action='store_true',
+                        required=False, default=False,
+                        help='Deduplicate nodes with same name and value on the same level')
+    parser.add_argument('-c', '--clean', action='store_true',
+                        required=False, default=False,
+                        help='Renaming node names that appear under different parents')
 
+    args = parser.parse_args()
 
-dbname = args[0]
-filename = args[1]
-email = args[2] if len(args)>2 else "IMPORT@LEXONOMY"
-dictID = os.path.basename(dbname).replace(".sqlite", "")
-db = sqlite3.connect(dbname)
-db.row_factory = sqlite3.Row
-historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(filename)}
+    config_json = None
+    if args.config:
+        with open(args.config) as f:
+            config_json = json.load(f)
 
-# Update tables for old dictionaries
-c = db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='linkables'")
-if not c.fetchone():
-    db.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
-    db.execute("CREATE INDEX link ON linkables (txt)")
+    siteconfig = json.load(open(os.path.join(current_dir, "..", "siteconfig.json"), encoding="utf-8"))
 
+    if os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts/" + args.dict_id) + ".sqlite"):
+        sys.stderr.write(f'ERROR: DictID {args.dict_id} already exists\n')
+        sys.exit()
 
-if purge:
-    if purge_history:
-        print("Purging history...")
-        db.execute("delete from history")
-    else:
-        print("Copying all entries to history...")
-        db.execute("insert into history(entry_id, action, [when], email, xml, historiography) select id, 'purge', ?, ?, xml, ? from entries", (str(datetime.datetime.utcnow()), email, json.dumps(historiography)))
-    print("Purging entries...")
-    db.execute("delete from entries")
-    db.execute("delete from linkables")
-    db.execute("delete from searchables")
-    db.commit()
-    print("Compressing database...")
-    db.execute("vacuum")
-    db.commit()
+    dictDB = ops.initDict(args.dict_id, args.title, args.lang, "", args.email)
+    dict_config = {"limits": {"entries": 10000000000}}
+    ops.attachDict(dictDB, args.dict_id, {}, dict_config)
+    dictDB.close()
+    import2dict.import_data(f'{siteconfig["dataDir"]}/dicts/{args.dict_id}.sqlite', args.filename, args.email, args.main_node_name, 
+                            args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)
 
-# first pass -- check what is entry and how many entries we have
-rootTag = ''
-entryTag = ''
-entryCount = 0
-
-class handlerFirst(xml.sax.ContentHandler):
-    def startElement( self, name, attrs):
-        global rootTag
-        global entryTag
-        if rootTag == "":
-            rootTag = name
-        elif entryTag == "":
-            entryTag = name
-        else:
-            pass
-    def endElement( self, name):
-        global entryCount
-        global entryTag
-        if name == entryTag:
-            entryCount += 1
-
-xmldata = open(filename, 'rb').read().decode('utf-8-sig')
-xmldata = re.sub(r'<\?xml[^?]*\?>', '', xmldata)
-xmldata = re.sub(r'<!DOCTYPE[^>]*>', '', xmldata)
-try:
-    saxParser = xml.sax.parseString("<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata, handlerFirst())
-    xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata
-except xml.sax._exceptions.SAXParseException as e:
-    if "junk after document element" in str(e):
-        xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n<fakeroot>"+xmldata+"</fakeroot>"
-        rootTag = ""
-        entryTag = ""
-        entryCount = 0
-        saxParser = xml.sax.parseString(xmldata, handlerFirst())
-    else:
-        if entryTag == "":
-            print("Not possible to detect element name for entry, please fix errors:")
-            print(e, file=sys.stderr)
-            sys.exit()
-
-# second pass, we know what the entry is and can import that
-import re
-
-entryCount = len(re.findall('<'+entryTag+'[ >]', xmldata))
-entryInserted = 0
-configs = ops.readDictConfigs(db)
-dictStats = ops.getDictStats(db)
-limit = configs["limits"]["entries"] if configs.get("limits") and configs["limits"].get("entries") else 5000
-maxImport = limit - dictStats["entryCount"]
-if maxImport < entryCount:
-    print("Detected %d entries in '%s' element, only %d will be imported" % (entryCount, entryTag, maxImport))
-else:
-    print("Detected %d entries in '%s' element" % (entryCount, entryTag))
-
-needs_refac = 1 if len(list(configs["subbing"].keys())) > 0 else 0
-needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
-
-re_entry = re.compile(r'<'+entryTag+'[^>]*>.*?</'+entryTag+'>', re.MULTILINE|re.DOTALL|re.UNICODE)
-limitReached = False
-for entry in re.findall(re_entry, xmldata):
-    if entryInserted >= maxImport:
-        limitReached = True
-        break
-    skip = False
-    try:
-        xml.sax.parseString(entry, xml.sax.handler.ContentHandler())
-    except xml.sax._exceptions.SAXParseException as e:
-        skip = True
-        print("Skipping entry, XML parsing error: " + str(e), file=sys.stderr)
-        print("Skipping entry, XML parsing error: " + str(e))
-        print("Entry with error: " + entry, file=sys.stderr)
-        entryInserted += 1
-    if not skip:
-        pat = r'^<[^>]*\s+lxnm:(sub)?entryID=[\'"]([0-9]+)["\']'
-        entryID = None
-        action = "create"
-        title = ops.getEntryTitle(entry, configs["titling"])
-        sortkey = ops.getSortTitle(entry, configs["titling"])
-        if re.match(pat, entry):
-            entryID = re.match(pat, entry).group(2)
-            c = db.execute("select id from entries where id=?", (entryID,))
-            if not c.fetchone():
-                sql = "insert into entries(id, xml, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) values(?, ?, ?, ?, ?, ?, ?, ?)"
-                params = (entryID, entry, needs_refac, needs_resave, 0, entryTag, title, sortkey)
-            else:
-                sql = "update entries set doctype=?, xml=?, needs_refac=?, needs_resave=?, needs_refresh=? , title=?, sortkey=? where id=?"
-                params = (entryTag, entry, needs_refac, needs_resave, 0, title, sortkey, entryID)
-                action = "update"
-        else:
-            sql = "insert into entries(xml, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) values(?, ?, ?, ?, ?, ?, ?)"
-            params = (entry, needs_refac, needs_resave, 0, entryTag, title, sortkey)
-        c = db.execute(sql, params)
-        if entryID == None:
-            entryID = c.lastrowid
-        db.execute("insert into history(entry_id, action, [when], email, xml, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, action, str(datetime.datetime.utcnow()), email, entry, json.dumps(historiography)))
-        db.execute("delete from searchables where entry_id=? and level=?", (entryID, 1))
-        searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
-        db.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, searchTitle, 1))
-        db.execute("insert into searchables(entry_id, txt, level) values(?, ?, ?)", (entryID, searchTitle.lower(), 1))
-        entryInserted += 1
-        if entryInserted % 100 == 0:
-            print("\r%.2d%% (%d/%d entries imported)" % ((entryInserted/entryCount*100), entryInserted, entryCount), end='')
-print("\r%.2d%% (%d/%d entries imported)" % ((entryInserted/entryCount*100), entryInserted, entryCount))
-if limitReached:
-    print("\r100%% (%d/%d entries imported). Entry limit was reached. To remove the limit, email inquiries@sketchengine.eu and give details of your dictionary project." % (entryInserted, entryCount))
-
-db.commit()
-
+    print(args.dict_id)
+if __name__ == '__main__':
+    main()

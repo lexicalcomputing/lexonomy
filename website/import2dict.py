@@ -338,7 +338,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
         if config_data:
             for key, value in config_data.items():
-                db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", (key, json.dumps(value)))
+                ops.updateDictConfig(db, dict_id, key, json.dumps(value))
+            curr_configs = ops.readDictConfigs(db)
+            ops.resave(db, dict_id, curr_configs)
 
         db.commit()
     except Exception as e:
