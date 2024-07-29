@@ -27,7 +27,7 @@ def main():
 
     conn = ops.getMainDB()
     r1 = conn.execute("SELECT dict_id, user_email FROM user_dict WHERE dict_id=? AND user_email=?", (args.dict_id, args.email.lower()))
-    if r1.fetchone:
+    if r1.fetchone():
         if can_read + can_write + can_config + can_download + can_upload == 0:
             conn.execute("DELETE FROM user_dict WHERE dict_id=? AND user_email=?", (args.dict_id, args.email.lower()))
         else:
