@@ -7,8 +7,11 @@
             <i class="material-icons">menu</i>
          </button>
       </span>
-      { dictData.title }
-      <span class="totalEntries">total {dictData.entryCount} entries</span>
+      <a href="#{dictData.dictId}"
+            class="dictionaryTitle">
+         {dictData.title}
+      </a>
+      <span class="totalEntries">total {window.Formatter.num(dictData.entryCount)} entries</span>
    </h1>
    <template if={dictData.isDictionaryLoaded}>
       <div if={ dictData.doctypes.length > 1 }
@@ -253,6 +256,9 @@
       }
       #dictEditContainer .sidenav{
          padding-bottom: 0;
+      }
+      .dictionaryTitle{
+         text-decoration: none;
       }
       .totalEntries{
          font-size: 0.85rem;

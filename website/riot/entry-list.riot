@@ -10,7 +10,7 @@
          <loading-overlay if={dictData.isEntryListLoading}/>
          <div if={dictData.entryCount > dictData.entryList.length}
                class="entriesCountInfo">
-            Showing {dictData.entryList.length} of {dictData.entryCount} entries.
+            Showing {window.Formatter.num(dictData.entryList.length)} of {window.Formatter.num(dictData.entryCount)} entries.
          </div>
          <div class="entry-list"
                onscroll={onEntryListScroll}>
