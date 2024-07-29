@@ -82,6 +82,17 @@ def sendmail(mailTo, mailSubject, mailText):
         server.quit()
 
 
+def sendFeedback(email_from, body_text):
+    site_url = siteconfig.get('baseUrl', 'None')
+    subject = "Lexonomy feedback from " + email_from
+    mail_to = "support@sketchengine.eu"
+    mail_text = body_text + "\n\nMAIL: " + email_from + "\n\nDomain: " + site_url
+    sendmail(mail_to, subject, mail_text)
+    mail_text_user = "Thank you for your feedback regarding Lexonomy. We will get back in touch as soon as possible. Here is the copy of your question:\n\n" + body_text
+    sendmail(email_from, subject, mail_text_user)
+    return True
+
+
 # config
 def readDictConfigs(dictDB):
     configs = {"siteconfig": siteconfig}

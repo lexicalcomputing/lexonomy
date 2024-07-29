@@ -172,6 +172,14 @@ def lexonomyconfig():
         configData["consent"] = siteconfig["consent"]
     return configData
 
+@post(siteconfig["rootPath"]+"feedback.json")
+def sendfeedback():
+    if request.forms.email != "" and request.forms.text != "":
+        ops.sendFeedback(request.forms.email, request.forms.text)
+        return {"success": True}
+    else:
+        return {"success": False, "error": "missing parameters"}
+
 @get(siteconfig["rootPath"] + "schemaitems.json") # OK
 def schemaitems():
     return {"items": ops.getSchemaItems()}
