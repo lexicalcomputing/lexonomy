@@ -76,7 +76,7 @@
                      <template if={ dict.lang }>{ dict.lang }</template>
                   </td-->
                   <td class="dict-size grey-text">
-                     { dict.size }
+                     {window.Formatter.num(dict.size)}
                   </td>
                   <td class="dict-actions">
                      <a if={ !dict.currentUserCanEdit }
