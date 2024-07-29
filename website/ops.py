@@ -78,7 +78,7 @@ def sendmail(mailTo, mailSubject, mailText):
         else:
             server = smtplib.SMTP(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"])
         message = "Subject: " + mailSubject + "\n\n" + mailText
-        server.sendmail(siteconfig["mailconfig"]["from"], mailTo, message)
+        server.sendmail(siteconfig["mailconfig"]["from"], mailTo, message.encode('utf-8'))
         server.quit()
 
 
