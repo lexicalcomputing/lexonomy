@@ -45,7 +45,7 @@
             this.update({isSaving: true})
             this.store.createUser($(".userEmail").val(), $("#manager").prop("checked"))
                   .done(() => {
-                     route("#/admin/users")
+                     route("/admin/users")
                   })
                   .fail(() => {
                      this.update({isSaving: false})

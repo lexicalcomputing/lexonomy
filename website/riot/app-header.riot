@@ -281,12 +281,12 @@
          },
 
          onMounted(){
-            $(".dropdown-trigger").dropdown({coverTrigger: false, constrainWidth: false})
+            $(".dropdown-trigger", this.root).dropdown({coverTrigger: false, constrainWidth: false})
             $("#nav-mobile").sidenav()
          },
 
          onUpdated() {
-            $(".dropdown-trigger").each((idx, el) => {
+            $(".dropdown-trigger", this.root).each((idx, el) => {
                $el = $(el)
                $el[0].M_Dropdown && $el[0].M_Dropdown.destroy()
                $el.dropdown({coverTrigger: false, constrainWidth: false})

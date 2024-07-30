@@ -116,6 +116,24 @@ class AuthClass {
          })
    }
 
+   setUserPassword(email, password){
+      return window.connection.post({
+         url: `${window.API_URL}users/userupdate.json`,
+         data: {
+            email: email,
+            password: password
+         }
+      })
+            .done(response => {
+               if(response.success){
+                  M.toast({html: "User password was set."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "User password could not be set."})
+            })
+   }
+
    resetPassword(token, password){
       return $.ajax({
             url: `${window.API_URL}recoverpwd.json`,
