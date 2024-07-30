@@ -975,23 +975,6 @@ class StoreClass {
             })
    }
 
-   resetUserPassword(email){
-      return window.connection.post({
-         url: `${window.API_URL}users/userupdate.json`,
-         data: {
-            email: email
-         }
-      })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "User password was reset."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "User password could not be reset."})
-            })
-   }
-
    loadUsers(searchtext, howmany){
       return window.connection.post({
          url: `${window.API_URL}users/userlist.json`,

@@ -48,18 +48,11 @@
                   {user.dictionaries.length}
                </td>
                <td class="user-actions">
-                  <div class="buttons">
-                     <a class="clickable tooltipped"
-                           data-tooltip="Reset password"
-                           onclick={onResetUserPasswordClick.bind(this, user.email)}>
-                        <i class="material-icons">vpn_key</i>
-                     </a>
-                     <a class="clickable tooltipped"
-                           data-tooltip="Delete user"
-                           onclick={onDeleteUserClick.bind(this, user.email)}>
-                        <i class="material-icons">delete</i>
-                     </a>
-                  </div>
+                  <a class="dropdown-trigger btn btn-floating btn-flat"
+                        href="#"
+                        onclick={onUserActionDropdownClick.bind(this, user.email)}>
+                     <i class="material-icons black-text">more_horiz</i>
+                  </a>
                </td>
             </tr>
             <tr class="dictionaryRow">
@@ -75,6 +68,27 @@
             </tr>
          </tbody>
       </table>
+      <ul id="userActionDropdown"
+            class="dropdown-content">
+         <li>
+            <a data-action="onResetUserPasswordClick">
+               <i class="material-icons">vpn_key</i>
+               Reset password
+            </a>
+         </li>
+         <li>
+            <a data-action="onSetUserPasswordClick">
+               <i class="material-icons">edit</i>
+               Set password
+            </a>
+         </li>
+         <li>
+            <a data-action="onDeleteUserClick">
+               <i class="material-icons">delete</i>
+               Delete user
+            </a>
+         </li>
+      </ul>
       <template if={!state.isLoading}>
          <div if={state.hasMore}
                class="center-align">
@@ -130,8 +144,67 @@
                   })
          },
 
+         onUserActionDropdownClick(email, evt){
+            evt.stopPropagation()
+            evt.preventDefault()
+            let menuNode = $(evt.target.parentNode)
+            if(!menuNode.attr("data-target")){ // menu is not created yet
+               let id = "ts_" + Date.now() + Math.floor((Math.random() * 10000))
+               // create copy of the list. Without copy, UL is moved as child of target node and after riot update list is destroyed
+               $("#userActionDropdown").clone()
+                     .attr({id: id})
+                     .appendTo($("body"))
+                     .find("a").each((idx, link) => {
+                        $(link).click(evt => {
+                           this[evt.currentTarget.dataset.action](email)
+                        })
+                     })
+               menuNode.attr("data-target", id)
+                     .dropdown({constrainWidth: false})
+                     .dropdown("open")
+            }
+         },
+
          onResetUserPasswordClick(email){
-            this.store.resetUserPassword(email)
+            this.auth.requestResetPassword(email)
+                  .always(payload => {
+                     if(payload.success){
+                        M.toast({html: "A link to reset the password has been sent to the user."})
+                     } else {
+                        M.toast({html: `Could not reset user password: ${payload.error || "unknown error"}`})
+                     }
+                  })
+         },
+
+         onSetUserPasswordClick(email){
+            window.modal.open({
+               title: "New password",
+               tag: "raw-html",
+               small: true,
+               props: {
+                  content: `<div class="input-field mt-8"><input id="newPassword"/><label>new password for ${email}</label></div>`
+               },
+               buttons: [{
+                  id: "setNewPasswordBtn",
+                  label: "Set password",
+                  class: "disabled btn-primary",
+                  onClick: (dialog, modal) => {
+                     let password = document.getElementById("newPassword").value
+                     this.auth.setUserPassword(email, password)
+                           .done((payload) => {
+                              payload.success && modal.close()
+                           })
+                  }
+               }],
+               onOpen: () => {
+                  let passwordInput = document.getElementById("newPassword")
+                  passwordInput.focus()
+                  passwordInput.addEventListener("input", evt => {
+                     evt.target.value
+                     document.getElementById("setNewPasswordBtn").classList.toggle("disabled", !evt.target.value)
+                  })
+               }
+            })
          },
 
          onDeleteUserClick(email) {
