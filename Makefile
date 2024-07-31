@@ -5,7 +5,7 @@ SOURCE_JS=website/app.js website/app.static.js website/app.css.js $(SOURCE_RIOT)
 INSTALL_JS=bundle.js bundle.css bundle.static.js
 SOURCE_PY=lexonomy.py ops.py media.py nvh.py advance_search.py gen_next_batch.py import2dict.py import_batch.py log_subprocess.py project.py refresh_project_state.py migrate_config.py
 SOURCE_CONF=siteconfig.json.template package.json rollup.config.js config.js.template lexonomy.sqlite.schema crossref.sqlite.schema
-SOURCE_WEBDIRS=adminscripts css customization dictTemplates docs furniture img js libs workflows
+SOURCE_WEBDIRS=adminscripts css dictTemplates docs furniture img js libs workflows
 SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
 INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
 SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md Makefile
@@ -15,7 +15,7 @@ build: website/bundle.js website/version.txt
 website/bundle.js: $(SOURCE_RIOT)
 	make -C website
 
-install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
+install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
 
@@ -56,5 +56,5 @@ deploy:
 website/version.txt:
 	git describe --always > $@
 
-dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile website/version.txt
+dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) customization Makefile website/Makefile website/version.txt
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
