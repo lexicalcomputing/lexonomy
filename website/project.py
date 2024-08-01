@@ -246,7 +246,7 @@ def getProject(projectID):
                 r_q = q.fetchone()
                 dictDB.close()
 
-                if dict_info['remaining'].get(stage, False):
+                if dict_info['remaining'].get(stage, -1) >= 0:
                     input_dicts.append({'dictID': dict_info['dict_id'],
                                         'title': dict_info['title'], 
                                         'remaining': dict_info['remaining'][stage], 
