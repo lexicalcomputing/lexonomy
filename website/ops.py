@@ -252,7 +252,7 @@ def deleteEntry(db, entryID, email):
     c2 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
     r2 = c2.fetchone()
     if '__lexonomy__completed' in row['nvh']:
-        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1), 'completed_entries')
+        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'completed_entries'))
     # delete me:
     db.execute ("delete from entries where id=?", (entryID,))
     # tell history that I have been deleted:
@@ -261,7 +261,7 @@ def deleteEntry(db, entryID, email):
 
     c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
     r2 = c2.fetchone()
-    db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1), 'entry_count')
+    db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'entry_count'))
     db.commit()
 
 def readEntry(db, configs, entryID):
@@ -318,12 +318,12 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
 
     c2 = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
     r2 = c2.fetchone()
-    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1), 'entry_count')
+    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1, 'entry_count'))
 
     if '__lexonomy__completed' in entryNvh:
         c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
         r3 = c3.fetchone()
-        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1), 'completed_entries')
+        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1, 'completed_entries'))
 
     return entryID, entryNvh, feedback
 
