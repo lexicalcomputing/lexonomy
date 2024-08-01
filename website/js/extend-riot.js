@@ -1,6 +1,7 @@
 import {install} from 'riot'
 
 install(function(component) {
+   component.dispatcher = window.dispatcher
    component.store = window.store
    component.dictData = window.store.data
    component.auth = window.auth
