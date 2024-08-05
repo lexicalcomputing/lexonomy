@@ -60,7 +60,8 @@
 
    <script>
       export default{
-         bindings: [["store", "entryListChanged", "update"],
+         bindings: [["dispatcher", "userCameBack", "reload"],
+                    ["store", "entryListChanged", "update"],
                     ["store", "isEntryListLoadingChanged", "update"],
                     ["store", "isLoadingMoreEntriesChanged", "update"],
                     ["store", "entryIdChanged", "onEntryIdChanged"],
@@ -79,11 +80,7 @@
          onMounted(){
             document.addEventListener('click', this.onDocumentClick)
             document.addEventListener('keydown', this.onDocumentKeyDown)
-            if(this.dictData.isEntryListLoaded){
-               this.setCursorByEntryId()
-            } else {
-               this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
-            }
+            this.setCursorByEntryId()
          },
 
          onUpdated() {
@@ -205,6 +202,13 @@
             }
          },
 
+         reload(){
+            this.store.reloadCurrentEntries()
+                  .done(response => {
+                     this.update()
+                  })
+         },
+
          moveCursorDown(step){
             if(!this.state.cursorPosition){
                this.state.cursorPosition = 1
@@ -264,11 +268,15 @@
 
          setCursorByEntryId(){
             if(this.dictData.entryId){
-               let idx = this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId)
-               if(idx != -1){
-                  this.state.cursorPosition = idx + 1
-                  this.updateCursor()
-                  this.scrollSelectedIntoView()
+               if(this.dictData.isEntryListLoaded){
+                  let idx = this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId)
+                  if(idx != -1){
+                     this.state.cursorPosition = idx + 1
+                     this.updateCursor()
+                     this.scrollSelectedIntoView()
+                  }
+               } else {
+                  this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
                }
             }
          },

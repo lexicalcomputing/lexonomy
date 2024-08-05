@@ -142,6 +142,20 @@
             })
          },
 
+         onMounted(){
+            setTimeout(() => {
+               window.onfocus = () => {
+                  if(((new Date().getTime() - this.state.lastBlur) / 1000) > 15){
+                     // trigger "userCameBack" only if user was away more than seconds 15 seconds (prevent too many date )
+                     window.dispatcher.trigger("userCameBack")
+                  }
+               }
+            }, 1000)
+            window.onblur = () => {
+               this.state.lastBlur = new Date().getTime()
+            }
+         },
+
          onBeforeUpdate(){
             if(this.state.page == "unauthorized"){
                this.store.resetDictionary()

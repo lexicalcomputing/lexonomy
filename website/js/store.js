@@ -445,6 +445,19 @@ class StoreClass {
       }
    }
 
+   reloadCurrentEntries(){
+      // reload current loaded entries (initial entry batch + entries loaded via scrolling in entry list)
+      let min = this.data.dictConfigs.titling.numberEntries || 500
+      return this.loadEntries(this.getEntrySearchParams(this.data.entryList.length < min ? min : this.data.entryList.length))
+            .done(response => {
+               if(response.entries){
+                  this.data.entryList = response.entries
+                  this.data.entryCount = response.total
+                  this.trigger("entryListChanged")
+               }
+            })
+   }
+
    loadEntryList(howmany){
       if(!this.data.dictId || (window.auth.data.authorized && !this.data.doctype)){
          return

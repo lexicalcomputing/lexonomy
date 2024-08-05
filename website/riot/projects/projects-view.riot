@@ -227,7 +227,9 @@
 
    <script>
       export default{
-         state:{
+         bindings: [["dispatcher", "userCameBack", "onUserCameBack"]],
+
+         state: {
             isBusy: false,
             isReloadingProject: false,
             project: null,
@@ -267,6 +269,11 @@
                   }
                })
             }
+         },
+
+         onUserCameBack(){
+            this.loadProject()
+            this.update()
          },
 
          onReloadProjectClick(){

@@ -144,7 +144,8 @@
 
    <script>
       export default{
-         bindings: [["store", "isProjectsLoadingChanged", "update"]],
+         bindings: [["dispatcher", "userCameBack", "reloadProjects"],
+                    ["store", "isProjectsLoadingChanged", "update"]],
 
          state:{
             isBusy: true,
@@ -184,7 +185,7 @@
          onArchiveClick(project, evt){
             evt.stopPropagation()
             project.isBusy = true
-            this.store.archiveProject(project.projectId)
+            this.store.archiveProject(project.id)
                   .done(response => {
                      if(response.success){
                         this.reloadProjects()
@@ -199,7 +200,7 @@
          onUnarchiveClick(project, evt){
             evt.stopPropagation()
             project.isBusy = true
-            this.store.unarchiveProject(project.projectId)
+            this.store.unarchiveProject(project.id)
                   .done(response => {
                      if(response.success){
                         this.reloadProjects()
