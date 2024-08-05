@@ -395,7 +395,9 @@ class StoreClass {
                   window.xema = this.data.config.structure  // global variable xema is used by some custom editors
                   this.data.isDictionaryLoaded = true
                   this.data.isDictionaryLoading = false
-                  document.title = `Lexonomy - ${this.data.title}`
+                  if(this.data.siteconfig.showDictionaryNameInPageTitle){
+                     document.title = `Lexonomy - ${this.data.title}`
+                  }
                   this.trigger("dictionaryChanged")
                   this.data.search.modifier = localStorage.getItem("entryFilterModifier") || "substring"
                   this.loadEntryList()
