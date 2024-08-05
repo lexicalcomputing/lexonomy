@@ -89,6 +89,8 @@
 
    <script>
       export default{
+         bindings: [["dispatcher", "userCameBack", "reload"]],
+
          state: {
             isLoading: true,
             dictionaries: [],
@@ -100,15 +102,14 @@
          },
 
          onMounted(){
-            this.search()
+            this.reload()
          },
 
          onBeforeUnmount(){
             this.state.searchRequest && this.state.searchRequest.abort()
          },
 
-         search(){
-            this.update({isLoading: true})
+         reload(){
             this.state.searchRequest = this.store.loadAdminDictionaryList(this.state.query, this.state.howmany + 1)  // + 1 to find, if there are more than "howmany" items
                   .done(payload => {
                      this.state.hasMore = false
@@ -147,22 +148,29 @@
             this.searchDebounceTimer = setTimeout(() => {
                this.state.searchRequest && this.state.searchRequest.abort()
                clearTimeout(this.searchDebounceTimer)
-               this.state.howmany = 500
-               this.search()
+               this.update({
+                  howmany: 500,
+                  isLoading: true
+               })
+               this.reload()
             }, 300)
          },
 
          onSearchCancelClick(){
             this.update({
                query: "",
-               howmany: 500
+               howmany: 500,
+               isLoading: true
             })
-            this.search()
+            this.reload()
          },
 
          onShowMoreClick(){
-            this.state.howmany += 500
-            this.search()
+            this.update({
+               howmany: this.state.howmany + 500,
+               isLoading: true
+            })
+            this.reload()
          }
       }
    </script>
