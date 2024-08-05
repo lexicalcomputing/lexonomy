@@ -6,8 +6,8 @@ INSTALL_JS=bundle.js bundle.css bundle.static.js
 SOURCE_PY=lexonomy.py ops.py media.py nvh.py advance_search.py gen_next_batch.py import2dict.py import_batch.py log_subprocess.py project.py refresh_project_state.py migrate_config.py
 SOURCE_CONF=siteconfig.json.template package.json rollup.config.js config.js.template lexonomy.sqlite.schema crossref.sqlite.schema
 SOURCE_WEBDIRS=adminscripts css dictTemplates docs furniture img js libs workflows
-SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
-INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/index.html
+SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/site.webmanifest website/index.html
+INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/site.webmanifest website/index.html
 SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md Makefile
 
 build: website/bundle.js website/version.txt
