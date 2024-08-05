@@ -558,8 +558,7 @@ class nvh:
                 item['children'] = [x.name for x in self.children]
 
             for key, value in self.get_schema_value_format().items():
-                if value:
-                    item[key] = value
+                item[key] = value
 
             schema_dict[self.name] = item
 
