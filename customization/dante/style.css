@@ -165,13 +165,24 @@ div[is="dict-public"] .description h1{
 div[is="dict-public"] .description p{
    text-align: justify;
 }
+span.dante_homepage_logos_top{
+    justify-content: space-between;
+    display: flex;
+    margin-bottom: 30px;
+}
+span.dante_homepage_logos_top img {
+    max-height: 50px;
+    filter: grayscale(1);
+}
+span.dante_homepage_logos_top a:hover img{
+   filter: none;
+}
 span.dante_homepage_logos {
     display: flex;
     gap: 50px;
     justify-content: center;
     margin-top: 20px;
 }
-
 span.dante_homepage_logos img {
     max-height: 70px;
 }
