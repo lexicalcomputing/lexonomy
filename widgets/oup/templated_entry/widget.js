@@ -291,8 +291,8 @@
       }
    },
 
-   _renderSensitivity: function(parent, sensitivityElementName) {
-      let sensitivity = this._getChildValue(this.entry, sensitivityElementName, "")
+   _renderSensitivity: function(parentElement, parentNode, sensitivityElementName) {
+      let sensitivity = this._getChildValue(parentElement, sensitivityElementName, "")
       let optionNodes = `<option ${sensitivity  == "" ? 'selected' : ''} value="">-not set-</option>` +
          this.const.SENSITIVITY_OPTIONS.map(option => `<option value="${option}" ${sensitivity == option ? 'selected' : ''}>${option}</option>`)
          .join("")
