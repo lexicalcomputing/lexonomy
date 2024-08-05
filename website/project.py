@@ -133,6 +133,29 @@ def createProject(project_id, project_name, project_description, project_annotat
     return {'success': True , "projectID": project_id}
 
 
+def update_project_source_dict(project_id, src_dict_id):
+    # Dump source dict to NVH
+    if os.path.exists(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh')):
+        shutil.move(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'),
+                    os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh_'+datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S")))
+
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
+        for nvh in ops.download(ops.getDB(src_dict_id), src_dict_id, 'nvh'):
+            f.write(nvh)
+
+    conn = ops.getMainDB()
+    conn.execute("UPDATE project SET src_dic_id=? WHERE id=?)"
+                 (src_dict_id, project_id))
+    conn.execute("UPDATE project_dicts SET source_nvh=? WHERE project_id=? AND stage=?",
+                 (os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), project_id, '__nvh_source__'))
+    conn.commit()
+
+    project_info = getProject(project_id)
+    all_stages = [s['stage'] for s in project_info['workflow']]
+    refresh_selected_stages(project_id, all_stages)
+
+    return {'success': True , "projectID": project_id}
+
 def getProjectStageState(projectID, stage):
     phase_stack = []
     log_filename = os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.log')
