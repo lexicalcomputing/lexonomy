@@ -7,4 +7,5 @@ DESCRIPTION = A professionally curated English dictionary with API. Contains ove
 update:
 	sed -i 's|<title>.*</title>|<title>$(TITLE)</title>|g' $(INDEX_HTML)
 	sed -i 's|<meta name="description" content=".*"/>|<meta name="description" content="$(DESCRIPTION)"/>|g' $(INDEX_HTML)
+	cp -R favicon/* $(DEPLOYDIR)/website/img
 	@echo "Dante customization finshed, index.html updated"
