@@ -63,9 +63,8 @@ def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_n
     if os.path.isfile(os.path.join(project_path, stage+'_batch.nvh')):
         with open(os.path.join(project_path, stage+'_batch.nvh'), 'r') as f:
             schema = nvh.nvh.parse_file(f.readlines())
-            schema = schema.nvh2schema()
             elements = {}
-            ops.get_gen_schema_elements(schema, elements)
+            schema.build_json(elements)
             config['structure'] = {"root": tl_node, "elements": elements}
     # =======================================
 
