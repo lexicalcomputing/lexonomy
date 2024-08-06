@@ -1307,6 +1307,19 @@ class StoreClass {
             })
    }
 
+   projectUpdateSourceDict(projectID, dictId){
+      return window.connection.post({
+         url: `${window.API_URL}projects/update_source_dict.json`,
+         data: {
+            id: projectID,
+            source_dict_id: dictId
+         }
+      })
+            .fail(response => {
+               M.toast({html: "Could not load list of workflows."})
+            })
+   }
+
    projectExportBatches(projectID, stage, size, count){
       return window.connection.post({
          url: `${window.API_URL}projects/${projectID}/create_batch.json`,
