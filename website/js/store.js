@@ -1316,7 +1316,7 @@ class StoreClass {
          }
       })
             .fail(response => {
-               M.toast({html: "Could not load list of workflows."})
+               M.toast({html: "Could not update central dictionary."})
             })
    }
 
@@ -1336,6 +1336,25 @@ class StoreClass {
             })
             .fail(response => {
                M.toast({html: "Could not create batches."})
+            })
+   }
+
+   projectDeleteBatches(projectID, dictID_list){
+      return window.connection.post({
+         url: `${window.API_URL}projects/${projectID}/delete_batch.json`,
+         data: {
+            dictID_list: JSON.stringify(dictID_list)
+         }
+      })
+            .done(response => {
+               if(response.error){
+                  M.toast({html: "Could not delete selected batches."})
+               } else {
+                  M.toast({html: "Selected batches were deleted."})
+               }
+            })
+            .fail(response => {
+               M.toast({html: "Could not delete selected batches."})
             })
    }
 
