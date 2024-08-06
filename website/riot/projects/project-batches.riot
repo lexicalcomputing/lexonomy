@@ -132,6 +132,11 @@
                            onclick={onBatchAcceptClick.bind(this, batch)}>
                         <i class="material-icons">check</i>
                      </button>
+                     <button class="btn btn-flat btn-floating btn-small tooltipped"
+                           data-tooltip="Delete batch"
+                           onclick={onBatchDeleteClick.bind(this, batch)}>
+                        <i class="material-icons">delete</i>
+                     </button>
                   </div>
                </td>
             </tr>
@@ -168,6 +173,13 @@
                      onclick={onBulkActionClick.bind(this, "setAssignee")}>
                   Set editor
                   <i class="material-icons">person</i>
+               </a>
+            </li>
+            <li>
+               <a href="javascript:void(0);"
+                     onclick={onBulkActionClick.bind(this, "delete")}>
+                  Delete
+                  <i class="material-icons">delete</i>
                </a>
             </li>
          </ul>
@@ -212,6 +224,10 @@
 
          onBatchAcceptClick(batch){
             this._acceptBatches([batch])
+         },
+
+         onBatchDeleteClick(batch){
+            this._deleteBatches([batch])
          },
 
          onBatchSearchInput(evt){
@@ -326,6 +342,8 @@
                this._acceptBatches(selectedBatches)
             } else if(action == "reject"){
                this._rejectBatches(selectedBatches)
+            } else if(action == "delete"){
+               this._deleteBatches(selectedBatches)
             } else if(action == "setAssignee"){
                window.modal.open({
                   title: "Set editor",
@@ -373,16 +391,7 @@
             if(completedBatches.length){
                this.store.projectAcceptBatches(this.props.project.projectID, completedBatches.map(batch => batch.dictID))
                      .always(response => {
-                        if(!response.error){
-                           //completedBatches.forEach(batch => batch.status = "accepted")
-                           this.props.parentTag.loadProject()
-                        } else {
-                           completedBatches.forEach(batch => {
-                              batch.isBusy = false
-                              batch.selected = false
-                           })
-                           this.update()
-                        }
+                        this._processBatchRequestResponse(response)
                      })
                completedBatches.forEach(batch => batch.isBusy = true)
                this.update()
@@ -392,33 +401,52 @@
          _rejectBatches(batches){
             this.store.projectRejectBatches(this.props.project.projectID, batches.map(batch => batch.dictID))
                   .always(response => {
-                     if(!response.error){
-                        this.props.parentTag.loadProject()
-                     } else {
-                        batches.forEach(batch => {
-                           batch.isBusy = false
-                           batch.selected = false
-                        })
-                        this.update()
-                     }
+                     this._processBatchRequestResponse(response)
                   })
             batches.forEach(batch => batch.isBusy = true)
             this.update()
+         },
+
+         _deleteBatches(batches){
+             window.modal.open({
+                  title: `Delete selected ${batches.length > 1 ? 'batches' : 'batch'}`,
+                  small: true,
+                  content: `Are you sure you want to delete selected ${batches.length > 1 ? 'batches' : 'batch'}? This action cannot be undone.`,
+                  buttons: [{
+                     label: `Delete ${batches.length > 1 ? 'batches' : 'batch'}`,
+                     id: "btnBulkChangeAssignee",
+                     class: "btn-primary",
+                     onClick: function(batches, modal, dialog){
+                        this.store.projectDeleteBatches(this.props.project.projectID, batches.map(batch => batch.dictID))
+                              .always(response => {
+                                 this._processBatchRequestResponse(response)
+                              })
+                        dialog.close()
+                     }.bind(this, batches)
+                  }]
+               })
          },
 
          _setAssignees(batches, email){
             let assignees = batches.map(batch => [batch.dictID, email])
             this.store.projectAssignBatch(this.props.project.projectID, assignees)
                   .always(response => {
-                     if(!response.error){
-                        batches.forEach(batch => batch.assignee = email)
-                     }
-                     batches.forEach(batch => batch.isBusy = false)
-                     this.update()
+                     this._processBatchRequestResponse(response)
                   })
             batches.forEach(batch => batch.isBusy = true)
             this.update()
+         },
 
+         _processBatchRequestResponse(response){
+            if(!response.error){
+               this.props.parentTag.loadProject()
+            } else {
+               completedBatches.forEach(batch => {
+                  batch.isBusy = false
+                  batch.selected = false
+               })
+               this.update()
+            }
          }
       }
    </script>
