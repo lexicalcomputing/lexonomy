@@ -75,10 +75,34 @@
       </div>
 
       <table class="workflowTable">
-         <tbody each={workflow in state.project.workflow}>
+         <tbody each={(workflow, workflowIdx) in state.project.workflow}>
             <tr if={workflow.type != "merge"}>
                <td>
                   <div class="card-panel grey lighten-4">
+                     <span if={workflow.inputDicts[0].dictID == state.project.source_dict}
+                           class="sourceDictMenuDropdownBtn">
+                        <button class="dropdown-trigger btn btn-floating btn-flat"
+                              data-target="sourceDictMenuDropdown">
+                           <i class="material-icons black-text">more_horiz</i>
+                        </button>
+                        <ul id="sourceDictMenuDropdown"
+                              class="dropdown-content">
+                           <li>
+                              <a href="javascript:void(0);"
+                                    onclick={onReloadSourceDictClick}>
+                                 <i class="material-icons">refresh</i>
+                                 Reload dictionary data
+                              </a>
+                           </li>
+                           <li>
+                              <a href="javascript:void(0);"
+                                    onclick={onChangeCentralDictionaryClick}>
+                                 <i class="material-icons">swap_horiz</i>
+                                 Change central dictionary
+                              </a>
+                           </li>
+                        </ul>
+                     </span>
                      <project-dict-name dict={workflow.inputDicts[0]}/>
                      <div class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
                            data-tooltip={!workflow.inputDicts[0].total ? 'No entries to export, dictionary is empty.' :''}>
@@ -132,11 +156,11 @@
                            </span>
                         </div>
                      </div>
-                     <div if={workflow.batches.length && !workflow.showBatches}
+                     <div if={workflow.batches.length && !state.showBatches[workflowIdx]}
                            class="center-align pt-2 pb-2">
                         <a href="javascript:void(0)"
                               class="displayInlineBlock"
-                              onclick={onToggleShowBatches.bind(this, workflow)}>
+                              onclick={onToggleShowBatches.bind(this, workflowIdx)}>
                            <i class="material-icons right">keyboard_arrow_down</i>
                            show batches
                         </a>
@@ -147,10 +171,11 @@
                      </h4>
                      <loading-overlay if={workflow.isExportingBatches}
                            message="Exporting batches..."/>
-                     <project-batches if={workflow.batches.length && workflow.showBatches}
+                     <project-batches if={workflow.batches.length && state.showBatches[workflowIdx]}
                            parent-tag={this}
                            project={state.project}
-                           workflow={workflow}/>
+                           workflow={workflow}
+                           workflow-idx={workflowIdx}/>
                   </div>
                </td>
                <td>
@@ -235,7 +260,8 @@
             project: null,
             error: null,
             lastLoadedProjectID: null,
-            checkProjectTimeoutHandle: null
+            checkProjectTimeoutHandle: null,
+            showBatches: {}
          },
 
          onBeforeMount(){
@@ -256,8 +282,8 @@
                      if(workflow.batches.length){
                         let tmp = workflow.batches.filter(batch => batch.status != "rejected")
                               .reduce((arr, batch) => {
-                                 arr[0] += batch.completed
-                                 arr[1] += batch.total
+                                 arr[0] += batch.completed || 0
+                                 arr[1] += batch.total || 0
                                  return arr
                               }, [0, 0])
                         workflow.completed_per = Math.floor(tmp[0] / tmp[1] * 100)
@@ -271,6 +297,14 @@
             }
          },
 
+         onUpdated(){
+            $(".sourceDictMenuDropdownBtn .dropdown-trigger").dropdown({
+               coverTrigger: false,
+               constrainWidth: false,
+               container: $("#body")
+            })
+          },
+
          onUserCameBack(){
             this.loadProject()
             this.update()
@@ -281,12 +315,60 @@
             this.update()
          },
 
+         onReloadSourceDictClick(){
+            this.store.projectUpdateSourceDict(this.state.project.projectID, this.state.project.source_dict)
+                  .done(this.loadProject.bind(this))
+         },
+
+         onChangeCentralDictionaryClick(){
+            let dictSelect = `<select id="centralDictionarySelect">`
+                  + `<option value="" selected>-select-</option>`
+                  + this.dictData.dictionaryList.map(dict => `<option value="${dict.id}">${dict.title}</option>`)
+                  + "</select>"
+            window.modal.open({
+               title: "Change central dictionary",
+               small: true,
+               tag: "raw-html",
+               props: {
+                  content: `<div></div>${dictSelect}`
+               },
+               buttons: [{
+                  id: "changeCentralDictionaryBtn",
+                  label: "Change dictionary",
+                  class: "disabled btn-primary",
+                  onClick: (dialog, modal) => {
+                     let source_dict = $("#centralDictionarySelect").val()
+                     this.store.projectUpdateSourceDict(this.state.project.projectID, source_dict)
+                           .done(response => {
+                              if(response.success){
+                                 this.loadProject(this)
+                                 modal.close()
+                              }
+                           })
+                  }
+               }],
+               onOpen: () => {
+                  $("#centralDictionarySelect").formSelect({
+                     dropdownOptions: {
+                        coverTrigger: false,
+                        constrainWidth: false,
+                        container: $("body")
+                     }
+                  })
+                     .change(evt => {
+                        document.getElementById("changeCentralDictionaryBtn").classList.toggle("disabled", !evt.target.value)
+                     })
+                     .focus()
+               }
+            })
+         },
+
          onToggleShowDetailsClick(){
             this.update({showDetails: !this.state.showDetails})
          },
 
-         onToggleShowBatches(workflow){
-            workflow.showBatches = !workflow.showBatches
+         onToggleShowBatches(workflowIdx){
+            this.state.showBatches[workflowIdx] = !this.state.showBatches[workflowIdx]
             this.update()
          },
 
@@ -365,16 +447,11 @@
                         workflow.batch_count = 1
                         if(workflow.batches){
                            workflow.displayedBatchCount = workflow.batches.length
-                           let hasActiveBatch = false
                            workflow.batches.forEach(batch => {
-                              // TODO
-                              batch.completed = batch.competed
                               batch.assignee = batch.assignee || ""
                               batch.status = batch.status || "inProgress"
                               batch.show = true
-                              hasActiveBatch = hasActiveBatch || batch.status == "inProgress"
                            })
-                           workflow.showBatches = hasActiveBatch
                         }
                      })
                   } else {
@@ -385,6 +462,16 @@
                      this.state.checkProjectTimeoutHandle = setTimeout(this.loadProject.bind(this), 5000)
                   } else {
                      this.stopProjectChecking()
+                  }
+                  if(!Object.keys(this.state.showBatches).length && this.state.project.workflow){
+                     // after the first load initialize showBatches
+                     this.state.project.workflow.forEach((workflow, workflowIdx) => {
+                        if(workflow.batches){
+                           this.state.showBatches[workflowIdx] = workflow.batches.reduce((hasActiveBatch, batch) => {
+                              return hasActiveBatch || batch.status == "inProgress"
+                           }, false)
+                        }
+                     })
                   }
                   this.update({
                      isBusy: false,
@@ -431,6 +518,9 @@
 
 
    <style type="scss">
+      .sourceDictMenuDropdownBtn{
+         float: right;
+      }
       .exportBatchesForm{
          .exportBatchesSettings{
             gap: 10px;
