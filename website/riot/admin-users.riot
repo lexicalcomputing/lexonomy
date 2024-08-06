@@ -201,7 +201,6 @@
                   let passwordInput = document.getElementById("newPassword")
                   passwordInput.focus()
                   passwordInput.addEventListener("input", evt => {
-                     evt.target.value
                      document.getElementById("setNewPasswordBtn").classList.toggle("disabled", !evt.target.value)
                   })
                }
