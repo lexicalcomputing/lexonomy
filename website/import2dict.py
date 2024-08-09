@@ -160,6 +160,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
     log_info('IMPORTING (%s)' % (dict_id))
 
     try:
+        # =============
+        # Load data
+        # =============
         if filename.endswith('.xml'):
             log_info('XML to NVH processing')
             with open(filename + ".xml2nvh.nvh", 'w') as f:
@@ -172,13 +175,18 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         else:
             log_err(f'NOT a supported format: {filename}')
             sys.exit()
+        # =============
 
+        # =============
         ## Cleaning duplicate (name, value) nodes
+        # =============
         if deduplicate:
             log_info('Cleaning NVH')
             import_nvh.clean_duplicate_nodes(out=sys.stderr)
 
+        # =============
         ## Renaming node names that appear under different parents
+        # =============
         rename_dict = {}
         name_mapping = {}
         if clean:
@@ -192,7 +200,10 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
                 for _, new_name in rename_list:
                     name_mapping[new_name] = orig_name
 
+        # =============
         # Generating schema form NVH
+        # =============
+        log_info('Generating schema')
         schema = {}
         import_nvh.generate_schema(schema, tln=True)
         with open(filename + ".schema", 'w') as schema_f:
@@ -200,8 +211,11 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
         #import_nvh.check_schema(schema, outfile=sys.stderr)
 
+        # =============
         # Splitting into individual entries
+        # =============
         import_entries, tl_node_names, tl_node_contains_pos = import_nvh.get_entries()
+
         if len(tl_node_names) == 1:
             tl_name = tl_node_names.pop()
         else:
@@ -209,6 +223,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             raise Exception('Too many top lavel names')
         entry_count = len(import_entries)
 
+        # =============
+        # Configuring dict
+        # =============
         entry_inserted = 0
         limit_reached = False
 
@@ -219,6 +236,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         if purge or purge_all:
             purge_dict(db, historiography, purge_all, email)
 
+        # =============
+        # Structure
+        # =============
         elements = {}
         ops.get_gen_schema_elements(schema, elements)
         structure = {"root": main_node_name, "elements": elements}
@@ -236,6 +256,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
 
 
+        # =============
+        # Formatting
+        # =============
         formatting = {}
         with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
             styles = json.loads(f.read())
@@ -258,59 +281,83 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_id,))
         limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
+        # =============
+        # Limits
+        # =============
         max_import = limit - dict_stats["entryCount"]
         if max_import < entry_count:
             log_warning("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
         else:
             log_info("Detected %d entries in '%s' element" % (entry_count, tl_name))
 
+        # =============
+        # Inserting new items
+        # =============
         needs_refac = 0
         needs_resave = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
-
         cut_pos_re = re.compile('(.*)-.*')
+        entries_insert_payload = []
+        entries_update_payload = []
+        searchables_payload = []
+        history_payload = []
+        searchables_delete_payload = []
 
-        # ids = []
-        # entry_updates = []
-        # searchable_updates = []
         entries_inserted = 0
         completed_entries = 0
 
-        for entry in import_entries:
+        # max entry id form DB is exists
+        max_entryID = db.execute("SELECT MAX(id) AS max_ID FROM entries").fetchone()['max_ID']
+        if max_entryID:
+            entryID = int(max_entryID)
+        else:
+            entryID = 0
+
+        while import_entries:
+            entry = import_entries.pop(0)
             entry_str = entry.dump_string()
+
             if entry_inserted >= max_import:
                 limit_reached = True
                 break
+
             action = "create"
             entry_key = ops.getEntryHeadword(entry, main_node_name)
+            searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
             title = "<span class='headword'>" + entry_key + "</span>"
+
+            # ========================
+            # UPDATE OR INSERT
+            # ========================
             c = db.execute("SELECT id, nvh FROM entries WHERE sortkey=?", (entry_key,))
             r = c.fetchone()
 
             if not r:
-                sql = "INSERT INTO entries(nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-                params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key)
+                entryID += 1
+                entries_insert_payload.append((entryID, entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key))
+                history_payload.append((entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
+                searchables_payload.append((entryID, searchTitle, 1))
+                if tl_node_contains_pos:
+                    searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
+                    searchables_payload.append((entryID, searchTitle_no_pos, 1))
+
                 if '__lexonomy__completed' in entry_str:
                     completed_entries += 1
                 entries_inserted += 1
 
+            # Updating existing
             else:
-                sql = "UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, doctype=?, title=?, sortkey=? WHERE id=?"
-                params = (entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"])
                 action = "update"
+                entries_update_payload.append((entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"]))
+                history_payload.append((r["id"], action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
+                searchables_delete_payload.append((r['id'], 1))
+                searchables_payload.append((r["id"], searchTitle, 1))
+                if tl_node_contains_pos:
+                    searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
+                    searchables_payload.append((r["id"], searchTitle_no_pos, 1))
 
                 if '__lexonomy__completed' in entry_str and '__lexonomy__completed' not in r['nvh']:
                     completed_entries += 1
 
-            c = db.execute(sql, params)
-            entryID = c.lastrowid
-            db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)",
-                    (entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
-            db.execute("DELETE FROM searchables WHERE entry_id=? and level=?", (entryID, 1))
-            searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
-            db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle, 1))
-            if tl_node_contains_pos:
-                searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
-                db.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos, 1))
             entry_inserted += 1
 
             if entry_inserted % 100 == 0:
@@ -322,10 +369,15 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         else:
             log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entry_inserted, entry_count))
 
-        # db.executemany("update entries set needs_resave=0, title=?, sortkey=? where id=?", entry_updates)
-        # db.execute("delete from searchables where entry_id in (%s)" % (",".join(map(str, ids))))
-        # db.executemany("insert into searchables(entry_id, txt, level) values(?, ?, ?)", searchable_updates)
+        db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?,?,?,?,?,?,?,?,?)", entries_insert_payload)
+        db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, doctype=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
+        db.executemany("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?,?,?,?,?,?)", history_payload)
+        db.executemany("DELETE FROM searchables WHERE entry_id=? and level=?", searchables_delete_payload)
+        db.executemany("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", searchables_payload)
 
+        # =============
+        # Entry counts
+        # =============
         c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
         r2 = c2.fetchone()
         if r2:
@@ -336,6 +388,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         if r3:
             db.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + completed_entries, 'completed_entries'))
 
+        # =============
+        # Import config
+        # =============
         if config_data:
             for key, value in config_data.items():
                 ops.updateDictConfig(db, dict_id, key, value)
@@ -343,6 +398,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             ops.resave(db, dict_id, curr_configs)
 
         db.commit()
+
     except Exception as e:
         log_err(f"Import crashed on: {e}")
         db.close()
@@ -354,9 +410,9 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Import entries from NVH into Lexonomy SQLite database')
     parser.add_argument('dbname', type=str,
-                        help='database file name')
+                        help='path to DB sqlite file')
     parser.add_argument('filename', type=str,
-                        help='import file name')
+                        help='path to importing file')
     parser.add_argument('email', type=str,
                         default='IMPORT@LEXONOMY', help='user email')
     parser.add_argument('main_node_name', type=str, default='',
@@ -378,6 +434,7 @@ def main():
                         help='Dictionary config in JSON format')
     args = parser.parse_args()
 
+    log_info(args)
     config_json = None
     if args.config:
         with open(args.config) as f:
