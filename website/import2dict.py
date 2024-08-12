@@ -215,6 +215,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # Splitting into individual entries
         # =============
         import_entries, tl_node_names, tl_node_contains_pos = import_nvh.get_entries()
+        del import_nvh
 
         if len(tl_node_names) == 1:
             tl_name = tl_node_names.pop()
@@ -226,9 +227,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # =============
         # Configuring dict
         # =============
-        entry_inserted = 0
-        limit_reached = False
-
         historiography={"importStart": str(datetime.datetime.utcnow()), "filename": os.path.basename(filename)}
 
         db = sqlite3.connect(dbname)
@@ -312,9 +310,13 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         else:
             entryID = 0
 
+        entry_inserted = 0
+        limit_reached = False
+
         while import_entries:
             entry = import_entries.pop(0)
             entry_str = entry.dump_string()
+            entry_json = ops.nvh2json(entry)
 
             if entry_inserted >= max_import:
                 limit_reached = True
@@ -333,7 +335,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
             if not r:
                 entryID += 1
-                entries_insert_payload.append((entryID, entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key))
+                entries_insert_payload.append((entryID, entry_str, entry_json, needs_refac, needs_resave, 0, tl_name, title, entry_key))
                 history_payload.append((entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_payload.append((entryID, searchTitle, 1))
                 if tl_node_contains_pos:
@@ -347,7 +349,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             # Updating existing
             else:
                 action = "update"
-                entries_update_payload.append((entry_str, ops.nvh2json(entry), needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"]))
+                entries_update_payload.append((entry_str, entry_json, needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"]))
                 history_payload.append((r["id"], action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_delete_payload.append((r['id'], 1))
                 searchables_payload.append((r["id"], searchTitle, 1))
@@ -434,7 +436,6 @@ def main():
                         help='Dictionary config in JSON format')
     args = parser.parse_args()
 
-    log_info(args)
     config_json = None
     if args.config:
         with open(args.config) as f:
