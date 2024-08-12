@@ -15,13 +15,13 @@
       <template if={ authData.ske_username && authData.ske_apiKey && authData.ske_username != "" && authData.ske_apiKey != "" }>
          <div class="row">
             <div class="input-field">
-               <input data-selected-corpus={ state.data.kex.corpus }
+               <input data-selected-corpus={ state.data.corpus }
                      type="text"
-                     id="kex_corpus"
+                     id="corpus"
                      placeholder="Type to search in the list of corpora"
                      class="autocomplete"
                      placeholder="Retrieving available corpora from Sketch Engine, please wait...">
-               <label for="kex_corpus">Corpus name</label>
+               <label for="corpus">Corpus name</label>
                <span class="helper-text">Select a Sketch Engine corpus from the list of corpora available to you.</span>
                <span class="helper-text"
                      id="corpusInfo"
@@ -30,28 +30,28 @@
          </div>
          <div class="row">
             <div class="input-field">
-               <input value={ state.data.kex.concquery}
-                     id="kex_concquery"
+               <input value={ state.data.concquery}
+                     id="concquery"
                      type="text" />
-               <label for="kex_concquery">Concordance query</label>
+               <label for="concquery">Concordance query</label>
                <span class="helper-text">The CQL query that will be used to obtain concordance from Sketch Engine. You can use placeholders for elements in the form of '%(element)', e.g. '[lemma="%(headword)"]'. If left empty the 'simple' query type will be used as configured for the respective corpus. Please note that you cannot use CQL syntax with default attribute because it is not specified.</span>
             </div>
          </div>
          <div class="row">
             <div class="input-field">
-               <input value={ state.data.kex.concsampling}
-                     id="kex_concsampling"
+               <input value={ state.data.concsampling}
+                     id="concsampling"
                      type="number" />
-               <label for="kex_concsampling">Sample size</label>
+               <label for="concsampling">Sample size</label>
                <span class="helper-text">Whether to apply automatic sampling of the concordance. Any non-zero value means to automatically create a random sample of that size.</span>
             </div>
          </div>
          <div class="row">
             <div class="input-field">
-               <element-select id="kex_searchElements"
-                     riot-value={state.data.kex.searchElements}
+               <element-select id="searchElements"
+                     riot-value={state.data.searchElements}
                      multiple={true}/>
-               <label for="kex_searchElements">Additional search elements</label>
+               <label for="searchElements">Additional search elements</label>
                <span class="helper-text">You can select any textual elements here whose content you would like to search for in Sketch Engine. A menu will be displayed next to all these elements like for the root entry element.</span>
             </div>
          </div>
@@ -61,11 +61,11 @@
       </div>
       <div class="row">
          <div class="input-field">
-            <element-select id="xampl_container"
-                  riot-value={state.data.xampl.container}
+            <element-select id="exampleContainer"
+                  riot-value={state.data.exampleContainer}
                   show-empty-value={true}
                   empty-value="(not set)"/>
-            <label for="xampl_container">Example container</label>
+            <label for="exampleContainer">Example container</label>
             <span class="helper-text">Select the element which should wrap each individual example. When you pull example sentences automatically from a corpus, Lexonomy will insert one of these elements for each example sentence.</span>
          </div>
       </div>
@@ -74,11 +74,11 @@
       </div>
       <div class="row">
          <div class="input-field">
-            <element-select id="collx_container"
-                  riot-value={state.data.collx.container}
+            <element-select id="collocationContainer"
+                  riot-value={state.data.collocationContainer}
                   show-empty-value={true}
                   empty-value="(not set)"/>
-            <label for="collx_container">Collocation container</label>
+            <label for="collocationContainer">Collocation container</label>
             <span class="helper-text">Select the element which should wrap each collocation (the collocate plus any other data). When you pull collocations automatically from a corpus, Lexonomy will insert one of these elements for each collocation.</span>
          </div>
       </div>
@@ -87,11 +87,11 @@
       </div>
       <div class="row">
          <div class="input-field">
-            <element-select id="thes_container"
-                  riot-value={state.data.thes.container}
+            <element-select id="thesaurusContainer"
+                  riot-value={state.data.thesaurusContainer}
                   show-empty-value={true}
                   empty-value="(not set)"/>
-            <label for="thes_container">Thesaurus item container</label>
+            <label for="thesaurusContainer">Thesaurus item container</label>
             <span class="helper-text">Select the element which should wrap each individual thesaurus item (a word). When you pull thesaurus items automatically from a corpus, Lexonomy will insert one of these elements for each thesaurus item.</span>
          </div>
       </div>
@@ -100,11 +100,11 @@
       </div>
       <div class="row">
          <div class="input-field">
-            <element-select id="defo_container"
-                  riot-value={state.data.defo.container}
+            <element-select id="definitionContainer"
+                  riot-value={state.data.definitionContainer}
                   show-empty-value={true}
                   empty-value="(not set)"/>
-            <label for="defo_container">Definition container</label>
+            <label for="definitionContainer">Definition container</label>
             <span class="helper-text">Select the element which should wrap each definition. When you pull definitions automatically from a corpus, Lexonomy will insert one of these elements for each definition.</span>
          </div>
       </div>
@@ -119,14 +119,12 @@
             isSaving: false,
             showMissingHeadwordWarning: false,
             data: {
-               kex: {
-                  concsampling: 0,
-                  searchElements: []
-               },
-               xampl: {container: ""},
-               collx: {container: ""},
-               defo: {container: ""},
-               thes: {container: ""},
+               concsampling: 0,
+               searchElements: [],
+               exampleContainer: "",
+               collocationContainer: "",
+               definitionContainer: "",
+               thesaurusContainer: ""
             }
          },
 
@@ -141,10 +139,9 @@
             if(!this.state.showMissingHeadwordWarning){
                this.store.loadDictionaryConfig("ske")
                      .done(response => {
-                        this.state.data = response.content
-                        this.state.data.kex = this.state.data.kex || {}
-                        this.state.data.kex.concsampling = this.state.data.kex.concsampling || 0
-                        this.state.data.kex.searchElements = this.state.data.kex.searchElements || []
+                        this.state.data = response.content || {}
+                        this.state.data.concsampling = this.state.data.concsampling || 0
+                        this.state.data.searchElements = this.state.data.searchElements || []
                         // TODO: takes too long, should be loaded in background
                         this.store.skeLoadCorpora()
                               .done(response => {
@@ -156,16 +153,16 @@
                                        info: `${corpus.language_name}${size}`
                                     }
                                  })
-                                 $("#kex_corpus").autocomplete({
+                                 $("#corpus").autocomplete({
                                     data: corpusList,
                                     onAutocomplete: corpus => {
-                                       $("#kex_corpus").attr("corpname", corpus.value)
+                                       $("#corpus").attr("corpname", corpus.value)
                                        this.refreshCorpusNote(corpus)
                                     }
                                  })
-                                 let selectedCorpus = this.state.data.kex.corpus && corpusList.find(corpus => corpus.value == this.state.data.kex.corpus)
+                                 let selectedCorpus = this.state.data.corpus && corpusList.find(corpus => corpus.value == this.state.data.corpus)
                                  if(selectedCorpus){
-                                    $("#kex_corpus").val(selectedCorpus.label)
+                                    $("#corpus").val(selectedCorpus.label)
                                           .attr("corpname", selectedCorpus.value)
                                     this.refreshCorpusNote(selectedCorpus)
                                  }
@@ -179,31 +176,20 @@
                      })
                      .always(() => {
                         M.updateTextFields()
-                        M.textareaAutoResize($("#xampl_template"))
                      })
             }
          },
 
          getConfigData() {
             return {
-               kex: {
-                  corpus: $("#kex_corpus").attr("corpname"),
-                  concquery: $("#kex_concquery").val(),
-                  concsampling:$("#kex_concsampling").val(),
-                  searchElements: $("#kex_searchElements select").val()
-               },
-               xampl: {
-                  container: $("#xampl_container select").val()
-               },
-               collx: {
-                  container: $("#collx_container select").val()
-               },
-               defo: {
-                  container: $("#defo_container select").val()
-               },
-               thes: {
-                  container: $("#thes_container select").val()
-               }
+               corpus: $("#corpus").attr("corpname"),
+               concquery: $("#concquery").val(),
+               concsampling:$("#concsampling").val(),
+               searchElements: $("#searchElements select").val(),
+               exampleContainer: $("#exampleContainer select").val(),
+               collocationContainer: $("#collocationContainer select").val(),
+               definitionContainer: $("#definitionContainer select").val(),
+               thesaurusContainer: $("#thesaurusContainer select").val()
             }
          },
 
@@ -225,7 +211,7 @@
    </script>
 
    <style>
-      #kex_concsampling {
+      #concsampling {
          width: 4em;
       }
       .dropdown-content {
