@@ -488,10 +488,11 @@
          },
 
          shouldCheckProject(){
-            return this.state.project.workflow.some(workflow => workflow.is_locked)
-                  || this.state.project.workflow.some(workflow => {
-                     return workflow.batches.some(batch => batch.status == "creating")
-                  })
+            return this.state.project
+                  && (this.state.project.workflow.some(workflow => workflow.is_locked)
+                     || this.state.project.workflow.some(workflow => {
+                        return workflow.batches.some(batch => batch.status == "creating")
+                     }))
          },
 
          getDictionaryStatus(dictionary){
