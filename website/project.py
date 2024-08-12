@@ -254,6 +254,18 @@ def getProject(projectID):
         phase_stack = getProjectStageState(projectID, stage)
 
         # ======================
+        # Check stage log
+        # ======================
+        stage_log = []
+        log_re = re.compile(r'^(INFO|WARNING|ERROR) \[(.*)\]:\s*(.*)$')
+        if os.path.exists(os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.log')):
+            with open(os.path.join(siteconfig["dataDir"], "projects", projectID, stage+'.log')) as lf:
+                for line in lf:
+                    l = log_re.match(line)
+                    if l:
+                        stage_log.append((l.group(1), l.group(2), l.group(3)))
+
+        # ======================
         # INPUT DICTS
         # ======================
         input_dicts = []
@@ -336,7 +348,7 @@ def getProject(projectID):
 
         workflow_stages.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
                                 'batches': batches, 'type': stage_type, 'is_locked': phase_stack != [],
-                                'query': stage_queries.get(stage, '')})
+                                'query': stage_queries.get(stage, ''), 'log': stage_log})
 
 
     c1 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active FROM projects WHERE id=?", (projectID,))
