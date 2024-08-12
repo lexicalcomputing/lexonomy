@@ -747,7 +747,7 @@ def reject_batch(projectID, user, configs):
 
 @post(siteconfig["rootPath"] + "projects/<projectID>/delete_batch.json") # OK
 @authProject
-def reject_batch(projectID, user, configs):
+def delete_batch(projectID, user, configs):
     if projectID in configs["manager_of"]: # TODO maybe should be alowed only to manegers by default
         res = project.deleteBatch(projectID, json.loads(request.forms.dictID_list))
         return res
