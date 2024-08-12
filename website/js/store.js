@@ -151,7 +151,8 @@ class StoreClass {
          data: {
             id: entryId,
             flag: flag
-         }
+         },
+         failMessage: "The flag was not saved."
       })
             .done(function(flag, response) {
                if(response.success){
@@ -162,9 +163,6 @@ class StoreClass {
                   }
                }
             }.bind(this, flag))
-            .fail(response => {
-                  M.toast({html: "Flag was not saved."})
-            })
             .always(response => {
                delete entry.isSaving
                this.trigger("entryListChanged", entryId)
@@ -266,13 +264,13 @@ class StoreClass {
 
    loadSiteconfig(){
       this.data.isSiteconfigLoading = true
-      return window.connection.get({url: `${window.API_URL}siteconfigread.json`})
+      return window.connection.get({
+         url: `${window.API_URL}siteconfigread.json`,
+         failMessage: "Could not load app configuration."
+      })
             .done(response => {
                this.data.siteconfig = response
                this.trigger("siteconfigChanged")
-            })
-            .fail(response => {
-               M.toast({html: "Could not load app configuration."})
             })
             .always(response => {
                this.data.isSiteconfigLoading = false
@@ -285,15 +283,15 @@ class StoreClass {
       }
       this.data.isDictionaryListLoading = true
       this.trigger("dictionaryListLoadingChanged")
-      return window.connection.get(`${window.API_URL}userdicts.json`)
+      return window.connection.get({
+         url:`${window.API_URL}userdicts.json`,
+         failMessage: "Dictionary list could not be loaded."
+      })
             .done(response => {
                if(response.dicts){
                   this._setDictionaryList(response.dicts)
                   this.data.isDictionaryListLoaded = true
                }
-            })
-            .fail(response => {
-               M.toast({html: "Dictionary list could not be loaded."})
             })
             .always(response => {
                this.data.isDictionaryListLoading = false
@@ -304,7 +302,10 @@ class StoreClass {
    loadPublicDictionaryList(){
       this.data.isPublicDictionaryListLoading = true
       this.trigger("isPublicDictionaryListLoadingChanged")
-      return window.connection.get(`${window.API_URL}publicdicts.json`)
+      return window.connection.get({
+         url: `${window.API_URL}publicdicts.json`,
+         failMessage: "Dictionary list could not be loaded."
+      })
             .done(response => {
                if(response.success){
                   this.data.isPublicDictionaryListLoaded = true
@@ -320,9 +321,6 @@ class StoreClass {
                   }
                }
             })
-            .fail(response => {
-               M.toast({html: "Dictionary list could not be loaded."})
-            })
             .always(response => {
                this.data.isPublicDictionaryListLoading = false
                this.trigger("isPublicDictionaryListLoadingChanged")
@@ -334,7 +332,7 @@ class StoreClass {
          return
       }
       this.data.isDictionaryLoading = true
-      this.data.isDictionaryLoaded = false
+      //this.data.isDictionaryLoaded = false
       window.CustomStyles.remove("customDictionaryStyle")
       this.trigger("isDictionaryLoadingChanged")
       this.loadDictionary(this.data.dictId)
@@ -420,13 +418,10 @@ class StoreClass {
    }
 
    loadDictionary(dictId){
-      return window.connection.get(`${window.API_URL}${dictId}/config.json`)
-            .done(response => {
-               !response.success && M.toast({html: `Could not load ${dictId || 'the'} dictionary.`})
-            })
-            .fail(function(response) {
-               M.toast({html: `Could not load ${dictId || 'the'} dictionary.`})
-            }.bind(this, dictId))
+      return window.connection.get({
+         url: `${window.API_URL}${dictId}/config.json`,
+         failMessage: `Could not load the dictionary.`
+      })
    }
 
    loadMoreEntries(){
@@ -494,11 +489,9 @@ class StoreClass {
       }
       return window.connection.post({
          url: url,
-         data: data
+         data: data,
+         failMessage: "Entry list could not be loaded."
       })
-            .fail(response => {
-               M.toast({html: "Entry list could not be loaded."})
-            })
    }
 
    loadEntry(){
@@ -511,7 +504,8 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entryread.json`,
          data: {
             id: this.data.entryId
-         }
+         },
+         failMessage: "The entry could not be loaded."
       })
             .done(response => {
                if(response.success){
@@ -521,9 +515,6 @@ class StoreClass {
                   this.data.isEntryLoaded = true
                   this.trigger("entryChanged")
                }
-            })
-            .fail(response => {
-               M.toast({html: "Entry could not be loaded."})
             })
             .always(() => {
                this.data.isEntryLoading = false
@@ -536,7 +527,8 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entrycreate.json`,
          data: {
             nvh: nvh
-         }
+         },
+         failMessage: "Could not create the entry."
       })
             .done(response => {
                if(response.success){
@@ -560,7 +552,8 @@ class StoreClass {
          data: {
             id: this.data.entryId,
             nvh: nvh
-         }
+         },
+         failMessage: "Could not update the entry."
       })
             .done(response => {
                if(response.success){
@@ -578,14 +571,16 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entrydelete.json`,
          data: {
                id: this.data.entryId
-         }
-      }).done(response => {
-         if(response.success){
-            this.data.entryId = null
-            this.data.entryList = this.data.entryList.filter(e => e.id != response.id)
-            this.trigger("entryListChanged", response.id)
-         }
+         },
+         failMessage: "Could not delete the entry."
       })
+            .done(response => {
+               if(response.success){
+                  this.data.entryId = null
+                  this.data.entryList = this.data.entryList.filter(e => e.id != response.id)
+                  this.trigger("entryListChanged", response.id)
+               }
+            })
    }
 
    loadEntryRevisions(){
@@ -596,7 +591,8 @@ class StoreClass {
             url: `${window.API_URL}${this.data.dictId}/history.json`,
             data: {
                   id: this.data.entryId
-            }
+            },
+            failMessage: "Revisions could not be loaded."
          })
                .done(response => {
                   if(response.history){
@@ -605,9 +601,6 @@ class StoreClass {
                      this.data.isEntryRevisionsLoaded = true
                      this.trigger("entryRevisionChanged")
                   }
-               })
-               .fail(response => {
-                  M.toast({html: "Revisions could not be loaded."})
                })
                .always(response => {
                   this.data.isEntryRevisionsLoading = false
@@ -621,11 +614,9 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entrylinks.json`,
          data: {
             id: this.data.entryId
-         }
+         },
+         failMessage: "Links could not be loaded."
       })
-            .fail(response => {
-               M.toast({html: "Links could not be loaded."})
-            })
    }
 
    createEntryLink(source_el, target_dict, target_id, target_el){
@@ -637,54 +628,39 @@ class StoreClass {
             target_dict: target_dict,
             target_id: target_id,
             target_el: target_el
-         }
+         },
+         failMessage: "Could not create the link.",
+         successMessage: "The link was created."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Link created."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not create link."})
-            })
    }
 
    deleteEntryLink(linkId){
       return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/links/delete/${linkId}`
+         url: `${window.API_URL}${this.data.dictId}/links/delete/${linkId}`,
+         failMessage: "Could not delete the link.",
+         successMessage: "The link was deleted."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Link deleted."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Link could not be deleted."})
-            })
    }
 
    loadLinkables(dictId){
        return window.connection.get({
-         url: `${window.API_URL}${dictId}/linkablelist.json`
+         url: `${window.API_URL}${dictId}/linkablelist.json`,
+         failMessage: "Links could not be loaded."
       })
    }
 
    loadDictionaryLinks(){
       return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/links.json`
+         url: `${window.API_URL}${this.data.dictId}/links.json`,
+         failMessage: "Dictionary links could not be loaded."
       })
-            .fail(response => {
-               M.toast({html: "Dictionary links could not be loaded."})
-            })
    }
 
    loadSchemas(){
       return window.connection.get({
-         url: `${window.API_URL}schemaitems.json`
+         url: `${window.API_URL}schemaitems.json`,
+         failMessage: "Could not load schema templates."
       })
-            .fail(response => {
-               M.toast({html: "Could not load schema templates."})
-            })
    }
 
    loadFinalSchema(schemaItems){
@@ -692,13 +668,9 @@ class StoreClass {
          url: `${window.API_URL}schemafinal.json`,
          data: {
             schema_items: JSON.stringify(schemaItems)
-         }
+         },
+         failMessage: "Could not load final schema."
       })
-            .fail(response => {
-               if(response.statusText != "abort"){
-                  M.toast({html: "Could not load final schema."})
-               }
-            })
    }
 
    schemaToJSON(schema){
@@ -706,11 +678,9 @@ class StoreClass {
          url: `${window.API_URL}schema_to_json.json`,
          data: {
             schema: JSON.stringify(schema)
-         }
+         },
+         failMessage: "Could not transform schema to JSON format."
       })
-            .fail(response => {
-               M.toast({html: "Could not transform schema to JSON format."})
-            })
    }
 
    loadDictionaryConfig(configId){
@@ -718,7 +688,8 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/configread.json`,
          data: {
             id: configId
-         }
+         },
+         failMessage: `Could not load the data ('${configId}').`
       })
             .done(response => {
                if(response.success){
@@ -726,12 +697,6 @@ class StoreClass {
                      this.migrateConfigStructure(response.content)
                   }
                }
-            })
-            .fail(response => {
-               M.toast({html: `Could not load the data ('${configId}'): ${response.statusText}`})
-            })
-            .always(response => {
-
             })
    }
 
@@ -746,18 +711,15 @@ class StoreClass {
          data: {
             id: configId,
             content: JSON.stringify(data)
-         }
+         },
+         failMessage: `Could not save the data ('${configId}').`,
+         successMessage: "Saved"
       })
             .done(response => {
                if(response.success){
                   this.loadActualDictionary()
-                  M.toast({html: "Saved"})
                }
             })
-            .fail(response => {
-               M.toast({html: `Could not save the data ('${configId}'): ${response.statusText}`})
-            })
-            .always(response => {})
    }
 
    updateDictionaryAccess(users){
@@ -765,18 +727,15 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/dictaccessupdate.json`,
          data: {
             users: JSON.stringify(users)
-         }
+         },
+         failMessage: `Could not save the data ('users').`,
+         successMessage: "Saved"
       })
             .done(response => {
                if(response.success){
                   this.loadActualDictionary()
-                  M.toast({html: "Saved"})
                }
             })
-            .fail(response => {
-               M.toast({html: `Could not save the data ('users'): ${response.statusText}`})
-            })
-            .always(response => {})
    }
 
    updateDictionarySettings(data){
@@ -785,18 +744,15 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/dictsettingsupdate.json`,
          data: {
             configs: JSON.stringify(data)
-         }
+         },
+         failMessage: `Could not save the settings.`,
+         successMessage: "Saved"
       })
             .done(response => {
                if(response.success){
                   this.loadActualDictionary()
-                  M.toast({html: "Saved"})
                }
             })
-            .fail(response => {
-               M.toast({html: `Could not save the settings: ${response.statusText}`})
-            })
-            .always(response => {})
    }
 
    changeDictionaryUrl(url){
@@ -804,19 +760,17 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/move.json`,
          data: {
             url: url
-         }
+         },
+         failMessage: "Could not change the dictionary URL.",
+         successMessage: "Dictionary URL has been changed."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Dictionary URL has been changed."})
-               } else {
-                  M.toast({html: "Could not change the dictionary URL."})
-               }
-            })
    }
 
    isDictIdTaken(dictId){
-      return window.connection.get(`${window.API_URL}${dictId}/config.json`)
+      return window.connection.get({
+         url: `${window.API_URL}${dictId}/config.json`,
+         failMessage: "Could not check the dictionary ID."
+      })
    }
 
    importDictionaryConfiguration(data){
@@ -824,16 +778,14 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/importconfigs.json`,
          data: data,
          processData: false,
-         contentType: false
+         contentType: false,
+         failMessage: "Could not import the configuration.",
+         successMessage: "The configuration was imoported."
       })
             .done(response => {
                if(response.success){
                   this.loadActualDictionary()
-                  M.toast({html: "Configuration was imoported."})
                }
-            })
-            .fail(payload => {
-               M.toast({html: "Could not import configuration."})
             })
    }
 
@@ -842,66 +794,53 @@ class StoreClass {
          url: `${window.API_URL}exists.json`,
          data: {
             url: url
-         }
+         },
+         failMessage: "Could not check the dictionary URL."
       })
-            .fail(payload => {
-               M.toast({html: "Could not check dictionary URL."})
-            })
    }
 
    createDictionary(data, xhrParams={}){
       return window.connection.post(Object.assign({
          url: `${window.API_URL}make.json`,
          method: 'POST',
-         data: data
+         data: data,
+         failMessage: "Could not create the dictionary.",
+         successMessage: "The dictionary was created."
       }, xhrParams))
             .done(response => {
                if(response.success) {
                   this.loadDictionaryList()
-                  M.toast({html: "Dictionary was created."})
                }
-            })
-            .fail(response => {
-               M.toast({html: "Could not create dictionary."})
             })
    }
 
    cloneDictionary(dictId){
       return window.connection.post({
-         url: `${window.API_URL}${dictId}/clone.json`
+         url: `${window.API_URL}${dictId}/clone.json`,
+         failMessage: "Could not clone the dictionary.",
+         successMessage: "The dictionary was cloned."
       })
             .done(response => {
                if(response.success){
                   this._setDictionaryList(response.dicts)
-                  M.toast({html: "Dictionary was cloned."})
                   this.changeDictionary(response.dictID)
                   this.one("dictionaryChanged", () => {
                      route(response.dictID)
                   })
                }
             })
-            .fail(response => {
-               M.toast({html: "Dictionary clone creation failed."})
-            })
-            .always(response => {
-            })
    }
 
    deleteDictionary(dictId){
       return window.connection.post({
          url: `${window.API_URL}${dictId}/destroy.json`,
+         failMessage: "Could not delete the dictionary.",
+         successMessage: "The dictionary was deleted."
       })
             .done(response => {
                if(response.success){
                   this._setDictionaryList(response.dicts)
-                  M.toast({html: "Dictionary was deleted."})
                }
-            })
-            .fail(response => {
-               M.toast({html: "Could not delete the dictionary."})
-            })
-            .always(response => {
-
             })
    }
 
@@ -909,67 +848,49 @@ class StoreClass {
       this.setDictionaryAttribute(dictId, "isSaving", true)
       this.trigger("favoriteChanged")
       return window.connection.post({
-            url: `${window.API_URL}changefavdict.json`,
-            data: {
-               dictId: dictId,
-               status: favorite
-            }
-         })
-               .done(function(dictId, response) {
-                  if(response.success){
-                     this.setDictionaryAttribute(dictId, "favorite", favorite)
-                     if(favorite && !this.getDictionary(dictId)){
-                        // if user add public dictionary to the favorite list, we need to reload
-                        // user dictionary list - it contains favorite dictionaries
-                        this.loadDictionaryList()
-                     }
+         url: `${window.API_URL}changefavdict.json`,
+         data: {
+            dictId: dictId,
+            status: favorite
+         },
+         failMessage: `Could not ${favourite ? 'add the dictionary to favourites' : 'remove the dictionary from favourites'}.`
+      })
+            .done(function(dictId, response) {
+               if(response.success){
+                  this.setDictionaryAttribute(dictId, "favorite", favorite)
+                  if(favorite && !this.getDictionary(dictId)){
+                     // if user add public dictionary to the favorite list, we need to reload
+                     // user dictionary list - it contains favorite dictionaries
+                     this.loadDictionaryList()
                   }
-               }.bind(this, dictId))
-               .fail(response => {
-               })
-               .always(() => {
-                  this.setDictionaryAttribute(dictId, "isSaving", false)
-                  this.trigger("favoriteChanged")
-               })
+               }
+            }.bind(this, dictId))
+            .always(() => {
+               this.setDictionaryAttribute(dictId, "isSaving", false)
+               this.trigger("favoriteChanged")
+            })
    }
 
    loadAdminDictionaryList(searchtext, howmany){
       return window.connection.post({
-            url: `${window.API_URL}dicts/dictlist.json`,
-            data: {
-               searchtext: searchtext || "",
-               howmany: howmany || 100
-            }
-         })
-            .fail(response => {
-               M.toast({html: "Dictionary list could not be loaded."})
-            })
-   }
-
-   _setDictionaryList(dictionaryList){
-      this.data.dictionaryList = dictionaryList || []
-      this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
-      this.data.dictionaryList.forEach(d => {
-         if(!d.owners.includes(window.auth.data.email)){
-            d.shared = true
-         }
+         url: `${window.API_URL}dicts/dictlist.json`,
+         data: {
+            searchtext: searchtext || "",
+            howmany: howmany || 100
+         },
+         failMessage: "Dictionary list could not be loaded."
       })
-      this.trigger("dictionaryListChanged")
    }
 
    loadAdminUserList(searchtext, howmany){
       return window.connection.post({
-            url: `${window.API_URL}users/userlist.json`,
-            data: {
-               searchtext: searchtext || "",
-               howmany: howmany || 100
-            }
-         })
-            .fail(response => {
-               if(response.statusText != "abort"){
-                  M.toast({html: "User list could not be loaded."})
-               }
-            })
+         url: `${window.API_URL}users/userlist.json`,
+         data: {
+            searchtext: searchtext || "",
+            howmany: howmany || 100
+         },
+         failMessage: "User list could not be loaded."
+      })
    }
 
    createUser(email, isManager){
@@ -978,16 +899,10 @@ class StoreClass {
          data: {
             id: email,
             manager: isManager
-         }
+         },
+         failMessage: "The user could not be created.",
+         successMessage: "The user was created."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "User was created."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "User could not be created."})
-            })
    }
 
    loadUsers(searchtext, howmany){
@@ -996,13 +911,9 @@ class StoreClass {
          data: {
             searchtext: searchtext,
             howmany: howmany
-         }
+         },
+         failMessage: "Could not load users."
       })
-            .fail(response => {
-               if(response.statusText != "abort"){
-                  M.toast({html: "Could not load users."})
-               }
-            })
    }
 
    getUser(email){
@@ -1010,7 +921,8 @@ class StoreClass {
          url: `${window.API_URL}users/userread.json`,
          data: {
             id: email
-         }
+         },
+         failMessage: "Could not load user details."
       })
    }
 
@@ -1019,18 +931,10 @@ class StoreClass {
          url: `${window.API_URL}users/userdelete.json`,
          data: {
             id: email
-         }
+         },
+         failMessage: "The user could not be deleted.",
+         successMessage: "The user was deleted."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "User was deleted."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "User could not be deleted."})
-            })
-            .always(response => {
-            })
    }
 
    changeSketchEngineUsername(ske_username){
@@ -1038,16 +942,10 @@ class StoreClass {
          url: `${window.API_URL}changeskeusername.json`,
          data: {
             ske_userName: ske_username
-         }
+         },
+         failMessage: "Sketch Engine username could not be changed.",
+         successMessage: "Sketch Engine username was changed."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Sketch Engine username was changed."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Sketch Engine username could not be changed."})
-            })
    }
 
    changeSketchEngineApiKey(ske_apiKey){
@@ -1055,16 +953,10 @@ class StoreClass {
          url: `${window.API_URL}changeskeapi.json`,
          data: {
             ske_apiKey: ske_apiKey
-         }
+         },
+         failMessage: "Sketch Engine API key could not be changed.",
+         successMessage: "Sketch Engine API key was changed."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Sketch Engine API key was changed."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Sketch Engine API key could not be changed."})
-            })
    }
 
    changePassword(password){
@@ -1072,16 +964,10 @@ class StoreClass {
          url: `${window.API_URL}changepwd.json`,
          data: {
             ske_apiKey: ske_apiKey
-         }
+         },
+         failMessage: "The password could not be changed.",
+         successMessage: "The password was changed."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Password was changed."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Password could not be changed."})
-            })
    }
 
    changeLexonomyApiKey(apiKey){
@@ -1089,41 +975,15 @@ class StoreClass {
          url: `${window.API_URL}changeoneclickapi.json`,
          data: {
             apiKey: apiKey
-         }
+         },
+         failMessage: "API key could not be changed.",
+         successMessage: `API key was ${apiKey ? 'changed' : 'removed'}.`
       })
             .done(response => {
                if(response.success){
                   window.auth.data.apiKey = apiKey
-                  if(apiKey){
-                     M.toast({html: "API key was changed."})
-                  } else {
-                     M.toast({html: "API key was removed."})
-                  }
                }
             })
-            .fail(response => {
-               M.toast({html: "API key could not be changed."})
-            })
-   }
-
-
-
-   _setElementValue(elementSelector, value){
-      // used to update element value changed in DB otherwise than in NVH editor
-      // updates: element value in this.data.entry.nvh (entry in NVH format, string)
-      //        : element in nvhStore.data.entry (entry in JSON format)
-      let nvhStore = window.nvhStore
-      let nvhStoreElement = nvhStore.findElement(elementSelector)
-      if(nvhStoreElement){
-         nvhStoreElement.value = value
-         let jsonEntry = nvhStore.nvhToJson(this.data.entry.nvh)
-         let element = nvhStore.findElement(elementSelector, jsonEntry)
-         if(element){
-            element.value = value
-            this.data.entry.nvh = nvhStore.jsonToNvh(jsonEntry)
-            nvhStore.trigger("updateElements", [nvhStoreElement])
-         }
-      }
    }
 
    setDictionaryAttribute(dictId, attrName, attrValue){
@@ -1138,14 +998,16 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/import.json`,
          data: data,
          processData: false,
-         contentType: false
+         contentType: false,
+         failMessage: "Could not import the file."
       })
    }
 
    checkImportProgress(upload_file_path){
       return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/getImportProgress.json`,
-         data: {upload_file_path: upload_file_path}
+         data: {upload_file_path: upload_file_path},
+         failMessage: "Could not check the import progress."
       })
             .done(response => {
                if(response.finished){
@@ -1163,6 +1025,7 @@ class StoreClass {
       this.trigger("isDictionaryExamplesLoadingChanged")
       return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/random.json`,
+         failMessage: "Could not load the examples."
       })
             .done(response => {
                if(response.entries){
@@ -1170,9 +1033,6 @@ class StoreClass {
                   this.data.dictionaryExamplesHasMore = response.more
                   this.trigger("dictionaryExamplesChanged")
                }
-            })
-            .fail(response => {
-               M.toast({html: "Could not load the examples."})
             })
             .always(response => {
                this.data.isDictionaryExamplesLoading = false
@@ -1187,7 +1047,8 @@ class StoreClass {
       this.data.isEntryLoading = true
       this.trigger("isEntryLoadingChanged")
       return window.connection.post({
-         url: `${window.API_URL}${this.data.dictId}/randomone.json`
+         url: `${window.API_URL}${this.data.dictId}/randomone.json`,
+         failMessage: "Could not load the example."
       })
             .done(response => {
                if(response.success){
@@ -1200,9 +1061,6 @@ class StoreClass {
                   this.trigger("entryChanged")
                }
             })
-            .fail(response => {
-               M.toast({html: "Could not load the example."})
-            })
             .always(response => {
                this.data.isEntryLoading = false
                this.trigger("isEntryLoadingChanged")
@@ -1211,100 +1069,65 @@ class StoreClass {
 
    loadProjects(){
       return window.connection.get({
-         url: `${window.API_URL}projects/list.json`
+         url: `${window.API_URL}projects/list.json`,
+         failMessage: "Could not load projects."
       })
-            .fail(response => {
-               M.toast({html: "Could not load projects."})
-            })
    }
 
    loadProject(projectID){
       return window.connection.get({
-         url: `${window.API_URL}projects/${projectID}/project.json`
+         url: `${window.API_URL}projects/${projectID}/project.json`,
+         failMessage: "Could not load the project."
       })
    }
 
    createProject(project){
       return window.connection.post({
          url: `${window.API_URL}projects/create.json`,
-         data: project
+         data: project,
+         failMessage: "Could not create the project.",
+         successMessage: "The project was created."
       })
-            .done(response => {
-               if(response.error){
-                  M.toast({html: `Could not create the project: ${response.error}`})
-               } else if(response.success) {
-                  M.toast({html: "Project was created."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not create the project."})
-            })
    }
 
    updateProject(project){
       return window.connection.post({
          url: `${window.API_URL}projects/${project.id}/update.json`,
-         data: project
+         data: project,
+         failMessage: "Could not update the project.",
+         successMessage: "The project was updated."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Project was updated."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not update the project."})
-            })
    }
 
    archiveProject(projectID){
       return window.connection.post({
-         url: `${window.API_URL}projects/${projectID}/archive.json`
+         url: `${window.API_URL}projects/${projectID}/archive.json`,
+         failMessage: "Could not archive the project.",
+         successMessage: "The project was archived."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Project was archived."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not archive the project."})
-            })
    }
 
    unarchiveProject(projectID){
       return window.connection.post({
-         url: `${window.API_URL}projects/${projectID}/unarchive.json`
+         url: `${window.API_URL}projects/${projectID}/unarchive.json`,
+         failMessage: "Could not unarchive the project.",
+         successMessage: "The project was unarchived."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Project was unarchived."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not unarchive the project."})
-            })
    }
 
    deleteProject(projectID){
       return window.connection.post({
-         url: `${window.API_URL}projects/${projectID}/delete.json`
+         url: `${window.API_URL}projects/${projectID}/delete.json`,
+         failMessage: "Could not delete the project.",
+         successMessage: "The project was deleted."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Project was deleted."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not delete the project."})
-            })
    }
 
    loadWorkflows(){
       return window.connection.get({
-         url: `${window.API_URL}wokflows/list.json`
+         url: `${window.API_URL}wokflows/list.json`,
+         failMessage: "Could not load list of workflows."
       })
-            .fail(response => {
-               M.toast({html: "Could not load list of workflows."})
-            })
    }
 
    projectUpdateSourceDict(projectID, dictId){
@@ -1313,11 +1136,10 @@ class StoreClass {
          data: {
             id: projectID,
             source_dict_id: dictId
-         }
+         },
+         failMessage: "Could not update the central dictionary.",
+         successMessage: "The central dictionary was updated."
       })
-            .fail(response => {
-               M.toast({html: "Could not update central dictionary."})
-            })
    }
 
    projectExportBatches(projectID, stage, size, count){
@@ -1327,16 +1149,10 @@ class StoreClass {
             stage: stage,
             size: size,
             batch_number: count,
-         }
+         },
+         failMessage: "Could not create the batches.",
+         successMessage: "The batches were created."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Batches were created."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not create batches."})
-            })
    }
 
    projectDeleteBatches(projectID, dictID_list){
@@ -1344,18 +1160,10 @@ class StoreClass {
          url: `${window.API_URL}projects/${projectID}/delete_batch.json`,
          data: {
             dictID_list: JSON.stringify(dictID_list)
-         }
+         },
+         failMessage: "Could not delete selected batches.",
+         successMessage: "Selected batches were deleted."
       })
-            .done(response => {
-               if(response.error){
-                  M.toast({html: "Could not delete selected batches."})
-               } else {
-                  M.toast({html: "Selected batches were deleted."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not delete selected batches."})
-            })
    }
 
    projectAssignBatch(projectID, assignees){
@@ -1363,15 +1171,10 @@ class StoreClass {
          url: `${window.API_URL}projects/${projectID}/assign_batch.json`,
          data: {
             assignees: JSON.stringify(assignees)
-         }
+         },
+         failMessage: "Could not assign the editor to the batch.",
+         successMessage: "The editor was asigned to the batch."
       })
-            .done(response => {
-               if(response.error){
-                  M.toast({html: "Could not assign editor to the batch."})
-               } else {
-                  M.toast({html: "Editor was asigned to the batch."})
-               }
-            })
    }
 
    projectAcceptBatches(projectID, dictID_list){
@@ -1379,15 +1182,10 @@ class StoreClass {
          url: `${window.API_URL}projects/${projectID}/accept_batch.json`,
          data: {
             dictID_list: JSON.stringify(dictID_list)
-         }
+         },
+         failMessage: "Could not accept the batch.",
+         successMessage: "The batch was accepted."
       })
-            .done(response => {
-               if(response.error){
-                  M.toast({html: "Could not accept the batch."})
-               } else {
-                  M.toast({html: "Batch was accepted."})
-               }
-            })
    }
 
    projectRejectBatches(projectID, dictID_list){
@@ -1395,15 +1193,10 @@ class StoreClass {
          url: `${window.API_URL}projects/${projectID}/reject_batch.json`,
          data: {
             dictID_list: JSON.stringify(dictID_list)
-         }
+         },
+         failMessage: "Could not reject the batch.",
+         successMessage: "The batch was rejected."
       })
-            .done(response => {
-               if(response.error){
-                  M.toast({html: "Could not reject the batch."})
-               } else {
-                  M.toast({html: "Batch was rejected."})
-               }
-            })
    }
 
    projectImportAcceptedBatches(projectID, stage){
@@ -1411,54 +1204,40 @@ class StoreClass {
          url: `${window.API_URL}projects/${projectID}/make_stage.json`,
          data: {
             stage: stage
-         }
+         },
+         failMessage: "Could not import the batches.",
+         successMessage: "The batches were imported."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "Batches were improted."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "Could not import batches."})
-            })
    }
 
    skeLoadCorpora(){
       return window.connection.get({
-         url: `${window.API_URL}user_corpora.json`
+         url: `${window.API_URL}user_corpora.json`,
+         failMessage: "Could not load Sketch Engine corpora."
       })
-            .fail(response => {
-               M.toast({html: "Could not load Sketch Engine corpora."})
-            })
    }
 
    skeLoadData(method, data){
       //$.get("/"+dictId+"/skeget/xampl/", {url: kex.apiurl, corpus: kex.corpus, username: ske_username, apikey: ske_apiKey, querytype: querytype, query: query, fromp: fromp}, function(json){
       return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/skeget/${method}`,
-         data: data
+         data: data,
+         failMessage: "Could not load Sketch Engine data."
       })
-            .fail(response => {
-               M.toast({html: "Could not load Sketch Engine data."})
-            })
    }
 
    loadKontextCorpora(){
       return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/kontext/corpora`
+         url: `${window.API_URL}${this.data.dictId}/kontext/corpora`,
+         failMessage: "Could not load Kontext corpora."
       })
-            .fail(response => {
-               M.toast({html: "Could not load Kontext corpora."})
-            })
    }
 
    suggestUrl(){
       return window.connection.get({
-         url: `${window.API_URL}makesuggest.json`
+         url: `${window.API_URL}makesuggest.json`,
+         failMessage: "Could not generate URL of the new dictionary."
       })
-            .fail(response => {
-               M.toast({html: "Could not generate URL of the new dictionary."})
-            })
    }
 
    autoAddImages(addElem, addNumber){
@@ -1467,22 +1246,17 @@ class StoreClass {
          data: {
             "addElem": addElem,
             "addNumber": addNumber
-         }
+         },
+         failMessage: "Could not automatically add images."
       })
-            .fail(response => {
-               M.toast({html: "Could not automatically add images."})
-            })
    }
 
    autoAddImagesGetProgress(jobId){
       return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/autoimageprogress.json`,
-         data: {jobid: jobId}
+         data: {jobid: jobId},
+         failMessage: "Could not check image generation progress."
       })
-            .fail(response => {
-               M.toast({html: "Could not check image generation progress."})
-            })
-
    }
 
    autonumberElements(countElem, storeElem){
@@ -1491,24 +1265,20 @@ class StoreClass {
          data: {
             "countElem": countElem,
             "storeElem": storeElem
-         }
+         },
+         failMessage: "Autonumbering failed."
       })
-            .fail(response => {
-               M.toast({html: "Autonumbering failed."})
-            })
    }
 
    sendFeedback(email, text){
       return window.connection.post({
-            url: `${window.API_URL}feedback.json`,
-            data: {
-               email: email,
-               text: text
-            }
-         })
-            .fail(response => {
-               M.toast({html: "Could not send the feedback."})
-            })
+         url: `${window.API_URL}feedback.json`,
+         data: {
+            email: email,
+            text: text
+         },
+         failMessage: "Could not send the feedback."
+      })
    }
 
    showBrokenStructureDialog(){
@@ -1841,6 +1611,35 @@ class StoreClass {
          return o[1]
       }
       throw "Unknown operator " + str
+   }
+
+   _setElementValue(elementSelector, value){
+      // used to update element value changed in DB otherwise than in NVH editor
+      // updates: element value in this.data.entry.nvh (entry in NVH format, string)
+      //        : element in nvhStore.data.entry (entry in JSON format)
+      let nvhStore = window.nvhStore
+      let nvhStoreElement = nvhStore.findElement(elementSelector)
+      if(nvhStoreElement){
+         nvhStoreElement.value = value
+         let jsonEntry = nvhStore.nvhToJson(this.data.entry.nvh)
+         let element = nvhStore.findElement(elementSelector, jsonEntry)
+         if(element){
+            element.value = value
+            this.data.entry.nvh = nvhStore.jsonToNvh(jsonEntry)
+            nvhStore.trigger("updateElements", [nvhStoreElement])
+         }
+      }
+   }
+
+   _setDictionaryList(dictionaryList){
+      this.data.dictionaryList = dictionaryList || []
+      this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
+      this.data.dictionaryList.forEach(d => {
+         if(!d.owners.includes(window.auth.data.email)){
+            d.shared = true
+         }
+      })
+      this.trigger("dictionaryListChanged")
    }
 }
 

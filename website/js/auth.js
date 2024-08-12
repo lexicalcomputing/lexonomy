@@ -23,9 +23,9 @@ class AuthClass {
       if (!this.data.email) {
          this.data.isCheckingAuth = true
          this.trigger("checkingAuthChanged")
-         return $.ajax({
+         return window.connection.post({
             url: `${window.API_URL}login.json`,
-            method: 'POST'
+            failMessage: "Could not check authorization cookie."
          })
                .done(response => {
                   if (response.success) {
@@ -34,7 +34,6 @@ class AuthClass {
                      this.trigger("authChanged")
                   }
                })
-               .fail(response => {})
                .always(() => {
                   this.data.isCheckingAuth = false
                   this.trigger("checkingAuthChanged")
@@ -45,9 +44,8 @@ class AuthClass {
    login(email, password){
       this.data.isCheckingAuth = true
       this.trigger("checkingAuthChanged")
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}login.json`,
-            method: 'POST',
             data: {
                email: email,
                password: password
@@ -58,61 +56,51 @@ class AuthClass {
                      Object.assign(this.data, response)
                      this.data.authorized = true;
                      this.trigger("authChanged")
-                  } else {
-                     M.toast({html: "You have entered an invalid email or password."})
                   }
                })
-               .fail(response => {})
-               .always(() => {
+               .always((response) => {
                   this.data.isCheckingAuth = false
                   this.trigger("checkingAuthChanged")
+                  if(!response){
+                     window.showToast("Login failed.")
+                  } else if(!response.success){
+                     window.showToast("You have entered an invalid email or password.")
+                  }
                })
    }
 
    register(email){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}signup.json`,
-            method: 'POST',
             data: {
                email: email
-            }
+            },
+            failMessage: "Registration failed.",
+            successMessage: "Registration was successfully completed."
+
          })
-               .done(response => {
-                  this.trigger("registrationComplete", {error: response.success ? "" : "Incorrect e-mail."})
-               })
-               .fail(response => {
-                  this.trigger("registrationComplete", {error: "Incorrect e-mail."})
-               })
-               .always(response => {
-               })
    }
 
    registerPassword(token, password){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}createaccount.json`,
-            method: 'POST',
             data: {
                token: token,
                password: password
-            }
+            },
+            failMessage: "Could not create the account",
+            successMessage: "The account was created."
          })
-               .done(response => {
-                  this.trigger("registerPasswordComplete", {error: response.success ? "" : "Error while creating account."})
-               })
-               .fail(response => {
-                  this.trigger("registerPasswordComplete", {error: "Error while creating account."})
-               })
-               .always(response => {
-               })
    }
 
    requestResetPassword(email){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}forgotpwd.json`,
-            method: 'POST',
             data: {
                email: email
-            }
+            },
+            failMessage: "Could not request password reset.",
+            successMessage: "Link to reset password was sent to your email."
          })
    }
 
@@ -122,64 +110,47 @@ class AuthClass {
          data: {
             email: email,
             password: password
-         }
+         },
+         failMessage: "User password could not be set.",
+         successMessage: "User password was set."
       })
-            .done(response => {
-               if(response.success){
-                  M.toast({html: "User password was set."})
-               }
-            })
-            .fail(response => {
-               M.toast({html: "User password could not be set."})
-            })
    }
 
    resetPassword(token, password){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}recoverpwd.json`,
-            method: 'POST',
             data: {
                token: token,
                password: password
-            }
+            },
+            failMessage: "Could not set the password."
          })
-               .done(response => {
-                  this.trigger("passwordResetComplete", {error: response.success ? "" : "Error while accessing account."})
-               })
-               .fail(response => {
-                  this.trigger("passwordResetComplete", {error: "Error while accessing account."})
-               })
-               .always(response => {
-               })
    }
 
    verifyToken(token, type){
-      return $.ajax({
+      return window.connection.post({
             url: `${window.API_URL}verifytoken.json`,
-            method: 'POST',
             data: {
                token: token,
                type: type
-            }
+            },
+            failMessage: "Could not verify the token."
          })
    }
 
    consent(){
       this.data.isCheckingAuth = true
       this.trigger("checkingAuthChanged")
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}consent.json`,
-         method: 'POST',
          data: {
             consent: 1
-         }
+         },
+         failMessage: "Could not save the consent."
       })
             .done(response => {
                this.data.consent = true
                this.trigger("authChanged")
-            })
-            .fail(response => {
-               M.toast("Could not save the consent.")
             })
             .always(response => {
                this.data.isCheckingAuth = false
@@ -190,17 +161,14 @@ class AuthClass {
    logout(){
       this.data.isCheckingAuth = true
       this.trigger("checkingAuthChanged")
-      return $.ajax({
+      return window.connection.post({
          url: `${window.API_URL}logout.json`,
-         method: 'POST'
+         failMessage: "Could not log out."
       })
             .done(() => {
                this.data.authorized = false;
                this.resetUser()
                this.trigger("authChanged")
-            })
-            .fail(response => {
-               M.toast({html: "Could not log out."})
             })
             .always(() => {
                this.data.isCheckingAuth = false
@@ -213,7 +181,7 @@ class AuthClass {
          this.data.authorized = false;
          this.resetUser()
          this.trigger("authChanged")
-         M.toast({html: "Your session has expired."})
+         window.showToast("Your session has expired.")
       }
    }
 
