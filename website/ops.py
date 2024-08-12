@@ -1513,11 +1513,11 @@ def importfile(dictID, email, hwNode, deduplicate=False, clean=False, purge=Fals
     params = []
     if deduplicate:
         params.append('-d')
-    elif purge:
+    if purge:
         params.append('-p')
-    elif purge_all:
+    if purge_all:
         params.append('-pp')
-    elif clean:
+    if clean:
         params.append('-c')
 
     subprocess.Popen([currdir + "/import2dict.py", dbpath, file_path, email, hwNode] + params,
@@ -1687,6 +1687,7 @@ def updateDictConfig(dictDB, dictID, configID, content):
         if not c.fetchone():
             dictDB.execute("CREATE TABLE linkables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, element TEXT, preview TEXT)")
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
+            dictDB.commit()
         return content, resaveNeeded
     # elif configID == 'flagging':
     #     if content['flags']:

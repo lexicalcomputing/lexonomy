@@ -144,7 +144,7 @@ def update_project_source_dict(project_id, src_dict_id):
             f.write(nvh)
 
     conn = ops.getMainDB()
-    conn.execute("UPDATE project SET src_dic_id=? WHERE id=?)"
+    conn.execute("UPDATE project SET src_dic_id=? WHERE id=?"
                  (src_dict_id, project_id))
     conn.execute("UPDATE project_dicts SET source_nvh=? WHERE project_id=? AND stage=?",
                  (os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), project_id, '__nvh_source__'))
@@ -221,7 +221,7 @@ def getProject(projectID):
         elif r0['role'] == 'manager':
             managers.append(r0['user_email'])
         else:
-            raise Exception('problem in user_projects databse')
+            raise Exception('problem in user_projects database')
 
     # ======================
     # Stage info in DB
@@ -331,7 +331,7 @@ def getProject(projectID):
 
             if entry_count > 0 and b['status'] != 'creating':
                 batches.append({'dictID': b['dict_id'], 'title': b['title'],
-                                'competed': completed_entries, 'total': entry_count,
+                                'completed': completed_entries, 'total': entry_count,
                                 'completed_per': (completed_entries / entry_count) * 100,
                                 'assignee': b['assignee'], 'status': b['status'],
                                 'created': b['created']
@@ -582,7 +582,10 @@ def deleteBatch(project_id, dictID_list):
         out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
         shutil.rmtree(out_nvh_file_name, ignore_errors=True)
 
+        # DELETE batch form project
         mainDB.execute('DELETE project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        # DELETE dict from lexonomy
+        ops.destroyDict(dictID)
 
     mainDB.close()
     refresh_selected_stages(project_id, all_stages)
