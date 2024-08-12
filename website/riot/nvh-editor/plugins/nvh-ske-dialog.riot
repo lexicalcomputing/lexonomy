@@ -8,7 +8,7 @@
                oninput={onInput}
                onkeyup={onKeyUp}
                value={props.searchWord}/>
-         <label>{props.method == "xampl" ? "Simple search" : "Search"}</label>
+         <label>{props.method == "examples" ? "Simple search" : "Search"}</label>
          <button class="btn"
                onclick={search}>
             <i class="material-icons">search</i>
@@ -21,13 +21,13 @@
                oninput={onInput}
                onkeyup={onKeyUp}
                value={'[lemma="' + props.searchWord + '"]'}/>
-         <label for="kex_concsampling">CQL</label>
+         <label>CQL</label>
          <button class="btn"
                onclick={search}>
             <i class="material-icons">search</i>
          </button>
       </div>
-      <div if={props.method == "xampl"}
+      <div if={props.method == "examples"}
             class="nvh-ske-cql-checkbox">
          <label class="checkbox">
            <input type="checkbox"
@@ -84,13 +84,13 @@
             this.nvhData = this.nvhStore.data
             this.state.query = this.props.searchWord
             this.state.cql = `[lemma="${this.props.searchWord}"]`
-            let methodName = {
-               xampl: "examples",
-               thes: "thesaurus",
-               collx: "collocations",
-               defo: "definitions"
+            this.state.title = `Sketch Engine ${this.props.method}`
+            this.state.containerName =  {
+               examples: "exampleContainer",
+               definitions: "definitionContainer",
+               thesaurus: "thesaurusContainer",
+               collocations: "collocationContainer"
             }[this.props.method]
-            this.state.title = `Sketch Engine ${methodName}`
          },
 
          onMounted(){
@@ -125,8 +125,7 @@
          },
 
          onRowClick(row, evt){
-            let elementName = this.dictData.config[this.props.method].container
-            let element = this.nvhStore._addChildElement(this.nvhData.detachedEntry, elementName)
+            let element = this.nvhStore._addChildElement(this.nvhData.detachedEntry, this.state.containerName)
             element.value = $(evt.target).text()
             this.state.data = this.state.data.filter(r => r != row)
             this.update()
@@ -145,11 +144,11 @@
             let config = this.dictData.config
             let data = {
                url: this.dictData.siteconfig.api_url,
-               corpus: config.kex.corpus,
+               corpus: config.ske.corpus,
                username: this.authData.ske_username,
                apikey: this.authData.ske_apiKey
             }
-            if(this.props.method == "xampl"){
+            if(this.props.method == "examples"){
                data.query = this.state.query
                data.querytype = this.state.useCQL ? "skecql" : "skesimple"
             } else {
@@ -160,15 +159,15 @@
                      if(response.error){
                         this.state.error = response.error
                      } else {
-                        if(this.props.method == "xampl" || this.props.method == "defo"){
+                        if(this.props.method == "examples" || this.props.method == "definitions"){
                            this.state.data = response.Lines.map(line => {
                               return line.Left.reduce((all, part) => {return all + part.str}, "")
                                     + line.Kwic.reduce((all, part) => {return all + part.str}, "")
                                     + line.Right.reduce((all, part) => {return all + part.str}, "")
                            })
-                        } else if(this.props.method == "collx"){
+                        } else if(this.props.method == "collocations"){
                            this.state.data = response.Items.map(item => item.word)
-                        } else if(this.props.method == "thes"){
+                        } else if(this.props.method == "thesaurus"){
                            this.state.data = response.Words.map(item => item.word)
                         }
                      }

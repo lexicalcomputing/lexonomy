@@ -11,39 +11,39 @@ window.nvhPlugins.ske = {
    hasSearchOptions(element){
       let config = window.store.data.config
       return ((element.name == config.structure.root)
-               || (config.kex.searchElements.includes(element.name)))
+               || (config.ske.searchElements.includes(element.name)))
    },
 
    hasExamples: function(element) {
       let config = window.store.data.config
       return element.name == config.structure.root
-            && config.structure.elements[config.xampl.container]
+            && config.structure.elements[config.ske.exampleContainer]
    },
 
    hasCollocations: function(element) {
       let config = window.store.data.config
       return element.name == config.structure.root
-            && config.structure.elements[config.collx.container]
+            && config.structure.elements[config.ske.collocationContainer]
    },
 
    hasThesaurus: function(element) {
       let config = window.store.data.config
       return element.name == config.structure.root
-            && config.structure.elements[config.thes.container]
+            && config.structure.elements[config.ske.thesaurusContainer]
    },
 
    hasDefinitions: function(element) {
       let config = window.store.data.config
       return element.name == config.structure.root
-            && config.structure.elements[config.defo.container]
+            && config.structure.elements[config.ske.definitionContainer]
    },
 
    hasSkeConnectionSettings: function() {
       let config = window.store.data.config
       let authData = window.auth.data
       return window.store.data.siteconfig.api_url
-            && config.kex
-            && config.kex.corpus
+            && config.ske
+            && config.ske.corpus
             && authData.ske_username
             && authData.ske_apiKey
    },
@@ -63,8 +63,8 @@ window.nvhPlugins.ske = {
    getConcordanceOperations(element, searchWord){
       let config = window.store.data.config
       let operations = []
-      if (element.name == config.structure.root && config.kex.concquery.length > 0) {
-         let cql = config.kex.concquery.replace(/%\([^)]+\)/g, function (match) {
+      if (element.name == config.structure.root && config.ske.concquery.length > 0) {
+         let cql = config.ske.concquery.replace(/%\([^)]+\)/g, function (match) {
             let elementName = match.substring(2, match.length - 1)
             let element = window.nvhStore.findElement(el => el == elementName)
             return element ? element.value : ""
@@ -87,11 +87,11 @@ window.nvhPlugins.ske = {
             }
          })
       }
-      if(config.kex.concsampling > 0){
+      if(config.ske.concsampling > 0){
          operations.push({
             "name": "sample",
-            "arg": config.kex.concsampling,
-            "query": {"q": "r" + config.kex.concsampling}
+            "arg": config.ske.concsampling,
+            "query": {"q": "r" + config.ske.concsampling}
          })
       }
      return operations
@@ -119,15 +119,15 @@ window.nvhPlugins.ske = {
             ? this.getHeadword()
             : element.value
       this.hasExamples(element) && dropdownContent.append($(`<li><a>Find examples<i class="material-icons left">search</i></a></li>`)
-            .click(this.openSkeDialog.bind(this, "xampl", searchWord)))
+            .click(this.openSkeDialog.bind(this, "examples", searchWord)))
       this.hasCollocations(element) && dropdownContent.append($(`<li><a>Find collocations<i class="material-icons left">search</i></a></li>`)
-            .click(this.openSkeDialog.bind(this, "collx", searchWord)))
+            .click(this.openSkeDialog.bind(this, "collocations", searchWord)))
       this.hasThesaurus(element) && dropdownContent.append($(`<li><a>Find thesaurus items<i class="material-icons left">search</i></a></li>`)
-            .click(this.openSkeDialog.bind(this, "thes", searchWord)))
+            .click(this.openSkeDialog.bind(this, "thesaurus", searchWord)))
       this.hasDefinitions(element) && dropdownContent.append($(`<li><a>Find definitions<i class="material-icons left">search</i></a></li>`)
-            .click(this.openSkeDialog.bind(this, "defo", searchWord)))
+            .click(this.openSkeDialog.bind(this, "definitions", searchWord)))
       if(searchWord && this.hasSearchOptions(element)){
-         let corpus = encodeURIComponent(config.kex.corpus)
+         let corpus = encodeURIComponent(config.ske.corpus)
          let concordanceOperations = encodeURIComponent(JSON.stringify(this.getConcordanceOperations(element, searchWord)))
          dropdownContent.append($(`<li><a href="${window.store.data.siteconfig.ske_url}/#wordsketch?corpname=${corpus}&lemma=${searchWord}&showresults=1" target="_blank">Show Word Sketch<i class="material-icons left">open_in_new</i></a></li>`))
          dropdownContent.append($(`<li><a href="${window.store.data.siteconfig.ske_url}/#concordance?corpname=${corpus}&operations=${concordanceOperations}&showresults=1" target="_blank">Show Concordance<i class="material-icons left">open_in_new</i></a></li>`))

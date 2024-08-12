@@ -41,6 +41,21 @@ def migrate_to_3_0(config):
     if 'subbing' in config:
         del config['subbing']
 
+    config['ske'] = {}
+    if 'kex' in config:
+        for key in ['corpus', 'concquery', 'concsampling', 'searchElements']:
+            if key in config['kex']:
+                config['ske'][key] = config['kex'][key]
+    for source, dest in [
+        ('xampl', 'exampleContainer'),
+        ('thes', 'thesaurusContainer'),
+        ('defo', 'definitionContainer'),
+        ('collx', 'collocationContainer')
+    ]:
+        if source in config and 'container' in config[source]:
+            config['ske'][dest] = config[source]['container']
+    _delete_keys(config, ['kex', 'xampl', 'thes', 'defo', 'collx'])
+
     return config
 
 
