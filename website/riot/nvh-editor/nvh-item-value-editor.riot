@@ -41,11 +41,11 @@
          value={props.element.value}
          onkeyup={onKeyUp}/>
    <span if={state.config.type == "bool"}>
-      <label>
+      <label class="mr-6">
          <input name="bool"
                type="radio"
                value=1
-               checked={props.element.value == 1}
+               checked={[true, 1, "yes"].includes(props.element.value)},
                onchange={onBoolChange}/>
          <span>Yes</span>
       </label>
@@ -75,7 +75,10 @@
             this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
             this.state.showEditor = ["string", "markup", "image", "audio", "url"].includes(this.state.config.type)
             this.state.markupChildrenNames = this.state.config.children
-                  .filter(childName => this.nvhStore.getElementConfig(childName).type == "markup")
+                  .filter(childName => {
+                     let config = this.nvhStore.getElementConfig(childName)
+                     return config && config.type == "markup"
+               })
          },
 
          onMounted(){
