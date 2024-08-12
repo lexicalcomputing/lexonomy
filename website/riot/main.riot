@@ -27,9 +27,6 @@
          },
 
          onBeforeMount() {
-            $.ajaxSetup({
-               xhrFields: { withCredentials: true }
-            })
             route.parser(undefined, this.routeParser)
             let authPromise = this.auth.checkAuthCookie()
             let siteConfigPromise = this.store.loadSiteconfig().always(this.onSiteConfigLoaded)

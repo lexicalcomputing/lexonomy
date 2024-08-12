@@ -22,8 +22,9 @@ class AppUpdaterClass {
 
     loadVersion(){
         let random = (Math.random(1000000) + "").substr(2)
-        $.ajax({
-            url: `${this.URL}?${random}`
+        window.connection.get({
+            url: `${this.URL}?${random}`,
+            failMessage: "Could not check the Lexonomy version."
         })
                 .done(this.onData.bind(this))
     }

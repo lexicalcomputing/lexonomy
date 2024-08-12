@@ -113,7 +113,8 @@ class NVHStoreClass {
          data: {
             id: "formatting",
             content: JSON.stringify(this.data.formatting)
-         }
+         },
+         failMessage: "Could not update element style."
       })
    }
 
