@@ -1,8 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" id="svg5338" viewBox="60.05 13.7 914.15 207.9" width="300" height="70">
-  <defs id="defs5340"/>
-  <g transform="translate(-57.157053,-560.43119)" id="layer1" style="fill:#297f76;fill-opacity:1">
-    <text id="text5244" style="font-variant:normal;font-weight:normal;font-size:113.026px;line-height:0%;font-family:'Gill Sans MT';-inkscape-font-specification:GillSansMT;writing-mode:lr-tb;fill:#297f76;fill-opacity:1;fill-rule:nonzero;stroke:none" x="218.86508" y="716.7301"><tspan id="tspan5246" y="716.7301" x="218.86508 286.19913 354.6445 446.59976 551.57123 651.75787 756.72937 856.91638" style="fill:#297f76;fill-opacity:1">LEXONOMY</tspan></text>
-    <path id="path5248" style="fill:#297f76;fill-opacity:1;fill-rule:nonzero;stroke:none" d="m 161.90564,782.0251 -44.6949,-102.0734 0,-3.7528 44.6949,-102.0717 10.282,0 -45.546,103.9479 45.5148,103.95 -10.2508,0 z"/>
-    <path id="path5250" style="fill:#297f76;fill-opacity:1;fill-rule:nonzero;stroke:none" d="m 986.66566,574.1272 44.69504,102.0739 0,3.7523 -44.69467,102.0724 -10.28238,0 45.54615,-103.9493 -45.5139,-103.9493 10.24975,0 z"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   id="svg5338"
+   viewBox="0 0 914.14998 207.89863"
+   height="58.673615mm"
+   width="257.99344mm"
+   sodipodi:docname="Lexonomy logo DANTE web.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview10"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false" />
+  <defs
+     id="defs5340" />
+  <metadata
+     id="metadata5343">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     aria-label="LEXONOMY"
+     id="text849"
+     style="font-size:113.026px;line-height:0%;font-family:'Gill Sans MT';-inkscape-font-specification:GillSansMT;fill:#297f76;fill-opacity:1"
+     transform="translate(-117.21073,-574.12721)"
+     inkscape:export-filename="Lexonomy logo DANTE web plain.svg"
+     inkscape:export-xdpi="96"
+     inkscape:export-ydpi="96">
+    <path
+       d="m 227.36411,639.6318 h 11.03769 v 67.054 h 34.71355 v 10.0443 h -45.75124 z"
+       id="path857" />
+    <path
+       d="m 294.69815,639.6318 h 43.70928 v 9.82355 h -32.67158 v 23.51029 h 31.56781 v 9.87874 h -31.56781 v 23.9518 h 33.72016 v 9.82355 h -44.75786 z"
+       id="path859" />
+    <path
+       d="m 418.93908,639.6318 h 13.35561 l -30.73998,37.19703 32.89233,39.90127 H 421.09143 L 394.8769,684.83116 368.33124,716.7301 h -13.46599 l 33.22347,-39.90127 -30.85036,-37.19703 h 13.46599 l 24.17255,29.41546 z"
+       id="path861" />
+    <path
+       d="m 492.95808,638.52803 q 17.88107,0 29.74659,11.31364 11.92071,11.31364 11.92071,28.36688 0,17.05323 -12.03109,28.2565 -11.97589,11.14807 -30.24328,11.14807 -17.43956,0 -29.08433,-11.14807 -11.58958,-11.20327 -11.58958,-28.03575 0,-17.27399 11.69996,-28.58763 11.69996,-11.31364 29.58102,-11.31364 z m 0.44151,10.48581 q -13.24523,0 -21.79945,8.27827 -8.49902,8.27827 -8.49902,21.13719 0,12.4726 8.55421,20.75087 8.55421,8.27827 21.41313,8.27827 12.9141,0 21.52351,-8.44384 8.66459,-8.44384 8.66459,-21.02681 0,-12.25184 -8.66459,-20.5853 -8.60941,-8.38865 -21.19238,-8.38865 z"
+       id="path863" />
+    <path
+       d="m 621.32946,639.6318 h 10.48581 v 77.0983 h -9.49241 l -51.54604,-59.32761 v 59.32761 h -10.37544 v -77.0983 h 8.94054 l 51.98754,59.82431 z"
+       id="path865" />
+    <path
+       d="m 698.11619,638.52803 q 17.88107,0 29.74659,11.31364 11.92071,11.31364 11.92071,28.36688 0,17.05323 -12.03108,28.2565 -11.9759,11.14807 -30.24329,11.14807 -17.43956,0 -29.08433,-11.14807 -11.58958,-11.20327 -11.58958,-28.03575 0,-17.27399 11.69996,-28.58763 11.69996,-11.31364 29.58102,-11.31364 z m 0.44151,10.48581 q -13.24523,0 -21.79945,8.27827 -8.49902,8.27827 -8.49902,21.13719 0,12.4726 8.55421,20.75087 8.55422,8.27827 21.41313,8.27827 12.9141,0 21.52351,-8.44384 8.66459,-8.44384 8.66459,-21.02681 0,-12.25184 -8.66459,-20.5853 -8.60941,-8.38865 -21.19238,-8.38865 z"
+       id="path867" />
+    <path
+       d="m 826.59798,639.6318 h 10.26506 v 77.0983 h -11.09289 v -59.98987 l -23.73104,29.80178 h -2.04197 l -23.9518,-29.80178 v 59.98987 h -11.0377 v -77.0983 h 10.37544 l 25.66264,31.67819 z"
+       id="path869" />
+    <path
+       d="m 911.82892,639.6318 h 13.35561 l -28.47726,36.31402 V 716.7301 H 885.39364 V 675.94582 L 856.91638,639.6318 h 13.35561 l 20.64049,26.60085 z"
+       id="path871" />
   </g>
+  <path
+     id="path851"
+     style="fill:#297f76;fill-opacity:1;fill-rule:nonzero;stroke:none"
+     d="M 44.69491,207.89789 5.5357491e-6,105.82449 v -3.7528 L 44.69491,-1.159967e-5 h 10.282 L 9.4309055,103.94789 54.94571,207.89789 Z" />
+  <path
+     id="path853"
+     style="fill:#297f76;fill-opacity:1;fill-rule:nonzero;stroke:none"
+     d="M 869.45493,-1.159967e-5 914.14997,102.07389 v 3.7523 L 869.4553,207.89859 H 859.17292 L 904.71907,103.94929 859.20517,-1.159967e-5 h 10.24975 z" />
 </svg>
