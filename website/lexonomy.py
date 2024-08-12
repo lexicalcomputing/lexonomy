@@ -522,8 +522,8 @@ def makedictjson(user):
             res = ops.makeDict(request.forms.url, None, None, request.forms.title,
                                request.forms.language, "", user["email"],
                                addExamples=False,
-                               deduplicate=True if request.forms.deduplicate=='on' else False,
-                               clean=True if request.forms.clean=='on' else False,
+                               deduplicate=True if request.forms.deduplicate=='true' else False,
+                               clean=True if request.forms.clean=='true' else False,
                                bottle_file_object=upload, hwNode=request.forms.hwNode)
         else:
             return{"success": False, "url": request.forms.url,
@@ -888,9 +888,10 @@ def download(dictID, user, dictDB, configs):
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
     err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
-                                                deduplicate=json.loads(request.forms.deduplicate),
-                                                clean=json.loads(request.forms.clean),
-                                                purge=json.loads(request.forms.purge),
+                                                deduplicate=True if request.forms.deduplicate.lower()=='true' else False,
+                                                clean=True if request.forms.clean.lower()=='true' else False,
+                                                purge=True if request.forms.purge.lower()=='true' else False,
+                                                purge_all=True if request.forms.purge_all.lower()=='true' else False,
                                                 bottle_upload_obj=request.files.get("filename"))
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
