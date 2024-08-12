@@ -1,3 +1,6 @@
+# ============================
+# VARIABLES - Include in each workflow
+# ============================
 ACCEPTED_BATCHES=$(wildcard $(ACCEPTED_BATCHES_FILEMASK))
 DIR=%dir%
 TL_NODE=entry
@@ -5,8 +8,10 @@ TL_NODE=entry
 TS=\"$$(TZ=UTC date +%Y-%m-%d" "%H:%M:%S.%N)\"
 GEN_NEXT_BATCH=$(DIR)/gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE)
 IMPORT_BATCH=$(DIR)/import_batch.py $(USER) $(TL_NODE) $(TS)
+# ============================
 
 ### stage snesitive ####################################################
+# QUERY need to be specified separatly
 SENSITIVE_QUERY="entry.sense"
 
 sensitive_new_batches: $(SOURCE_DICT)
