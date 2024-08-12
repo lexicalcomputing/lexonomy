@@ -7,6 +7,7 @@ import sys
 import nvh
 import json
 from import2dict import import_data
+from log_subprocess import log_err, log_info
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -14,7 +15,6 @@ siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="
 
 def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_node, time_stamp):
     # =======================================
-
     dict_id = ops.suggestDictId()
 
     main_db = ops.getMainDB()
@@ -88,15 +88,18 @@ def main():
 
     file_path = args.file_path.readline().strip()
 
-    project_id = file_path.split('/')[-3]
-    stage = file_path.split('/')[-2]
-    batch_size = 0
-    with open(file_path, 'r') as f:
-        for line in f:
-            if line.strip().startswith(f'{args.tl_node}:'):
-                batch_size += 1
+    if file_path:
+        project_id = file_path.split('/')[-3]
+        stage = file_path.split('/')[-2]
+        batch_size = 0
+        with open(file_path, 'r') as f:
+            for line in f:
+                if line.strip().startswith(f'{args.tl_node}:'):
+                    batch_size += 1
 
-    update_project_info(batch_size, args.user, file_path, project_id, stage, args.tl_node, args.ts)
+        update_project_info(batch_size, args.user, file_path, project_id, stage, args.tl_node, args.ts)
+    else:
+        log_err('EMPTY INPUT')
 
 
 if __name__ == '__main__':

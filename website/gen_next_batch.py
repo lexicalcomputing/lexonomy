@@ -31,41 +31,42 @@ def split_to_batches(input, max_batches, batch_size , batch_list, tl_node, alrea
     new_batches = []
 
     for line in input:
-        if batches_generated > max_batches:
-            if curr_batch:
-                curr_batch.close()
-                curr_batch = None
-            if line.startswith(tl_node + ': '):
-                remaining_hws += 1
-        else:
-            # FILE MANAGMENT LOGIC
-            if line.startswith(tl_node + ': '):
-                hw = line.strip('\n').split(': ', 1)[1]
-                if hw not in already_exported:
-                    hw_idx += 1
+        if line.strip():
+            if batches_generated > max_batches:
+                if curr_batch:
+                    curr_batch.close()
+                    curr_batch = None
+                if line.startswith(tl_node + ': '):
+                    remaining_hws += 1
+            else:
+                # FILE MANAGMENT LOGIC
+                if line.startswith(tl_node + ': '):
+                    hw = line.strip('\n').split(': ', 1)[1]
+                    if hw not in already_exported:
+                        hw_idx += 1
 
-                # NEW BATCH FILE
-                if hw_idx % batch_size == 0: 
-                    if hw_idx > 0:
-                        curr_batch.close()
+                    # NEW BATCH FILE
+                    if hw_idx % batch_size == 0:
+                        if hw_idx > 0:
+                            curr_batch.close()
 
-                    batches_generated += 1
-                    if batches_generated > max_batches:
-                        remaining_hws += 1
-                        continue
+                        batches_generated += 1
+                        if batches_generated > max_batches:
+                            remaining_hws += 1
+                            continue
 
-                    new_filename = batch_dir + '/' + stage + '.batch_%03d.in' % next_batch_num
-                    while os.path.exists(new_filename):
-                        next_batch_num += 1
                         new_filename = batch_dir + '/' + stage + '.batch_%03d.in' % next_batch_num
+                        while os.path.exists(new_filename):
+                            next_batch_num += 1
+                            new_filename = batch_dir + '/' + stage + '.batch_%03d.in' % next_batch_num
 
-                    curr_batch = open(new_filename, 'w')
-                    next_batch_num += 1
-                    new_batches.append(new_filename)
-                    log_info("splitting batches: NO:%d/%d, BATCH: %s" % (batches_generated,  max_batches, new_filename))
-            # WRITING TO CURRENT BATCH
-            if hw not in already_exported:
-                curr_batch.write(line)
+                        curr_batch = open(new_filename, 'w')
+                        next_batch_num += 1
+                        new_batches.append(new_filename)
+                        log_info("splitting batches: NO:%d/%d, BATCH: %s" % (batches_generated,  max_batches, new_filename))
+                # WRITING TO CURRENT BATCH
+                if hw not in already_exported:
+                    curr_batch.write(line)
 
     return new_batches, remaining_hws
 
@@ -122,10 +123,13 @@ def main():
     # ==========================
     already_exported = get_already_exported(batch_list, args.tl_node)
     new_batches, remaining_hws = split_to_batches(args.input, args.max_batches, args.batch_size , batch_list, args.tl_node, already_exported, batch_dir, stage)
-    update_remaining(project_id, stage, remaining_hws)
+    if new_batches:
+        update_remaining(project_id, stage, remaining_hws)
 
-    for batch_name in new_batches:
-        sys.stdout.write(f'{batch_name}\n')
+        for batch_name in new_batches:
+            sys.stdout.write(f'{batch_name}\n')
+    else:
+        log_warning(f'Project {project_id} - no new batches created, due to empty list of suitable entries for given stage {stage}.')
 
     log_end('BATCHES')
 
