@@ -312,9 +312,9 @@ class StoreClass {
                   this.data.publicDictionaryList = response.entries || []
                   this.data.publicDictionaryLanguageList = [...new Set(this.data.publicDictionaryList.map(d => d.lang))].filter(l => !!l)
                   if(this.data.isDictionaryListLoaded){
-                     let favouriteIds = this.data.dictionaryList.filter(d => d.favorite).map(d => d.id)
+                     let favoriteIds = this.data.dictionaryList.filter(d => d.favorite).map(d => d.id)
                      this.data.publicDictionaryList.forEach(d => {
-                        if(favouriteIds.includes(d.id)){
+                        if(favoriteIds.includes(d.id)){
                            d.favorite = true
                         }
                      })
@@ -853,7 +853,7 @@ class StoreClass {
             dictId: dictId,
             status: favorite
          },
-         failMessage: `Could not ${favourite ? 'add the dictionary to favourites' : 'remove the dictionary from favourites'}.`
+         failMessage: `Could not ${favorite ? 'add the dictionary to favourites' : 'remove the dictionary from favourites'}.`
       })
             .done(function(dictId, response) {
                if(response.success){
@@ -1637,6 +1637,14 @@ class StoreClass {
       this.data.dictionaryList.forEach(d => {
          if(!d.owners.includes(window.auth.data.email)){
             d.shared = true
+         } else {
+            Object.assign(d, {
+               currentUserCanEdit: true,
+               currentUserCanConfig: true,
+               currentUserCanUpload: true,
+               currentUserCanDownload: true,
+               currentUserCanDelete: true
+            })
          }
       })
       this.trigger("dictionaryListChanged")

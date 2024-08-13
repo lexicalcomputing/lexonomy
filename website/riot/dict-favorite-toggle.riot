@@ -1,9 +1,12 @@
 <dict-favorite-toggle>
    <a href="javascript:void(0);"
          onmouseover={showTooltip}
-         class="favoriteToggle {state.favorite && 'isFavorite'} {state.isSaving && 'isSaving loadingAnimation'}"
+         class="favoriteToggle {state.favorite && 'isFavorite'}"
          onclick={onToggleFavoriteClick}>
-      <i class="material-icons">{state.isSaving ? "more_horiz" : (state.favorite ? "star" : "star_border")}</i>
+      <i if={!state.isSaving}
+            class="material-icons">{state.favorite ? "star" : "star_border"}</i>
+      <i if={state.isSaving}
+            class="material-icons spin grey-text">donut_large</i>
    </a>
 
    <style>
@@ -54,14 +57,16 @@
          },
 
          onToggleFavoriteClick(){
-            this.update({isSaving: true})
-            this.store.toggleDictionaryFavorite(this.props.dictId, !this.state.favorite)
-                  .always(payload => {
-                     if(payload.success){
-                        this.state.favorite = !this.state.favorite
-                     }
-                     this.update({isSaving: false})
-                  })
+            if(!this.state.isSaving){
+               this.update({isSaving: true})
+               this.store.toggleDictionaryFavorite(this.props.dictId, !this.state.favorite)
+                     .always(payload => {
+                        if(payload.success){
+                           this.state.favorite = !this.state.favorite
+                        }
+                        this.update({isSaving: false})
+                     })
+            }
          },
 
          initDictionaryData(){
