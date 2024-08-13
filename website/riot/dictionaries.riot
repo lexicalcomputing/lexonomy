@@ -43,6 +43,7 @@
             <thead>
                <tr>
                   <th class="checkboxColumn"></th>
+                  <th class="favoriteColumn"></th>
                   <th class="titleColumn">Title</th>
                   <!--th>Language</th-->
                   <th class="sizeColumn">Size</th>
@@ -65,6 +66,9 @@
                         <span></span>
                      </label>
                   </td>
+                  <td>
+                     <dict-favorite-toggle dict-id={dict.id}/>
+                  </td>
                   <td class="dict">
                      <a href="#/{ dict.id }"
                            id="t_{idx}">{ dict.title }</a>
@@ -79,43 +83,74 @@
                      {window.Formatter.num(dict.size)}
                   </td>
                   <td class="dict-actions">
-                     <a if={ !dict.currentUserCanEdit }
-                           href="#{dict.id}/edit"
-                           class="clickable"
-                           title="view dictionary">
-                        <i class="material-icons">visibility</i>
-                     </a>
-                     <a if={ dict.currentUserCanEdit }
-                           href="#{dict.id}/edit"
-                           class="clickable"
-                           title="edit dictionary">
-                        <i class="material-icons">edit</i>
-                     </a>
-                     <a if={ dict.currentUserCanDelete }
-                           href="#{dict.id}/config"
-                           class="clickable"
-                           title="config dictionary">
-                        <i class="material-icons">settings</i>
-                     </a>
-                     <a  if={ dict.currentUserCanEdit }
-                           class="clickable"
-                           title="clone dictionary"
-                           onclick={ onCloneClick.bind(this, dict.id) }>
-                        <i class="material-icons">content_copy</i>
-                     </a>
-                     <a if={ dict.currentUserCanDelete }
-                           class="clickable"
-                           title="delete dictionary"
-                           onclick={ onDeleteClick.bind(this, dict.id) }>
-                        <i class="material-icons">delete</i>
-                     </a>
-                     <span>
-                        <dict-favorite-toggle dict-id={dict.id}></dict-favorite-toggle>
-                     </span>
+                     <div class="buttons">
+                        <a if={ !dict.currentUserCanEdit }
+                              href="#{dict.id}/edit"
+                              class="clickable"
+                              title="view dictionary">
+                           <i class="material-icons">visibility</i>
+                        </a>
+                        <a if={ dict.currentUserCanEdit }
+                              href="#{dict.id}/edit"
+                              class="clickable"
+                              title="edit dictionary">
+                           <i class="material-icons">edit</i>
+                        </a>
+                        <a if={dict.currentUserCanEdit || dict.currentUserCanConfig || dict.currentUserCanUpload || dict.currentUserCanDownload || dict.currentUserCanDelete}
+                              class="clickable"
+                              onclick={onOpenDictionaryMenuClick.bind(this, dict)}>
+                           <i class="material-icons">more_horiz</i>
+                        </a>
+                     </div>
                   </td>
                </tr>
             </tbody>
          </table>
+         <ul id="dictionaryMenuDropdown"
+               class="dropdown-content">
+         <li class="menuActionOverview">
+            <a  data-href="#%DICT_ID%">
+               <i class="material-icons">dashboard</i>
+               Overview
+            </a>
+         </li>
+         <li class="menuActionConfigure">
+            <a  data-href="#%DICT_ID%/config">
+               <i class="material-icons">settings</i>
+               Configure
+            </a>
+         </li>
+         <li class="menuActionUpload">
+            <a data-href="#%DICT_ID%/upload">
+               <i class="material-icons">upload</i>
+               Upload
+            </a>
+         </li>
+         <li class="menuActionDownload">
+            <a data-href="#%DICT_ID%/download">
+               <i class="material-icons">download</i>
+               Download
+            </a>
+         </li>
+         <li class="menuActionLink">
+            <a data-href="#%DICT_ID%/links">
+               <i class="material-icons">link</i>
+               Links
+            </a>
+         </li>
+         <li class="menuActionClone">
+            <a data-action="onCloneClick">
+               <i class="material-icons">content_copy</i>
+               Clone
+            </a>
+         </li>
+         <li class="menuActionDelete">
+            <a data-action="onDeleteClick">
+               <i class="material-icons">delete</i>
+               Delete
+            </a>
+         </li>
+      </ul>
          <div if={!state.visibleDictionaries.length}
                class="center"
                style="margin: 10vh auto;">
@@ -223,6 +258,37 @@
                $('#searchBox').val("")
                this.state.query = ""
                this.filter()
+            }
+         },
+
+         onOpenDictionaryMenuClick(dict, evt){
+            evt.stopPropagation()
+            evt.preventDefault()
+            let menuNode = $(evt.target.parentNode)
+            if(!menuNode.attr("data-target")){ // menu is not created yet
+               let id = "ts_" + Date.now() + Math.floor((Math.random() * 10000))
+               // create copy of the list. Without copy, UL is moved as child of target node and after riot update list is destroyed
+               let list = $("#dictionaryMenuDropdown").clone()
+                     .attr({id: id})
+                     .appendTo($("body"))
+               list.find("a").each((idx, node) => {
+                        let link = $(node)
+                        if(link.attr("data-href")){
+                           link.attr("href", link.attr("data-href").replace("%DICT_ID%", dict.id))
+                        } else {
+                           link.click(evt => {
+                              this[evt.currentTarget.dataset.action](dict.id)
+                           })
+                        }
+                     })
+               !dict.currentUserCanDownload && list.find(".menuActionDownload").remove()
+               !dict.currentUserCanDelete && list.find(".menuActionDelete").remove()
+               !dict.currentUserCanConfig && list.find(".menuActionConfigure, .menuActionClone").remove()
+               !dict.currentUserCanEdit && list.find(".menuActionLink").remove()
+
+               menuNode.attr("data-target", id)
+                     .dropdown({constrainWidth: false})
+                     .dropdown("open")
             }
          },
 
@@ -340,7 +406,7 @@
       }
    </script>
 
-   <style>
+   <style type="scss">
       .topBar{
          display: flex;
          align-items: center;
@@ -355,6 +421,7 @@
          margin-left: 2rem;
       }
       .checkboxColumn,
+      .favoriteColumn,
       .sizeColumn,
       .actionColumn{
          width: 1px;
@@ -374,29 +441,34 @@
          white-space: nowrap;
       }
       .dict-actions{
-         text-align: right;
-         white-space: nowrap;
+         .buttons{
+            justify-content: flex-end;
+         }
       }
       .dict-actions dict-favorite-toggle{
          vertical-align: initial;
       }
       table{
          margin-bottom: 90px;
-      }
-      table td{
-         padding: 10px 10px;
+         td{
+            padding: 10px 10px;
+         }
+         .checkbox{
+            span{
+               opacity: 0.2;
+            }
+            &:hover{
+               span{
+                  opacity: 1;
+               }
+            }
+            input:checked + span{
+               opacity: 1
+            }
+         }
       }
       tbody tr.selected{
          background-color: #fffde7 !important;
-      }
-      table .checkbox span{
-         opacity: 0.2;
-      }
-      table .checkbox:hover span{
-         opacity: 1;
-      }
-      table .checkbox input:checked + span{
-         opacity: 1;
       }
       .deleteAllBox{
          text-align: center;
@@ -408,9 +480,9 @@
          background-color: white;
          font-size: 1.2rem;
          z-index: 9990;
-      }
-      .deleteAllBox button{
-         margin-left: 20px;
+         button{
+            margin-left: 20px;
+         }
       }
       .noDictionaries{
          padding-top: 10vh;

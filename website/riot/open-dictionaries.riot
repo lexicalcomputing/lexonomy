@@ -50,6 +50,9 @@
             class="striped highlight"
             style="margin: 0 15px;">
          <thead class="activeOrder_{state.orderBy}">
+            <th if={authData.authorized}
+                  class="favoriteColumn">
+            </th>
             <th>
                <span onclick={onSortClick.bind(this, "title")}>
                   Title<i class="material-icons order_title">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
@@ -81,6 +84,9 @@
             <tr each={(row, idx) in state.visibleDictionaries}
                   key={row.id}
                   id="r_{idx}">
+               <td if={authData.authorized}>
+                  <dict-favorite-toggle dict-id={row.id}/>
+               </td>
                <td>
                   <a href="#/{row.id}">
                      <span id="t_{idx}">
@@ -112,19 +118,19 @@
                      </a>
                   </span>
                </td>
-               <td class="btns">
-                  <a href="javascript:void(0);"
-                        title="show dictionary description"
-                        onclick={onShowDescriptionClick.bind(this, row)}>
-                     <i class="material-icons">description</i>
-                  </a>
-                  <a if={ row.isAdmin }
-                        href="#/{ row.id }/edit"
-                        title="edit dictionary">
-                     <i class="material-icons">edit</i>
-                  </a>
-                  <dict-favorite-toggle if={authData.authorized}
-                        dict-id={row.id}></dict-favorite-toggle>
+               <td>
+                  <div class="buttons">
+                     <a href="javascript:void(0);"
+                           title="show dictionary description"
+                           onclick={onShowDescriptionClick.bind(this, row)}>
+                        <i class="material-icons">description</i>
+                     </a>
+                     <a if={ row.isAdmin }
+                           href="#/{ row.id }/edit"
+                           title="edit dictionary">
+                        <i class="material-icons">edit</i>
+                     </a>
+                  </div>
                </td>
             </tr>
          </tbody>
@@ -363,22 +369,15 @@
             }
          }
       }
+      .favoriteColumn{
+         width: 1px;
+      }
       .activeOrder_title .order_title,
       .activeOrder_language .order_language,
       .activeOrder_size .order_size,
       .activeOrder_author .order_author,
       .activeOrder_licence .order_licenc{
          opacity: 1;
-      }
-      .btns{
-         white-space: nowrap;
-         vertical-align: middle;
-         & > a{
-            vertical-align: middle;
-         }
-         & > *:not(:first-child){
-            margin-left: 0.4rem;
-         }
       }
    </style>
 </open-dictionaries>
