@@ -8,7 +8,7 @@
    </span>
 
    <div id="schemaSyntax"
-         class="tabCustomLegend p-6 z-depth-2 grey lighten-5" style="display: none; top: min(4vh, 80px); right: 50px;">
+         class="schemaSyntaxLegend p-6 z-depth-2 grey lighten-5" style="display: none; top: min(4vh, 80px); right: 50px;">
       <button class="btn btn-flat btn-floating right"
             onclick={onToggleSchemaSyntaxClick}>
          <i class="material-icons grey-text">close</i>
@@ -148,11 +148,12 @@
          display: flex;
          align-items: center;
       }
-      .tabCustomLegend{
+      .schemaSyntaxLegend{
          max-width: 32rem;
          min-width: 32rem;
          max-height: 95vh;
          overflow: auto;
+         z-index: 100;
          .syntaxElementPartList{
             & > li{
                margin-top: 0.2rem;
