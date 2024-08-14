@@ -2,6 +2,7 @@
    <loading-overlay if={state.isLoading || state.isSaving}/>
    <template if={!state.isLoading}>
       <h1 class="pageTitle">Searching</h1>
+      <dict-configuration-issues config-id="searchability"/>
       <h2>Searchable elements</h2>
       <div if={!state.hasElements}
             class="grey-text">

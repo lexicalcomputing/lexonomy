@@ -148,12 +148,15 @@
                   Dictionaries
                </a>
             </li>
-            <li if={authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess}>
-               <a class="dropdown-trigger tooltipped"
+            <li if={authData.authorized && dictData.isDictionaryLoaded && dictData.userAccess}
+                  class="dictionaryOption">
+               <a class="dropdown-trigger"
                      href="#/"
-                     data-tooltip={dictData.title}
                      data-target="dropdown-menu-dict">
-                  Dictionary
+                  <config-issues-icon/><!--
+                  ---><span class="tooltipped" data-tooltip={dictData.title}><!--
+                  --->Dictionary
+                  </span>
                   <i class="material-icons right">arrow_drop_down</i>
                </a>
             </li>
@@ -351,6 +354,18 @@
       nav{
          border-bottom: 1px solid black;
          box-shadow: none;
+      }
+      .dictionaryOption{
+         display: inline-flex;
+         config-issues-icon{
+            top: 0.5rem;
+            position: relative;
+            margin-right: 5px;
+            i.material-icons{  //stronger rule
+               height: 24px;
+               line-height: 24px;
+            }
+         }
       }
       .accountCircle{
          display: inline-block;

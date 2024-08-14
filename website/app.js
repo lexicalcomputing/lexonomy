@@ -8,6 +8,7 @@ import './js/extend-riot.js'
 import './js/appupdater.js'
 import './js/url.js'
 import './js/misc.js'
+import './js/configuration-checker.js'
 import './libs/js.cookie.js'
 import './libs/codejar/codejar.js'
 import './libs/jsdiff/jsdiff.js'
@@ -119,6 +120,9 @@ import dict_config_styles from './riot/dict-config-styles.riot'
 import nvh_schema_textarea from './riot/nvh-schema-textarea.riot'
 import nvh_schema_syntax_help from './riot/nvh-schema-syntax-help.riot'
 import site_notification from './riot/site-notification.riot'
+import config_issues_icon from './riot/config-issues-icon.riot'
+import config_issues_dialog from './riot/config-issues-dialog.riot'
+import dict_configuration_issues from './riot/dict-configuration-issues.riot'
 
 riot_register('api', api)
 riot_register('admin-dicts', admin_dicts)
@@ -216,6 +220,9 @@ riot_register('dict-config-styles', dict_config_styles)
 riot_register('nvh-schema-textarea', nvh_schema_textarea)
 riot_register('nvh-schema-syntax-help', nvh_schema_syntax_help)
 riot_register('site-notification', site_notification)
+riot_register('config-issues-icon', config_issues_icon)
+riot_register('config-issues-dialog', config_issues_dialog)
+riot_register('dict-configuration-issues', dict_configuration_issues)
 
 
 component(App)(document.getElementById('root'))

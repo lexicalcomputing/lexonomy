@@ -1,67 +1,66 @@
 <dict-config-ident>
    <loading-overlay if={state.isLoading || state.isSaving}/>
    <h1 class="pageTitle">Description</h1>
-   <div>
-      <div class="row">
-         <div class="input-field">
-            <input value={ state.data.title }
-                  placeholder="My Dictionary"
-                  id="ident_title"
-                  type="text"
-                  class="validate"
-                  style="width:300px" />
-            <label for="ident_title">Dictionary name</label>
-            <span class="helper-text">A human-readable title for your dictionary, such as <i>My Esperanto Dictionary</i>.</span>
-         </div>
+   <dict-configuration-issues config-id="ident"/>
+   <div class="row">
+      <div class="input-field">
+         <input value={ state.data.title }
+               placeholder="My Dictionary"
+               id="ident_title"
+               type="text"
+               class="validate"
+               style="width:300px" />
+         <label for="ident_title">Dictionary name</label>
+         <span class="helper-text">A human-readable title for your dictionary, such as <i>My Esperanto Dictionary</i>.</span>
       </div>
-      <div class="row">
-         <div class="input-field">
-            <textarea id="ident_blurb"
-                  class="materialize-textarea"
-                  placeholder="Yet another Lexonomy dictionary."
-                  rows="3">{ state.data.blurb }</textarea>
-            <label for="ident_blurb">Dictionary description</label>
-            <span class="helper-text">
-               This will appear on your dictionary's home page. You can leave it blank if you prefer.<br/>You can use <a href="https://en.wikipedia.org/wiki/Markdown" target="_blank">Markdown</a> here.
-            </span>
-         </div>
-      </div>
-      <div class="row">
-         <div class="input-field">
-            <input data-selected-locale={ state.data.lang }
-                  type="text"
-                  id="ident_lang"
-                  class="autocomplete"
-                  placeholder="Type to search"
-                  style="width:300px">
-            <label for="ident_lang">Main language</label>
-         </div>
-      </div>
-      <div class="row">
-         <div class="input-field"
-               style="width:300px">
-            <select id="ident_direction"
-                  onchange={onDirectionChange}>
-               <option each={option in directionOptions}
-                     value="{option[0]}"
-                     selected={option[0] == state.data.direction}>{option[1]}</option>
-            </select>
-            <label for="headwordSorting">Text direction</label>
-         </div>
-      </div>
-      <div class="row">
-         <div class="input-field">
-            <input value={ state.data.handle }
-                  placeholder="URL"
-                  id="ident_handle"
-                  type="text"
-                  class="validate"/>
-            <label for="ident_title">Metadata from CLARIN repository</label>
-            <span class="helper-text">Link to metadata recorded in CLARIN repository, provide URL to 'handle' link, eg. <tt>http://hdl.handle.net/11356/1094</tt>.</span>
-         </div>
-      </div>
-      <dict-config-buttons save-data={saveData}></dict-config-buttons>
    </div>
+   <div class="row">
+      <div class="input-field">
+         <textarea id="ident_blurb"
+               class="materialize-textarea"
+               placeholder="Yet another Lexonomy dictionary."
+               rows="3">{ state.data.blurb }</textarea>
+         <label for="ident_blurb">Dictionary description</label>
+         <span class="helper-text">
+            This will appear on your dictionary's home page. You can leave it blank if you prefer.<br/>You can use <a href="https://en.wikipedia.org/wiki/Markdown" target="_blank">Markdown</a> here.
+         </span>
+      </div>
+   </div>
+   <div class="row">
+      <div class="input-field">
+         <input data-selected-locale={ state.data.lang }
+               type="text"
+               id="ident_lang"
+               class="autocomplete"
+               placeholder="Type to search"
+               style="width:300px">
+         <label for="ident_lang">Main language</label>
+      </div>
+   </div>
+   <div class="row">
+      <div class="input-field"
+            style="width:300px">
+         <select id="ident_direction"
+               onchange={onDirectionChange}>
+            <option each={option in directionOptions}
+                  value="{option[0]}"
+                  selected={option[0] == state.data.direction}>{option[1]}</option>
+         </select>
+         <label for="headwordSorting">Text direction</label>
+      </div>
+   </div>
+   <div class="row">
+      <div class="input-field">
+         <input value={ state.data.handle }
+               placeholder="URL"
+               id="ident_handle"
+               type="text"
+               class="validate"/>
+         <label for="ident_title">Metadata from CLARIN repository</label>
+         <span class="helper-text">Link to metadata recorded in CLARIN repository, provide URL to 'handle' link, eg. <tt>http://hdl.handle.net/11356/1094</tt>.</span>
+      </div>
+   </div>
+   <dict-config-buttons save-data={saveData}/>
 
    <script>
       export default {
