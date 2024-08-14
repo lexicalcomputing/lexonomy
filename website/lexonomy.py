@@ -235,7 +235,7 @@ def entrycreate(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entryflag.json")
 @authDict(["canEdit"])
 def entryflag(dictID, user, dictDB, configs):
-    success, error = ops.flagEntry(dictDB, configs, request.forms.id, request.forms.flag, user["email"], {})
+    success, error = ops.flagEntry(dictDB, configs, request.forms.id, json.loads(request.forms.flags), user["email"], {})
     return {"success": success, "id": request.forms.id, 'error': error}
 
 @get(siteconfig["rootPath"]+"<dictID>/subget")

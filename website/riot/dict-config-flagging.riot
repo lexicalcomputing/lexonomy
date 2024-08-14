@@ -21,6 +21,13 @@
                   <th>Keyboard shortcut</th>
                   <th>Value</th>
                   <th>Label</th>
+                  <th>
+                     Type
+                     <span class="hint tooltipped"
+                           data-tooltip="Entry can have only one exclusive flag or one or more additive flags. Adding exclusive flag will remove all other flags. Adding additive flag will remove all exclusive flags.">
+                        <i class="material-icons">help_outline</i>
+                     </span>
+                  </th>
                   <th>Color</th>
                   <th></th>
                </tr>
@@ -45,6 +52,14 @@
                            value={ flag.label }
                            placeholder="label"
                            class="flag-label"/>
+                  </td>
+                  <td>
+                     <select class="flag-additive">
+                        <option selected={!flag.additive}
+                              value="exclusive">exclusive</option>
+                        <option selected={flag.additive}
+                              value="additive">additive</option>
+                     </select>
                   </td>
                   <td>
                      <input type="text"
@@ -100,8 +115,9 @@
          },
 
          doAddEl(event) {
-            this.state.data.flags.push({key: "", name: "", label: "", color: ""})
+            this.state.data.flags.push({key: "", name: "", label: "", color: "", additive: false})
             this.update()
+            window.initFormSelects(this.root)
          },
 
          addColor() {
@@ -129,6 +145,7 @@
                   })
                   .always(() => {
                      this.update({isLoading: false})
+                     window.initFormSelects(this.root)
                   })
          },
 
@@ -147,6 +164,7 @@
                   key: $(this).find(".flag-key").val(),
                   name: $(this).find(".flag-name").val(),
                   label: $(this).find(".flag-label").val(),
+                  additive: $(this).find(".flag-additive").val() == "additive",
                   color: $(this).find(".flag-color").val()
                })
             })
