@@ -1560,7 +1560,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
         for rf in cf.fetchall():
             item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
             if configs["flagging"].get("flag_element"):
-                item["flag"] = extractText(nvh.parse_string(rf["nvh"]), configs["flagging"]["flag_element"])
+                item["flags"] = extractText(nvh.parse_string(rf["nvh"]), configs["flagging"]["flag_element"])
             entries.append(item)
         return rc["total"], entries, True
 
@@ -1606,7 +1606,7 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
         if configs["flagging"].get("flag_element"):
-            item["flag"] = extractText(nvh.parse_string(r1["nvh"]), configs["flagging"]["flag_element"])
+            item["flags"] = extractText(nvh.parse_string(r1["nvh"]), configs["flagging"]["flag_element"])
         if fullNVH:
             item["nvh"] = r1["nvh"]
         if r1["level"] > 1:
@@ -1996,15 +1996,17 @@ def getEntrySearchables(nvhParsed, configs): # TODO search
                     ret.append(txt)
     return ret
 
-def flagEntry(dictDB, configs, entryID, flag_value, email, historiography):
+def flagEntry(dictDB, configs, entryID, flags, email, historiography):
     c = dictDB.execute("select id, nvh from entries where id=?", (entryID,))
     row = c.fetchone()
     nvhParsed = nvh.parse_string(row["nvh"])
-    if not flag_value:
-        success = deleteNode(nvhParsed, configs["flagging"]["flag_element"])
-        error = '' if success else "WARNING: flagging element \"%s\" not present in entry %s." % (configs["flagging"]["flag_element"], entryID)
-    else:
-        success, error = updateNode(nvhParsed, flag_value, configs["flagging"]["flag_element"], configs["structure"]['elements'])
+    while deleteNode(nvhParsed, configs["flagging"]["flag_element"]):
+        pass
+    success = True
+    error = ""
+    for flag in flags:
+        s, error = addNode(nvhParsed, flag, configs["flagging"]["flag_element"], configs["structure"]["elements"])
+        success = success and s
     dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
                                                                                                                                                   nvhParsed.dump_string(),
                                                                                                                                                   nvh2json(nvhParsed),

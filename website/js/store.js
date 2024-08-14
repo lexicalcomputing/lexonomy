@@ -142,7 +142,7 @@ class StoreClass {
       }
    }
 
-   setEntryFlag(entryId, flag){
+   setEntryFlag(entryId, flags){
       let entry = this.data.entryList.find(e => e.id == entryId)
       entry.isSaving = true
       this.trigger("entryListChanged", entryId)
@@ -150,19 +150,18 @@ class StoreClass {
          url: `${window.API_URL}${this.data.dictId}/entryflag.json`,
          data: {
             id: entryId,
-            flag: flag
+            flags: JSON.stringify(flags)
          },
          failMessage: "The flag was not saved."
       })
-            .done(function(flag, response) {
+            .done(function(flags, response) {
                if(response.success){
-                  entry.flag = [flag]
+                  entry.flags = flags
                   if(entry.id == this.data.entryId){
-                     // TODO: does not work in source code tab
-                     this._setElementValue(element => element.name == this.data.config.flagging.flag_element, flag)
+                     this.loadEntry()
                   }
                }
-            }.bind(this, flag))
+            }.bind(this, flags))
             .always(response => {
                delete entry.isSaving
                this.trigger("entryListChanged", entryId)
@@ -1611,24 +1610,6 @@ class StoreClass {
          return o[1]
       }
       throw "Unknown operator " + str
-   }
-
-   _setElementValue(elementSelector, value){
-      // used to update element value changed in DB otherwise than in NVH editor
-      // updates: element value in this.data.entry.nvh (entry in NVH format, string)
-      //        : element in nvhStore.data.entry (entry in JSON format)
-      let nvhStore = window.nvhStore
-      let nvhStoreElement = nvhStore.findElement(elementSelector)
-      if(nvhStoreElement){
-         nvhStoreElement.value = value
-         let jsonEntry = nvhStore.nvhToJson(this.data.entry.nvh)
-         let element = nvhStore.findElement(elementSelector, jsonEntry)
-         if(element){
-            element.value = value
-            this.data.entry.nvh = nvhStore.jsonToNvh(jsonEntry)
-            nvhStore.trigger("updateElements", [nvhStoreElement])
-         }
-      }
    }
 
    _setDictionaryList(dictionaryList){

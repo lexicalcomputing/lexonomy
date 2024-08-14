@@ -22,12 +22,18 @@
                <span class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
                   <raw-html content={entry.title || "&nbsp;"}/>
                </span>
-               <span if={dictData.config.flagging.flags.length}
-                     onclick={onOpenFlagMenuClick.bind(this, entry)}
-                     class="{dictData.userAccess.canEdit ? 'pointer' : ''} {entry.flag && entry.flag[0] ? 'badge' : 'noFlag'}"
-                     style={getFlagStyle(entry.flag ? entry.flag[0] : '')}>
-                  {store.getFlagLabel(entry.flag && entry.flag[0]) || "no flag"}
-               </span>
+               <template if={dictData.config.flagging.flags.length}>
+                  <span each={flag in entry.flags}
+                        onclick={onOpenFlagMenuClick.bind(this, entry)}
+                        class="{dictData.userAccess.canEdit ? 'pointer' : ''} badge"
+                        style={getFlagStyle(flag)}>
+                     {store.getFlagLabel(flag)}
+                  </span>
+                  <span if={!entry.flags.length}
+                        class="noFlag">
+                     no flag
+                  </span>
+               </template>
             </a>
             <div if={!dictData.entryList.length && !dictData.isEntryListLoading}
                   class="noEntries">
@@ -141,7 +147,7 @@
                  .data("entryid", entry.id)
                  .appendTo($("body"))
                  .find("li").each(function(idx, elem){
-                     $(elem).click(this.store.setEntryFlag.bind(this.store, entry.id, $(elem).data("flag")))
+                     $(elem).click(this.toggleEntryFlag.bind(this, entry, $(elem).data("flag")))
 
                  }.bind(this))
              menuNode.attr("data-target", id)
@@ -181,12 +187,16 @@
                         this.openEntryAtCursorPosition()
                      }
                   } else if(this.dictData.config.flagging.flags.length && this.state.cursorPosition){
+                     let entry = this.dictData.entryList[this.state.cursorPosition - 1]
+                     if(entry.isSaving){
+                        return
+                     }
                      if(evt.keyCode == 46){ //delete
-                        this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, '')
+                        this.store.setEntryFlag(entry.id, [])
                      } else if(this.dictData.config.flagging.flags.map(f => f.key).includes(evt.key)){
                         let flag = this.dictData.config.flagging.flags.find(f => f.key == evt.key)
                         if(flag){
-                           this.store.setEntryFlag(this.dictData.entryList[this.state.cursorPosition - 1].id, flag.name)
+                           this.toggleEntryFlag(entry, flag.name)
                         }
                      }
                   }
@@ -279,6 +289,35 @@
                   this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
                }
             }
+         },
+
+         toggleEntryFlag(entry, flag){
+            let flags = entry.flags
+            if(!flag){
+               flags = []
+            } else {
+               if(flags.includes(flag)){
+                  // flag is already in flags array -> toggle this flag off
+                  flags = flags.filter(f => f != flag)
+               } else {
+                  // adding a new flag
+                  let flagConfig = this.dictData.config.flagging.flags.find(f => f.name == flag)
+                  if(!flagConfig.additive){
+                     // adding exclusive flag -> remove all other flags
+                     flags = [flag]
+                  } else {
+                     // adding additive flag -> remove all exclusive flags
+                     if(flags.length){
+                        flags = flags.filter(f => {
+                           let fConfig = this.dictData.config.flagging.flags.find(fl => fl.name == f)
+                           return fConfig && fConfig.additive
+                        })
+                     }
+                     flags.push(flag)
+                  }
+               }
+            }
+            this.store.setEntryFlag(entry.id, flags)
          },
 
          getFlagStyle(flag){
