@@ -1,6 +1,7 @@
 <dict-config-users>
    <loading-overlay if={state.isLoading || state.isSaving}/>
    <h1 class="pageTitle">Users</h1>
+   <dict-configuration-issues config-id="users"/>
    <template if={!state.isLoading}>
       <div if={!state.data.users.length}
             class="grey-text center-align">

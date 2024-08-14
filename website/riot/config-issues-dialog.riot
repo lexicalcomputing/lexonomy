@@ -1,0 +1,58 @@
+<config-issues-dialog>
+   <div each={issue in state.issues}
+         class="mb-4 issueRow displayFlex">
+      <i class="severityIcon material-icons mr-2 tiny {configurationChecker.getSeverityColor(issue)}-text">
+         {issue.severity}
+      </i>
+      <a href="#/{dictData.dictId}/config/{issue.configUrl}"
+            class="tooltipped"
+            onclick={onIssueRowClick}
+            data-tooltip="Go to configuration page">
+         {issue.message}
+         <i class="issueSettingsIcon material-icons ml-2 tiny">
+            settings
+         </i>
+      </a>
+      <small class="grey-text ml-auto">
+         (Configuration:  {issue.configName})
+      </small>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            issues: []
+         },
+
+         onBeforeMount(){
+            this.configurationChecker = window.configurationChecker
+            this.state.issues = this.configurationChecker.getAllIssues()
+         },
+
+         onIssueRowClick(){
+            window.modal.close()
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .issueRow{
+         align-items: center;
+         .severityIcon{
+            line-height: 24px;
+         }
+         a{
+            text-decoration: none;
+            .issueSettingsIcon{
+               position: relative;
+               top: 2px;
+               opacity: 0.5
+            }
+            &:hover{
+               text-decoration: underline;
+               opacity: 1
+            }
+         }
+      }
+   </style>
+</config-issues-dialog>

@@ -1,0 +1,51 @@
+<config-issues-icon>
+   <i if={dictData.userAccess && dictData.userAccess.canConfig && state.issues.length}
+         class="material-icons pointer {configurationChecker.getSeverityColor(state.issues[0])}-text tooltipped"
+         data-tooltip={configurationChecker.getIssuesSummary()}
+         onclick={onIconClick}>
+      {state.issues[0].severity}
+   </i>
+
+   <script>
+      export default{
+         bindings: [["configurationChecker", "issuesChanged", "onIssuesChanged"]],
+
+         state: {
+            issues: []
+         },
+
+         onBeforeMount(){
+            this.configurationChecker = window.configurationChecker
+            this.refresh()
+         },
+
+         onIssuesChanged(){
+            this.refresh()
+            this.update()
+         },
+
+         onIconClick(evt){
+            evt.preventDefault()
+            evt.stopPropagation()
+            window.modal.open({
+               title: "Dictionary configuration issues",
+               tag: "config-issues-dialog"
+            })
+         },
+
+         refresh(){
+            this.state.issues = this.configurationChecker.getAllIssues()
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: inline-block;
+         transition: transform 0.2s;
+         &:hover{
+            transform: scale(1.2);
+         }
+      }
+   </style>
+</config-issues-icon>

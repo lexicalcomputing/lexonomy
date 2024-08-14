@@ -1,0 +1,50 @@
+<dict-configuration-issues>
+   <div if={state.issues.length}
+         class="issueBox lighten-5 mb-12 {configurationChecker.getSeverityColor(state.issues[0])}">
+      <h3>Configuration issues</h3>
+      <div each={issue in state.issues}
+            class="issueRow displayFlex">
+         <i class="severityIcon material-icons mr-2 tiny {configurationChecker.getSeverityColor(issue)}-text">
+            {issue.severity}
+         </i>
+         {issue.message}
+      </div>
+
+   </div>
+
+   <script>
+      export default{
+         bindings: [["configurationChecker", "issuesChanged", "onIssuesChanged"]],
+         state: {
+            issues:[]
+         },
+
+         onBeforeMount(){
+            this.configurationChecker = window.configurationChecker
+            this.state.issues = window.configurationChecker.getIssues(this.props.configId)
+         },
+
+         onIssuesChanged(){
+            this.state.issues = window.configurationChecker.getIssues(this.props.configId)
+            this.update()
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .issueBox{
+         display: block;
+         background-color: whitesmoke;
+         padding: 10px 20px;
+         h3{
+            margin-top: 5px;
+         }
+      }
+      .issueRow{
+         align-items: center;
+         .severityIcon{
+            line-height: 24px;
+         }
+      }
+   </style>
+</dict-configuration-issues>

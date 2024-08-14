@@ -1,6 +1,7 @@
 <dict-config-flagging>
    <loading-overlay if={state.isLoading || state.isSaving}/>
    <h1 class="pageTitle">Entry flags</h1>
+   <dict-configuration-issues config-id="flagging"/>
    <template if={!state.isLoading}>
       <div if={!state.data.flags.length}
             class="center-align grey-text">
