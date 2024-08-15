@@ -303,7 +303,11 @@
                constrainWidth: false,
                container: $("#body")
             })
-          },
+         },
+
+         onBeforeUnmount(){
+            this.stopProjectChecking()
+         },
 
          onUserCameBack(){
             this.loadProject()
