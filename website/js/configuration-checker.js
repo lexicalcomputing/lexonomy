@@ -281,19 +281,28 @@ class ConfigurationCheckerClass {
          if(!this.isElementInStrucutre(config.flagging.flag_element, config)){
             result.push(["flagging", "error", `Flag element "${config.flagging.flag_element}" not found in entry structure.`])
          }
-         if(this.isNonEmptyArray(config.flags)){
-            if(config.flags.filter(flag => !flag.key).length){
+         let flags = config.flagging.flags
+         if(this.isNonEmptyArray(flags)){
+            if(flags.filter(flag => !flag.key).length){
                result.push(["flagging", "warning", `Flag keyboard shortcut is empty.`])
             }
-            if(config.flags.filter(flag => !flag.label).length){
+            if(flags.filter(flag => !flag.label).length){
                result.push(["flagging", "error", `Flag label must not be empty.`])
             }
-            if(config.flags.filter(flag => !flag.name).length){
+            if(flags.filter(flag => !flag.name).length){
                result.push(["flagging", "error", `Flag value must not be empty.`])
             }
-            let colors = config.flags.map(flag => !flag.color)
+            let values = flags.map(flag => flag.name)
+            if(values.length != (new Set(values)).size){
+               result.push(["flagging", "error", `Each flag must have a unique value.`])
+            }
+            let colors = flags.map(flag => flag.color)
             if(colors.length != (new Set(colors)).size){
                result.push(["flagging", "info", `Two or more flags have the same color.`])
+            }
+            let labels = flags.map(flag => flag.label)
+            if(labels.length != (new Set(labels)).size){
+               result.push(["flagging", "info", `Two or more flags have the same label.`])
             }
          }
       }
