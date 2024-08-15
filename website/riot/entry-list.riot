@@ -1,7 +1,7 @@
 <entry-list>
    <div id="entryListSidenav"
          class="entryListContainer"
-         style="width: max({dictData.config.flagging.flags.length ? '25vw' : '20vw'}, 250px);">
+         style="width: max({dictionaryHasFlags ? '25vw' : '20vw'}, 250px);">
       <dict-entry-filter search-func={onFilterChanged}
             basic-search-on-input={true}
             on-key-down={onSearchKeyDown}/>
@@ -22,18 +22,26 @@
                <span class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
                   <raw-html content={entry.title || "&nbsp;"}/>
                </span>
-               <template if={dictData.config.flagging.flags.length}>
-                  <span each={flag in entry.flags}
-                        onclick={onOpenFlagMenuClick.bind(this, entry)}
-                        class="{dictData.userAccess.canEdit ? 'pointer' : ''} badge"
-                        style={getFlagStyle(flag)}>
-                     {store.getFlagLabel(flag)}
-                  </span>
+               <span if={dictionaryHasFlags}
+                     onclick={onOpenFlagMenuClick.bind(this, entry)}>
+                  <template each={flag in entry.flags}>
+                     <span if={flagConfigs[flag]}
+                           class="{dictData.userAccess.canEdit ? 'pointer' : ''} badge"
+                           style={getFlagStyle(flag)}>
+                        {store.getFlagLabel(flag)}
+                     </span>
+                     <span if={!flagConfigs[flag]}
+                           class="unknownFlag">
+                        <i class="material-icons tiny orange-text tooltipped"
+                              data-tooltip="Unknown flag">warning</i>
+                              {flag}
+                     </span>
+                  </template>
                   <span if={!entry.flags.length}
                         class="noFlag">
                      no flag
                   </span>
-               </template>
+               </span>
             </a>
             <div if={!dictData.entryList.length && !dictData.isEntryListLoading}
                   class="noEntries">
@@ -44,7 +52,7 @@
                <loading-overlay/>
             </div>
          </div>
-         <ul if={dictData.config.flagging.flags.length}
+         <ul if={dictionaryHasFlags}
                id="flagDropdown"
                class="dropdown-content flagDropdown">
             <li data-flag="">
@@ -81,6 +89,13 @@
 
          onBeforeMount(){
             this.nvhStore = window.nvhStore
+            this.flagConfigs = {}
+            this.dictionaryHasFlags = this.dictData.config.flagging.flags && this.dictData.config.flagging.flags.length
+            if(this.dictionaryHasFlags){
+               this.dictData.config.flagging.flags.forEach(flagConfig => {
+                  this.flagConfigs[flagConfig.name] = flagConfig
+               })
+            }
          },
 
          onMounted(){
@@ -186,7 +201,7 @@
                      } else if(evt.keyCode == 13){
                         this.openEntryAtCursorPosition()
                      }
-                  } else if(this.dictData.config.flagging.flags.length && this.state.cursorPosition){
+                  } else if(this.dictionaryHasFlags && this.state.cursorPosition){
                      let entry = this.dictData.entryList[this.state.cursorPosition - 1]
                      if(entry.isSaving){
                         return
@@ -301,7 +316,7 @@
                   flags = flags.filter(f => f != flag)
                } else {
                   // adding a new flag
-                  let flagConfig = this.dictData.config.flagging.flags.find(f => f.name == flag)
+                  let flagConfig = this.flagConfigs[flag]
                   if(!flagConfig.additive){
                      // adding exclusive flag -> remove all other flags
                      flags = [flag]
@@ -309,7 +324,7 @@
                      // adding additive flag -> remove all exclusive flags
                      if(flags.length){
                         flags = flags.filter(f => {
-                           let fConfig = this.dictData.config.flagging.flags.find(fl => fl.name == f)
+                           let fConfig = this.flagConfigs[f]
                            return fConfig && fConfig.additive
                         })
                      }
@@ -407,6 +422,13 @@
             box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%),
                0 3px 1px -2px rgb(0 0 0 / 12%),
                0 1px 5px 0 rgb(0 0 0 / 20%);
+         }
+         .unknownFlag{
+            i{
+               position: relative;
+               top: 2px;
+               margin-right: 3px;
+            }
          }
          .noFlag{
             white-space: nowrap;
