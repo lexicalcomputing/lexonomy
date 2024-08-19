@@ -169,12 +169,12 @@ class ConfigurationCheckerClass {
             })
          }
          if(config.titling.headwordAnnotationsType == "advanced"){
-            let regex = /%\((.*?)\)%/g
+            let regex = /%\((.*?)\)/g
             if(!regex.test(config.titling.headwordAnnotationsAdvanced)){
-               result.push(["titling", "warning", "Headword annotation template does not contain %(ELEMENT)%."])
+               result.push(["titling", "warning", "Headword annotation template does not contain %(ELEMENT)."])
             } else{
                config.titling.headwordAnnotationsAdvanced.match(regex)
-                     .map(x => x.slice(2, -2))
+                     .map(x => x.slice(2, -1))
                      .forEach(elementName => {
                         if(!this.isElementInStrucutre(elementName, config)){
                            result.push(["titling", "error", `Element "${elementName}" in Headword annotation template not found in entry structre.`])
@@ -217,12 +217,12 @@ class ConfigurationCheckerClass {
             if(!elementConfig.identifier){
                result.push(["links", "error", `Missing Identifier for Linking element "${linkingElement}".`])
             } else {
-               let regex = /%\((.*?)\)%/g
+               let regex = /%\((.*?)\)/g
                if(!regex.test(elementConfig.identifier)){
-                     result.push(["links", "warning", `Idenitifer for Linking element "${linkingElement}" does not contain %(ELEMENT)%.`])
+                     result.push(["links", "warning", `Idenitifer for Linking element "${linkingElement}" does not contain %(ELEMENT).`])
                   } else{
                      elementConfig.identifier.match(regex)
-                           .map(x => x.slice(2, -2))
+                           .map(x => x.slice(2, -1))
                            .forEach(elementName => {
                               if(!this.isElementInStrucutre(elementName, config)){
                                  result.push(["links", "error", `Element "${elementName}" in Identifier field for Linking element "${linkingElement}" not found in entry structre.`])
@@ -239,12 +239,12 @@ class ConfigurationCheckerClass {
       let result = []
       if(config.ske){
          if(config.ske.concquery){
-            let regex = /%\((.*?)\)%/g
+            let regex = /%\((.*?)\)/g
             if(!regex.test(config.ske.concquery)){
-               result.push(["ske", "warning", `Concordance query does not contain %(ELEMENT)%.`])
+               result.push(["ske", "warning", `Concordance query does not contain %(ELEMENT).`])
             }
             config.ske.concquery.match(regex)
-                  .map(x => x.slice(2, -2))
+                  .map(x => x.slice(2, -1))
                   .forEach(elementName => {
                      if(!this.isElementInStrucutre(elementName, config)){
                         result.push(["ske", "error", `Element "${elementName}" in Concordance query not found in entry structre.`])
