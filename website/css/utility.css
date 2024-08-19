@@ -19,6 +19,9 @@
 .positionRelative {
     position: relative;
 }
+.positionAbsolute {
+    position: absolute;
+}
 .inlineBlock {
     display: inline-block;
 }

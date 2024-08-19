@@ -304,6 +304,15 @@ class ConfigurationCheckerClass {
             if(labels.length != (new Set(labels)).size){
                result.push(["flagging", "info", `Two or more flags have the same label.`])
             }
+            if(config.flagging.all_additive_key){
+               if(flags.find(flag => flag.key == config.flagging.all_additive_key)){
+                  result.push(["flagging", "error", `Keyboard shortcut for adding all additive flags should be different from flag keyboard shortcuts.`])
+               }
+               if(!config.flagging.all_additive_label){
+                  result.push(["flagging", "info", `Missing Label for adding all additive flags keyboard shortcut.`])
+               }
+            }
+
          }
       }
       return result
