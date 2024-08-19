@@ -24,18 +24,19 @@
                </span>
                <span if={dictionaryHasFlags}
                      onclick={onOpenFlagMenuClick.bind(this, entry)}>
-                  <template each={flag in entry.flags}>
+                  <template each={flag in entry.flags}
+                        if={flag}>
                      <span if={flagConfigs[flag]}
                            class="{dictData.userAccess.canEdit ? 'pointer' : ''} badge"
                            style={getFlagStyle(flag)}>
                         {store.getFlagLabel(flag)}
                      </span>
-                     <!--span if={!flagConfigs[flag]}
+                     <span if={!flagConfigs[flag]}
                            class="unknownFlag">
                         <i class="material-icons tiny orange-text tooltipped"
                               data-tooltip="Unknown flag">warning</i>
                               {flag}
-                     </span-->
+                     </span>
                   </template>
                   <span if={!entry.flags.length}
                         class="noFlag">
