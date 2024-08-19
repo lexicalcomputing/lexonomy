@@ -3,18 +3,18 @@
    <h1 class="pageTitle">Entry flags</h1>
    <dict-configuration-issues config-id="flagging"/>
    <template if={!state.isLoading}>
-      <div if={!state.data.flags.length}
+      <div if={!state.flags.length}
             class="center-align grey-text">
          <h1>no entry flags</h1>
          <br>
          <a class="btn btn-primary waves-effect waves-light"
-               onclick={ doAddEl }>
+               onclick={onAddElementClick}>
             add flag
             <i class="material-icons right">add</i>
          </a>
       </div>
 
-      <template if={state.data.flags.length}>
+      <template if={state.flags}>
          <table>
             <thead>
                <tr>
@@ -33,28 +33,32 @@
                </tr>
             </thead>
             <tbody>
-               <tr each={ (flag, index) in state.data.flags }
-                     class="flag-info">
+               <tr each={(flag, idx) in state.flags}
+                     class="flag-info"
+                     key={flag.key}>
                   <td>
                      <input type="text"
-                           value={ flag.key }
+                           name="key"
+                           value={flag.key}
                            placeholder="key"
-                           class="flag-key"/>
+                           oninput={onInput.bind(this, flag)}/>
                   </td>
                   <td>
                      <input type="text"
-                           value={ flag.name }
+                           name="name"
+                           value={flag.name}
                            placeholder="value"
-                           class="flag-name"/>
+                           oninput={onInput.bind(this, flag)}/>
                   </td>
                   <td>
                      <input type="text"
-                           value={ flag.label }
+                           name="label"
+                           value={flag.label}
                            placeholder="label"
-                           class="flag-label"/>
+                           oninput={onInput.bind(this, flag)}/>
                   </td>
                   <td>
-                     <select class="flag-additive">
+                     <select onchange={onTypeChange.bind(this, flag)}>
                         <option selected={!flag.additive}
                               value="exclusive">exclusive</option>
                         <option selected={flag.additive}
@@ -63,15 +67,20 @@
                   </td>
                   <td>
                      <input type="text"
-                           value={ flag.color }
+                           onchange={onColorChange}
+                           changeColor={onColorChange}
+                           change-color={onColorChange}
+                           value={flag.color}
+                           name="flag-color"
                            placeholder="color"
                            class="flag-color"
-                           id="flag-color{index}"
+                           idx={idx}
+                           id="flag-color{idx}"
                            style="color: {store.getFlagTextColor(flag.color)};background-color: {flag.color}"/>
                   </td>
                   <td>
                      <a class="btn btn-flat"
-                           onclick={ doDeleteEl.bind(this, index) }>
+                           onclick={onDeleteElementClick.bind(this, idx)}>
                         <i class="material-icons">delete</i>
                      </a>
                   </td>
@@ -80,7 +89,7 @@
          </table>
          <div>
             <a class="btn waves-effect waves-light"
-                  onclick={ doAddEl }>
+                  onclick={onAddElementClick}>
                add flag
                <i class="material-icons right">add</i>
             </a>
@@ -94,84 +103,108 @@
             <label for="flag-element">Flag element</label>
             <span class="helper-text">Select the element which the flags should be put into.</span>
          </div>
+         <template if={state.showAddAllAdditiveFlags}>
+            <br>
+            <h3>Add all additive flags shortcut</h3>
+            <div class="grey-text mb-4">Keyboard shortcut to add all additive flags to the entry at once.</div>
+            <div class="displayFlex">
+               <div class="input-field mr-4">
+                  <label>Keyboard shortcut</label>
+                  <input type="text"
+                        id="all_additive_key"
+                        value={state.data.all_additive_key}>
+               </div>
+               <div class="input-field">
+                  <label>Label</label>
+                  <input type="text"
+                        id="all_additive_label"
+                        value={state.data.all_additive_label}>
+               </div>
+            </div>
+         </template>
       </template>
    </template>
    <br><br>
    <dict-config-buttons save-data={saveData}
-         show-save={state.data.flags.length || state.hadFlags}></dict-config-buttons>
+         show-save={state.data.flags.length || state.flags.length}/>
 
    <script>
       export default {
          state: {
             isLoading: true,
             isSaving: false,
+            showAddAllAdditiveFlags: false,
+            flags: [],
             data: {flag_elements: "", flags: []}
          },
 
-         doDeleteEl(idx) {
-            this.state.data = this.getConfigData()
-            this.state.data.flags.splice(idx, 1)
-            this.update()
-         },
-
-         doAddEl(event) {
-            this.state.data.flags.push({key: "", name: "", label: "", color: "", additive: false})
-            this.update()
-            window.initFormSelects(this.root)
-         },
-
-         addColor() {
-            $(".flag-color").each(function(idx, elem) {
-               var cid = $(elem)[0].id
-               $("#" + cid).colorpicker().on("changeColor", function(ev) {
-                  let bgColor = ev.color.toHex()
-                  let color = this.store.getFlagTextColor(bgColor)
-                  $(elem).css({
-                     "background-color": bgColor,
-                     "color": color
-                  })
-               }.bind(this))
-            }.bind(this))
-         },
-
-         onMounted() {
+         onMounted(){
             this.store.loadDictionaryConfig("flagging")
                   .done(response => {
-                     this.state.hadFlags = false
-                     if (response.content.flag_element) {
+                     if (response.content.flag_element){
                         this.state.data = response.content
-                        this.state.hadFlags = true
+                        this.state.flags = [...response.content.flags]
                      }
                   })
                   .always(() => {
                      this.update({isLoading: false})
-                     window.initFormSelects(this.root)
                   })
          },
 
-         onUpdated() {
-            M.updateTextFields()
-            this.addColor()
+         onBeforeUpdate(){
+            this.state.showAddAllAdditiveFlags = this.state.flags.filter(flag => flag.additive).length >= 2
          },
 
-         getConfigData() {
-            var newData = {
+         onUpdated(){
+            M.updateTextFields()
+            window.initFormSelects(this.root)
+            this.initializeColorPicker()
+         },
+
+         onAddElementClick(event){
+            this.state.flags.push({key: "", name: "", label: "", color: "", additive: false})
+            this.update()
+         },
+
+         onDeleteElementClick(idx){
+            this.state.flags.splice(idx, 1)
+            this.update()
+         },
+
+         onInput(flag, evt){
+            flag[evt.target.name] = evt.target.value
+         },
+
+         onTypeChange(flag, evt){
+            flag.additive = evt.target.value == "additive"
+            this.update()
+         },
+
+         initializeColorPicker(){
+            $(".flag-color").each(function(idx, elem){
+               $(elem).colorpicker().on("changeColor", function(ev){
+                  let color = ev.color.toHex()
+                  $(elem).css({
+                     "background-color": color,
+                     "color": this.store.getFlagTextColor(color)
+                  })
+                  this.state.flags[$(elem).attr("idx")].color = color
+               }.bind(this))
+            }.bind(this))
+         },
+
+         getConfigData(){
+            let hasAdditiveFlag = this.state.flags.filter(flag => flag.additive).length
+            let newData = {
                flag_element: $("#flag-element select").val(),
-               flags: []
+               all_additive_key: hasAdditiveFlag ? $("#all_additive_key").val() : "",
+               all_additive_label: hasAdditiveFlag ? $("#all_additive_label").val() : "",
+               flags: this.state.flags
             }
-            $(".flag-info").each(function() {
-               newData.flags.push({
-                  key: $(this).find(".flag-key").val(),
-                  name: $(this).find(".flag-name").val(),
-                  label: $(this).find(".flag-label").val(),
-                  additive: $(this).find(".flag-additive").val() == "additive",
-                  color: $(this).find(".flag-color").val()
-               })
-            })
             return newData
          },
 
-         saveData() {
+         saveData(){
             this.update({isSaving: true})
             this.store.updateDictionaryConfig("flagging", this.getConfigData())
                   .always(() => this.update({isSaving: false}))

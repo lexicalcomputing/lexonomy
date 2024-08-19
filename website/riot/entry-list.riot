@@ -38,7 +38,7 @@
                               {flag}
                      </span>
                   </template>
-                  <span if={!entry.flags.filter(f => f !== "").length}
+                  <span if={!entry.flags.length}
                         class="noFlag">
                      no flag
                   </span>
@@ -61,6 +61,17 @@
                      style="color: grey">label_outline</i>
                <div>no flag</div>
                <div class="right flagKey">delete</div>
+            </li>
+            <li if={dictData.config.flagging.all_additive_key}
+                  data-additive-toggle="1">
+               <div class="positionRelative">
+                  <i class="material-icons"
+                        style="color: grey">label</i>
+                  <span class="positionAbsolute white-text"
+                        style="left: 6px;">A</span>
+               </div>
+               <div>{dictData.config.flagging.all_additive_label || "Add all additive flags"}</div>
+               <div class="right flagKey">{dictData.config.flagging.all_additive_key}</div>
             </li>
             <li each={flag in dictData.config.flagging.flags}
                   data-flag={flag.name}>
@@ -163,14 +174,26 @@
                  .data("entryid", entry.id)
                  .appendTo($("body"))
                  .find("li").each(function(idx, elem){
-                     $(elem).click(this.toggleEntryFlag.bind(this, entry, $(elem).data("flag")))
-
+                     $(elem).click(function(entry){
+                        if($(elem).data("additiveToggle")){
+                           this.toggleAllAdditiveFlags(entry)
+                        } else {
+                           this.toggleEntryFlag(entry, $(elem).data("flag"))
+                        }
+                     }.bind(this, entry))
                  }.bind(this))
              menuNode.attr("data-target", id)
                  .dropdown({
                      constrainWidth: false,
                      coverTrigger: false,
-                     container: $("body")
+                     container: $("body"),
+                     onCloseEnd: () => {
+                        let listId = menuNode.attr("data-target")
+                        let dropdownInstace = M.Dropdown.getInstance(menuNode)
+                        dropdownInstace && dropdownInstace.destroy()
+                        $(`#${listId}`).remove()
+
+                     }
                  })
                  .dropdown("open")
          },
@@ -207,10 +230,13 @@
                      if(entry.isSaving){
                         return
                      }
+                     let flaggingConfig = this.dictData.config.flagging
                      if(evt.keyCode == 46){ //delete
                         this.store.setEntryFlag(entry.id, [])
-                     } else if(this.dictData.config.flagging.flags.map(f => f.key).includes(evt.key)){
-                        let flag = this.dictData.config.flagging.flags.find(f => f.key == evt.key)
+                     } else if(evt.key == flaggingConfig.all_additive_key){
+                        this.toggleAllAdditiveFlags(entry)
+                     } else if(flaggingConfig.flags.map(f => f.key).includes(evt.key)){
+                        let flag = flaggingConfig.flags.find(f => f.key == evt.key)
                         if(flag){
                            this.toggleEntryFlag(entry, flag.name)
                         }
@@ -334,6 +360,17 @@
                }
             }
             this.store.setEntryFlag(entry.id, flags)
+         },
+
+         toggleAllAdditiveFlags(entry){
+            let flags = entry.flags
+            let additiveFlagList = this.dictData.config.flagging.flags.filter(flag => flag.additive)
+                  .map(flag => flag.name)
+            if(new Set(entry.flags).size == additiveFlagList.length){
+               this.store.setEntryFlag(entry.id, []) // has all additive flags -> toggle them off
+            } else{
+               this.store.setEntryFlag(entry.id, additiveFlagList)
+            }
          },
 
          getFlagStyle(flag){

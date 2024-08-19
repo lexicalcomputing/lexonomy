@@ -430,7 +430,7 @@ class StoreClass {
          this.loadEntries(this.getEntrySearchParams(null, this.data.entryList.length))
                .done(response => {
                   if(response.entries){
-                     this.data.entryList = this.data.entryList.concat(response.entries)
+                     this.data.entryList = this.data.entryList.concat(this.removeEmptyFlagsFromEntryList(response.entries))
                      this.data.entryCount = response.total
                   }
                })
@@ -447,7 +447,7 @@ class StoreClass {
       return this.loadEntries(this.getEntrySearchParams(this.data.entryList.length < min ? min : this.data.entryList.length))
             .done(response => {
                if(response.entries){
-                  this.data.entryList = response.entries
+                  this.data.entryList = this.removeEmptyFlagsFromEntryList(response.entries)
                   this.data.entryCount = response.total
                   this.trigger("entryListChanged")
                }
@@ -463,7 +463,7 @@ class StoreClass {
       return this.loadEntries(this.getEntrySearchParams(howmany))
             .done(response => {
                if(response.entries){
-                  this.data.entryList = response.entries
+                  this.data.entryList = this.removeEmptyFlagsFromEntryList(response.entries)
                   this.data.entryCount = response.total
                } else {
                   this.data.entryList = []
@@ -1304,11 +1304,11 @@ class StoreClass {
       let flagging = this.data.config.flagging
       if(flagging){
          let entry = window.nvhStore.nvhToJson(nvh)
-         let flagElement = window.nvhStore.findElement(e => e.name == flagging.flag_element, entry)
-         if(flagElement){
+         let flagElementList = window.nvhStore.findElements(e => e.name == flagging.flag_element, entry)
+         if(flagElementList.length){
             let listItem = this.data.entryList.find(e => e.id == this.data.entryId)
-            if(listItem && listItem.flag != flagElement.value){
-               listItem.flag = [flagElement.value]
+            if(listItem){
+               listItem.flags = flagElementList.map(element => element.value).filter(flag => flag != "")
                this.trigger("entryListChanged", this.data.entryId)
             }
          }
@@ -1610,6 +1610,13 @@ class StoreClass {
          return o[1]
       }
       throw "Unknown operator " + str
+   }
+
+   removeEmptyFlagsFromEntryList(entryList){
+      entryList.forEach(entry => {
+         entry.flags = entry.flags.filter(flag => flag != "")
+      })
+      return entryList
    }
 
    _setDictionaryList(dictionaryList){
