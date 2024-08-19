@@ -38,7 +38,7 @@
                               {flag}
                      </span>
                   </template>
-                  <span if={!entry.flags.length}
+                  <span if={!entry.flags.filter(f => f !== "").length}
                         class="noFlag">
                      no flag
                   </span>
