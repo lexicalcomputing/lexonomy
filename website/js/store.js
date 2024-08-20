@@ -1626,8 +1626,10 @@ class StoreClass {
          }
       }
       entryList.forEach(entry => {
-         entry.flags = entry.flags.filter(flag => flag != "")
-               .sort(sortFunction)
+         if(entry.flags){
+            entry.flags = entry.flags.filter(flag => flag != "")
+                  .sort(sortFunction)
+         }
       })
       return entryList
    }
