@@ -63,6 +63,7 @@ let autocompleteExtension = {
       this.dropdown && this.dropdown.recalculateDimensions();
    },
 
+
    _highlight(string, option, $el) {
      var matchStart = option.label.toLowerCase().indexOf('' + string.toLowerCase() + ''),
          matchEnd = matchStart + string.length - 1,
@@ -89,3 +90,24 @@ let autocompleteExtension = {
 }
 
 $.extend(M.Autocomplete.prototype, autocompleteExtension)
+
+
+
+let dropdownExtension = {
+   /* if scrollbar is displayed inside dropdown make it wider so rows wont get wrapped */
+   _placeDropdown: function(){
+      // Set width before calculating positionInfo
+      var idealWidth = this.options.constrainWidth ? this.el.getBoundingClientRect().width : this.dropdownEl.getBoundingClientRect().width;
+      this.dropdownEl.style.width = idealWidth + 'px';
+
+      var positionInfo = this._getDropdownPosition();
+      let hasScrollbar = this.dropdownEl.scrollHeight > positionInfo.height
+      let scrollBarWidth = 17  // usually between 12-17px
+      this.dropdownEl.style.left = positionInfo.x + 'px';
+      this.dropdownEl.style.top = positionInfo.y + 'px';
+      this.dropdownEl.style.height = positionInfo.height + 'px';
+      this.dropdownEl.style.width = (positionInfo.width + (hasScrollbar ? scrollBarWidth : 0)) + 'px';
+      this.dropdownEl.style.transformOrigin = (positionInfo.horizontalAlignment === 'left' ? '0' : '100%') + " " + (positionInfo.verticalAlignment === 'top' ? '0' : '100%');
+   }
+}
+$.extend(M.Dropdown.prototype, dropdownExtension)
