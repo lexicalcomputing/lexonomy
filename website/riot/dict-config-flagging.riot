@@ -121,6 +121,20 @@
                         value={state.data.all_additive_label}>
                </div>
             </div>
+            <div class="input-field">
+               <label>
+                  <input type="checkbox"
+                        id="sort_additive_flags_alphabetically"
+                        checked={state.data.sort_additive_flags_alphabetically}/>
+                  <span>
+                     Sort additive flags alphabetically
+                     <span class="hint tooltipped"
+                           data-tooltip="Sort additive flags in the entry list alphabetically. Keep unchecked to sort the flags in the order they were defined in the table above.">
+                        <i class="material-icons">help_outline</i>
+                     </span>
+                  </span>
+               </label>
+            </div>
          </template>
       </template>
    </template>
@@ -199,6 +213,7 @@
                flag_element: $("#flag-element select").val(),
                all_additive_key: hasAdditiveFlag ? $("#all_additive_key").val() : "",
                all_additive_label: hasAdditiveFlag ? $("#all_additive_label").val() : "",
+               sort_additive_flags_alphabetically: hasAdditiveFlag && $("#sort_additive_flags_alphabetically").is(":checked"),
                flags: this.state.flags
             }
             return newData
