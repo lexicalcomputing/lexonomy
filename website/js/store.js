@@ -430,7 +430,7 @@ class StoreClass {
          this.loadEntries(this.getEntrySearchParams(null, this.data.entryList.length))
                .done(response => {
                   if(response.entries){
-                     this.data.entryList = this.data.entryList.concat(this.removeEmptyFlagsFromEntryList(response.entries))
+                     this.data.entryList = this.data.entryList.concat(this.processFlagsInEntryList(response.entries))
                      this.data.entryCount = response.total
                   }
                })
@@ -447,7 +447,7 @@ class StoreClass {
       return this.loadEntries(this.getEntrySearchParams(this.data.entryList.length < min ? min : this.data.entryList.length))
             .done(response => {
                if(response.entries){
-                  this.data.entryList = this.removeEmptyFlagsFromEntryList(response.entries)
+                  this.data.entryList = this.processFlagsInEntryList(response.entries)
                   this.data.entryCount = response.total
                   this.trigger("entryListChanged")
                }
@@ -463,7 +463,7 @@ class StoreClass {
       return this.loadEntries(this.getEntrySearchParams(howmany))
             .done(response => {
                if(response.entries){
-                  this.data.entryList = this.removeEmptyFlagsFromEntryList(response.entries)
+                  this.data.entryList = this.processFlagsInEntryList(response.entries)
                   this.data.entryCount = response.total
                } else {
                   this.data.entryList = []
@@ -1612,9 +1612,22 @@ class StoreClass {
       throw "Unknown operator " + str
    }
 
-   removeEmptyFlagsFromEntryList(entryList){
+   processFlagsInEntryList(entryList){
+      let order = {}
+      this.data.config.flagging.flags.forEach((flagConfig, idx) => {
+         order[flagConfig.name] = idx
+      })
+      let sortFunction = (a, b) => {
+         return order[b] - order[a]
+      }
+      if(this.data.config.flagging.sort_additive_flags_alphabetically){
+         sortFunction = (a, b) => {
+            return b.localeCompare(a)
+         }
+      }
       entryList.forEach(entry => {
          entry.flags = entry.flags.filter(flag => flag != "")
+               .sort(sortFunction)
       })
       return entryList
    }
