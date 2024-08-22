@@ -660,13 +660,13 @@ def project_create(user):
         return res
     return {"success": False, "projectID": request.forms.id, 'error': 'User is not a manager. Can not create project.'}
 
-@post(siteconfig["rootPath"] + "projects/update_source_dict.json") # OK
-@auth
-def project_create(user):
-    if user['isProjectManager']:
-        res = project.update_project_source_dict(request.forms.id, request.forms.source_dict_id)
+@post(siteconfig["rootPath"] + "projects/<projectID>/update_source_dict.json") # OK
+@authProject
+def project_update_source(projectID, user, configs):
+    if projectID in configs["manager_of"]:
+        res = project.update_project_source_dict(projectID, request.forms.source_dict_id)
         return res
-    return {"success": False, "projectID": request.forms.id, 'error': 'User is not a manager. Can not create project.'}
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not update project source dict.'}
 
 @get(siteconfig["rootPath"] + "projects/<projectID>/project.json") # OK
 @authProject
