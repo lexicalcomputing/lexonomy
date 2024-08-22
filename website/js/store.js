@@ -51,15 +51,6 @@ class StoreClass {
       this.resetDictionary()
    }
 
-   migrateConfigStructure(structure){
-      Object.values(structure.elements).forEach(el => {
-         if(el.filling && !el.type){
-            el.type = el.filling
-            delete el.filling
-         }
-      })
-   }
-
    getDictionary(dictId){
       return this.data.dictionaryList.find(d => d.id == dictId)
    }
@@ -377,18 +368,14 @@ class StoreClass {
                      })
                   }
                   Object.assign(this.data, {
-                     // TODO configs and dictConfigs?
                         config: response.configs,
                         userAccess: response.userAccess,
-                        dictConfigs: response.configs,
                         doctype: response.doctype,
                         doctypes: response.doctypes
                      },
                      response.publicInfo
                   )
 
-                  // TODO just temporary, remove after data migration
-                  this.migrateConfigStructure(this.data.config.structure)
                   window.xema = this.data.config.structure  // global variable xema is used by some custom editors
                   this.data.isDictionaryLoaded = true
                   this.data.isDictionaryLoading = false
@@ -443,7 +430,7 @@ class StoreClass {
 
    reloadCurrentEntries(){
       // reload current loaded entries (initial entry batch + entries loaded via scrolling in entry list)
-      let min = this.data.dictConfigs.titling.numberEntries || 500
+      let min = this.data.config.titling.numberEntries || 500
       return this.loadEntries(this.getEntrySearchParams(this.data.entryList.length < min ? min : this.data.entryList.length))
             .done(response => {
                if(response.entries){
@@ -690,13 +677,6 @@ class StoreClass {
          },
          failMessage: `Could not load the data ('${configId}').`
       })
-            .done(response => {
-               if(response.success){
-                  if(response.id == "structure"){
-                     this.migrateConfigStructure(response.content)
-                  }
-               }
-            })
    }
 
    updateDictionaryConfig(configId, data){
@@ -1332,7 +1312,7 @@ class StoreClass {
 
    getEntrySearchParams(howmany, offset){
       let data = {
-         howmany: howmany || this.data.dictConfigs.titling.numberEntries || 500,
+         howmany: howmany || this.data.config.titling.numberEntries || 500,
          offset: offset || 0
       }
       if(this.data.search.tab == "basic"){
