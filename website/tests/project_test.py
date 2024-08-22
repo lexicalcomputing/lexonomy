@@ -65,7 +65,7 @@ class TestQueries(unittest.TestCase):
                     cls.all_batches_dict_ids.add((stage['stage'], batch_dict['dictID'], batch_dict['title']))
 
     # SOURCE DICT CREATE
-    def test_1(self):
+    def test_01(self):
         data = {'url': self.source_dict_id,
                 'hwNode': 'entry',
                 'title': self.source_dict_id,
@@ -89,7 +89,7 @@ class TestQueries(unittest.TestCase):
         self.update_source_dict(r.json()['url'])
 
     # CREATE PROJECT
-    def test_2(self):
+    def test_02(self):
         API_ENDPOINT_1 = self.website + "/projects/create.json"
         data = {'id': self.new_project_id,
                 'name': 'LCL test project',
@@ -134,7 +134,7 @@ class TestQueries(unittest.TestCase):
         # ================
 
     # EDIT PROJECT
-    def test_3(self):
+    def test_03(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/update.json"
         data = {'name': 'LCL test project updated',
                 'description': 'This is a testing project updated',
@@ -162,11 +162,11 @@ class TestQueries(unittest.TestCase):
         # ================
 
     # CREATE BATCH
-    def test_4(self):
+    def test_04(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/create_batch.json"
         data = {'stage': 'sensitive',
                 'size': 1,
-                'batch_number': 3,
+                'batch_number': 4,
                 }
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
@@ -179,9 +179,6 @@ class TestQueries(unittest.TestCase):
         r2 = requests.post(url=API_ENDPOINT_2, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r2.json()['success'], True)
 
-        # get dicIDs of all batches
-        self.update_all_batches()
-
         # ================
         # PROJECT STATE
         # ================
@@ -193,17 +190,37 @@ class TestQueries(unittest.TestCase):
             print('CREATE BATCH')
             print('================================')
             pprint(r3.json())
-
-        self.assertTrue('marek_project.sensitive.batch' in r3.json()['workflow'][0]['batches'][0]['title'])
-        self.assertTrue(r3.json()['workflow'][0]['batches'][0]['status'] in ['inProgress', 'creating'])
-        self.assertEqual(r3.json()['workflow'][0]['batches'][0]['assignee'], None)
-        self.assertEqual(r3.json()['workflow'][0]['inputDicts'][0]['remaining'], 2)
-
         # ================
 
+        # ================
+        # DELETE ONE BATCH
+        # ================
+        API_ENDPOINT_4 = self.website + f"/projects/{self.new_project_id}/delete_batch.json"
+        data = {'dictID_list': json.dumps([r3.json()['workflow'][0]['batches'][3]['dictID']])}
+        r4 = requests.post(url=API_ENDPOINT_4, data=data, headers=self.headers, cookies=self.cookies)
+        self.assertEqual(r4.json()['success'], True)
+
+        # ================
+        # PROJECT STATE
+        # ================
+        API_ENDPOINT_5 = self.website + f"/projects/{self.new_project_id}/project.json"
+        r5 = requests.get(url=API_ENDPOINT_5, headers=self.headers, cookies=self.cookies)
+        if self.verbose:
+            print('================================')
+            print('DELETE BATCH')
+            print('================================')
+            pprint(r5.json())
+
+        self.assertTrue('marek_project.sensitive.batch' in r5.json()['workflow'][0]['batches'][0]['title'])
+        self.assertTrue(r5.json()['workflow'][0]['batches'][0]['status'] in ['inProgress', 'creating'])
+        self.assertEqual(r5.json()['workflow'][0]['batches'][0]['assignee'], None)
+        self.assertEqual(r5.json()['workflow'][0]['inputDicts'][0]['remaining'], 2)
+        # ================
 
     # ASSIGN BATCH
-    def test_5(self):
+    def test_05(self):
+        # get dicIDs of all batches
+        self.update_all_batches()
         # ================
         # ASSIGN ALL BATCHES 
         # ================
@@ -256,7 +273,7 @@ class TestQueries(unittest.TestCase):
         # ================
 
     # REJECT BATCH
-    def test_6(self):
+    def test_06(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/reject_batch.json"
         batch_dic_ids = [x[1] for x in self.all_batches_dict_ids if x[2] == 'marek_project.sensitive.batch_001']
         data = {'dictID_list': json.dumps(batch_dic_ids)}
@@ -282,7 +299,7 @@ class TestQueries(unittest.TestCase):
         # ================
 
     # ACCEPT BATCH
-    def test_7(self):
+    def test_07(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/accept_batch.json"
         data = {'dictID_list': json.dumps([x[1] for x in self.all_batches_dict_ids])}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
@@ -305,7 +322,7 @@ class TestQueries(unittest.TestCase):
         # ================
 
     # MERGE SENSITIVE/IMAGES
-    def test_8(self):
+    def test_08(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/make_stage.json"
         data = {'stage': 'sensitive'}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
@@ -348,8 +365,31 @@ class TestQueries(unittest.TestCase):
             print('================================')
             pprint(r4.json())
 
+    # UPDATE SOURCE DICT
+    def test_09(self):
+        API_ENDPOINT_1 = self.website + f"/{self.source_dict_id}/clone.json"
+        r1 = requests.post(url=API_ENDPOINT_1, headers=self.headers, cookies=self.cookies)
+        self.assertEqual(r1.json()['success'], True)
+        new_dict_id = r1.json()['dictID']
+
+        API_ENDPOINT_2 = self.website + f"/projects/{self.new_project_id}/update_source_dict.json"
+        data = {'source_dict_id': new_dict_id}
+        r2 = requests.post(url=API_ENDPOINT_2, data=data, headers=self.headers, cookies=self.cookies)
+        self.assertEqual(r2.json()['success'], True)
+
+        # ================
+        # PROJECT STATE
+        # ================
+        API_ENDPOINT_3 = self.website + f"/projects/{self.new_project_id}/project.json"
+        r3 = requests.get(url=API_ENDPOINT_3, headers=self.headers, cookies=self.cookies)
+        if self.verbose:
+            print('================================')
+            print('SOURCE DICT UPDATE')
+            print('================================')
+            pprint(r3.json())
+
     # DELETE PROJECT
-    def test_9(self):
+    def test_10(self):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/delete.json"
         r1 = requests.post(url=API_ENDPOINT_1, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
@@ -363,6 +403,10 @@ class TestQueries(unittest.TestCase):
         self.assertTrue(self.new_project_id not in r2.json()['projects_active'])
         self.assertTrue(self.new_project_id not in r2.json()['projects_archived'])
         # ================
+
+        API_ENDPOINT_3 = self.website + f"{self.source_dict_id}/destroy.json"
+        r3 = requests.post(url=API_ENDPOINT_3, headers=self.headers, cookies=self.cookies)
+        self.assertEqual(r3.json()['success'], True)
 
 
 if __name__ == '__main__':
