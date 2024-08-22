@@ -134,20 +134,22 @@ def createProject(project_id, project_name, project_description, project_annotat
 
 
 def update_project_source_dict(project_id, src_dict_id):
-    # Dump source dict to NVH
-    if os.path.exists(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh')):
-        shutil.move(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'),
-                    os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh_'+datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S")))
+    conn = ops.getMainDB()
+    q =  conn.execute("SELECT src_dic_id FROM projects WHERE id=?", (project_id,))
+    r = q.fetchone()
+    # Make copy of old source
+    if os.path.exists(os.path.join(siteconfig["dataDir"], "projects", project_id, r['src_dic_id']+'.nvh')):
+        shutil.move(os.path.join(siteconfig["dataDir"], "projects", project_id, r['src_dic_id']+'.nvh'),
+                    os.path.join(siteconfig["dataDir"], "projects", project_id, r['src_dic_id']+'.nvh_'+datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S")))
+
 
     with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
         for nvh in ops.download(ops.getDB(src_dict_id), src_dict_id, 'nvh'):
             f.write(nvh)
 
-    conn = ops.getMainDB()
-    conn.execute("UPDATE project SET src_dic_id=? WHERE id=?"
-                 (src_dict_id, project_id))
-    conn.execute("UPDATE project_dicts SET source_nvh=? WHERE project_id=? AND stage=?",
-                 (os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), project_id, '__nvh_source__'))
+    conn.execute("UPDATE projects SET src_dic_id=? WHERE id=?", (src_dict_id, project_id))
+    conn.execute("UPDATE project_dicts SET source_nvh=?, dict_id=? WHERE project_id=? AND stage=?",
+                 (os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), src_dict_id, project_id, '__nvh_source__'))
     conn.commit()
 
     project_info = getProject(project_id)
@@ -579,15 +581,25 @@ def deleteBatch(project_id, dictID_list):
         r = c.fetchone()
         all_stages.add(r['stage'])
 
-        out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
-        shutil.rmtree(out_nvh_file_name, ignore_errors=True)
+        if os.path.isfile(r['source_nvh'].rstrip('.in') + '.nvh'):
+            os.remove(r['source_nvh'].rstrip('.in') + '.nvh')
+
+        if os.path.isfile(r['source_nvh']):
+            os.remove(r['source_nvh'])
+
+        if os.path.isfile(r['source_nvh'] + '.schema'):
+            os.remove(r['source_nvh'] + '.schema')
 
         # DELETE batch form project
-        mainDB.execute('DELETE project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
-        # DELETE dict from lexonomy
+        mainDB.execute('DELETE FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+
+    mainDB.commit()
+    mainDB.close()
+
+    # DELETE batch dict from lexonomy
+    for dictID in dictID_list:
         ops.destroyDict(dictID)
 
-    mainDB.close()
     refresh_selected_stages(project_id, all_stages)
     return {"success": True, "projectID": project_id}
 
@@ -606,8 +618,8 @@ def rejectBatch(project_id, dictID_list):
         all_stages.add(r['stage'])
 
         # rm exported NVH if was created by accept
-        out_nvh_file_name = r['source_nvh'].rstrip('.in') + '.nvh'
-        shutil.rmtree(out_nvh_file_name, ignore_errors=True)
+        if os.path.isfile(r['source_nvh'].rstrip('.in') + '.nvh'):
+            os.remove(r['source_nvh'].rstrip('.in') + '.nvh')
 
         # move batch to rejected
         if r['source_nvh'].endswith('.in'):
