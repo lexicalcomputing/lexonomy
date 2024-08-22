@@ -6,8 +6,8 @@ DIR=%dir%
 TL_NODE=entry
 
 TS=\"$$(TZ=UTC date +%Y-%m-%d" "%H:%M:%S.%N)\"
-GEN_NEXT_BATCH=$(DIR)/gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE)
-IMPORT_BATCH=$(DIR)/import_batch.py $(USER) $(TL_NODE) $(TS)
+GEN_NEXT_BATCH=$(DIR)/project_gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(GENERATED_BATCHES_FILEMASK) $(TL_NODE)
+IMPORT_BATCH=$(DIR)/project_import_batch.py $(USER) $(TL_NODE) $(TS)
 # ============================
 
 ### stage snesitive ####################################################

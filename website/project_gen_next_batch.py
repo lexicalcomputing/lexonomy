@@ -1,6 +1,6 @@
 #!/usr/bin/python3.10
 # coding: utf-8
-# usage: gen_next_batch.py BATCH_SIZE [MAX_BATCHES] [EXISTING_BATCHES_FILEMASK] [USER_EMAIL]
+# usage: project_gen_next_batch.py BATCH_SIZE [MAX_BATCHES] [EXISTING_BATCHES_FILEMASK] [USER_EMAIL]
 import os
 import sys
 import glob
