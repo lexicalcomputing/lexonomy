@@ -1,0 +1,72 @@
+<project-export-to-batches-form>
+   <div class="exportBatchesSettings displayFlex">
+      <div class="input-field mb-0">
+         <input type="number"
+               class="batchSize"
+               min=1
+               value={100}
+               disabled={props.workflow.inputDicts[0].total <= 0 || props.workflow.isExportingBatches}
+               oninput={onBatchSizeInput}>
+         <label>Batch size</label>
+      </div>
+      <div class="input-field mb-0">
+         <input type="number"
+               class="batchCount"
+               value={1}
+               min=1
+               disabled={props.workflow.inputDicts[0].total <= 0 || props.workflow.isExportingBatches}
+               oninput={onBatchCountInput}>
+         <label>No. of batches</label>
+      </div>
+   </div>
+   <button class="exportBtn btn {!props.workflow.inputDicts[0].total || !props.workflow.inputDicts[0].remaining || props.workflow.is_locked ? 'disabled' : ''}"
+         onclick={onExportToBatchesClick}>
+      export batches
+   </button>
+
+   <script>
+      export default{
+         state: {
+            batch_size: 100,
+            batch_count: 1
+         },
+
+
+         onExportToBatchesClick(){
+            this.props.exportToBatches(this.props.workflow, this.state.batch_size, this.state.batch_count)
+         },
+
+         onBatchSizeInput(evt){
+            this.state.batch_size = evt.target.value
+            this.refreshExportBatchesBtnDisabled()
+         },
+
+         onBatchCountInput(evt){
+            this.state.batch_count = evt.target.value
+            this.refreshExportBatchesBtnDisabled()
+         },
+
+         refreshExportBatchesBtnDisabled(){
+            let disabled = isNaN(this.state.batch_size)
+                  || this.state.batch_size <= 0
+                  || isNaN(this.state.batch_count)
+                  || this.state.batch_count <= 0
+            $("exportBtn", this.root).toggleClass("disabled", disabled)
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .exportBatchesSettings{
+         gap: 10px;
+      }
+      input{
+         height: 30px;
+         line-height: 30px;
+         max-width: 110px;
+      }
+      .btn{
+         min-width: 230px;
+      }
+   </style>
+</project-export-to-batches-form>

@@ -7,17 +7,17 @@
          <i onclick={onBatchSearchCancelClick}
                class="material-icons rightIcon grey-text clickable">close</i>
          <div class="helper-text">
-            showing {props.workflow.displayedBatchCount} of {props.workflow.batches.length} batches
+            showing {state.displayedBatches.size} of {props.workflow.batches.length} batches
          </div>
       </div>
    </div>
-   <div if={!props.workflow.displayedBatchCount && props.workflow.batches.length}>
+   <div if={props.workflow.batches.length && !state.displayedBatches.size}>
       <h3 class="grey-text center-align mt-6 mb-6">
          no batches found
       </h3>
    </div>
-   <div class="batchTableWrapper {props.workflow.showAllBatches ? 'showAllBatches' : ''}">
-      <table if={props.workflow.displayedBatchCount}
+   <div class="batchTableWrapper {state.showAllBatches ? 'showAllBatches' : ''}">
+      <table if={props.workflow.batches.length && state.displayedBatches.size}
             class="batchTable">
          <thead>
             <tr>
@@ -50,21 +50,22 @@
             </tr>
          </thead>
          <tbody>
-            <tr each={(batch, idx) in props.workflow.batches}
-                  if={batch.show}
+            <tr each={batch in props.workflow.batches}
+                  if={state.displayedBatches.has(batch.dictID)}
                   class="batch{batch.status ? window.capitalize(batch.status) : "In progress"}
-                        {batch.selected ? 'selectedBatch' : ''}
+                        {state.selectedBatches.has(batch.dictID) ? 'selectedBatch' : ''}
                         {batch.isBusy || batch.satus == 'creating' ? 'pointerEventsNone' : ''} positionRelative">
                <td>
                   <div if={batch.isBusy || batch.status == 'creating'}
                         class="batchLoadingOverlay">
                      <i class="material-icons spin grey-text">donut_large</i>
                   </div>
-                  <label if={batch.status != "rejected"}
-                        class="checkbox">
+                  <input type="checkbox"
+                     checked={state.selectedBatches.has(batch.dictID)}>
+                  <label class="checkbox">
                      <input type="checkbox"
-                           checked={batch.selected}
-                           onclick={onBatchCheckboxClick.bind(this, idx)}/>
+                           checked={state.selectedBatches.has(batch.dictID) ? 'checked' : ''}
+                           onclick={onBatchCheckboxClick.bind(this, batch)}/>
                      <span></span>
                   </label>
                </td>
@@ -126,12 +127,14 @@
                            onclick={onBatchRejectClick.bind(this, batch)}>
                         <i class="material-icons">close</i>
                      </button>
-                     <button if={batch.completed_per == 100 && batch.status != "accepted"}
-                           class="btn btn-flat btn-floating btn-small tooltipped"
-                           data-tooltip="Accept batch"
-                           onclick={onBatchAcceptClick.bind(this, batch)}>
-                        <i class="material-icons">check</i>
-                     </button>
+                     <span if={batch.completed_per == 100 && batch.status != "accepted"}
+                           class="tooltipped"
+                           data-tooltip={batch.status == "rejected" && batch.newerBatchExists ? "If you want to accept this batch you need to delete all newer batches first" : "Accept batch"}>
+                        <button class="btn btn-flat btn-floating btn-small {batch.newerBatchExists ? 'disabled' : ''}"
+                              onclick={onBatchAcceptClick.bind(this, batch)}>
+                           <i class="material-icons">check</i>
+                        </button>
+                     </span>
                      <button class="btn btn-flat btn-floating btn-small tooltipped"
                            data-tooltip="Delete batch"
                            onclick={onBatchDeleteClick.bind(this, batch)}>
@@ -145,37 +148,38 @@
    </div>
    <div class="batchBottomBar mt-2 pt-2">
       <div>
-         <button class="dropdown-trigger btn {props.workflow.selectedBatchesCount ? '' : 'disabled'}"
-               data-target="bulkActionDropdown">bulk action
+         <button class="dropdown-trigger btn {state.selectedBatches.size ? '' : 'disabled'}"
+               data-target="bulkActionDropdown"
+               onclick={onBulkActionDropdownButtonClick}>bulk action
             <i class="material-icons right">arrow_drop_down</i>
          </button>
-         <div if={props.workflow.selectedBatchesCount}>
-            <small class="grey-text">selected {props.workflow.selectedBatchesCount} batches</small>
+         <div if={state.selectedBatches.size}>
+            <small class="grey-text">selected {state.selectedBatches.size} batches</small>
          </div>
          <ul id="bulkActionDropdown"
                class="dropdown-content">
-            <li>
+            <li class="batchBulkActionAccept">
                <a href="javascript:void(0);"
                      onclick={onBulkActionClick.bind(this, "accepted")}>
                   Accept
                   <i class="material-icons">check</i>
                </a>
             </li>
-            <li>
+            <li class="batchBulkActionReject">
                <a href="javascript:void(0);"
                      onclick={onBulkActionClick.bind(this, "reject")}>
                   Reject
                   <i class="material-icons">close</i>
                </a>
             </li>
-            <li>
+            <li class="batchBulkActionSetEditor">
                <a href="javascript:void(0);"
                      onclick={onBulkActionClick.bind(this, "setAssignee")}>
                   Set editor
                   <i class="material-icons">person</i>
                </a>
             </li>
-            <li>
+            <li class="batchBulkActionClose">
                <a href="javascript:void(0);"
                      onclick={onBulkActionClick.bind(this, "delete")}>
                   Delete
@@ -196,15 +200,27 @@
                class="displayInlineBlock"
                onclick={onToggleShowMoreBatches}>
             <i class="material-icons right">
-               {props.workflow.showAllBatches ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+               {state.showAllBatches ? "keyboard_arrow_up" : "keyboard_arrow_down"}
             </i>
-            {props.workflow.showAllBatches ? "show less" : "show all"}
+            {state.showAllBatches ? "show less" : "show all"}
          </a>
       </div>
    </div>
 
    <script>
       export default{
+         state: {
+            selectedBatches: null,
+            displayedBatches: null,
+            lastSelectedBatch: null,
+            showAllBatches: true
+         },
+
+         onBeforeMount(){
+            this.state.selectedBatches = new Set()
+            this.refreshDisplayedBatches()
+         },
+
          onMounted(){
             $(".dropdown-trigger", this.root).dropdown({
                coverTrigger: false,
@@ -213,9 +229,12 @@
             })
          },
 
+         onBeforeUpdate(){
+            this.refreshDisplayedBatches()
+         },
+
          onToggleShowMoreBatches(){
-            this.props.workflow.showAllBatches = !this.props.workflow.showAllBatches
-            this.update()
+            this.update({showAllBatches: !this.state.showAllBatches})
          },
 
          onBatchRejectClick(batch){
@@ -230,74 +249,46 @@
             this._deleteBatches([batch])
          },
 
-         onBatchSearchInput(evt){
-            this.props.workflow.batchFilter = evt.target.value
-            this.props.workflow.batches.forEach(batch => {
-               batch.show = !this.props.workflow.batchFilter
-                  || batch.assignee.indexOf(this.props.workflow.batchFilter) != -1
-                  || batch.dictID.indexOf(this.props.workflow.batchFilter) != -1
-                  || batch.status.indexOf(this.props.workflow.batchFilter) != -1
-               if(!batch.show){
-                  batch.selected = false
+         onBulkActionDropdownButtonClick(){
+            let showAccept = false
+            let showReject = false
+            this.props.workflow.batches.filter(b => this.state.selectedBatches.has(b.dictID)).forEach(batch => {
+               if( batch.status != "accepted" && batch.completed_per == 100 && !batch.newerBatchExists){
+                  showAccept = true
+               }
+               if(batch.status != "rejected"){
+                  showReject = true
                }
             })
-            this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
-            this.props.workflow.displayedBatchCount = this.props.workflow.batches.filter(batch => batch.show).length
-            this.update()
+            $(".batchBulkActionAccept").toggle(showAccept)
+            $(".batchBulkActionReject").toggle(showReject)
+         },
+
+         onBatchSearchInput(evt){
+            this.update({searchQuery: evt.target.value})
          },
 
          onBatchSearchCancelClick(){
-            this.props.workflow.batchFilter = ""
-            this.props.workflow.batches.forEach(batch => batch.show = true)
-            this.props.workflow.displayedBatchCount = this.props.workflow.batches.length
+            this.state.searchQuery = ""
+            this.state.displayedBatches = new Set(this.props.workflow.batches.map(batch => batch.dictID))
             $(".searchBox input", this.root).val("")
             this.update()
          },
 
-         onBatchSortClick( orderBy){
+         onBatchSortClick(orderBy){
             if(this.props.workflow.orderBy == orderBy){
                this.props.workflow.desc = !this.props.workflow.desc
             } else {
                this.props.workflow.orderBy = orderBy
                this.props.workflow.desc = false
             }
-            this.props.workflow.batches.sort((a, b) => {
-               if(this.props.workflow.orderBy == "size" && a.total != b.total){
-                  return Math.sign(a.total - b.total)
-               }
-               if(this.props.workflow.orderBy == "assignee" && a.assignee != b.assignee){
-                  return a.assignee.localeCompare(b.assignee)
-               }
-               if(this.props.workflow.orderBy == "dictionary" && a.dictID != b.dictID){
-                  return a.dictID.localeCompare(b.dictID)
-               }
-               if(this.props.workflow.orderBy == "status"){
-                  if(a.status != b.status){
-                     if(a.status == "rejected"){
-                        return -1
-                     } else if(b.status == "rejected"){
-                        return 1
-                     } else if(a.status == "accepted"){
-                        return 1
-                     } else if(b.status == "accepted"){
-                        return -1
-                     }
-                  }
-                  if(a.completed_per != b.completed_per){
-                     return Math.sign(a.completed_per - b.completed_per)
-                  }
-               }
-               return a.dictID.localeCompare(b.dictID, undefined, {numeric: true})
-            })
-            if(this.props.workflow.desc){
-               this.props.workflow.batches.reverse()
-            }
+            this.store.projectSortBatches(this.props.workflow.batches, this.props.workflow.orderBy, this.props.workflow.desc)
             this.update()
          },
 
-         onBatchCheckboxClick( idx, evt){
-            this.toggleBatchSelection(idx, evt.shiftKey)
-            this.props.workflow.lastSelectedBatchIdx = idx
+         onBatchCheckboxClick(batch, evt){
+            this.toggleBatchSelection(batch, evt.shiftKey)
+            this.state.lastSelectedBatch = batch
          },
 
          onBatchAssigneeClick(batch, evt){
@@ -325,7 +316,6 @@
          onBatchAssigneeBlur(batch){
             batch.edit = false
             this.update()
-
          },
 
          onBatchAssigneeChange(batch, email){
@@ -337,7 +327,7 @@
          },
 
          onBulkActionClick( action, evt){
-            let selectedBatches = this.props.workflow.batches.filter(b => b.selected)
+            let selectedBatches = this.props.workflow.batches.filter(b => this.state.selectedBatches.has(b.dictID))
             if(action == "accepted"){
                this._acceptBatches(selectedBatches)
             } else if(action == "reject"){
@@ -361,8 +351,9 @@
                      class: "btn-primary disabled",
                      onClick: function(selectedBatches, modal, dialog){
                         let assignee = $(".modal-content lazy-dropdown input").val()
-                        selectedBatches.forEach(batch => batch.selected = false)
-                        this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
+                        selectedBatches.forEach(batch => {
+                           this.state.selectedBatches.delete(batch.dictID)
+                        })
                         this._setAssignees(selectedBatches, assignee)
                         dialog.close()
                      }.bind(this, selectedBatches)
@@ -374,16 +365,34 @@
             }
          },
 
-         toggleBatchSelection(idx, shiftKey){
-            let selected = !this.props.workflow.batches[idx].selected
-            let fromIdx = shiftKey ? Math.min(idx, this.props.workflow.lastSelectedBatchIdx) : idx
-            let toIdx = shiftKey ? Math.max(idx, this.props.workflow.lastSelectedBatchIdx) : idx
+         toggleBatchSelection(batch, shiftKey){
+            let idx = this.props.workflow.batches.indexOf(batch)
+            let lastSelectedBatchIdx = this.props.workflow.batches.indexOf(this.state.lastSelectedBatch)
+            let selected = !this.state.selectedBatches.has(batch.dictID)
+            let fromIdx = shiftKey ? Math.min(idx, lastSelectedBatchIdx) : idx
+            let toIdx = shiftKey ? Math.max(idx, lastSelectedBatchIdx) : idx
             for(let i = fromIdx; i <= toIdx; i++){
-               this.props.workflow.batches[i].selected = selected
+               if(selected){
+                  this.state.selectedBatches.add(batch.dictID)
+               } else {
+                  this.state.selectedBatches.delete(batch.dictID)
+               }
             }
-            this.props.workflow.selectedBatchesCount = this.props.workflow.batches.filter(b => b.selected).length
             this.update()
             window.initFormSelects(this.root)
+         },
+
+         refreshDisplayedBatches(){
+            if(this.state.searchQuery){
+               this.state.displayedBatches = new Set(this.props.workflow.batches.filter(batch => {
+                     return batch.assignee.indexOf(this.state.searchQuery) != -1
+                        || batch.dictID.indexOf(this.state.searchQuery) != -1
+                        || batch.status.indexOf(this.state.searchQuery) != -1
+                  }).map(batch => batch.dictID))
+               this.state.selectedBatches = this.state.selectedBatches.intersection(this.state.displayedBatches)
+            } else {
+               this.state.displayedBatches = new Set(this.props.workflow.batches.map(batch => batch.dictID))
+            }
          },
 
          _acceptBatches(batches){
@@ -443,7 +452,7 @@
             } else {
                completedBatches.forEach(batch => {
                   batch.isBusy = false
-                  batch.selected = false
+                  this.state.selectedBatches.delete(batch.dictID)
                })
                this.update()
             }
@@ -569,7 +578,6 @@
          }
          .assigneeAutocomplete{
             cursor: pointer;
-            //border: 0!important;
             padding: 2px 5px;
             height: 25px;
             line-height: 25px;

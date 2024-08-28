@@ -192,6 +192,9 @@
                            constrainWidth: false
                         }
                      })
+                     if(this.state.project.language){
+                        this.refreshReferenceCorporaList()
+                     }
                   })
                   .always(() => {
                      this.update({isCorporaLoading: false})
@@ -237,15 +240,18 @@
          },
 
          refreshReferenceCorporaList(){
-            let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
-                  .map(corpus => {
-                     return {
-                           value: corpus.corpname,
-                           label: corpus.name,
-                           info: corpus.language_name
-                        }
-                     })
-            M.Autocomplete.getInstance($("#ref_corpus")).updateData(corpora)
+            if(this.state.corpora){
+               let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
+                     .map(corpus => {
+                        return {
+                              value: corpus.corpname,
+                              label: corpus.name,
+                              info: corpus.language_name
+                           }
+                        })
+               let instance = M.Autocomplete.getInstance($("#ref_corpus"))
+               instance && instance.updateData(corpora)
+            }
          },
 
          onAddMember(type, member){

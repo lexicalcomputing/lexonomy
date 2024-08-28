@@ -1,8 +1,8 @@
 <project-dict-name>
-   <h3 class="projectDictName dictName_{window.idEscape(props.dict.title)} displayInlineBlock"
+   <h3 class="projectDictName mt-0 dictName_{window.idEscape(props.dict.title)} displayInlineBlock"
          onmouseover={onMouseOver}
          onmouseout={onMouseOut}>
-      <trim-text text={state.name}
+      <trim-text text={getDictionaryName()}
             max={30}/>
       <a if={props.dict.dictID}
             href="#{props.dict.dictID}"
@@ -15,7 +15,7 @@
       <span>
          {!props.dict.total ? 'empty' : window.Formatter.num(this.props.dict.total) + " entries"}
       </span>
-      <span if={!props.hideAssigned && props.dict.total}
+      <span if={!props.hideAssigned && props.dict.total && !isNaN(props.dict.remaining)}
             class="grey-text ml-auto">
          assigned: {window.Formatter.num(props.dict.total - props.dict.remaining)}, remaining: {window.Formatter.num(props.dict.remaining)}
       </span>
@@ -24,14 +24,6 @@
 
    <script>
       export default{
-         onBeforeMount(){
-            let name = this.props.dict.title || ""
-            if(/^\d+\..*/.test(this.props.dict.title)){
-               name = name.substr(name.indexOf(".") + 1)  // remove project ID
-            }
-            this.state.name = name
-         },
-
          onMouseOver(){
             $(`.dictName_${window.idEscape(this.props.dict.title)}`)
                   .addClass("highlightDictName")
@@ -41,6 +33,14 @@
          onMouseOut(){
             $(".highlightDictName").removeClass("highlightDictName")
             $(".highlightDictPanel").closest(".card-panel").removeClass("highlightDictPanel")
+         },
+
+         getDictionaryName(){
+            let name = this.props.dict.title || ""
+            if(/^\d+\..*/.test(this.props.dict.title)){
+               name = name.substr(name.indexOf(".") + 1)  // remove project ID
+            }
+            return name
          }
       }
    </script>
@@ -55,7 +55,6 @@
          margin-bottom: 0;
          cursor: default;
          padding-bottom: 0.5em;
-         margin-bottom: 0.5em;
          i{
             font-size: 1rem;
          }

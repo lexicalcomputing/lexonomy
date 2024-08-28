@@ -34,7 +34,7 @@
          </a>
          <a if={!state.isReloadingProject}
                href="javascript:void(0);"
-               class="grey-text ml-2"
+               class="grey-text ml-2 tooltipped"
                onclick={onReloadProjectClick}
                data-tooltip="Reload project">
             <i class="material-icons">refresh</i>
@@ -78,7 +78,9 @@
          <tbody each={(workflow, workflowIdx) in state.project.workflow}>
             <tr if={workflow.type != "merge"}>
                <td>
-                  <div class="card-panel grey lighten-4">
+                  <div class="card-panel grey lighten-4 positionRelative">
+                     <loading-overlay if={state.isReloadingCentralDictionary}
+                           message="Reloading..."/>
                      <span if={workflow.inputDicts[0].dictID == state.project.source_dict}
                            class="sourceDictMenuDropdownBtn">
                         <button class="dropdown-trigger btn btn-floating btn-flat"
@@ -106,31 +108,9 @@
                      <project-dict-name dict={workflow.inputDicts[0]}/>
                      <div class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
                            data-tooltip={!workflow.inputDicts[0].total ? 'No entries to export, dictionary is empty.' :''}>
-                        <div if={!getDictionaryStatus(workflow.inputDicts[0]).isBusy}
-                              class="exportBatchesForm">
-                           <div class="exportBatchesSettings displayFlex">
-                              <div class="input-field mb-0">
-                                 <input type="number"
-                                       min=1
-                                       value={workflow.batch_size || 100}
-                                       disabled={workflow.inputDicts[0].total <= 0 || workflow.isExportingBatches}
-                                       oninput={onBatchSizeInput.bind(this, workflow)}>
-                                 <label>Batch size</label>
-                              </div>
-                              <div class="input-field mb-0">
-                                 <input type="number"
-                                       value={workflow.batch_count || 1}
-                                       min=1
-                                       disabled={workflow.inputDicts[0].total <= 0 || workflow.isExportingBatches}
-                                       oninput={onBatchCountInput.bind(this, workflow)}>
-                                 <label>No. of batches</label>
-                              </div>
-                           </div>
-                           <button class="exportBtn btn {!workflow.inputDicts[0].total || workflow.is_locked ? 'disabled' : ''}"
-                                 onclick={onExportToBatchesClick.bind(this, workflow)}>
-                              export batches
-                           </button>
-                        </div>
+                        <project-export-to-batches-form class={getDictionaryStatus(workflow.inputDicts[0]).isBusy ? 'hide' : ''}
+                              workflow={workflow}
+                              export-to-batches={exportToBatches}/>
                         <project-dictionary-status {...getDictionaryStatus(workflow.inputDicts[0])}/>
                      </div>
                   </div>
@@ -142,8 +122,9 @@
                </td>
                <td>
                   <div class="workflowWithBatchPanel positionRelative card-panel grey lighten-4">
+                     <loading-overlay if={workflow.is_locked}/>
                      <div class="workflowBar borderBottom mb-2 displayFlex">
-                        <h3 class="workflowName">
+                        <h3 class="workflowName mt-0">
                            {workflow.stage}
                         </h3>
                         <div class="workflowStatus displayFlex alignCenter grey-text ml-auto">
@@ -205,7 +186,8 @@
                <td>
                   <div class="card-panel grey lighten-4">
                      <template each={dict in workflow.inputDicts}>
-                        <project-dict-name dict={dict}/>
+                        <project-dict-name dict={dict}
+                              hide-assigned={true}/>
                         <project-dictionary-status {...getDictionaryStatus(dict)}/>
                      </template>
                   </div>
@@ -216,19 +198,20 @@
                   </div>
                </td>
                <td>
-                  <div class="card-panel grey lighten-4">
-                     <h3 class="workflowName borderBottom">Merge dicitonaries</h3>
+                  <div class="card-panel grey lighten-4 positionRelative">
+                     <h3 class="workflowName borderBottom mt-0">Merge dictionaries</h3>
                      <span class="alignCenter {!workflow.isMergeAvailable ? 'tooltipped' :''}"
-                           data-tooltip={!workflow.isMergeAvailable ? 'Dicitonaries to merge must not be empty.' : ''}>
-                        <button if={workflow.isMergeAvailable}
-                              class="btn mt-4 {!workflow.isMergeAvailable ? 'disabled' : ''}"
+                           data-tooltip={!workflow.isMergeAvailable ? 'Dictionaries to merge must not be empty.' : ''}>
+                        <button class="btn mt-4 {!workflow.isMergeAvailable || workflow.isMerging ? 'disabled' : ''}"
                               onclick={onMergeDictionariesClick.bind(this, workflow)}>
                            Merge
                         </button>
                      </span>
+                     <loading-overlay if={workflow.isMerging}
+                           message="Merging..."/>
                      <h4 if={!workflow.isMergeAvailable}
                            class="grey-text pt-4 center-align">
-                        Dicitonaries to merge must not be empty
+                        Dictionaries to merge must not be empty
                      </h4>
                   </div>
                </td>
@@ -257,6 +240,7 @@
          state: {
             isBusy: false,
             isReloadingProject: false,
+            isReloadingCentralDictionary: false,
             project: null,
             error: null,
             lastLoadedProjectID: null,
@@ -277,6 +261,7 @@
             } else if(this.state.project){
                this.state.project.workflow.forEach(workflow => {
                   if(workflow.batches){
+                     this.store.projectSortBatches(workflow.batches, "status")
                      workflow.completed_per = 0
                      workflow.isImportAvailable = workflow.batches.some(batch => batch.status == "accepted")
                      if(workflow.batches.length){
@@ -286,12 +271,14 @@
                                  arr[1] += batch.total || 0
                                  return arr
                               }, [0, 0])
-                        workflow.completed_per = Math.floor(tmp[0] / tmp[1] * 100)
+                        if(tmp[0] && tmp[1]){
+                           workflow.completed_per = Math.floor(tmp[0] / tmp[1] * 100)
+                        }
                      }
                   }
                   if(workflow.type == "merge"){
+                     workflow.isMerging = this.state.runningImports.has(workflow.outputDict.title)
                      workflow.isMergeAvailable = workflow.inputDicts.every(dict => dict.total != 0 && !this.state.runningExports.has(dict.title))
-                           && !this.state.runningImports.has(workflow.outputDict)
                   }
                })
             }
@@ -321,7 +308,11 @@
 
          onReloadSourceDictClick(){
             this.store.projectUpdateSourceDict(this.state.project.projectID, this.state.project.source_dict)
-                  .done(this.loadProject.bind(this))
+                  .done(() => {
+                     this.state.isReloadingCentralDictionary = false
+                     this.loadProject()
+                  })
+            this.update({isReloadingCentralDictionary: true})
          },
 
          onChangeCentralDictionaryClick(){
@@ -344,11 +335,15 @@
                      let source_dict = $("#centralDictionarySelect").val()
                      this.store.projectUpdateSourceDict(this.state.project.projectID, source_dict)
                            .done(response => {
+                              this.state.isReloadingCentralDictionary = false
                               if(response.success){
                                  this.loadProject(this)
                                  modal.close()
+                              } else {
+                                 this.update()
                               }
                            })
+                     this.update({isReloadingCentralDictionary: true})
                   }
                }],
                onOpen: () => {
@@ -376,20 +371,10 @@
             this.update()
          },
 
-         onBatchSizeInput(workflow, evt){
-            workflow.batch_size = evt.target.value
-            this.refreshExportBatchesBtnDisabled(workflow, evt.target)
-         },
-
-         onBatchCountInput(workflow, evt){
-            workflow.batch_count = evt.target.value
-            this.refreshExportBatchesBtnDisabled(workflow, evt.target)
-         },
-
-         onExportToBatchesClick(workflow, evt){
+         exportToBatches(workflow, batch_size, batch_count){
             this.state.runningExports.add(workflow.inputDicts[0].title)
             this.update()
-            this.store.projectExportBatches(this.props.projectID, workflow.stage, workflow.batch_size, workflow.batch_count)
+            this.store.projectExportBatches(this.props.projectID, workflow.stage, batch_size, batch_count)
                   .always(response => {
                      this.state.runningExports.delete(workflow.inputDicts[0].title)
                      workflow.is_locked = true  // make sure user does not trigger another action until project status is checked
@@ -410,21 +395,13 @@
          },
 
          onMergeDictionariesClick(workflow){
-            let dictList = [...workflow.inputDicts, workflow.outputDict].map(d => d.dictID)
-            dictList.forEach(dictID => this.state.runningMerges.add(dictID))
-            this.store.projectMergeDictionaries(this.props.projectID, workflow.stage)
-                  .always(response => {
-                     dictList.forEach(dictID => this.state.runningMerges.delete(dictID))
-                     this.loadProject()
-                     this.update()
-                  })
+            this.onImportAcceptedBatchesClick(workflow)
          },
 
          reset(){
             this.state.project = null
             this.state.runningExports = new Set()
             this.state.runningImports = new Set()
-            this.state.runningMerges = new Set()
          },
 
          loadProject(){
@@ -447,16 +424,29 @@
                   if(response.workflow){
                      this.state.project = response
                      this.state.project.workflow.forEach(workflow => {
-                        workflow.batch_size = 100
-                        workflow.batch_count = 1
+                        //workflow.batch_size = 100
+                        //workflow.batch_count = 1
                         if(workflow.batches){
                            workflow.displayedBatchCount = workflow.batches.length
                            workflow.batches.forEach(batch => {
                               batch.assignee = batch.assignee || ""
                               batch.status = batch.status || "inProgress"
-                              batch.show = true
+                              batch.newerBatchExists = false
+                              if(batch.created){
+                                 let created = new Date(batch.created)
+                                 batch.newerBatchExists = !!workflow.batches.find(b => {
+                                    return b != batch && (b.status == "creating"
+                                                            || (b.created && new Date(b.created) > created)
+                                                         )
+                                 })
+                              }
                            })
                         }
+                        workflow.inputDicts.forEach(dict => {
+                           dict.remaining = typeof dict.remaining == "undefined" ? dict.total : dict.remaining
+                        })
+
+                        workflow.outputDict.remaining = typeof workflow.outputDict.remaining == "undefined" ? workflow.outputDict.total : workflow.outputDict.remaining
                      })
                   } else {
                      this.state.error = response.error || "unknown error"
@@ -470,11 +460,12 @@
                   if(!Object.keys(this.state.showBatches).length && this.state.project.workflow){
                      // after the first load initialize showBatches
                      this.state.project.workflow.forEach((workflow, workflowIdx) => {
-                        if(workflow.batches){
+                        this.state.showBatches[workflowIdx] = true
+                        /*if(workflow.batches){
                            this.state.showBatches[workflowIdx] = workflow.batches.reduce((hasActiveBatch, batch) => {
                               return hasActiveBatch || batch.status == "inProgress"
                            }, false)
-                        }
+                        }*/
                      })
                   }
                   this.update({
@@ -507,7 +498,7 @@
                isImporting: isImporting,
                isExporting: isExporting
             }
-         },
+         }/*,
 
          refreshExportBatchesBtnDisabled(workflow, input){
             let disabled = isNaN(workflow.batch_size)
@@ -517,7 +508,7 @@
             $(input).closest(".exportBatchesForm")
                   .find(".exportBtn")
                   .toggleClass("disabled", disabled)
-         }
+         }*/
       }
    </script>
 
@@ -525,19 +516,9 @@
    <style type="scss">
       .sourceDictMenuDropdownBtn{
          float: right;
-      }
-      .exportBatchesForm{
-         .exportBatchesSettings{
-            gap: 10px;
-         }
-         input{
-            height: 30px;
-            line-height: 30px;
-            max-width: 110px;
-         }
-         .btn{
-            min-width: 230px;
-         }
+         position: relative;
+         top: -8px;
+         right: -8px;
       }
       .projectDetails{
          display: grid;
@@ -564,7 +545,7 @@
             }
          }
          .taskIcon{
-            margin: 35px 15px 15px 15px;
+            margin: 19px 15px 15px 15px;
             display: flex;
             i{
                font-size: 3rem;
