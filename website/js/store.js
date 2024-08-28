@@ -1111,9 +1111,8 @@ class StoreClass {
 
    projectUpdateSourceDict(projectID, dictId){
       return window.connection.post({
-         url: `${window.API_URL}projects/update_source_dict.json`,
+         url: `${window.API_URL}projects/${projectID}/update_source_dict.json`,
          data: {
-            id: projectID,
             source_dict_id: dictId
          },
          failMessage: "Could not update the central dictionary.",
@@ -1187,6 +1186,40 @@ class StoreClass {
          failMessage: "Could not import the batches.",
          successMessage: "The batches were imported."
       })
+   }
+
+   projectSortBatches(batches, orderBy, desc=false){
+      batches.sort((a, b) => {
+         if(orderBy == "size" && a.total != b.total){
+            return Math.sign(a.total - b.total)
+         }
+         if(orderBy == "assignee" && a.assignee != b.assignee){
+            return a.assignee.localeCompare(b.assignee)
+         }
+         if(orderBy == "dictionary" && a.dictID != b.dictID){
+            return a.dictID.localeCompare(b.dictID)
+         }
+         if(orderBy == "status"){
+            if(a.status != b.status){
+               if(a.status == "accepted"){
+                  return -1
+               } else if(b.status == "accepted"){
+                  return 1
+               } else if(a.status == "inProgress"){
+                  return 1
+               } else if(b.status == "inProgress"){
+                  return -1
+               }
+            }
+            if(a.completed_per != b.completed_per){
+               return Math.sign(b.completed_per - a.completed_per)
+            }
+         }
+         return a.dictID.localeCompare(b.dictID, undefined, {numeric: true})
+      })
+      if(desc){
+         batches.reverse()
+      }
    }
 
    skeLoadCorpora(){
