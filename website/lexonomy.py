@@ -165,6 +165,7 @@ def lexonomyconfig():
         "customStyle": siteconfig.get("customStyle"),
         "disableRegistration": siteconfig.get("disableRegistration", False),
         "sketchengineLoginPage": siteconfig.get("sketchengineLoginPage"),
+        "showDictionaryNameInPageTitle": siteconfig.get("showDictionaryNameInPageTitle"),
         "notification": siteconfig.get("notification"),
         "homepage": siteconfig.get("homepage")
     }
