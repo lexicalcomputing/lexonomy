@@ -176,14 +176,12 @@
          },
 
          saveEntry(){
-            if(this.nvhStore.hasEntryChanged()){
-               if(this.nvhStore.isValid()){
-                  if(this.nvhStore.getAvailableActions().save){
-                     return this.nvhStore.saveEntry()
-                  }
-               } else {
-                  M.toast({html: "Cannot save an invalid entry."})
+            if(this.nvhData.customEditor || this.nvhStore.isValid()){  // do not validate if custom editting wiget is used
+               if(this.nvhStore.hasEntryChanged() && this.nvhStore.getAvailableActions().save){
+                  return this.nvhStore.saveEntry()
                }
+            } else {
+               M.toast({html: "Cannot save an invalid entry."})
             }
             return false
          },
