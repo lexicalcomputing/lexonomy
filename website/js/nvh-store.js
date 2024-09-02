@@ -443,18 +443,19 @@ class NVHStoreClass {
    getAvailableActions(){
       let revisions = !!this.data.revision
       let hasEntry = !!this.data.entry
+      let isNewEntry = window.store.data.entryId == "new"
       let uA = window.store.data.userAccess
       return {
          new: uA.canEdit
-               && window.store.data.entryId != "new"
+               && !isNewEntry
                && !revisions,
          save: uA.canEdit
                && hasEntry
                && !this.data.isSaving
-               //&& this.isValid()  // temporarily turn off structure validation
-               && (!this.data.customEditor
-                        || (this.data.legacyCustomEditor ? this.data.elementsMatchStructure : this.data.customEditorIsValid)
-                  )
+               // valid?
+               && (this.data.customEditor || this.isValid())
+               && (!this.data.customEditor || (this.data.legacyCustomEditor ? this.data.elementsMatchStructure : this.data.customEditorIsValid))
+               // anything to save ?
                && (this.history.actualIdx != this.history.lastSavedIdx
                         || window.store.data.entryId == "new"
                         || window.store.data.editorMode == "code"
@@ -470,21 +471,21 @@ class NVHStoreClass {
          add: uA.canEdit,
          duplicate: uA.canEdit
                && hasEntry
-               && window.store.data.entryId != "new"
+               && !isNewEntry
                && !revisions,
          delete: uA.canEdit
                && hasEntry
-               && window.store.data.entryId != "new"
+               && !isNewEntry
                && !revisions,
          view: hasEntry
-               && window.store.data.entryId != "new",
+               && !isNewEntry,
          edit: uA.canEdit
                && hasEntry,
          code: uA.canEdit
                && hasEntry,
          history: uA.canEdit
                && hasEntry
-               && window.store.data.entryId != "new"
+               && !isNewEntry
       }
    }
 
@@ -1211,18 +1212,18 @@ class NVHStoreClass {
             this.history.actualIdx--
             this.data.entry = this.copyElementAndItsChildren(this.history.records[this.history.actualIdx])
             //this.data.sourceCode = null
+            this.trigger("updateEditor")
+            this.trigger("historyChanged")
          }
-         this.trigger("updateEditor")
-         this.trigger("historyChanged")
       },
       redo: () => {
          if(this.history.actualIdx < this.history.records.length - 1){
             this.history.actualIdx++
             this.data.entry = this.copyElementAndItsChildren(this.history.records[this.history.actualIdx])
             //this.data.sourceCode = null
+            this.trigger("updateEditor")
+            this.trigger("historyChanged")
          }
-         this.trigger("updateEditor")
-         this.trigger("historyChanged")
       },
       reset: () => {
          this.history.records = []
