@@ -592,8 +592,8 @@ def deleteBatch(project_id, dictID_list):
 
         # DELETE batch form project
         mainDB.execute('DELETE FROM project_dicts WHERE project_id=? AND dict_id=?', (project_id, dictID))
+        mainDB.commit()
 
-    mainDB.commit()
     mainDB.close()
 
     # DELETE batch dict from lexonomy
