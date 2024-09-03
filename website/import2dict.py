@@ -158,6 +158,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
     dict_id = dbname.strip().split('/')[-1][:-7]
     log_info('IMPORTING (%s)' % (dict_id))
+    db = None
 
     try:
         # =============
@@ -403,6 +404,8 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
     except Exception as e:
         log_err(f"Import crashed on: {e}")
+
+    if db:
         db.close()
 
     log_end("IMPORT")
