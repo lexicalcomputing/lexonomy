@@ -654,7 +654,7 @@ def project_list(user):
 @post(siteconfig["rootPath"] + "projects/create.json") # OK
 @auth
 def project_create(user):
-    if user['isProjectManager']:
+    if user['isProjectManager'] or user['isAdmin']:
         res = project.createProject(request.forms.id, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
                                     json.loads(request.forms.managers), request.forms.ref_corpus, request.forms.source_dict_id,
                                     request.forms.workflow, request.forms.language, user)
@@ -664,7 +664,7 @@ def project_create(user):
 @post(siteconfig["rootPath"] + "projects/<projectID>/update_source_dict.json") # OK
 @authProject
 def project_update_source(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         res = project.update_project_source_dict(projectID, request.forms.source_dict_id)
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not update project source dict.'}
@@ -673,26 +673,26 @@ def project_update_source(projectID, user, configs):
 @authProject
 def project_get(projectID, user, configs):
     if project.projectExists(projectID):
-        if projectID in configs["manager_of"]:
+        if projectID in configs["manager_of"] or user['isAdmin']:
             res = project.getProject(projectID)
             return res
         return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
     return {"success": False, "projectID": projectID, 'error': 'Project does not exists'}
     
 
-@post(siteconfig["rootPath"] + "projects/<projectID>/update.json") # TODO update for source dict
+@post(siteconfig["rootPath"] + "projects/<projectID>/update.json")
 @authProject
 def project_update(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         res = project.editProject(projectID, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
-                                  json.loads(request.forms.managers), user)
+                                  json.loads(request.forms.managers), user, json.loads(request.forms.annotator_roles))
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
 
 @post(siteconfig["rootPath"] + "projects/<projectID>/archive.json") # OK
 @authProject
 def project_archive(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         res = project.archiveProject(projectID)
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
@@ -700,7 +700,7 @@ def project_archive(projectID, user, configs):
 @post(siteconfig["rootPath"] + "projects/<projectID>/delete.json") # OK
 @authProject
 def project_delete(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         res = project.deleteProject(projectID)
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
@@ -708,7 +708,7 @@ def project_delete(projectID, user, configs):
 @post(siteconfig["rootPath"] + "projects/<projectID>/create_batch.json") # OK
 @authProject
 def create_batch(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         res = project.createBatch(projectID, request.forms.stage, request.forms.size, request.forms.batch_number, user['email'])
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
@@ -716,7 +716,7 @@ def create_batch(projectID, user, configs):
 @post(siteconfig["rootPath"] + "projects/<projectID>/make_stage.json") # OK
 @authProject
 def makeStage(projectID, user, configs):
-    if projectID in configs["manager_of"]: # TODO maybe should be alowed only to manegers by default
+    if projectID in configs["manager_of"] or user['isAdmin']: # TODO maybe should be alowed only to manegers by default
         res = project.makeStage(projectID, request.forms.stage, user['email'])
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
@@ -724,7 +724,7 @@ def makeStage(projectID, user, configs):
 @post(siteconfig["rootPath"]+"projects/<projectID>/assign_batch.json") # OK
 @authProject
 def assignProjectDict(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         ret = project.assignProjectDict(projectID, json.loads(request.forms.assignees))
         return ret
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
@@ -733,7 +733,7 @@ def assignProjectDict(projectID, user, configs):
 @post(siteconfig["rootPath"] + "projects/<projectID>/accept_batch.json") # OK
 @authProject
 def accept_batch(projectID, user, configs):
-    if projectID in configs["manager_of"]:
+    if projectID in configs["manager_of"] or user['isAdmin']:
         res = project.acceptBatch(projectID, json.loads(request.forms.dictID_list))
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not make batch in project.'}
@@ -741,7 +741,7 @@ def accept_batch(projectID, user, configs):
 @post(siteconfig["rootPath"] + "projects/<projectID>/reject_batch.json") # OK
 @authProject
 def reject_batch(projectID, user, configs):
-    if projectID in configs["manager_of"]: # TODO maybe should be alowed only to manegers by default
+    if projectID in configs["manager_of"] or user['isAdmin']: # TODO maybe should be alowed only to manegers by default
         res = project.rejectBatch(projectID, json.loads(request.forms.dictID_list))
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not reject batch in project.'}
@@ -749,7 +749,7 @@ def reject_batch(projectID, user, configs):
 @post(siteconfig["rootPath"] + "projects/<projectID>/delete_batch.json") # OK
 @authProject
 def delete_batch(projectID, user, configs):
-    if projectID in configs["manager_of"]: # TODO maybe should be alowed only to manegers by default
+    if projectID in configs["manager_of"] or user['isAdmin']: # TODO maybe should be alowed only to manegers by default
         res = project.deleteBatch(projectID, json.loads(request.forms.dictID_list))
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not delete batch in project.'}
