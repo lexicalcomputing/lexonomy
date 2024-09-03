@@ -44,6 +44,8 @@ def split_to_batches(input, max_batches, batch_size , batch_list, tl_node, alrea
                     hw = line.strip('\n').split(': ', 1)[1]
                     if hw not in already_exported:
                         hw_idx += 1
+                    else:
+                        continue
 
                     # NEW BATCH FILE
                     if hw_idx % batch_size == 0:
