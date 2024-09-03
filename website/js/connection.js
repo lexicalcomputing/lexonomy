@@ -34,8 +34,8 @@ class ConnectionClass {
             .always(this.notifyAboutRequestResult(failMessage, successMessage))
    }
 
-   notifyAboutRequestResult(failMessage, sucessMessage){
-      return function(failMessage, sucessMessage, response) {
+   notifyAboutRequestResult(failMessage, successMessage){
+      return function(failMessage, successMessage, response) {
          if(failMessage){
             if(response){
                if(response.error){
@@ -47,10 +47,10 @@ class ConnectionClass {
                window.showToast(failMessage)
             }
          }
-         if(sucessMessage && response && !response.error && response.statusText == "undefined"){
-            M.toast({html: sucessMessage})
+         if(successMessage && response && !response.error && response.statusText == "undefined"){
+            M.toast({html: successMessage})
          }
-      }.bind(this, failMessage, sucessMessage)
+      }.bind(this, failMessage, successMessage)
    }
 }
 
