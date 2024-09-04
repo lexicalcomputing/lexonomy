@@ -197,7 +197,6 @@
 
          onBeforeMount(){
             this.structureStore = window.structureEditorStore
-            this.state.values = this.structureStore.data.editedElement ? [...this.structureStore.data.editedElement.values || []] : []
          },
 
          onMounted(){
@@ -221,6 +220,7 @@
          },
 
          onElementChange(){
+            this.state.values = this.structureStore.data.editedElement ? [...this.structureStore.data.editedElement.values || []] : []
             this.update()
             $("input", this.root).first().focus()
          },
