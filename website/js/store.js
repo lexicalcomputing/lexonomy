@@ -922,8 +922,8 @@ class StoreClass {
          data: {
             ske_userName: ske_username
          },
-         failMessage: "Sketch Engine username could not be changed.",
-         successMessage: "Sketch Engine username was changed."
+         failMessage: "Sketch Engine username could not be saved.",
+         successMessage: "Sketch Engine username was saved."
       })
    }
 
@@ -933,8 +933,8 @@ class StoreClass {
          data: {
             ske_apiKey: ske_apiKey
          },
-         failMessage: "Sketch Engine API key could not be changed.",
-         successMessage: "Sketch Engine API key was changed."
+         failMessage: "Sketch Engine API key could not be saved.",
+         successMessage: "Sketch Engine API key was saved."
       })
    }
 
