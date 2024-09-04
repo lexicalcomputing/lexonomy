@@ -1,4 +1,4 @@
-/* Riot v9.1.4, @license MIT */
+/* Riot v9.3.0, @license MIT */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -351,6 +351,18 @@
     });
 
     return source
+  }
+
+  /**
+   * Generate a new object picking only the properties from a given array
+   * @param {Object} source - target object
+   * @param {Array} keys - list of keys that we want to copy over to the new object
+   * @return {Object} a new object conaining only the keys that we have picked from the keys array list
+   */
+  function pick(source, keys) {
+    return isObject(source)
+      ? Object.fromEntries(keys.map((key) => [key, source[key]]))
+      : source
   }
 
   // Components without template use a mocked template interface with some basic functionalities to
@@ -1188,9 +1200,14 @@
       const { parentNode } = this.node;
       const realParent = getRealParent(scope, parentScope);
 
+      // override the template property if the slot needs to be replaced
       this.template =
-        templateData &&
-        create(templateData.html, templateData.bindings).createDOM(parentNode);
+        (templateData &&
+          create(templateData.html, templateData.bindings).createDOM(
+            parentNode,
+          )) ||
+        // otherwise use the optional template fallback if provided by the compiler see also https://github.com/riot/riot/issues/3014
+        this.template;
 
       if (this.template) {
         cleanNode(this.node);
@@ -1249,10 +1266,11 @@
    * @param   {AttributeExpressionData[]} attributes - slot attributes
    * @returns {Object} Slot binding object
    */
-  function createSlot(node, { name, attributes }) {
+  function createSlot(node, { name, attributes, template }) {
     return {
       ...SlotBinding,
       attributes,
+      template,
       node,
       name,
     }
@@ -2056,14 +2074,20 @@
    * @param {TemplateChunk} template - template instance
    * @return {[]} list of attribute names that will be computed by the template expressions
    */
-  const getRootComputedAttributeNames = memoize(
-    (template) =>
-      template?.bindingsData?.[0].expressions?.reduce(
+  const getRootComputedAttributeNames = memoize((template) => {
+    const firstBinding = template?.bindingsData?.[0];
+
+    // if the first binding has the selector attribute it means that it doesn't belong to the root node
+    if (firstBinding?.selector) return []
+
+    return (
+      firstBinding?.expressions?.reduce(
         (acc, { name, type }) =>
-          type === expressionTypes.ATTRIBUTE ? [...acc, name] : acc,
+          type === expressionTypes.ATTRIBUTE ? acc.concat([name]) : acc,
         [],
-      ) ?? [],
-  );
+      ) ?? []
+    )
+  });
 
   /**
    * Component creation factory function that will enhance the user provided API
@@ -2137,7 +2161,8 @@
               const staticRootAttributes = Array.from(
                 this[ROOT_KEY].attributes,
               ).filter(({ name }) => !computedAttributeNames.includes(name));
-              // evaluate the
+
+              // evaluate the value of the static dom attributes
               const domNodeAttributes = DOMattributesToObject({
                 attributes: staticRootAttributes,
               });
@@ -2150,7 +2175,6 @@
                   this[ATTRIBUTES_KEY_SYMBOL].expressions,
                 ),
               };
-
               if (this[SHOULD_UPDATE_KEY](newProps, this[PROPS_KEY]) === false)
                 return
 
@@ -2160,7 +2184,9 @@
                 Object.freeze({
                   // only root components will merge their initial props with the new ones
                   // children components will just get them overridden see also https://github.com/riot/riot/issues/2978
-                  ...(parentScope ? null : this[PROPS_KEY]),
+                  ...(parentScope
+                    ? pick(this[PROPS_KEY], computedAttributeNames)
+                    : this[PROPS_KEY]),
                   ...newProps,
                 }),
               );
@@ -2495,7 +2521,7 @@
   const withTypes = (component) => component;
 
   /** @type {string} current riot version */
-  const version = 'v9.1.4';
+  const version = 'v9.3.0';
 
   // expose some internal stuff that might be used from external tools
   const __ = {
@@ -2508,6 +2534,12 @@
       expressionTypes,
     },
     globals: {
+      PROPS_KEY,
+      STATE_KEY,
+      IS_COMPONENT_UPDATING,
+      ATTRIBUTES_KEY_SYMBOL,
+      COMPONENTS_IMPLEMENTATION_MAP,
+      PLUGINS_SET,
       DOM_COMPONENT_INSTANCE_PROPERTY,
       PARENT_KEY_SYMBOL,
     },
