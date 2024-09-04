@@ -5,26 +5,26 @@
          class="row">
       <label>Sketch Engine login</label>
       <div if={dictData.siteconfig.sketchengineLoginPage && authData.ske_username}>
-         <p>Your Lexonomy account is linked to your Sketch Engine account <b>{ authData.ske_username }</b>
+         <p>Your Lexonomy account is linked to your Sketch Engine account <b>{authData.ske_username}</b>
             <br/>
-            <a href={ dictData.siteconfig.sketchengineLoginPage }>Link to a different Sketch Engine account&nbsp;»</a>
+            <a href={dictData.siteconfig.sketchengineLoginPage}>Link to a different Sketch Engine account&nbsp;»</a>
          </p>
       </div>
       <div if={dictData.siteconfig.sketchengineLoginPage && !authData.ske_username}>
          <p><strong>Sketch Engine login</strong></p>
-         <p><a href={ dictData.siteconfig.sketchengineLoginPage }>Link Lexonomy to your Sketch Engine account&nbsp;»</a>
+         <p><a href={dictData.siteconfig.sketchengineLoginPage}>Link Lexonomy to your Sketch Engine account&nbsp;»</a>
          </p>
       </div>
-      <div if={ !dictData.siteconfig.sketchengineLoginPage }>
+      <div if={!dictData.siteconfig.sketchengineLoginPage}>
          <div class="input-field">
             <div>
                <input id="skeusername"
                      type="text"
                      class="validate"
-                     value={ authData.ske_username }
+                     value={authData.ske_username}
                      style="width: 350px;" />
                <button class="btn waves-effect waves-light"
-                     onclick={ onChangeSkeUsernameClick }>Change username
+                     onclick={onChangeSkeUsernameClick}>Change username
                   <i class="material-icons right">send</i>
                </button>
             </div>
@@ -36,18 +36,18 @@
    <!-- Sketch Engine API key -->
    <div class="row">
       <label>Sketch Engine API key</label>
-      <p if={ dictData.siteconfig.sketchengineLoginPage}>
-         Unless you need special setup, Please, <a href={ dictData.siteconfig.sketchengineLoginPage }>login via Sketch Engine</a> to set API key automatically.
+      <p if={dictData.siteconfig.sketchengineLoginPage}>
+         Unless you need special setup, Please, <a href={dictData.siteconfig.sketchengineLoginPage}>login via Sketch Engine</a> to set API key automatically.
       </p>
       <div class="input-field">
          <div>
             <input id="skeapi"
                   type="text"
                   class="validate"
-                  value={ authData.ske_apiKey }
+                  value={authData.ske_apiKey}
                   style="width: 350px;"/>
             <button class="btn waves-effect waves-light"
-                  onclick={ onChangeSkeApiKeyClick }>Change API key
+                  onclick={onChangeSkeApiKeyClick}>Save API key
                <i class="material-icons right">send</i>
             </button>
          </div>
@@ -65,12 +65,12 @@
                   disabled
                   style="width: 350px;">
             <button class="btn waves-effect waves-light"
-                  onclick={ onGenerateNewApiKeyClick }>
+                  onclick={onGenerateNewApiKeyClick}>
                Generate new API key
                <i class="material-icons right">autorenew</i>
             </button>
             <button class="btn waves-effect waves-light"
-                  onclick={ onDeleteApiKeyClick }>
+                  onclick={onDeleteApiKeyClick}>
                Remove API key
                <i class="material-icons right">delete</i>
             </button>
@@ -112,7 +112,7 @@
          </div>
          <button id="setPasswordButton"
                class="btn waves-effect waves-light disabled"
-               onclick={ onChangePasswordClick }>Change password
+               onclick={onChangePasswordClick}>Change password
             <i class="material-icons right">send</i>
          </button>
       </div>
@@ -131,7 +131,7 @@
                </option>
             </select>
             <button class="btn waves-effect waves-light"
-                  onclick={ onResetFontSize }>reset
+                  onclick={onResetFontSize}>reset
             </button>
          </div>
       </div>
@@ -173,35 +173,31 @@
          },
 
          onChangeSkeUsernameClick(event) {
-            if($("#skeusername").val()) {
-               this.store.changeSketchEngineUsername($("#skeusername").val())
-            }
+            this.store.changeSketchEngineUsername($("#skeusername").val())
          },
 
          onChangeSkeApiKeyClick(event) {
-            if($("#skeapi").val()) {
-               this.store.changeSketchEngineApiKey($("#skeapi").val())
-            }
+            this.store.changeSketchEngineApiKey($("#skeapi").val())
          },
 
          onGenerateNewApiKeyClick(event) {
             let apiKey = this.generateKey()
             this.store.changeLexonomyApiKey(apiKey)
                   .always(response => {
-                     this.update(this)
+                     this.update()
                   })
          },
 
          onDeleteApiKeyClick(event) {
             this.store.changeLexonomyApiKey("")
                   .always(response => {
-                     this.update(this)
+                     this.update()
                   })
          },
 
          generateKey() {
-            var alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-            var key=""
+            var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+            var key = ""
             while(key.length < 32) {
                var i = Math.floor(Math.random() * alphabet.length)
                key += alphabet[i]
