@@ -4,7 +4,7 @@
       ondragstart={onDragStart}
       ondragend={onDragEnd}
       onmousedown={onMouseDown}>
-   <div class="nvh-item {props.element.focused ? 'nvh-focused' : ''} {props.element.collapsed ? 'nvh-collapsed' : 'nvh-expanded'} ">
+   <div class="nvh-item {props.element.focused ? 'nvh-focused' : ''}">
       <span class="nvh-wrapper">
          <i if={props.element.name != nvhData.rootElement}
                class="nvh-drag-handle material-icons grey-text">drag_handle</i>
@@ -23,7 +23,8 @@
                   element={props.element}/>
             <i if={props.element.children.length && !props.readOnly}
                   class="nvh-collapse-toggle material-icons clickable noSelect"
-                  onclick={onCollapseToggleClick}>chevron_right</i>
+                  onclick={onCollapseToggleClick}
+                  style="transform: rotate({props.element.collapsed ? 0 : 90}deg);">chevron_right</i>
          </span>
 
          <span class="nvh-collapsed-value grey-text pointer"
@@ -120,11 +121,13 @@
          onLabelClick(evt){
             if(!evt.target.classList.contains("nvh-collapse-toggle")){
                if(!this.props.element.edit){
-                  if(this.props.element.focused){
-                     this.nvhStore.trigger("openContextMenu")
-                  } else {
+                  if(!this.props.element.focused){
                      this.nvhStore.focusElement(this.props.element)
                   }
+                  setTimeout(() => {
+                     // let riot to update DOM first
+                     this.nvhStore.trigger("openContextMenu")
+                  }, 0)
                }
             }
          },
@@ -292,22 +295,6 @@
          transition: transform 0.15s;
          opacity: 0.3;
          color: grey;
-      }
-      .nvh-collapsed{
-         & > .nvh-wrapper & > .nvh-value{
-            display: none;
-         }
-         & > .nvh-children{
-            display: none;
-         }
-      }
-      .nvh-expanded > .nvh-wrapper{
-         & > .nvh-collapsed-value{
-            display: none;
-         }
-         & > .nvh-collapse-toggle{
-            transform: rotate(90deg);
-         }
       }
       .nvh-collapsed-value{
          font-size: 14px;
