@@ -221,11 +221,12 @@ window.trim = (str, max) => {
    return (str + "").length > max ? ((str + "").substr(0, max) + "…") : str
 }
 
-window.initFormSelects = (context, selector) => {
+window.initFormSelects = (context, selector, dropdownOptions) => {
    return $(selector || "select", context).formSelect({
       dropdownOptions: {
          coverTrigger: false,
-         constrainWidth: false
+         constrainWidth: false,
+         ...dropdownOptions
       }
    })
 }

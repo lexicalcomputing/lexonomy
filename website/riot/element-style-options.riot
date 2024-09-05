@@ -325,7 +325,7 @@
          },
 
          onMounted(){
-            window.initFormSelects(this.root)
+            window.initFormSelects(this.root, null, {container: document.body})
          },
 
          onBeforeUpdate(){
@@ -340,6 +340,15 @@
             if($("#hidden")[0]){
                $("#hidden")[0].checked = !!this.state.style.hidden
             }
+         },
+
+         onBeforeUnmount(){
+            $("select", this.root).each((idx, el) => {
+               let instance = M.FormSelect.getInstance(el)
+               if(instance){
+                  instance && instance.destroy()
+               }
+            })
          },
 
          onOptionChangeClick(option, value, evt){
