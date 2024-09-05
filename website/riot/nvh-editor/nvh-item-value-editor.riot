@@ -86,6 +86,10 @@
                $(".nvh-editable-div", this.root).html(this.getValueForEditor())
             } else {
                this.initFormSelect()
+               if(this.state.config.type == "list"){
+                  let instance = M.FormSelect.getInstance($("select", this.root))
+                  instance && instance.dropdown.open()
+               }
             }
             this.focusInput()
             if(this.state.showEditor){
@@ -220,6 +224,7 @@
 
          onSelectChange(evt){
             this.nvhStore.changeElementValue(this.props.element, evt.target.value)
+            this.nvhStore.stopElementEditing()
          },
 
          onBoolChange(evt){
