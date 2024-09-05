@@ -267,7 +267,11 @@
          },
 
          onTypeChange(evt){
-            this.structureStore.data.editedElement.type = evt.target.value
+            let type = evt.target.value
+            this.structureStore.data.editedElement.type = type
+            if(type != "list"){
+               this.state.values = []
+            }
             this.update()
          },
 
