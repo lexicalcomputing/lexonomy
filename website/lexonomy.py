@@ -941,7 +941,7 @@ def publicsearch(dictID):
 @authDict(["canConfig"])
 def configread(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
-        config_data = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo'], 'kex': configs['kex']}
+        config_data = {'collx': configs.get('collx', None), 'xampl': configs.get('xampl', None), 'thes': configs.get('thes', None), 'defo': configs.get('defo', None), 'kex': configs.get('kex', None)}
     else:
         if request.forms.id == 'structure' and 'structure' not in configs:
             config_data = configs['structure']
@@ -959,11 +959,11 @@ def configupdate(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
         adjustedJson = {}
         jsonData = json.loads(request.forms.content)
-        adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', jsonData['kex'])
-        adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', jsonData['xampl'])
-        adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', jsonData['collx'])
-        adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', jsonData['defo'])
-        adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', jsonData['thes'])
+        adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', jsonData.get('kex', None))
+        adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', jsonData.get('xampl', None))
+        adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', jsonData.get('collx', None))
+        adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', jsonData.get('defo', None))
+        adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', jsonData.get('thes', None))
         resaveNeeded = False
     else:
         adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, request.forms.id, json.loads(request.forms.content))
