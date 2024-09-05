@@ -275,6 +275,18 @@ class ConfigurationCheckerClass {
       return result
    }
 
+   check_structure(config){
+      let result = []
+      if(!config.structure){
+         result.push(["structure", "error", `Missing structure definition.`])
+      } else {
+         if(!this.isElementInStrucutre(config.structure.root, config)){
+            result.push(["structure", "error", `Root element not found in structure definition.`])
+         }
+      }
+      return result
+   }
+
    check_flagging(config){
       let result = []
       if(config.flagging.flag_element){
