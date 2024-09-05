@@ -1015,7 +1015,7 @@ class NVHStoreClass {
       if(config){
          let actualNumberOfElements = this.findElements(e => e.name == element.name, element.parent).length
          return element.name != this.data.rootElement
-               && (!config.min || config.min > actualNumberOfElements)
+               && (!config.min || config.min < actualNumberOfElements)
       }
       return true
    }
@@ -1315,7 +1315,7 @@ class NVHStoreClass {
          color: this.getElementColor(elementName),
          indent: indent
       })
-      elementConfig.children.forEach(childName => {
+      elementConfig && elementConfig.children.forEach(childName => {
          list.push(...this.getElementTreeList(childName, indent + 1))
       })
       return list
