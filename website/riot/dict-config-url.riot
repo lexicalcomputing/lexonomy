@@ -4,13 +4,13 @@
    <div class="row">
       <label for="url">Current URL</label>
       <div class="mb-4">
-         <span>https://www.lexonomy.eu/{ dictData.dictId }</span>
+         <span>{dictData.siteconfig.baseUrl}{dictData.dictId}</span>
       </div>
    </div>
    <div class="row">
       <label for="url">New URL</label>
       <div class="displayFlex alignBaseline">
-         <span id="baseUrl">https://www.lexonomy.eu/</span>
+         <span id="baseUrl">{dictData.siteconfig.baseUrl}</span>
          <span>
             <input id="url"
                   type="text"
