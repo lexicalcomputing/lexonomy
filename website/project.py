@@ -123,14 +123,30 @@ def createProject(project_id, project_name, project_description, project_annotat
                  (project_id, src_dict_id, os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), '__nvh_source__'))
     conn.commit()
 
-    add_project_staff(conn, project_id, project_name, project_annotators, 'annotator', user)
-    add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
+    new_created_users = []
+    for role, annotator_list in project_annotators.items():
+        new_created_users += add_project_staff(conn, project_id, project_name, annotator_list, role, user)
+    new_created_users += add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
 
     project_info = getProject(project_id)
     all_stages = [s['stage'] for s in project_info['workflow']]
     refresh_selected_stages(project_id, all_stages)
 
-    return {'success': True , "projectID": project_id}
+    return {'success': True , "projectID": project_id, 'new_reated_users': json.dumps(new_created_users)}
+
+
+def editProject(project_id, project_name, project_description, project_annotators, project_managers, user):
+    conn = ops.getMainDB()
+    conn.execute("UPDATE projects SET description=?, project_name=? where id=?",
+                 (project_description, project_name, project_id))
+    conn.execute("DELETE FROM user_projects WHERE project_id=?", (project_id,))
+    conn.commit()
+
+    new_created_users = []
+    for role, annotator_list in project_annotators.items():
+        new_created_users += add_project_staff(conn, project_id, project_name, annotator_list, role, user)
+    new_created_users += add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
+    return {"success": True, "projectID": project_name, 'new_reated_users': json.dumps(new_created_users)}
 
 
 def update_project_source_dict(project_id, src_dict_id):
@@ -171,17 +187,31 @@ def getProjectStageState(projectID, stage):
     return phase_stack
 
 
-def getMakeDeps(projectID):
-    tl_node_re = re.compile('^TL_NODE="(.*)"$')
+def getMakeDeps(make_file):
+    def add_data(data_dict, stage_name, data_name, data):
+        if not data_dict.get(stage_name, False):
+            data_dict[stage_name] = {data_name: data}
+        else:
+            data_dict[stage_name][data_name] = data
+
+    stage_pretty_name_re = re.compile('^(.*)_NAME="(.*)"$')
+    stage_description_re = re.compile('^(.*)_DESCRIPTION="(.*)"$')
+    stage_annot_name_re = re.compile('^(.*)_ANNOTATOR_NAME="(.*)"$')
     stage_query_re = re.compile('^(.*)_QUERY="(.*)"$')
-    taget_line_re = re.compile('^(.*?).nvh:\s*(.*?)$')
-    project_targets = {}
-    stage_queries = {}
+
+    tl_node_re = re.compile('^TL_NODE="(.*)"$')
+    target_line_re = re.compile('^(.*?).nvh:\s*(.*?)$')
+    from collections import OrderedDict
+    make_data = OrderedDict()
+
     tl_node = 'entry'
 
-    with open(os.path.join(siteconfig["dataDir"], "projects", projectID, 'Makefile'), 'r') as f:
+    with open(make_file, 'r') as f:
         for line in f:
-            target_line = taget_line_re.match(line)
+            target_line = target_line_re.match(line)
+            stage_pretty_name_line = stage_pretty_name_re.match(line)
+            stage_description_line = stage_description_re.match(line)
+            stage_annot_name_line = stage_annot_name_re.match(line)
             stage_query_line = stage_query_re.match(line)
             tl_node_line = tl_node_re.match(line)
             if target_line:
@@ -196,15 +226,25 @@ def getMakeDeps(projectID):
                     else:
                         continue
 
-                project_targets[stage] = sources
+                add_data(make_data, stage, 'sources', sources)
+                # add_data(make_data, stage, 'id', stage)
+
+            elif stage_pretty_name_line:
+                add_data(make_data, stage_pretty_name_line.group(1).lower(), 'name', stage_pretty_name_line.group(2))
+
+            elif stage_description_line:
+                add_data(make_data, stage_description_line.group(1).lower(), 'description', stage_description_line.group(2))
+
+            elif stage_annot_name_line:
+                add_data(make_data, stage_annot_name_line.group(1).lower(), 'annotator_name', stage_annot_name_line.group(2))
 
             elif stage_query_line:
-                stage_queries[stage_query_line.group(1).lower()] = stage_query_line.group(2)
+                add_data(make_data, stage_query_line.group(1).lower(), 'query', stage_query_line.group(2))
             
             elif tl_node_line:
                 tl_node = tl_node_line.group(1)
 
-    return project_targets, stage_queries, tl_node
+    return make_data, tl_node
 
 
 def getProject(projectID):
@@ -247,9 +287,9 @@ def getProject(projectID):
     # ======================
     # Stage dependencies
     # ======================
-    project_targets, stage_queries, tl_node = getMakeDeps(projectID)
+    make_data, tl_node = getMakeDeps(os.path.join(siteconfig["dataDir"], "projects", projectID, 'Makefile'))
 
-    for stage, sources in project_targets.items():
+    for stage in make_data.keys():
         # ======================
         # Check stage status
         # ======================
@@ -271,9 +311,8 @@ def getProject(projectID):
         # INPUT DICTS
         # ======================
         input_dicts = []
-        for dict_stage in sources:
+        for dict_stage in make_data[stage]['sources']:
             if stage_dicts_info.get(dict_stage, False):
-            
                 if len(stage_dicts_info[dict_stage]) > 1:
                     raise Exception('Error: Stage dict should be only one!')
                 dict_info = stage_dicts_info[dict_stage][0] # stages should have just one dict
@@ -285,8 +324,8 @@ def getProject(projectID):
 
                 if dict_info['remaining'].get(stage, -1) >= 0:
                     input_dicts.append({'dictID': dict_info['dict_id'],
-                                        'title': dict_info['title'], 
-                                        'remaining': dict_info['remaining'][stage], 
+                                        'title': dict_info['title'],
+                                        'remaining': dict_info['remaining'][stage],
                                         'total': int(r_q['json'])})
                 else:
                     input_dicts.append({'dictID': dict_info['dict_id'],
@@ -295,7 +334,6 @@ def getProject(projectID):
 
             else:
                 input_dicts.append({'dictID': None, 'title': f'{projectID}.{stage}'})
-
         # ======================
         # OUTPUT DICTS
         # ======================
@@ -350,28 +388,21 @@ def getProject(projectID):
 
         workflow_stages.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
                                 'batches': batches, 'type': stage_type, 'is_locked': phase_stack != [],
-                                'query': stage_queries.get(stage, ''), 'log': stage_log})
+                                'query': make_data[stage].get('query', ''),
+                                'name': make_data[stage].get('name', ''),
+                                'description': make_data[stage].get('description', ''),
+                                'annotator_name': make_data[stage].get('annotator_name', ''),
+                                'log': stage_log})
 
 
-    c1 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active FROM projects WHERE id=?", (projectID,))
-    r1 = c1.fetchone()
+    c3 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active FROM projects WHERE id=?",
+                      (projectID,))
+    r3 = c3.fetchone()
     conn.close()
 
-    return {"projectID": projectID, 'project_name': r1['project_name'], 'description': r1['description'],
+    return {"projectID": projectID, 'project_name': r3['project_name'], 'description': r3['description'],
             'annotators': annotators, 'managers': managers, 'workflow': workflow_stages,
-            'language': r1['language'], 'source_dict': r1['src_dic_id'], 'active': r1['active'], 'tl_node': tl_node}
-
-
-def editProject(project_id, project_name, project_description, project_annotators, project_managers, user):
-    conn = ops.getMainDB()
-    conn.execute("UPDATE projects SET description=?, project_name=? where id=?",
-                 (project_description, project_name, project_id))
-    conn.execute("DELETE FROM user_projects WHERE project_id=?", (project_id,))
-    conn.commit()
-
-    add_project_staff(conn, project_id, project_name, project_annotators, 'annotator', user)
-    add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
-    return {"success": True, "projectID": project_name}
+            'language': r3['language'], 'source_dict': r3['src_dic_id'], 'active': r3['active'], 'tl_node': tl_node}
 
 
 def archiveProject(project_id):
@@ -636,11 +667,13 @@ def rejectBatch(project_id, dictID_list):
 
 
 def getWokflows():
-    workflows = []
+    workflows = {}
     conn = ops.getMainDB()
     c = conn.execute("SELECT name, description FROM workflows ORDER BY name")
 
     for r in c.fetchall():
-        workflows.append({"name": r["name"], "description": r["description"]})
+        make_data, tl_node = getMakeDeps(os.path.join(currdir, "workflows", r["name"], "Makefile"))
+        workflows[r["name"]] = {"name": r["name"], "description": r["description"], 'stages': make_data, 'tl_node': tl_node}
+
     total = len(workflows)
-    return {"workflows": workflows, "total": total}
+    return {"workflows": workflows, "total": total, "success": True}

@@ -661,6 +661,15 @@ def project_create(user):
         return res
     return {"success": False, "projectID": request.forms.id, 'error': 'User is not a manager. Can not create project.'}
 
+@post(siteconfig["rootPath"] + "projects/<projectID>/update.json")
+@authProject
+def project_update(projectID, user, configs):
+    if projectID in configs["manager_of"] or user['isAdmin']:
+        res = project.editProject(projectID, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
+                                  json.loads(request.forms.managers), user)
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+
 @post(siteconfig["rootPath"] + "projects/<projectID>/update_source_dict.json") # OK
 @authProject
 def project_update_source(projectID, user, configs):
@@ -678,16 +687,6 @@ def project_get(projectID, user, configs):
             return res
         return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
     return {"success": False, "projectID": projectID, 'error': 'Project does not exists'}
-    
-
-@post(siteconfig["rootPath"] + "projects/<projectID>/update.json")
-@authProject
-def project_update(projectID, user, configs):
-    if projectID in configs["manager_of"] or user['isAdmin']:
-        res = project.editProject(projectID, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
-                                  json.loads(request.forms.managers), user, json.loads(request.forms.annotator_roles))
-        return res
-    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
 
 @post(siteconfig["rootPath"] + "projects/<projectID>/archive.json") # OK
 @authProject
@@ -757,7 +756,11 @@ def delete_batch(projectID, user, configs):
 @get(siteconfig["rootPath"] + "wokflows/list.json")
 @auth
 def workflow_list(user):
-    return project.getWokflows()
+    try:
+        return project.getWokflows()
+    except Exception as e:
+        return {"success": False, "exception": str(e)}
+
 
 @post(siteconfig["rootPath"] + "dicts/dictlist.json")
 @authAdmin
