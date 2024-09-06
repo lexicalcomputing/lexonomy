@@ -74,13 +74,13 @@ def split_to_batches(input, max_batches, batch_size , batch_list, tl_node, alrea
 
 
 def update_remaining(project_id, stage, remaining_hws):
-    project_targets, _, _ = project.getMakeDeps(project_id)
-    if len(project_targets[stage]) > 1:
+    make_data, _ = project.getMakeDeps(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'))
+    if len(make_data[stage].get('sources', [])) > 1:
         log_err('project_targets has more than one dependency')
         return
 
     main_db = ops.getMainDB()
-    c2 = main_db.execute('SELECT remaining FROM project_dicts WHERE stage=? AND project_id=?', (project_targets[stage][0], project_id))
+    c2 = main_db.execute('SELECT remaining FROM project_dicts WHERE stage=? AND project_id=?', (make_data[stage]['sources'][0], project_id))
     r2 = c2.fetchone()
 
     try:
@@ -88,7 +88,7 @@ def update_remaining(project_id, stage, remaining_hws):
     except TypeError:
         is_remaining = {}
     is_remaining[stage] = remaining_hws
-    main_db.execute('UPDATE project_dicts SET remaining=? WHERE stage=? AND project_id=?', (json.dumps(is_remaining), project_targets[stage][0], project_id))
+    main_db.execute('UPDATE project_dicts SET remaining=? WHERE stage=? AND project_id=?', (json.dumps(is_remaining), make_data[stage]['sources'][0], project_id))
     main_db.commit()
     main_db.close()
 
