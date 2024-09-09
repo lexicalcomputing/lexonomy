@@ -25,6 +25,7 @@ from bottle import request
 import sys
 import tempfile
 import glob
+import dmlex2schema
 
 
 
@@ -226,6 +227,11 @@ def verifyLoginAndProjectAccess(email, sessionkey):
         elif r['role'] == 'annotator':
             configs['annotator_of'].append(r['project_id'])
     return ret, configs
+
+def getDmlLexSchemaItems(modules):
+    with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r') as f:
+        res, desc_dict = dmlex2schema.get_dmlex_schema(f, "entry", modules)
+        return ''.join(res), desc_dict
 
 def getSchemaItems():
     schema = []
