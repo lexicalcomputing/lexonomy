@@ -85,12 +85,13 @@
             this.state.query = this.props.searchWord
             this.state.cql = `[lemma="${this.props.searchWord}"]`
             this.state.title = `Sketch Engine ${this.props.method}`
-            this.state.containerName =  {
+            let skeContainerName = {
                examples: "exampleContainer",
                definitions: "definitionContainer",
                thesaurus: "thesaurusContainer",
                collocations: "collocationContainer"
-            }[this.props.method]
+            }[this.props.method];
+            this.state.containerName =  this.dictData.config.ske[skeContainerName]
          },
 
          onMounted(){
