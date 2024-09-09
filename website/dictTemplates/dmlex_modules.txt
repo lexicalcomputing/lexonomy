@@ -1,0 +1,197 @@
+# ======================
+# EXAMPLE:
+# node: (!|[]) "definition"
+#     module@children: (?|*|+)
+# node options: ! - value of the node is REQUIRED, [] - predefined list of options, empty means OPTIONAL
+# children options: ?, *, + is children property that indicates how many children with this name the parent can have
+# ======================
+
+lexicographicResource: "Represents a dictionary. A lexicographic resource is a dataset which can be used, viewed and read by humans as a dictionary and – simultaneously – ingested, processed and understood by software agents as a machine-readable dataset."
+    core@entry: *
+    core@title: ?
+    core@langCode:
+    xlingual@translationLanguage: +
+    values@definitionTypeTag: *
+    values@formTag: *
+    values@labelTag: *
+    values@labelTypeTag: *
+    values@posTag: *
+    values@sourceIdentityTag: *
+    values@transcriptionSchemeTag: *
+    linking@relation: *
+    linking@relationType: *
+    etymology@etymonLanguage: *
+    etymology@etymonType: *
+
+entry: ! "Represents a dictionary entry. An entry contains information about one headword."
+    core@homograph: ?
+    core@pos: *
+    core@label: *
+    core@pronunciation: *
+    core@form: *
+    core@sense: *
+    linking@id: ?
+    annotation@placeholder: *
+    etymology@etymology: *
+
+form: ! "Represents one (of possibly many) inflected forms of the headword."
+    core@tag: ?
+    core@label: *
+    core@pronunciation: *
+
+sense: "Represents one of possibly many meanings (or meaning potentials) of the headword."
+    core@label: *
+    core@definition: *
+    core@example: *
+    linking@id: ?
+    xlingual@[PREFIX]explanation: *
+    xlingual@[PREFIX]translation: *
+
+definition: ! "Represents one of possibly several definitions of a sense."
+    core@definitionType: ?
+    annotation@headword: *
+    annotation@collocate: *
+
+pronunciation: "Represents the pronunciation of its parent."
+    core@transcription: *
+    core@label: *
+
+transcription: ! "Represents the transcription of a pronunciation in some notation such as IPA."
+    core@scheme: ?
+
+example: ! "Represents a sentence or other text fragment which illustrates the headword being used."
+    core@sourceIdentity: ?
+    core@sourceElaboration: ?
+    core@soundFile: ?
+    core@label: *
+    annotation@headword: *
+    annotation@collocate: *
+    xlingual@[PREFIX]exampleTranslation: *
+
+[PREFIX]translation: ! "Represents one of possibly multiple translations of a headword."
+    xlingual@pos: *
+    xlingual@label: *
+    xlingual@pronunciation: *
+    xlingual@form: *
+    annotation@placeholder: *
+
+[PREFIX]exampleTranslation: ! "Represents the translation of an example."
+    xlingual@soundFile: ?
+    xlingual@label: *
+    annotation@headword: *
+    annotation@collocate: *
+
+definitionTypeTag: ! "Represents one (of many) possible values for definitionType of definition."
+    values@description: ?
+    values@sameAs: *
+
+formTag: ! "Represents one (of many) possible values for tag of inflectedForm."
+    values@description: ?
+    values@sameAs: *
+
+labelTag: ! "Represents one (of many) possible values for tag of label."
+    values@description: ?
+    values@typeTag: ?
+    values@for: ?
+    values@sameAs: *
+
+labelTypeTag: ! "Represents one (of many) possible values for typeTag of labelTag."
+    values@description: ?
+    values@sameAs: *
+
+posTag: ! "Represents one (of many) possible values for tag of partOfSpeech."
+    values@description: ?
+    values@for: ?
+    values@sameAs: *
+
+sourceIdentityTag: ! "Represents one (of many) possible values for sourceIndentity of example."
+    values@description: ?
+    values@sameAs: *
+
+transcriptionSchemeTag: ! "Represents one (of many) possible values for scheme of transcription."
+    values@description: ?
+    values@for: ?
+
+relation: ! "Represents the fact that a relation exists between two or more objects."
+    linking@description: ?
+    linking@[PREFIX]member: 2+
+
+[PREFIX]member: ! "Represents the fact that an object, such as an entry or a sense, is a member of a relation."
+    linking@obverseListingOrder:
+
+relationType: ! "Represents one of possible values for the type of relation."
+    linking@scopeRestriction:
+    linking@description: ?
+    linking@memberType: *
+    linking@sameAs: *
+
+memberType: ["sense","entry","collocate"] "Represents one of possible values for the role of member, as well as various restrictions on members having this role."
+    linking@role:
+    linking@min: ?
+    linking@max: ?
+    linking@hint: ?
+    linking@description: ?
+    linking@sameAs: *
+
+collocate: ! "Marks up a substring other than the headword inside an example, inside an example translation or inside a definition. "
+    annotation@lemma: ?
+    annotation@label: *
+
+etymology: "Represents a chain of historical derivations of a word."
+    etymology@etymon: *
+
+etymon: "Represents one stage (of possibly several) in the etymological history of the headword."
+    etymology@when: ?
+    etymology@note: ?
+    etymology@[PREFIX]etymonUnit: +
+
+[PREFIX]etymonUnit: ! "Represents a form (typically a word) which is the etymological origin of the headword, or another etymologically related form."
+    etymology@reconstructed: ?
+    etymology@pos: *
+    etymology@translation: ?
+
+etymonLanguage: ! "Represents one of several allowed values for the language property of etymonUnit objects."
+    etymology@langCode:
+    etymology@displayName: ?
+	etymology@sameAs: *
+
+etymonType: ! "Represents one of possible values for the type of etymon."
+    etymology@description: ?
+    etymology@sameAs: *
+
+# ======================
+# SINGLETONS
+# ======================
+definitionType: ! "If a sense contains multiple defin- itions, indicates the difference between them, for example that they are intended for different audiences. "
+description: ! "A human-readable explanation of this relation type."
+displayName: ! "The name of the etymon language, in the language of the lexicographic resource."
+for: ! "A statement about constraints and recommendation on using this tag."
+headword: ! "Marks up a substring inside an example, inside an example translation or inside a definition which corresponds to the headword (or to a translation of the headword)."
+homograph: ! "The entry's homograph number, as a guide to distinguish entries with the same headword."
+hint: ["embed","navigate","none"] "Suggests what machine agents should do when showing this member to a human user (in the context of another member of the same relation). The possible values are: embed: Members that have this role should be shown in their entirety, i.e. the entire entry or the entire sense. This is suitable for relations between entries and subentries, or senses and subsenses, navigate: Members that have this role should not be shown in their entirety. A navigable (e.g. clickable) link should be provided instead. This is suitable for relations between synonyms, antonyms, holonyms/heteronyms and similar, none: Members that have this role should not be shown."
+id: ! "Entries that have an ID may use this ID as object reference instead of the IRI addressing mechanism."
+label: ! "Represents a restriction on its parent such as temporal (old-fashioned, neologism), regional (dialect), register (formal, colloquial), domain (medicine, politics) or grammar (singular-only)."
+langCode: ! "The IETF language code of the language that this lexicographic resource describes."
+lemma: ! "The lemmatized form of the collocate."
+min: ! "Says that relations of this type must have at least this many members with this role."
+max: ! "Says that relations of this type may have at most this many members with this role."
+note: ! "Any additional information about this stage of the headword's etymological history."
+obverseListingOrder: ! "Number. The position of this relation among other relations this member is involved in. When an object - such as an entry or a sense - is a member of several relations (for example: when a sense is a member of a synonymy relation and also of an antonymy relation) then, when showing the object (the entry or the sense) to human users, the relations should be listed in this order (for example: the synonyms first, the antonyms second)."
+placeholder: ! "Marks up a substring inside a headword or inside a headword translation which is not part of the expression itself but stands for things that can take its place. An application can use the inline markup to format the placeholders differently from the rest of the text, to ignore the placeholder in full-text search, and so on."
+pos: ! "An abbreviation, a code or some other string of text which identifies the part-of-speech label, for example n for noun, v for verb, adj for adjective."
+reconstructed: ! "If present and set to true, indicates that the form is reconstructed and not attested in any corpus."
+role: ! "Normalised string."
+sameAs: ! "Represents the fact that the parent object is equivalent to an item available from an external authority."
+scheme: ! "IETF language tag. Identifies the transcription scheme used here. Example: en-fonipa for English IPA."
+scopeRestriction: ["any","sameEntry","sameResource"] "Specifies restrictions on member of relations of this type. sameEntry: members must be within of the same entry, sameResource: members must be within the same lexicographicResource, any: no restriction"
+soundFile: ! "An Internationalized Resource Identifier (IRI) pointing to a ile which contains a sound recording of the example."
+sourceElaboration: ! "A free-form statement about the source of the example. If sourceIdentity is present, then sourceElaboration can be used for information about where in the source the example can be found: page number, chapter and so on. If sourceIdentity is absent then sourceElaboration can be used to fully name the source."
+sourceIdentity: ! "An abbreviation, a code or some other string of text which identifies the source."
+tag: ! "Normalised string. An abbreviation, a code or some other string of text which identifies the inflected form, for example pl for plural, gs for genitive singular, com for comparative."
+title: ! "A human-readable title of the lexicographic resource."
+translation: ! "A translation or gloss of the etymon in the language of the lexicographic resource."
+translationLanguage: ! "Represents one of the languages in which translations are given in this lexicographic resource."
+typeTag: ! "An abbreviation, a code or some other string of text which identifies the type of the label, for example temporal for temporal labels (archaic, neologism etc) or dialect for labels of dialects."
+when: ! "Indicates the time period during which this etymological origin is valid."
+
+[PREFIX]explanation: ! "Represents a statement in the translation language which explains (but does not translate) the meaning of the headword."
