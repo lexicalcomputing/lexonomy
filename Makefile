@@ -21,7 +21,7 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
 
 deploy:
 	mkdir -p $(DEPLOYDIR)/data
-	cp -a website $(DEPLOYDIR)/
+	cp website $(DEPLOYDIR)/
 
 	# If new instance create siteconfig.json and config.js
 	@if [ ! -f "$(DEPLOYDIR)/website/siteconfig.json" ]; then\
