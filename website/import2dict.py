@@ -152,6 +152,13 @@ def xml2nvh(input_xml , fd):
     log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
 
 
+def import_configs(db, dict_id, config_data):
+    for key, value in config_data.items():
+        ops.updateDictConfig(db, dict_id, key, value)
+    curr_configs = ops.readDictConfigs(db)
+    ops.resave(db, dict_id, curr_configs)
+
+
 def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', purge=False, purge_all=False, deduplicate=False, clean=False, config_data=''):
     log_start('IMPORT')
     log_info(f'pid: {str(os.getpid())}')
@@ -395,10 +402,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # Import config
         # =============
         if config_data:
-            for key, value in config_data.items():
-                ops.updateDictConfig(db, dict_id, key, value)
-            curr_configs = ops.readDictConfigs(db)
-            ops.resave(db, dict_id, curr_configs)
+            import_configs(db, dict_id, config_data)
 
         db.commit()
 
