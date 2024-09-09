@@ -273,8 +273,8 @@ def getmedia(dictID, query, user, dictDB, configs):
 def skeget_corpora(dictID, user, dictDB, configs):
     import base64
     apiurl = "https://api.sketchengine.eu/"
-    if configs.get("kex") and configs["kex"].get("apiurl") != "":
-        apiurl = configs["kex"].get("apiurl").replace("bonito/run.cgi", "")
+    if configs.get("ske") and configs["ske"].get("apiurl") != "":
+        apiurl = configs["ske"].get("apiurl").replace("bonito/run.cgi", "")
     req = urllib.request.Request(apiurl + "/ca/api/corpora",
                                   headers = {"Authorization": "Basic " + base64.b64encode(str.encode(str(user['ske_username'])+':'+str(user['ske_apiKey']))).decode('ascii')})
     ske_response = urllib.request.urlopen(req)
@@ -292,7 +292,7 @@ def user_corpora(user):
     response.headers['Content-Type'] = ske_response.getheader('Content-Type')
     return ske_response
 
-@get(siteconfig["rootPath"] + "<dictID>/skeget/xampl")
+@get(siteconfig["rootPath"] + "<dictID>/skeget/examples")
 @authDict(["canEdit"])
 def skeget_xampl(dictID, user, dictDB, configs):
     url = request.query.url
@@ -315,7 +315,7 @@ def skeget_xampl(dictID, user, dictDB, configs):
     data = json.loads(res.read())
     return data
 
-@get(siteconfig["rootPath"] + "<dictID>/skeget/thes")
+@get(siteconfig["rootPath"] + "<dictID>/skeget/thesaurus")
 @authDict(["canEdit"])
 def skeget_thes(dictID, user, dictDB, configs):
     url = request.query.url
@@ -332,7 +332,7 @@ def skeget_thes(dictID, user, dictDB, configs):
     data = json.loads(res.read())
     return data
 
-@get(siteconfig["rootPath"] + "<dictID>/skeget/collx")
+@get(siteconfig["rootPath"] + "<dictID>/skeget/collocations")
 @authDict(["canEdit"])
 def skeget_collx(dictID, user, dictDB, configs):
     url = request.query.url
@@ -350,7 +350,7 @@ def skeget_collx(dictID, user, dictDB, configs):
     data = json.loads(res.read())
     return data
 
-@get(siteconfig["rootPath"] + "<dictID>/skeget/defo")
+@get(siteconfig["rootPath"] + "<dictID>/skeget/definitions")
 @authDict(["canEdit"])
 def skeget_defo(dictID, user, dictDB, configs):
     url = request.query.url
@@ -830,7 +830,7 @@ def exportconfigs(dictID, user, dictDB, configs):
     output = {}
     for configid in request.forms.configs.split(','):
         if configid == 'ske':
-            output['ske'] = {'collx': configs['collx'], 'xampl': configs['xampl'], 'thes': configs['thes'], 'defo': configs['defo'], 'kex': configs['kex']}
+            output['ske'] = configs['ske']
         elif configid == 'users':
             output['users'] = ops.listDictUsers(dictID)
         else:
@@ -851,11 +851,7 @@ def importconfigs(dictID, user, dictDB, configs):
         for key in data:
             if key == 'ske':
                 adjustedJson = {}
-                adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', data['ske']['kex'])
-                adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', data['ske']['xampl'])
-                adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', data['ske']['collx'])
-                adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', data['ske']['defo'])
-                adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', data['ske']['thes'])
+                adjustedJson['ske'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', data['ske'])
                 resaveNeeded = False
             elif key == 'users':
                 # raise Exception(type(data[key]))
@@ -944,7 +940,7 @@ def publicsearch(dictID):
 @authDict(["canConfig"])
 def configread(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
-        config_data = {'collx': configs.get('collx', None), 'xampl': configs.get('xampl', None), 'thes': configs.get('thes', None), 'defo': configs.get('defo', None), 'kex': configs.get('kex', None)}
+        config_data = configs.get('ske', None)
     else:
         if request.forms.id == 'structure' and 'structure' not in configs:
             config_data = configs['structure']
@@ -960,14 +956,7 @@ def configread(dictID, user, dictDB, configs):
 @authDict(["canConfig"])
 def configupdate(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
-        adjustedJson = {}
-        jsonData = json.loads(request.forms.content)
-        adjustedJson['kex'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'kex', jsonData.get('kex', None))
-        adjustedJson['xampl'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'xampl', jsonData.get('xampl', None))
-        adjustedJson['collx'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'collx', jsonData.get('collx', None))
-        adjustedJson['defo'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'defo', jsonData.get('defo', None))
-        adjustedJson['thes'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'thes', jsonData.get('thes', None))
-        resaveNeeded = False
+        adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', json.loads(request.forms.content))
     else:
         adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, request.forms.id, json.loads(request.forms.content))
 
