@@ -185,7 +185,7 @@ def sendfeedback():
 @get(siteconfig["rootPath"] + "dmlex_schema.json") # OK
 def schemaitems():
     try:
-        schema, desc_dict = ops.getDmlLexSchemaItems(json.loads(request.forms.modules))
+        schema, desc_dict = ops.getDmlLexSchemaItems(request.query.modules)
         return {"schema": schema, "desc_dict": desc_dict, "success": True}
     except:
         return {"schema": "", "desc_dict": "", "success": False}
