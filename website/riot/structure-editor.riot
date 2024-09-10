@@ -75,9 +75,14 @@
                style="max-width: 130px;">
             <select id="type"
                   onchange={onTypeChange}>
-               <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
-                     selected={obj[0] == structureStore.data.editedElement.type}
-                     value={obj[0]}>{obj[1]}</option>
+               <template if={structureStore.data.editedElement == structureStore.getRootElement()}>
+                  <option selected="selected"
+                        value="string">{store.const.ENTRY_TYPES.string}</option>
+               </template>
+               <template if={structureStore.data.editedElement != structureStore.getRootElement()}>
+                  <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
+                        selected={obj[0] == structureStore.data.editedElement.type}>{obj[1]}</option>
+               </template>
             </select>
             <label>Type</label>
          </div>
