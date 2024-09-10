@@ -21,7 +21,7 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
 
 deploy:
 	mkdir -p $(DEPLOYDIR)/data
-	cp website $(DEPLOYDIR)/
+	cp -r website $(DEPLOYDIR)/
 
 	# If new instance create siteconfig.json and config.js
 	@if [ ! -f "$(DEPLOYDIR)/website/siteconfig.json" ]; then\
@@ -51,7 +51,8 @@ deploy:
 
 	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
-	chmod -R g+rwX $(DEPLOYDIR)/data
+	chmod -R g+rwX $(DEPLOYDIR)/data || :
+	chmod -R g+w $(DEPLOYDIR)/website || :
 
 website/version.txt:
 	git describe --always > $@
