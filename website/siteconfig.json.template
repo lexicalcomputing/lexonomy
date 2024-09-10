@@ -24,6 +24,7 @@
   "customStyle": null,
   "homepage": null,
   "showDictionaryNameInPageTitle": true,
+  "limitPublicDictionarySize": true,
   "licences": {
     "cc-by-4.0": {
       "title": "Creative Commons Attribution 4.0 International",
