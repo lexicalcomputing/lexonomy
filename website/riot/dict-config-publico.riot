@@ -117,8 +117,12 @@
          },
 
          setIsPublicEnabled(){
-            let dict = this.store.getDictionary(this.dictData.dictId)
-            this.state.isPublicEnabled = dict && dict.size >= 100
+            if(this.dictData.siteconfig.limitPublicDictionarySize){
+               let dict = this.store.getDictionary(this.dictData.dictId)
+               this.state.isPublicEnabled = dict && dict.size >= 100
+            } else {
+               this.state.isPublicEnabled = true
+            }
          },
 
          onBeforeMount(){
