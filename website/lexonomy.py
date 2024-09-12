@@ -183,7 +183,7 @@ def sendfeedback():
         return {"success": False, "error": "missing parameters"}
 
 @get(siteconfig["rootPath"] + "dmlex_schema.json") # OK
-def schemaitems():
+def dmlex_schema():
     try:
         schema, desc_dict = ops.getDmlLexSchemaItems(request.query.modules)
         return {"schema": schema, "desc_dict": desc_dict, "success": True}
