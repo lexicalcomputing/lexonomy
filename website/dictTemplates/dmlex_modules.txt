@@ -44,8 +44,8 @@ sense: "Represents one of possibly many meanings (or meaning potentials) of the 
     core@definition: *
     core@example: *
     linking@id: ?
-    xlingual@[PREFIX]explanation: *
-    xlingual@[PREFIX]translation: *
+    xlingual@\S*explanation: *
+    xlingual@\S*translation: *
 
 definition: ! "Represents one of possibly several definitions of a sense."
     core@definitionType: ?
@@ -66,16 +66,16 @@ example: ! "Represents a sentence or other text fragment which illustrates the h
     core@label: *
     annotation@headword: *
     annotation@collocate: *
-    xlingual@[PREFIX]exampleTranslation: *
+    xlingual@\S*exampleTranslation: *
 
-[PREFIX]translation: ! "Represents one of possibly multiple translations of a headword."
+\S*translation: ! "Represents one of possibly multiple translations of a headword. Prefix '\S*' can be represented by IETF language tag followed by underscore e.g. 'en_translation'"
     xlingual@pos: *
     xlingual@label: *
     xlingual@pronunciation: *
     xlingual@form: *
     annotation@placeholder: *
 
-[PREFIX]exampleTranslation: ! "Represents the translation of an example."
+\S*exampleTranslation: ! "Represents the translation of an example. Prefix '\S*' can be represented by IETF language tag followed by underscore e.g. 'en_exampleTranslations'"
     xlingual@soundFile: ?
     xlingual@label: *
     annotation@headword: *
@@ -87,6 +87,7 @@ definitionTypeTag: ! "Represents one (of many) possible values for definitionTyp
 
 formTag: ! "Represents one (of many) possible values for tag of inflectedForm."
     values@description: ?
+    values@for: ?
     values@sameAs: *
 
 labelTag: ! "Represents one (of many) possible values for tag of label."
@@ -114,19 +115,19 @@ transcriptionSchemeTag: ! "Represents one (of many) possible values for scheme o
 
 relation: ! "Represents the fact that a relation exists between two or more objects."
     linking@description: ?
-    linking@[PREFIX]member: 2+
+    linking@\S*member: 2+
 
-[PREFIX]member: ! "Represents the fact that an object, such as an entry or a sense, is a member of a relation."
+\S*member: ! "Represents the fact that an object, such as an entry or a sense, is a member of a relation. Prefix '\S*' can be replaced by that role property followed by underscore."
     linking@obverseListingOrder:
 
 relationType: ! "Represents one of possible values for the type of relation."
-    linking@scopeRestriction:
+    linking@scopeRestriction: ?
     linking@description: ?
     linking@memberType: *
     linking@sameAs: *
 
 memberType: ["sense","entry","collocate"] "Represents one of possible values for the role of member, as well as various restrictions on members having this role."
-    linking@role:
+    linking@role: ?
     linking@min: ?
     linking@max: ?
     linking@hint: ?
@@ -136,6 +137,7 @@ memberType: ["sense","entry","collocate"] "Represents one of possible values for
 collocate: ! "Marks up a substring other than the headword inside an example, inside an example translation or inside a definition. "
     annotation@lemma: ?
     annotation@label: *
+    linking@id: ?
 
 etymology: "Represents a chain of historical derivations of a word."
     etymology@etymon: *
@@ -143,15 +145,14 @@ etymology: "Represents a chain of historical derivations of a word."
 etymon: "Represents one stage (of possibly several) in the etymological history of the headword."
     etymology@when: ?
     etymology@note: ?
-    etymology@[PREFIX]etymonUnit: +
+    etymology@\S*etymonUnit: +
 
-[PREFIX]etymonUnit: ! "Represents a form (typically a word) which is the etymological origin of the headword, or another etymologically related form."
+\S*etymonUnit: ! "Represents a form (typically a word) which is the etymological origin of the headword, or another etymologically related form. Prefix '\S*' can be represented by IETF language tag followed by underscore e.g. 'en_etymonUnit'"
     etymology@reconstructed: ?
     etymology@pos: *
-    etymology@translation: ?
+    etymology@etymonTranslation: ?
 
 etymonLanguage: ! "Represents one of several allowed values for the language property of etymonUnit objects."
-    etymology@langCode:
     etymology@displayName: ?
 	etymology@sameAs: *
 
@@ -189,9 +190,9 @@ sourceElaboration: ! "A free-form statement about the source of the example. If 
 sourceIdentity: ! "An abbreviation, a code or some other string of text which identifies the source."
 tag: ! "Normalised string. An abbreviation, a code or some other string of text which identifies the inflected form, for example pl for plural, gs for genitive singular, com for comparative."
 title: ! "A human-readable title of the lexicographic resource."
-translation: ! "A translation or gloss of the etymon in the language of the lexicographic resource."
+etymonTranslation: ! "A translation or gloss of the etymon in the language of the lexicographic resource."
 translationLanguage: ! "Represents one of the languages in which translations are given in this lexicographic resource."
 typeTag: ! "An abbreviation, a code or some other string of text which identifies the type of the label, for example temporal for temporal labels (archaic, neologism etc) or dialect for labels of dialects."
 when: ! "Indicates the time period during which this etymological origin is valid."
 
-[PREFIX]explanation: ! "Represents a statement in the translation language which explains (but does not translate) the meaning of the headword."
+\S*explanation: ! "Represents a statement in the translation language which explains (but does not translate) the meaning of the headword. Prefix '\S*' can be represented by IETF language tag followed by underscore e.g. 'en_explanation'"

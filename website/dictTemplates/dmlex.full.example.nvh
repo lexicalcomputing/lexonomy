@@ -1,0 +1,118 @@
+lexicographicResource: https://www.sketchengine.eu/
+  title: My English-German Dictionary
+  translationLanguage: de
+  langCode: en
+  entry: lens
+    homograph: 1
+    pos: N
+    label: label
+    pronunciation: lɛns
+      transcription: lenz
+        scheme: IPA
+      label: google
+    form: lenses
+      tag: pl
+      label: label
+      pronunciation: lenziz
+        transcription: lenziz
+          scheme: IPA
+      label: google
+    sense: camera lens
+      definition: assembly of optical lenses used to direct light on camera sensor
+        definitionType: type1
+        headword: lenses
+        collocate: optical
+          lemma: optical
+          label: label
+          id: 1
+      de_translation: kameraobjektiv
+        pod: N
+        placeholder: objektiv
+      de_explanation: Anordnung von Linsen, die verwendet werden, um Licht auf den Kamerasensor zu lenken
+      example: For portrait shooting I bought new 50mm camera lens for my Sony camera.
+        sourceIdentity: sketchengine
+        sourceElaboration: GDEX examples
+        soundFile: audio_file.mp3
+        label: label
+        headword: lens
+        de_exampleTranslation: Für Porträtaufnahmen habe ich ein neues 50-mm-Kameraobjektiv für meine Sony-Kamera gekauft.
+          soundFile: de_audio_file.mp3
+          label: label
+          headword: Kameraobjektiv
+          collocate: Kamera
+            lemma: lamera
+            label: label
+            id: 2345ABGD
+        collocate: camera
+          lemma: camera
+          label: label
+          id: 123ABC
+      id: 1244HGH
+      label: medicine
+    id: 74569FHJ
+    placeholder: lens
+    etymology:
+      etymon: b2000
+        when: 600-1500
+        note: note
+        lat-med_etymonUnit: lēns
+          etymonTranslation: lentil
+          pos: N
+          reconstructed: latin
+  relation: meronymy
+    whole_member: /glasses/sense/0~an%20optical%20seeing%20aid
+    part_member: /lens/sense/0~curved%20glass%20that%20makes%20things%20seem%20bigger
+  relationType: meronomy
+    scopeRestriction: any
+    description: part-whole relationship
+    memberType: sense
+      role: whole
+      min: 1
+      max: 1
+      hint: navigate
+      description: the whole thing
+      sameAs: my_whole
+    memberType: sense
+      role: part
+      min: 1
+      max: 1
+      hint: navigate
+      description: part of the whole
+      sameAs: my_part
+    sameAs: 
+  posTag: N
+    description: noun
+    sameAs: https://www.sketchengine.eu/German-rftagger-part-of-speech-tagset/
+  formTag: pl
+    description: plural
+  etymonLanguage: ang
+    displayName: English, Old (ca.450–1100)
+    sameAs: my_ang
+  definitionTypeTag: type1
+    description: simple type 1
+    sameAs: my_type1
+  labelTag: label
+    description: General label
+    typeTag: general
+    for: all levels
+    sameAs: my_label
+  labelTag: google
+    description: information retrieved form google search
+    typeTag: source
+    for: to label source for particular information
+    sameAs: my_google
+  labelTypeTag: source
+    description: info about source
+    sameAs: my_source
+  labelTypeTag: general
+    description: can be used on all levels
+    sameAs: my_general
+  sourceIdentityTag: sketchengine
+    description: "Example from sketchengine GDEX app"
+    sameAs: my_ske
+  transcriptionSchemeTag: IPA
+    description: The International Phonetic Alphabet 
+    for: English only
+  etymonType: b2000
+    description: before year 20000
+    sameAs: my_b2000
