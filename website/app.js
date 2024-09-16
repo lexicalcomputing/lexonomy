@@ -22,6 +22,7 @@ import './js/extendmaterialize.js'
 import './js/structure-editor-store.js'
 import './js/formatter.js'
 import './js/customstyles.js'
+import './js/browser-update.js'
 
 import App from './riot/main.riot'
 import api from './riot/api.riot'

@@ -767,3 +767,30 @@ table.striped thead tr{
       top: 11px;
    }
 }
+
+/* browser update notification style */
+body #buorgig,
+body #buorgul,
+body #buorgpermanent{
+   border-radius: 0;
+   border: 0;
+   box-shadow: none;
+   text-transform: uppercase;
+   font-size: 0.9rem;
+   height: 2.25rem;
+   line-height: 2.25rem;
+   white-space: nowrap;
+   padding: 0 1rem;
+   font-family: 'Roboto Condensed', sans-serif;
+}
+body #buorgul{
+   background-color: #c62132;
+}
+body #buorgig{
+   color: #000;
+   background-color: #eee;
+}
+body #buorgpermanent{
+   color: #fff;
+   background-color: #000;
+}
