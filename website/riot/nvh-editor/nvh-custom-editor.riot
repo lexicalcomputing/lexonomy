@@ -17,8 +17,12 @@
             this.initCustomEditor()
          },
 
-         onBefreUnmount(){
+         onBeforeUnmount(){
             document.getElementById("customEditorStyle").remove()
+            debugger
+            this.nvhData.customEditor
+                  && this.nvhData.customEditor.destroy
+                  && this.nvhData.customEditor.destroy()
          },
 
          updateEditor(){

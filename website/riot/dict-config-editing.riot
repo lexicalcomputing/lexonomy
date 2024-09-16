@@ -70,8 +70,9 @@
       //   node: the node into which you should render the editor
       //   entry = JSON object representing the entry
       //   readOnly = true if we want the entry to be uneditable
-      //   onChange = method to call if data changes
-      //   onValidChange - method to call if data state changes from valid to invalid or vice versa
+      //   onChange = the method should be called if the data is changed
+      //   onValidChange - the method should be called if data state changes from valid to invalid or vice versa
+      //   destroy - this method is called when the editor is closed
       // }
       this.options = options
       this.node = $(options.node)
