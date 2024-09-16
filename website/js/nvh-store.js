@@ -54,6 +54,7 @@ class NVHStoreClass {
                   }
                   this.data.isSaving = false
                   this.trigger("isSavingChanged")
+                  this.trigger("entryUpdated")
                })
       } else {
          return window.store.createEntry(nvh)
