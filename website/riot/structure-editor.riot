@@ -81,6 +81,7 @@
                </template>
                <template if={structureStore.data.editedElement != structureStore.getRootElement()}>
                   <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
+                        value={obj[0]}
                         selected={obj[0] == structureStore.data.editedElement.type}>{obj[1]}</option>
                </template>
             </select>
