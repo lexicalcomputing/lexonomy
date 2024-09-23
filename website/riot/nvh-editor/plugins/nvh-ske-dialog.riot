@@ -7,7 +7,7 @@
                name="query"
                oninput={onInput}
                onkeyup={onKeyUp}
-               value={props.searchWord}/>
+               value={state.query}/>
          <label>{props.method == "examples" ? "Simple search" : "Search"}</label>
          <button class="btn"
                onclick={search}>
@@ -20,7 +20,7 @@
                name="cql"
                oninput={onInput}
                onkeyup={onKeyUp}
-               value={'[lemma="' + props.searchWord + '"]'}/>
+               value={state.cql}/>
          <label>CQL</label>
          <button class="btn"
                onclick={search}>
@@ -59,7 +59,14 @@
                            {idx + 1}.
                         </small>
                      </td>
-                     <td>{row}</td>
+                     <td if={typeof row == "string"}>
+                        {row}
+                     </td>
+                     <td if={typeof row == "object"}>
+                        <span>{row.left}</span>
+                        <span class="red-text">{row.kwic}</span>
+                        <span>{row.right}</span>
+                     </td>
                   </tr>
                </tbody>
             </table>
@@ -127,7 +134,7 @@
 
          onRowClick(row, evt){
             let element = this.nvhStore._addChildElement(this.nvhData.detachedEntry, this.state.containerName)
-            element.value = $(evt.target).text()
+            element.value = typeof row == "string" ? row : `${row.left} ${row.kwic} ${row.right}`
             this.state.data = this.state.data.filter(r => r != row)
             this.update()
             this.nvhStore.validateElement(element)
@@ -150,7 +157,7 @@
                apikey: this.authData.ske_apiKey
             }
             if(this.props.method == "examples"){
-               data.query = this.state.query
+               data.query = this.state.useCQL ? this.state.cql : this.state.query
                data.querytype = this.state.useCQL ? "skecql" : "skesimple"
             } else {
                data.lemma = this.state.query
@@ -162,9 +169,11 @@
                      } else {
                         if(this.props.method == "examples" || this.props.method == "definitions"){
                            this.state.data = response.Lines.map(line => {
-                              return line.Left.reduce((all, part) => {return all + part.str}, "")
-                                    + line.Kwic.reduce((all, part) => {return all + part.str}, "")
-                                    + line.Right.reduce((all, part) => {return all + part.str}, "")
+                              return {
+                                 left: line.Left.reduce((all, part) => {return all + part.str}, ""),
+                                 kwic: line.Kwic.reduce((all, part) => {return all + part.str}, ""),
+                                 right: line.Right.reduce((all, part) => {return all + part.str}, "")
+                              }
                            })
                         } else if(this.props.method == "collocations"){
                            this.state.data = response.Items.map(item => item.word)
