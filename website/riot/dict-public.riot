@@ -208,8 +208,7 @@
          },
 
          onDelete(){
-            var dictTitle = this.store.getDictionary(this.dictData.dictId).title
-            if (confirm("Are you sure you want to delete dictionary " + dictTitle + "? You will not be able to undo this.")) {
+            if (confirm("Are you sure you want to delete dictionary " + this.dictData.title + "? You will not be able to undo this.")) {
                this.update({isLoading: true})
                this.store.deleteDictionary(this.dictData.dictId)
                      .done(() => {route("/")})

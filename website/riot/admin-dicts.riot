@@ -129,7 +129,7 @@
          },
 
          doDeleteDict(dictId) {
-            var dictTitle = this.state.dictionaries.fuind(dictionary => dictionary.id == dictId).title
+            var dictTitle = this.state.dictionaries.find(dictionary => dictionary.id == dictId).title
             if (confirm("Are you sure you want to delete dictionary " + dictTitle + "? You will not be able to undo this.")) {
                this.update({isLoading: true})
                this.store.deleteDictionary(dictId)
