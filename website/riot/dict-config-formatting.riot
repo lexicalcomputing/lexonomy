@@ -24,7 +24,8 @@
       </div>
       <div class="exampleColumn pl-6">
          <h2>Example</h2>
-         <div class="exampleBar grey lighten-4 displayFlex mb-2">
+         <div if={!dictData.isEntryListLoaded || dictData.entryList.length}
+               class="exampleBar grey lighten-4 displayFlex mb-2">
             <entry-dropdown on-change={onExampleEntryChanged}/>
             <i class="material-icons grey-text">search</i>
             <button class="btn btn-flat  tooltipped ml-auto"
@@ -39,6 +40,13 @@
                   onclick={onExampleClick}
                   element={nvhStore.data.entry}
                   read-only={true}/>
+            <div if={dictData.isEntryListLoaded && !dictData.entryList.length}
+                  class="center-align mt-16">
+               <h2 class="grey-text">
+                  Your dictionary is empty
+               </h2>
+               You can create new entry <a href="#/{dictData.dictId}/edit/entry/new/edit">here</a>.
+            </div>
          </div>
       </div>
    </div>
@@ -87,8 +95,11 @@
             })
             this.state.elementName = this.elementOptionList[0].elementName
             const changeEntryId = () => {
-               let entryId = this.dictData.entryList[Math.floor(Math.random() * this.dictData.entryList.length)].id
-               this.store.changeEntryId(entryId)
+               if(this.dictData.entryList.length){
+                  // TODO: change to randomone.json once fixed
+                  let entryId = this.dictData.entryList[Math.floor(Math.random() * this.dictData.entryList.length)].id
+                  this.store.changeEntryId(entryId)
+               }
             }
             if(this.dictData.isEntryListLoaded){
                changeEntryId()
