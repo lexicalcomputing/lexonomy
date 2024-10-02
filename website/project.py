@@ -52,6 +52,7 @@ def getProjectsByUser(user):
 
 
 def add_project_staff(conn, project_id, project_name, project_staff, role, user):
+    new_created_users = []
     c = conn.execute("SELECT email FROM users")
     all_users = set()
     for r in c.fetchall():
@@ -64,10 +65,12 @@ def add_project_staff(conn, project_id, project_name, project_staff, role, user)
                 ops.createUser(annotator, user, manager=1)
             else:
                 ops.createUser(annotator, user)
+            new_created_users.append(annotator)
 
         conn.execute("INSERT INTO user_projects (project_id, project_name, user_email, role)"\
                      " VALUES (?,?,?,?)", (project_id, project_name, annotator, role))
         conn.commit()
+    return new_created_users
 
 
 def project_init_git(path):
