@@ -4,23 +4,23 @@ entry: 5
   pos: N
   sense: test_5 
   image: test_5.1.jpg
-    i_license: general
-    i_source: source_1
-    i_quality: good
-    i_author: LCC 
-    i_explicit: no
+    license: general
+    source: source_1
+    quality: good
+    author: LCC
+    explicit: no
   image: test_5.2.jpg
-    i_license: general
-    i_source: source_1
-    i_quality: good
-    i_author: LCC 
-    i_explicit: no
+    license: general
+    source: source_1
+    quality: good
+    author: LCC
+    explicit: no
   image: test_5.3.jpg
-    i_license: general
-    i_source: source_1
-    i_quality: good
-    i_author: LCC 
-    i_explicit: no
+    license: general
+    source: source_1
+    quality: good
+    author: LCC
+    explicit: no
   example: First example of test_5
   example: Second example of test_5
   example: Third example of test_5

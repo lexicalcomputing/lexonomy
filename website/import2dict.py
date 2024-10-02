@@ -159,6 +159,29 @@ def import_configs(db, dict_id, config_data):
     ops.resave(db, dict_id, curr_configs)
 
 
+def get_gen_schema_elements(schema, schema_elements, parent=''):
+    for k in schema:
+        children = []
+        for x in schema[k].get('children', []):
+            if parent:
+                children.append(parent + '.' + k + '.' + x)
+            else:
+                children.append(k + '.' + x)
+
+        if parent:
+            schema_elements[parent + '.' + k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None),
+                                                 'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
+                                                 're': schema[k].get('re', ''), 'children': children, 
+                                                 'parent': parent, 'name': k}
+            get_gen_schema_elements(schema[k]["schema"], schema_elements, parent + '.' + k)
+        else:
+            schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None),
+                                  'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
+                                  're': schema[k].get('re', ''), 'children': children,
+                                  'parent': parent, 'name': k}
+            get_gen_schema_elements(schema[k]["schema"], schema_elements, k)
+
+
 def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', purge=False, purge_all=False, deduplicate=False, clean=False, config_data=''):
     log_start('IMPORT')
     log_info(f'pid: {str(os.getpid())}')
@@ -246,7 +269,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # Structure
         # =============
         elements = {}
-        ops.get_gen_schema_elements(schema, elements)
+        get_gen_schema_elements(schema, elements)
         structure = {"root": main_node_name, "elements": elements}
         if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
