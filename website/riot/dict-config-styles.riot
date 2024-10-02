@@ -29,6 +29,7 @@
             this.state.customCss = this.dictData.config.styles.css
             this.state.customCss && this.refreshCustomStyles()
             this.initCustomCssEditor()
+            $("#editor_css").focus()
          },
 
          onBeforeUnmount(){
