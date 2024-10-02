@@ -46,7 +46,7 @@ let autocompleteExtension = {
       // Sort
       if (this.options.sortFunction) {
          var sortFunctionBound = function(a, b) {
-            return _this39.options.sortFunction(a.value.toLowerCase(), b.value.toLowerCase(), val.toLowerCase());
+            return _this39.options.sortFunction(a.label.toLowerCase(), b.label.toLowerCase(), val.toLowerCase());
          };
          this.filteredData.sort(sortFunctionBound);
       }
