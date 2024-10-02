@@ -636,13 +636,6 @@ def suggestDictId():
         dictid = generateDictId()
     return dictid
 
-def get_gen_schema_elements(schema, schema_elements):
-    for k in schema:
-        schema_elements[k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None),
-                                'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
-                                're': schema[k].get('re', ''), 'children': schema[k].get('children', [])}
-        get_gen_schema_elements(schema[k]["schema"], schema_elements)
-
 # def get_schema_elements(nvh_node, elements):
 #     elements[nvh_node.name] = {
 #         "type": "string",
