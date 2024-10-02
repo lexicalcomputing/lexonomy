@@ -1997,7 +1997,7 @@ def updateEntryLinkables(dictDB, entryID, nvhParsed, configs, save=True, save_xm
 def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
     if nvhNode.name == linkinfo['linkElement']:
         # remove existing linkables
-        nvhNode.children = [c for c in nvhNode.children if c.name != "lxnm_linkable"]
+        nvhNode.children = [c for c in nvhNode.children if c.name != "__lexonomy__linkable"]
 
         # add new linkable identifier
         identifier = linkinfo["identifier"]
@@ -2011,11 +2011,11 @@ def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
                 text = extractfull[0]
             identifier = identifier.replace(pattern, text)
         if nvhNode.children:
-            nvhNode.children.append(nvh(nvhNode, nvhNode.children[0].indent, "lxnm_linkable", identifier, []))
+            nvhNode.children.append(nvh(nvhNode, nvhNode.children[0].indent, "__lexonomy__linkable", identifier, []))
         else:
             ind_step = nvhNode.indent[len(nvhNode.parent.indent):]
             indent = nvhNode.indent + ind_step
-            nvhNode.children.append(nvh(nvhNode, indent, "lxnm_linkable", identifier, []))
+            nvhNode.children.append(nvh(nvhNode, indent, "__lexonomy__linkable", identifier, []))
 
         # add preview
         preview = linkinfo["preview"]
@@ -2031,7 +2031,7 @@ def updateLinkablesLevel(nvhNode, linkinfo, entryNvh, linkableAr):
         linkableAr.append({'element': linkinfo["linkElement"], "identifier": identifier, "preview": preview})
 
     for c in nvhNode.children:
-        if c.name != "lxnm_linkable":
+        if c.name != "__lexonomy__linkable":
             c, linkableAr = updateLinkablesLevel(c, linkinfo, entryNvh, linkableAr)
 
     return nvhNode, linkableAr
