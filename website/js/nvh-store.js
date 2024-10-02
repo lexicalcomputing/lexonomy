@@ -760,12 +760,12 @@ class NVHStoreClass {
 
    goToPrevElement(){
       this.focusElement(this.getPrevElement(this.getFocusedElement(), true))
-      this.scrollElementIntoViewDebounced()
+      this.scrollElementIntoView(this.getFocusedElement())
    }
 
    goToNextElement(){
       this.focusElement(this.getNextElement(this.getFocusedElement(), true))
-      this.scrollElementIntoViewDebounced()
+      this.scrollElementIntoView(this.getFocusedElement())
    }
 
    openElementToolbar(element){
@@ -982,22 +982,32 @@ class NVHStoreClass {
       this.scrollDebounceTimer = setTimeout(() => {
          clearTimeout(this.scrollDebounceTimer)
          let focusedElement = this.getFocusedElement()
-         focusedElement && this.scrollElementIntoView(focusedElement)
-      }, 200)
+         focusedElement && this.scrollElementIntoView(focusedElement, true)
+      }, 100)
    }
 
-   scrollElementIntoView(element){
-      let node = this.getElementHTMLTag(element)
+   scrollElementIntoView(element, animate){
+      let node = this.getElementHTMLTag(element).find(">.nvh-item>.nvh-wrapper")
       if(node.length){  // page might change
+         let elementHeight = node.outerHeight()
          let elementTop = node.offset().top
-         let elementBottom = elementTop + node.outerHeight()
+         let elementBottom = elementTop + elementHeight
          let viewportTop = $(window).scrollTop()
          let windowHeight = $(window).height()
          let viewportBottom = viewportTop + windowHeight
+         let scrollTop = null
          if(elementTop < viewportTop + 100){
-            $("html, body").animate({scrollTop: elementTop - 100}, 200)
-         } else if(elementBottom > viewportBottom - 100){
-            $("html, body").animate({scrollTop: elementBottom - windowHeight + 100}, 200)
+            scrollTop = elementTop - 100
+         } else if(elementBottom > viewportBottom - 100 && elementHeight < (windowHeight - 100)){
+            scrollTop = elementBottom - windowHeight + 100
+         }
+         if(scrollTop !== null){
+            if(animate){
+               $("html, body").animate({scrollTop: scrollTop}, 200)
+            } else {
+               document.documentElement.scrollTop = scrollTop
+               console.log(scrollTop)
+            }
          }
       }
    }
