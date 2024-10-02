@@ -76,7 +76,7 @@ class NVHStoreClass {
       window.store.data.entryId = "new"
       this.saveEntry()
             .done(response => {
-               window.store.data.entryId = response.entryId
+               window.store.data.entryId = response.id
                this.history.reset()
                this.history.addState()
                this.updateUrl()
