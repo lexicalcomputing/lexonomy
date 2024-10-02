@@ -62,7 +62,7 @@ lexicographicResource: https://www.sketchengine.eu/
   relation: meronymy
     whole_member: /glasses/sense/0~an%20optical%20seeing%20aid
     part_member: /lens/sense/0~curved%20glass%20that%20makes%20things%20seem%20bigger
-  relationType: meronomy
+  relationType: meronymy
     scopeRestriction: any
     description: part-whole relationship
     memberType: sense

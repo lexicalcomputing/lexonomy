@@ -552,15 +552,22 @@ class nvh:
 
     def build_json(self, schema_dict: dict) -> None:
         # build json for each nvh node recursively
+        p = self.parent
+        curr_path = [self.name]
+        while p and p.name!='':
+            curr_path.insert(0, p.name)
+            p = p.parent
+        parent_name = '.'.join(curr_path[:-1])
+        curr_name = '.'.join(curr_path)
         if self.name:
-            item = {}
+            item = {'name': self.name, 'parent': parent_name}
             if self.children:
-                item['children'] = [x.name for x in self.children]
+                item['children'] = [curr_name + '.' + x.name for x in self.children]
 
             for key, value in self.get_schema_value_format().items():
                 item[key] = value
 
-            schema_dict[self.name] = item
+            schema_dict[curr_name] = item
 
         for c in self.children:
             c.build_json(schema_dict)

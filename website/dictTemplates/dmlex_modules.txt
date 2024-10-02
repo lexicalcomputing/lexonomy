@@ -18,7 +18,7 @@ lexicographicResource: "Represents a dictionary. A lexicographic resource is a d
     values@posTag: *
     values@sourceIdentityTag: *
     values@transcriptionSchemeTag: *
-    linking@relation: *
+    linking@\S*relation: *
     linking@relationType: *
     etymology@etymonLanguage: *
     etymology@etymonType: *
@@ -113,12 +113,8 @@ transcriptionSchemeTag: ! "Represents one (of many) possible values for scheme o
     values@description: ?
     values@for: ?
 
-relation: ! "Represents the fact that a relation exists between two or more objects."
-    linking@description: ?
+\S*relation: ! "Represents the fact that a relation exists between two or more objects."
     linking@\S*member: 2+
-
-\S*member: ! "Represents the fact that an object, such as an entry or a sense, is a member of a relation. Prefix '\S*' can be replaced by that role property followed by underscore."
-    linking@obverseListingOrder:
 
 relationType: ! "Represents one of possible values for the type of relation."
     linking@scopeRestriction: ?
@@ -196,3 +192,4 @@ typeTag: ! "An abbreviation, a code or some other string of text which identifie
 when: ! "Indicates the time period during which this etymological origin is valid."
 
 \S*explanation: ! "Represents a statement in the translation language which explains (but does not translate) the meaning of the headword. Prefix '\S*' can be represented by IETF language tag followed by underscore e.g. 'en_explanation'"
+\S*member: ! "Represents the fact that an object, such as an entry or a sense, is a member of a relation. Prefix '\S*' can be replaced by that role property followed by underscore."
