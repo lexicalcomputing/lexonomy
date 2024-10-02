@@ -175,7 +175,8 @@ class StoreClass {
       return ""
    }
 
-   getElementDisplayedName(elementName){
+   getElementDisplayedName(elementPath){
+      let elementName = elementPath.split(".").pop()
       let formatting = this.data.config.formatting.elements
       if(formatting && formatting[elementName] && formatting[elementName].name){
          return formatting[elementName].name
@@ -354,10 +355,14 @@ class StoreClass {
                            response.configs.formatting.elements[elementName] = {}
                         }
                      })
-                     Object.values(elements).forEach(element => {
+                     Object.entries(elements).forEach(([elementName, element]) => {
+                        element.name = elementName
                         if(typeof element.children == "undefined"){
                            element.children = []
                         }
+                        element.children.forEach(childName => {
+                           elements[childName].parent = elementName
+                        })
                         if(typeof element.min != "undefined"){
                            element.min = element.min * 1
                         }
@@ -547,6 +552,7 @@ class StoreClass {
                   if(this.data.entryRevisions.length){
                      this.loadEntryRevisions()
                   }
+                  this.loadEntryList()
                   this.updateFlagInEntryList(nvh)
                }
             })
@@ -642,20 +648,23 @@ class StoreClass {
       })
    }
 
-   loadSchemas(){
-      return window.connection.get({
-         url: `${window.API_URL}schemaitems.json`,
-         failMessage: "Could not load schema templates."
-      })
-   }
-
    loadFinalSchema(schemaItems){
       return window.connection.post({
          url: `${window.API_URL}schemafinal.json`,
-         data: {
-            schema_items: JSON.stringify(schemaItems)
-         },
+         data: {schema_items: JSON.stringify(schemaItems.schema_items)},
          failMessage: "Could not load final schema."
+      })
+   }
+
+   DMLexToSchema(modules, xlingual_langs=[], etymology_langs=[]){
+      return window.connection.get({
+         url: `${window.API_URL}dmlex_schema.json`,
+         data: {
+            modules: JSON.stringify(modules),
+            xlingual_langs: JSON.stringify(xlingual_langs),
+            etymology_langs: JSON.stringify(etymology_langs)
+         },
+         failMessage: "Could not transform DMLex to NVH schema."
       })
    }
 
@@ -985,8 +994,7 @@ class StoreClass {
    checkImportProgress(upload_file_path){
       return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/getImportProgress.json`,
-         data: {upload_file_path: upload_file_path},
-         failMessage: "Could not check the import progress."
+         data: {upload_file_path: upload_file_path}
       })
             .done(response => {
                if(response.finished){

@@ -9,7 +9,7 @@
    <div if={!Object.keys(state.warnings).length}
          class="nvh-validity lighten-4 green-text green">
       <span class="mr-4">●</span> valid
-      <small class="ml-auto grey-text mr-4">Ctrl+s or ⌘+s to save</small>
+      <small class="ml-auto grey-text mr-4">Ctrl+s or ⌘+s to save, Ctrl+space or ⌘+space for suggestions</small>
    </div>
    <div if={Object.keys(state.warnings).length}
          class="nvh-validity lighten-4 red-text red">
@@ -37,7 +37,7 @@
             debounceHandle: null,
             oldSourceCode: null,
             warnings: {},
-            autocompleteText: "",
+            autocompleteElementPath: "",
             suggestions: [],
             suggestionCursor: 0
          },
@@ -52,10 +52,23 @@
          onMounted(){
             let highlight = (editor) => {
                let code = editor.textContent || ""
-               editor.innerHTML = code.replaceAll(/(.*?:)(.*\n)/g, (match, element, value) => {
-                  let color = this.nvhStore.getElementColor(element.split(":")[0].trim())
-                  return `<span style="color: ${color};">${element}</span>${value}`
-               })
+               let codeWithPaths = this.nvhStore.replaceElementNamesWithPaths(code)
+               let pathWithIndent
+               let path
+               let name
+               let color
+               let nameWithColor
+               editor.innerHTML = codeWithPaths.split("\n").map(row => {
+                  if(row.match(/^(\s*)([a-zA-Z0-9-_.]+):(.*)$/)){
+                     [pathWithIndent, value] = row.split(/:(.*)/s) // split by first colon
+                     path = pathWithIndent.trim()
+                     name = path.split(".").pop()
+                     color = this.nvhStore.getElementColor(path)
+                     nameWithColor = pathWithIndent.replace(path, `<span style="color: ${color};">${name}</span>`)
+                     return `${nameWithColor}:${value}`
+                  }
+                  return row
+               }).join("\n")
             }
             this.editor = CodeJar(document.querySelector(".nvh-code-editor", this.root), highlight, {
                readOnly: this.props.readOnly,
@@ -75,14 +88,14 @@
 
          updateSourceCode(){
             this.validate(this.nvhData.entry)
-            this.editor.updateCode(this.nvhStore.jsonToNvh(this.nvhData.entry))
+            this.editor.updateCode(this.nvhStore.jsonToNvh(this.nvhData.entry, 0, false))
             this.update()
             this.updateLineNumbers()
          },
 
          editorOnKeyDown(evt){
             if(evt.keyCode == 9){  // tab
-               if(this.state.autocompleteText){
+               if(this.state.autocompleteElementPath){
                   evt.preventDefault()
                } else {
                   this.editor.handleTabCharacters(evt)
@@ -113,7 +126,7 @@
                   this.nvhData.elementsMatchStructure && this.nvhStore.saveEntry()
                }
             } else if((evt.keyCode == 13 && this.state.suggestions.length)  //enter
-                  || (evt.keyCode == 9 && this.state.autocompleteText)){ //tab
+                  || (evt.keyCode == 9 && this.state.autocompleteElementPath)){ //tab
                this.doAutocomplete()
             } else if(evt.keyCode == 38 && this.state.suggestions.length){  //up
                this.moveSuggestionsCursorUp()
@@ -152,7 +165,7 @@
                         if(parentElement){
                            childElements = this.nvhStore.getAvailableChildElements(parentElement)
                                  .filter(child => {
-                                    return child.startsWith(this.state.autocompleteQuery)
+                                    return child.split(".").pop().startsWith(this.state.autocompleteQuery)
                                  })
                         }
                      }
@@ -192,7 +205,7 @@
          showSuggestions(suggestions, row, col){
             this.state.suggestions = suggestions
             this.state.suggestionCursor = 0
-            $(".nvh-suggestions").html(this.state.suggestions.map(s => `<div>${s}</div>`))
+            $(".nvh-suggestions").html(this.state.suggestions.map(s => `<div>${s.split(".").pop()}</div>`))
                   .show()
                   .css({
                      top: `calc(${1.3125 * (row + 2)}rem + 0px)`,
@@ -243,14 +256,15 @@
             this.updateAutocomplete(elementName)
          },
 
-         updateAutocomplete(elementName){
-            this.state.autocompleteText = elementName.substring(this.state.autocompleteQuery.trim().length) + ": "
-            $(".nvh-autocomplete").html(this.state.autocompleteText)
+         updateAutocomplete(elementPath){
+            this.state.autocompleteElementPath = elementPath
+            let elementName = elementPath.split(".").pop()
+            $(".nvh-autocomplete").html(elementName.substring(this.state.autocompleteQuery.trim().length) + ": ")
          },
 
          hideAutocomplete(){
-            if(this.state.autocompleteText){
-               this.state.autocompleteText = ""
+            if(this.state.autocompleteElementPath){
+               this.state.autocompleteElementPath = ""
                $(".nvh-autocomplete").empty().hide()
             }
          },
@@ -258,9 +272,10 @@
          doAutocomplete(){
             let text = this.editor.toString()
             let pos = this.editor.save()
-            this.editor.updateCode(`${text.slice(0, pos.start)}${this.state.autocompleteText}${text.slice(pos.start)}`)
-            pos.start += this.state.autocompleteText.length
-            pos.end += this.state.autocompleteText.length
+            let autocompleteElementName = this.state.autocompleteElementPath.split(".").pop() + ": "
+            this.editor.updateCode(`${text.slice(0, pos.start - this.state.autocompleteQuery.length)}${autocompleteElementName}${text.slice(pos.start)}`)
+            pos.start += autocompleteElementName.length - this.state.autocompleteQuery.length
+            pos.end += autocompleteElementName.length - this.state.autocompleteQuery.length
             this.hideAutocomplete()
             this.hideSuggestions()
             this.onEditorUpdateDebounced()
@@ -318,7 +333,7 @@
          validate(entry){
             this.state.warnings = {}
             try{
-               this.nvhData.entry = entry || this.nvhStore.nvhToJson(this.editor.toString())
+               this.nvhData.entry = entry || this.nvhStore.nvhToJson(this.nvhStore.replaceElementNamesWithPaths(this.editor.toString()))
                this.nvhStore.validateAllElements()
                let allElements = this.nvhStore.getElementList()
                this.nvhStore.forEachElement((element, idx) => {

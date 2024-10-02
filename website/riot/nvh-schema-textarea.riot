@@ -27,7 +27,7 @@
 
          onSchemaInput(evt){
             let schema = evt.target.value.trim()
-            this.props.onChange && this.props.onChange(schema)
+            this.props.onInput && this.props.onInput(schema)
             this.validate(schema)
          },
 

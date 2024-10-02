@@ -1,6 +1,6 @@
 <new-dictionary>
    <loading-overlay if={state.isLoading}/>
-   <h1>
+   <h1 class="pageTitle">
       New dictionary <span class="step">Step {(state.step + "").substr(0, 1)} of 3</span>
    </h1>
    <div if={state.step == 1}>
@@ -19,35 +19,52 @@
             <span class="helper-text">Enter a human-readable title such as "My Esperanto Dictionary". You will be able to change this later.</span>
          </div>
       </div>
-      <div>
-         <label for="url">URL</label>
+
+      <div class="row">
+         <div class="input-field">
+            <label>URL</label>
+            <div class="urlWrapper mr-2"
+                  onclick={onUrlWrapperClick}>
+               <span class="grey-text">{state.baseUrl}</span>
+               <span class="input-field">
+                  <input id="url"
+                        type="text"
+                        class="inlineBlock urlInput"
+                        value={state.url}
+                        required
+                        minlength="5"
+                        oninput={onUrlInput}
+                        onkeyup={onKeyUp}/>
+               </span>
+            </div>
+            <i if={state.isCheckingUrl}
+                  class="material-icons spin grey-text">autorenew</i>
+            <template if={!state.isCheckingUrl}>
+               <span if={state.isUrlValid}
+                     class="green-text">valid</span>
+                <span if={state.isUrlInvalid}
+                     class="red-text">invalid</span>
+            </template>
+            <div class="urlHelperText">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
+         </div>
       </div>
 
-      <div class="row mb-8">
-         <div style="display: inline-flex; align-items: baseline; border: 1px solid black; position: relative; padding-left: 10px; height: 48px;"
-               onclick={onUrlWrapperClick}>
-            <span class="grey-text">{state.baseUrl}</span>
-            <span class="input-field"
-                  style="margin-top: 0; margin-bottom: 0;">
-               <input id="url"
-                     type="text"
-                     class="validate inlineBlock"
-                     value={state.url}
-                     required
-                     minlength="5"
-                     pattern="[a-zA-Z0-9\-_]*"
-                     oninput={onUrlInput}
-                     onkeyup={onKeyUp}
-                     style="max-width: 300px;border: none;outline: none; padding-left: 5px;background-color: unset;"/>
-            </span>
+      <div class="row">
+         <div class="input-field">
+            <input type="text"
+                  id="language"
+                  class="autocomplete"
+                  placeholder="Type to search"
+                  value={state.language.label}
+                  style="width:300px">
+            <label for="language">Main language</label>
          </div>
-         <div style="color: rgba(0,0,0,0.54);font-size: 0.7rem;">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
       </div>
 
       <br>
       <div>
          <label>Size limitation</label>
-         <div style="color: rgba(0,0,0,0.54)">
+         <div class="grey-text">
             Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
          </div>
       </div>
@@ -96,25 +113,46 @@
    <div if={state.step == "3_empty"}>
       <div class="row mb-4">
          <h3 class="grey-text mb-4">Entry structure</h3>
-         <div class="grey-text">Chose modules you want to use in your dictionary. You can change this later.</div>
-               <nvh-schema selected-modules={state.selectedModules}
-                     on-schema-loaded={onSchemaLoaded}
-               on-schema-change={onSchemaChange}
-               on-modules-change={onModulesChange}/>
+         <div class="grey-text mb-4">Choose entry structure from predefined modules or use your own schema. You can change this later.<i class="tooltipped material-icons tiny" data-tooltip="The entry structure can be edited in Configuration - Entry settings - Structure.">help_outline</i></div>
+         <ui class="tabs mb-0">
+            <li class="tab {state.structureTab == "dmlex" ? "active" : ""}">
+               <a onclick={onStructureTabClick.bind(this, "dmlex")}>DMLex standard modules</a>
+            </li>
+            <li class="tab {state.structureTab == "nvhSchema" ? "active" : ""}">
+               <a onclick={onStructureTabClick.bind(this, "nvhSchema")}>Custom NVH schema</a>
+            </li>
+         </ui>
+         <div class="grey lighten-5 p-6">
+            <div if={state.structureTab == "dmlex"}>
+               <nvh-schema on-change={onDMLexModulesChange}
+                     on-schema-change={onDMLexSchemaChange}/>
 
-         <div class="row">
-            <div class="input-field">
-               <label class="checkbox">
-                  <input id="addExamples"
-                        type="checkbox"
-                        checked="checked">
-                  <span>
+               <div class="row pt-4 mt-8 borderTop">
+                  <div class="input-field mb-0">
+                     <label class="checkbox">
+                        <input id="addExamples"
+                              type="checkbox"
+                              checked="checked">
+                        <span>
                            Add example entries
                         </span>
                      </label>
                   </div>
                </div>
             </div>
+
+            <div if={state.structureTab == "nvhSchema"}>
+               <div class="input-field"
+                     style="max-width: 500px;">
+                  <nvh-schema-textarea riot-value={state.customNvhSchema}
+                        on-input={onCustomNvhSchemaInput}
+                        on-valid-change={onCustomNvhSchemaValidChange}/>
+                  <label>your NVH schema</label>
+               </div>
+            </div>
+         </div>
+
+      </div>
       <div class="mt-8">
          <div if={state.errorMessage != ""}
                class="section">
@@ -162,7 +200,22 @@
                      class="validate"
                      required
                      oninput={onHeadwordInput}/>
-               <label for="title">Headword element</label>
+               <label for="title">Headword element *</label>
+            </div>
+         </div>
+         <div class="row">
+            <div class="input-field mb-0">
+               <label class="checkbox">
+                  <input id="deduplicate"
+                        type="checkbox">
+                  <span>
+                     Deduplicate
+                       <span class="hint tooltipped"
+                           data-tooltip="Remove duplicities from the data. This may slow down the import.">
+                        <i class="material-icons">help_outline</i>
+                    </span>
+                  </span>
+               </label>
             </div>
          </div>
       </div>
@@ -193,17 +246,32 @@
    <script>
       export default {
          state: {
-            step: 1,
+            step: "1",
             title: "",
             url: "",
             isLoading: true,
             errorMessage: "",
             baseUrl: "https://www.lexonomy.eu/",
-            finalSchema: null,
-            selectedModules: [],
+            DMLexSchema: null,
             file: null,
             headword: null,
-            isNextBtnEnable: false
+            isNextBtnEnable: false,
+            isCheckingUrl: false,
+            isUrlValid: true,
+            isUrlInvalid: false,
+            checkUrlRequest: null,
+            language: {
+               value: "",
+               label: ""
+            },
+            structureTab: "dmlex",
+            customNVHSchema: "",
+            DMLexModules: [],
+            isCustomNvhSchemaValid: null
+         },
+
+         onBeforeMount(){
+            window.structureEditorStore.reset()
          },
 
          onMounted() {
@@ -221,10 +289,8 @@
 
          onUpdated(){
             if(this.state.step == 1){
-               $("#title").focus()
                this.refreshBtnNextDisabled()
-            } else if(this.state.step == "3_empty"){
-               this.refreshMakeEmptyDictButtonDisabled()
+               this.initLanguageAutocomplete()
             } else if(this.state.step == "3_upload"){
                this.refreshMakeDictFromFileButtonDisabled()
             }
@@ -240,24 +306,26 @@
             }
          },
 
-         onModulesChange(modules){
-            this.state.selectedModules = modules
-            this.update()
+         onDMLexSchemaChange(DMLexSchema, DMLexXlingualLanguages){
+            this.update({
+               DMLexSchema: DMLexSchema,
+               DMLexXlingualLanguages: DMLexXlingualLanguages
+            })
+         },
+
+         onDMLexModulesChange(DMLexModules, DMLexXlingualLanguages, DMLexEtymologyLanguages){
+            this.state.DMLexModules = DMLexModules
+            this.state.DMLexXlingualLanguages = DMLexXlingualLanguages
+            this.state.DMLexEtymologyLanguages = DMLexEtymologyLanguages
+         },
+
+         onCustomNvhSchemaInput(nvhSchema){
+            this.state.customNvhSchema = nvhSchema
             this.refreshMakeEmptyDictButtonDisabled()
          },
 
-         onSchemaLoaded(schemas){
-            if(!this.state.selectedModules.length){
-               this.state.selectedModules = schemas.filter(schema => schema.checked || schema.required)
-                     .map(schema => schema.key.split(".").pop())
-               this.update()
-               this.refreshMakeEmptyDictButtonDisabled()
-            }
-         },
-
-         onSchemaChange(schema){
-            this.state.selectedModules = schema.filter(s => s.checked).map(s => s.key)
-            this.update()
+         onCustomNvhSchemaValidChange(isValid){
+            this.state.isCustomNvhSchemaValid = isValid
             this.refreshMakeEmptyDictButtonDisabled()
          },
 
@@ -279,6 +347,9 @@
 
          onChangeStepClick(step){
             this.update({step: step})
+            if(step == 1){
+               $("#title").focus()
+            }
          },
 
          onTitleInput(evt){
@@ -288,6 +359,7 @@
 
          onUrlInput(evt){
             this.state.url = evt.target.value
+            this.checkUrl()
             this.refreshBtnNextDisabled()
          },
 
@@ -306,23 +378,48 @@
          },
 
          onCreateEmptyDictionaryClick(event) {
-            if(this.state.title){
-               this.update({isLoading: true})
-               this.store.createDictionary({
-                  title: this.state.title,
-                  url: this.state.url,
-                  schemaKeys: JSON.stringify(this.state.selectedModules),
-                  addExamples: $("#addExamples").is(":checked")
-               })
-                     .done(response => {
-                        if (response.success) {
-                           route("/" + response.url)
-                        } else {
-                           this.state.errorMessage = response.error
-                           this.update({isLoading: false})
-                        }
-                     })
+            this.update({isLoading: true})
+            let data = {
+               title: this.state.title,
+               url: this.state.url,
+               language: this.state.language.value
             }
+            if(this.state.structureTab == "dmlex"){
+               Object.assign(data, {
+                  addExamples: $("#addExamples").is(":checked"),
+                  dmlex: true,
+                  jsonSchema: JSON.stringify({
+                     tab: "dmlex",
+                     root: this.state.DMLexSchema.root,
+                     elements: this.state.DMLexSchema.elements,
+                     modules: this.state.DMLexModules,
+                     xlingual_langs: this.state.DMLexXlingualLanguages,
+                     etymology_langs: this.state.DMLexEtymologyLanguages
+                  })
+               })
+            } else {
+               let {elements, root} = window.structureEditorStore.nvhToStructure(this.state.customNvhSchema)
+               Object.assign(data, {
+                  jsonSchema: JSON.stringify({
+                     tab: "custom",
+                     root: root,
+                     elements: elements,
+                     modules: []
+                  })
+               })
+            }
+            this.store.createDictionary(data)
+                  .done(response => {
+                     if (response.success) {
+                        route("/" + response.url)
+                     }
+                  })
+                  .always(response => {
+                     if(!response || !response.success){
+                        this.state.errorMessage = response.error || "Unknown error"
+                        this.update({isLoading: false})
+                     }
+                  })
          },
 
          onCreateDictionaryFromFileClick(event) {
@@ -330,9 +427,7 @@
                this.update({isLoading: true})
                var fd = new FormData()
                fd.append("filename", this.state.file)
-               if ($("#deduplicate").is(":checked")){
-                  fd.append("deduplicate", "on")
-               }
+               fd.append("deduplicate", $("#deduplicate").is(":checked"))
                fd.append("title", this.state.title)
                fd.append("url", this.state.url)
                fd.append("hwNode", this.state.headword)
@@ -343,6 +438,7 @@
                })
                      .done(response => {
                         if (response.success) {
+                           this.state.newDictId = response.url
                            this.checkImportProgress(response.upload_file_path)
                         }
                      })
@@ -355,6 +451,11 @@
             }
          },
 
+         onStructureTabClick(structureTab){
+            this.update({structureTab: structureTab})
+            this.refreshMakeEmptyDictButtonDisabled()
+         },
+
          checkImportProgress(upload_file_path){
             this.store.checkImportProgress(upload_file_path)
                   .done(response => {
@@ -364,14 +465,7 @@
                         this.update({isLoading: false})
                      } else {
                         if(response.finished){
-                           if (response.success) {
-                              route("/" + response.url)
-                           } else {
-                              this.update({
-                                 errorMessage: response.error.join(", "),
-                                 isLoading: false
-                              })
-                           }
+                           route("/" + this.state.newDictId)
                         } else {
                            this.state.timeoutHandle = setTimeout(this.checkImportProgress.bind(this, response.upload_file_path), 2000)
                         }
@@ -379,14 +473,61 @@
                   })
          },
 
+         checkUrl(){
+            this.state.isUrlValid = false
+            this.state.checkUrlRequest && this.state.checkUrlRequest.abort()
+            this.checkUrlDebounceTimer && clearTimeout(this.checkUrlDebounceTimer)
+            if(!this.state.url.match(/^[a-zA-Z0-9\-_]+$/)){
+               this.state.isUrlInvalid = true
+               this.update()
+            } else{
+               this.checkUrlDebounceTimer = setTimeout(() => {
+                  clearTimeout(this.checkUrlDebounceTimer)
+                     this.update({isCheckingUrl: true})
+                     this.store.isDictionaryUrlTaken(this.state.url)
+                           .done(response => {
+                              this.state.isUrlValid = !response.success
+                              this.state.isUrlInvalid = response.success
+                           })
+                           .always(response => {
+                              this.state.checkUrlRequest = null
+                              this.update({isCheckingUrl: false})
+                              this.refreshBtnNextDisabled()
+                           })
+               }, 200)
+            }
+         },
+
+         initLanguageAutocomplete(){
+            $("#language").autocomplete({
+               data: this.store.data.siteconfig.langs.map(lang => {
+                  return {
+                     value: lang.code,
+                     label: lang.lang
+                  }
+               }),
+               onAutocomplete: language => {
+                  this.state.language = language
+                  this.refreshBtnNextDisabled()
+               }
+            })
+         },
+
          refreshBtnNextDisabled(){
             this.state.isNextBtnEnable = this.state.title != ""
-                  && this.state.url.match(/^[a-zA-Z0-9\-_]+$/)
+                  && this.state.language.value != ""
+                  && this.state.isUrlValid
             $("#btnNext", this.root).toggleClass("disabled", !this.state.isNextBtnEnable)
          },
 
          refreshMakeEmptyDictButtonDisabled(){
-            $("#makeEmptyDictButton", this.root).toggleClass("disabled", !this.state.selectedModules.length)
+            let disabled = false
+            if(this.state.structureTab != "dmlex"){
+               disabled = !this.state.customNvhSchema
+                     || (this.state.customNvhSchema + "").trim() == ""
+                     || !this.state.isCustomNvhSchemaValid
+            }
+            $("#makeEmptyDictButton", this.root).toggleClass("disabled", disabled)
          },
 
          refreshMakeDictFromFileButtonDisabled(){
@@ -396,14 +537,33 @@
    </script>
 
    <style type="scss">
-      nvh-schema{
-         background-color: whitesmoke;
-         padding: 1.5rem;
-      }
       .step{
          font-size: 0.85rem;
          color: #b8b8b8;
          text-transform: none;
+      }
+      .urlWrapper{
+         display: inline-flex;
+         align-items: baseline;
+         border: 1px solid black;
+         position: relative;
+         padding-left: 10px;
+         height: 2.5rem;
+         .input-field{
+            margin-top: 0;
+            margin-bottom: 0;
+            input{
+               max-width: 300px;
+               padding-left: 5px;
+               border: 0px !important;
+               outline: 0px !important;
+               background: transparent!important;
+            }
+         }
+      }
+      .urlHelperText{
+         color: rgba(0,0,0,0.54);
+         font-size: 0.7rem;
       }
       .emptyOrUpload{
          display: inline-flex;

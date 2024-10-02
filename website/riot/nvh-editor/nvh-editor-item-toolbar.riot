@@ -54,13 +54,16 @@
             if(this.state.element){
                let siblings = this.state.element.parent ? this.state.element.parent.children : []
                this.state.isDragDisabled = this.state.element.name == this.nvhData.rootElement
-               this.state.isAddDisabled = !this.nvhStore.getAvailableChildElements(this.state.element).length && (!this.state.element.parent || !this.nvhStore.getAvailableChildElements(this.state.element.parent).length)
-               this.state.isDuplicationDisabled = !this.nvhStore.isElementDuplicationAllowed(this.state.element),
-               this.state.isRemovalDisabled = !this.nvhStore.isElementRemovalAllowed(this.state.element),
-               this.state.isMoveUpDisabled = siblings.indexOf(this.state.element) == 0
-                     && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, -1),
-               this.state.isMoveDownDisabled = siblings.indexOf(this.state.element) == siblings.length -1
-                     && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, 1)
+               this.state.isAddDisabled = !this.nvhStore.getAvailableChildElements(this.state.element).length
+                     && (!this.state.element.parent || !this.nvhStore.getAvailableChildElements(this.state.element.parent).length)
+               this.state.isDuplicationDisabled = !this.nvhStore.isElementDuplicationAllowed(this.state.element)
+               this.state.isRemovalDisabled = !this.nvhStore.isElementRemovalAllowed(this.state.element)
+               this.state.isMoveUpDisabled = !this.state.element.parent
+                     || (siblings.indexOf(this.state.element) == 0
+                           && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, -1))
+               this.state.isMoveDownDisabled = !this.state.element.parent
+                     || (siblings.indexOf(this.state.element) == siblings.length -1
+                           && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, 1))
                this.state.isStyleDisabled = !this.nvhStore.getElementConfig(this.state.element.name)
             }
          },
