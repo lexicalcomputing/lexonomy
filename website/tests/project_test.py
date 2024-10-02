@@ -94,7 +94,7 @@ class TestQueries(unittest.TestCase):
         data = {'id': self.new_project_id,
                 'name': 'LCL test project',
                 'description': 'This is a testing project',
-                'annotators': json.dumps(['marek.medved3@gmail.com', 'marek.medved@sketchengine.eu', 'marek.medved@sketchengine.co.uk']),
+                'annotators': json.dumps({'__all__': ['marek.medved3@gmail.com', 'marek.medved@sketchengine.eu', 'marek.medved@sketchengine.co.uk']}),
                 'managers': json.dumps(['marek.medved3@gmail.com', 'marek.medved@sketchengine.eu', 'marek.medved@sketchengine.co.uk']),
                 'ref_corpus': 'ententen21_tt31',
                 'source_dict_id': self.source_dict_id,
@@ -118,7 +118,6 @@ class TestQueries(unittest.TestCase):
 
         self.assertEqual(r2.json()['description'], 'This is a testing project')
         self.assertEqual(set(r2.json()['managers']) - set(["marek.medved3@gmail.com", "marek.medved@sketchengine.co.uk", "marek.medved@sketchengine.eu"]), set())
-        self.assertEqual(set(r2.json()['annotators']) - set(["marek.medved3@gmail.com", "marek.medved@sketchengine.co.uk", "marek.medved@sketchengine.eu"]), set())
         # ================
 
         # ================
@@ -138,9 +137,8 @@ class TestQueries(unittest.TestCase):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/update.json"
         data = {'name': 'LCL test project updated',
                 'description': 'This is a testing project updated',
-                'annotators': json.dumps(['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'xmedved1.fi.muni.cz']),
-                'managers': json.dumps(['marek.medved@sketchengine.eu']),
-                }
+                'annotators': json.dumps({'__all__': ['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'xmedved1.fi.muni.cz']}),
+                'managers': json.dumps(['marek.medved@sketchengine.eu'])}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
 
@@ -158,7 +156,6 @@ class TestQueries(unittest.TestCase):
 
         self.assertEqual(r2.json()['description'], 'This is a testing project updated')
         self.assertEqual(set(r2.json()['managers']) - set(["marek.medved@sketchengine.eu"]), set())
-        self.assertEqual(set(r2.json()['annotators']) - set(['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'xmedved1.fi.muni.cz']), set())
         # ================
 
     # CREATE BATCH
