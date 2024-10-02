@@ -228,26 +228,18 @@ def verifyLoginAndProjectAccess(email, sessionkey):
             configs['annotator_of'].append(r['project_id'])
     return ret, configs
 
-def getDmlLexSchemaItems(modules):
+def getDmlLexSchemaItems(modules, xlingual_langs, linking_relations, etymology_langs):
     with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r') as f:
-        schema, desc_dict = dmlex2schema.get_dmlex_schema(f, "entry", modules)
-        return schema, desc_dict
+        result, desc_dict = dmlex2schema.get_dmlex_schema(f, "entry", modules, xlingual_langs, linking_relations, etymology_langs)
+        schema = []
+        used_modules = set()
+        dmlex2schema.final_schema2str(result, schema, used_modules)
+        schema_json = {}
+        nvh_structure = nvh.parse_string(''.join(schema))
+        nvh_structure.build_json(schema_json)
 
-def getSchemaItems():
-    schema = []
-    with open(os.path.join(currdir, "dictTemplates", "schema.json")) as f:
-        schema = json.load(f)
-        for item in schema: # nvh readability optimization
-            item["nvh"] = "\n".join(item["nvh"])
-    return schema
+        return schema_json, desc_dict, list(used_modules)
 
-def mergeSchemaItems(keys):
-    all_schemas = getSchemaItems()
-    result_nvh = nvh(None)
-    for schema_item in all_schemas:
-        if schema_item["key"] in keys:
-            result_nvh.merge(nvh.parse_string(schema_item["nvh"]), [])
-    return result_nvh.dump_string()
 
 def deleteEntry(db, entryID, email):
     # tell my parents that they need a refresh:
@@ -279,18 +271,15 @@ def readEntry(db, configs, entryID):
     if row["json"] != "":
         json = row["json"]
     else:
-        json = nvh2json(nvh)
+        json = nvh2jsonDump(nvh)
     """
     if configs["subbing"]:
         nvh = addSubentryParentTags(db, entryID, nvh)
     """
     return entryID, nvh, json, row["title"]
 
-def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiography):
-    if (entryNvh == "" or not entryNvh) and entryJson != "":
-        entryNvh = json2nvh(entryJson)
-    if entryNvh != "" and (entryJson == "" or not entryJson):
-        entryJson = nvh2json(entryNvh)
+def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
+    entryJson = nvh2jsonDump(entryNvh)
     nvhParsed = nvh.parse_string(entryNvh)
     title = getEntryTitle(nvhParsed, configs["titling"])
     sortkey = getSortTitle(nvhParsed, configs["titling"])
@@ -334,7 +323,7 @@ def createEntry(dictDB, configs, entryID, entryNvh, entryJson, email, historiogr
     return entryID, entryNvh, feedback
 
 def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
-    entryJson = nvh2json(entryNvh)
+    entryJson = nvh2jsonDump(entryNvh)
     c = dictDB.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
     row = c.fetchone()
     if row["nvh"] == entryNvh:
@@ -389,7 +378,7 @@ def getEntryTitle(nvhParsed, titling, plaintext=False):
 
 def getEntryTitleID(dictDB, configs, entry_id, plaintext=False):
     eid, nvh, json, title = readEntry(dictDB, configs, entry_id)
-    return getEntryTitle(nvh2json(nvh), configs["titling"], plaintext)
+    return getEntryTitle(nvh2jsonDump(nvh), configs["titling"], plaintext)
 
 def getEntryHeadword(nvhParsed, headword_elem):
     ret = "?"
@@ -654,26 +643,30 @@ def get_gen_schema_elements(schema, schema_elements):
                                 're': schema[k].get('re', ''), 'children': schema[k].get('children', [])}
         get_gen_schema_elements(schema[k]["schema"], schema_elements)
 
-def get_schema_elements(nvh_node, elements):
-    elements[nvh_node.name] = {
-        "type": "string",
-        "min": 0,
-        "max": 0,
-        "values": [],
-        "re": "",
-        "children": [child.name for child in nvh_node.children]
-    }
-    for child in nvh_node.children:
-        get_schema_elements(child, elements)
+# def get_schema_elements(nvh_node, elements):
+#     elements[nvh_node.name] = {
+#         "type": "string",
+#         "min": 0,
+#         "max": 0,
+#         "values": [],
+#         "re": "",
+#         "children": [child.name for child in nvh_node.children]
+#     }
+#     for child in nvh_node.children:
+#         get_schema_elements(child, elements)
 
 def checkDictExists(dictID):
     if dictID in prohibitedDictIDs or dictExists(dictID):
         return True
     return False
 
-def initDict(dictID, title, lang, blurb, email):
-    with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
-        sql_schema = f.read()
+def initDict(dictID, title, lang, blurb, email, dmlex=False):
+    if dmlex:
+        with open(currdir + "/dictTemplates/dmlex.sqlite.schema", 'r') as f:
+            sql_schema = f.read()
+    else:
+        with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
+            sql_schema = f.read()
 
     conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], "dicts/" + dictID) + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/"), uri=True)
     conn.executescript(sql_schema)
@@ -691,7 +684,7 @@ def initDict(dictID, title, lang, blurb, email):
     return dictDB
 
 
-def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, addExamples=False, deduplicate=False,
+def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
              clean=False, bottle_file_object=None, hwNode=None):
     if title == "":
         title = "?"
@@ -702,32 +695,27 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
     if dictExists(dictID):
         return {'url': dictID, 'success': False, 'error': "The dict with the entered name already exists"}
     #init db schema
-    dictDB = initDict(dictID, title, lang, blurb, email)
+    dictDB = initDict(dictID, title, lang, blurb, email, dmlex)
 
     if not bottle_file_object:
         if nvh_schema_string:
-            final_schema = nvh_schema_string
-        elif schema_keys:
-            final_schema = mergeSchemaItems(schema_keys)
+            # DICTIONARY STRUCTURE
+            elements = {}
+            nvh_structure = nvh.parse_string(nvh_schema_string)
+            nvh_structure.build_json(elements)
+            structure = {"root": nvh_structure.children[0].name, "elements": elements}
+        elif json_schema:
+            structure = json.loads(json_schema)
         else:
             raise Exception('No schema provided')
-        schema_elements = []
-        schema_elements = [row.split(":")[0].strip() for row in final_schema.splitlines()]
-        schema_elements = list(filter(None, schema_elements))  #filter out empty strings
 
-        # DICTIONARY STRUCUTRE
-        elements = {}
-        nvh_structure = nvh.parse_string(final_schema).children[0]
-        get_schema_elements(nvh_structure, elements)
-
-        structure = {"root": nvh_structure.name, "elements": elements}
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
         # DICTIONARY FORMATTING
         formatting = {}
         with open(currdir + "/dictTemplates/styles.json", 'r') as f:
             styles = json.loads(f.read())
-            for key in elements.keys():
+            for key in structure['elements'].keys():
                 if styles.get(key):
                     formatting[key] = styles[key]
                 else:
@@ -735,16 +723,11 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
 
         # ADD EXAMPLES
-        if addExamples:
-            examples = []
-            with open("dictTemplates/examples.json", 'r') as f:
-                for example in json.loads(f.read()):
-                    rows = example["nvh"].splitlines()
-                    rows = filter(lambda row: row.split(":")[0].strip() in schema_elements, rows)  #only example elements included in schema
-                    example["nvh"] = "\n".join(rows)
-                    examples.append(example)
+        if dmlex and addExamples:
+            with open("dictTemplates/dmlex.entry.example.nvh", 'r') as f:
+                examples = filter_nodes(nvh2json(f.read()), structure['elements'].keys())
             for idx, example in enumerate(examples):
-                dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["doctype"], example["nvh"], nvh2json(example["nvh"]), example["title"], example["sortkey"], 0, 0, 0))
+                dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, 'entry', example["nvh"], json.dumps(example['json']), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
             dictDB.execute("UPDATE configs SET json=? WHERE id=?", (len(examples), 'entry_count'))
@@ -761,6 +744,34 @@ def makeDict(dictID, nvh_schema_string, schema_keys, title, lang, blurb, email, 
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
     return {'url': dictID, 'success':True, 'error': ''}
+
+
+def recur_filter(node, structure_nodes):
+    for item in node:
+        for key in list(item.keys()):
+            if not key.startswith('_'):
+                if item.get(key, False) and item[key][0]['_path'] not in structure_nodes:
+                    del item[key]
+                elif item.get(key, False):
+                    recur_filter(item[key], structure_nodes)
+
+
+def filter_nodes(examples_json, structure_nodes):
+    result = []
+    for entry in examples_json['entry']:
+        for key in list(entry.keys()):
+            if not key.startswith('_'):
+                if entry.get(key, False) and entry[key][0]['_path'] not in structure_nodes:
+                    del entry[key]
+                elif entry.get(key, False):
+                    recur_filter(entry[key], structure_nodes)
+        result.append({'json': {'entry': [entry], '_path': '', '_value': ''},
+                       'nvh': json2nvh_str({'entry': [entry], '_path': '', '_value': ''}),
+                       'doctype': 'enntry',
+                       "title": '<span class="headword">' + entry["_value"] + '</span>',
+                       'sortkey': entry["_value"]})
+    return result
+
 
 def attachDict(dictDB, dictID, users, dict_config):
     configs = readDictConfigs(dictDB)
@@ -1676,9 +1687,48 @@ def getDictStats(dictDB):
     res["needResave"] = r["needResave"]
     return res
 
+def combine_dmlex_schemas(old_sch_json, new_sch_json, xlingual_langs, linking_relations, etymology_langs):
+    """Find all custom nodes in old dmlex schema and add it to new dmlex schema if perents exists"""
+    stadard_dmlex_nodes, _, _ = getDmlLexSchemaItems(['all'], xlingual_langs, linking_relations, etymology_langs)
+    removed_nodes = {}
+    for old_node, old_value in old_sch_json.items():
+        if old_node not in new_sch_json.keys():
+            if old_node in stadard_dmlex_nodes.keys():
+                removed_nodes[old_node] = old_value
+            elif old_value['parent'] in new_sch_json.keys():
+                new_sch_json[old_node] = old_value
+                new_sch_json[old_value['parent']]['children'].append(old_node)
+            else:
+                removed_nodes[old_node] = old_value
+    return removed_nodes
+
+
+def updateDmLexSchema(current_schema, requested_modules, xlingual_langs, linking_relations, etymology_langs):
+    requested_schema_json, desc_dict, used_modules = getDmlLexSchemaItems(requested_modules, xlingual_langs, linking_relations, etymology_langs)
+
+    if sorted(current_schema.get('modules', [])) != sorted(requested_modules):
+        removed_nodes = combine_dmlex_schemas(current_schema['elements'], requested_schema_json, xlingual_langs, linking_relations, etymology_langs)
+        final_schema = requested_schema_json
+    else:
+        final_schema = current_schema['elements']
+
+    return final_schema, desc_dict, used_modules, removed_nodes
+
+
 def updateDictConfig(dictDB, dictID, configID, content):
+    if configID == 'structure':
+        if content.get('nvhSchema', False):
+            elements = {}
+            nvh_structure = nvh.parse_string(content['nvhSchema'])
+            nvh_structure.build_json(elements)
+            value = {"root": nvh_structure.children[0].name, "elements": elements}
+        elif content.get('jsonSchema', False):
+            value = content['jsonSchema']
+    else:
+        value = content
+
     dictDB.execute("DELETE FROM configs WHERE id=?", (configID, ))
-    dictDB.execute("INSERT INTO configs(id, json) VALUES (?, ?)", (configID, json.dumps(content)))
+    dictDB.execute("INSERT INTO configs(id, json) VALUES (?, ?)", (configID, json.dumps(value)))
     dictDB.commit()
 
     if configID == "ident":
@@ -1695,12 +1745,6 @@ def updateDictConfig(dictDB, dictID, configID, content):
             dictDB.execute("CREATE INDEX link ON linkables (txt)")
             dictDB.commit()
         return content, resaveNeeded
-    # elif configID == 'flagging':
-    #     if content['flags']:
-    #         addFlagToStructure(dictDB, content)
-    #     else:
-    #         deleteFlagFromStructure(dictDB)
-    #     return content, False
     else:
         return content, False
 
@@ -2015,7 +2059,7 @@ def flagEntry(dictDB, configs, entryID, flags, email, historiography):
         success = success and s
     dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
                                                                                                                                                   nvhParsed.dump_string(),
-                                                                                                                                                  nvh2json(nvhParsed),
+                                                                                                                                                  nvh2jsonDump(nvhParsed),
                                                                                                                                                   getEntryTitle(nvhParsed, configs["titling"]),
                                                                                                                                                   getSortTitle(nvhParsed, configs["titling"]),
                                                                                                                                                   0, 0, 0, entryID))
@@ -2945,15 +2989,31 @@ def dql2sqlite(query): # TODO search
     sql = "select distinct json_extract(entries.entry_data,'$.hw.lemma') from entries, json_tree(entries.entry_data) where " + parse_level(parsed_query) + " limit 10;"
     return sql
 
-def nvh2json(entryNvh):
+def nvh2jsonDump(entryNvh):
     if type(entryNvh) == str:
         jsonEntry = nvh2jsonNode(nvh.parse_string(entryNvh))
     else:
         jsonEntry = nvh2jsonNode(entryNvh)
     return json.dumps(jsonEntry)
 
+def nvh2json(entryNvh):
+    if type(entryNvh) == str:
+        jsonEntry = nvh2jsonNode(nvh.parse_string(entryNvh))
+    else:
+        jsonEntry = nvh2jsonNode(entryNvh)
+    return jsonEntry
+
 def nvh2jsonNode(nvhNode):
     data_obj = {}
+
+    p = nvhNode.parent
+    curr_path = [nvhNode.name]
+    while p and p.name!='':
+        curr_path.insert(0, p.name)
+        p = p.parent
+    parent_name = '.'.join(curr_path)
+    data_obj['_path'] = parent_name
+
     if nvhNode.value:
         data_obj['_value'] = nvhNode.value
     for c in nvhNode.children:
@@ -2964,17 +3024,22 @@ def nvh2jsonNode(nvhNode):
 
 def json2nvhLevel(jsonNode, nvhParent):
     for key,val in jsonNode.items():
-        if key != "_value":
+        if key != "_value" and key != "_path":
             for item in val:
                 indent = nvhParent.indent+"  " if nvhParent.parent else ""
                 value = item["_value"] if item.get("_value") else ""
-                newNode = nvh(nvhParent, indent, key, value)
-                newNode = json2nvhLevel(item, newNode)
+                newNode = json2nvhLevel(item, nvh(nvhParent, indent, key, value))
                 nvhParent.children.append(newNode)
     return nvhParent
+
+def json2nvh_str(jsonEntry):
+    if type(jsonEntry) == str:
+        jsonEntry = json.loads(jsonEntry)
+    entryNvh = json2nvhLevel(jsonEntry,nvh(None))
+    nvh_str = entryNvh.dump_string()
+    return nvh_str
 
 def json2nvh(jsonEntry):
     if type(jsonEntry) == str:
         jsonEntry = json.loads(jsonEntry)
-    entryNvh = json2nvhLevel(jsonEntry,nvh(None))
-    return entryNvh
+    return json2nvhLevel(jsonEntry,nvh(None))

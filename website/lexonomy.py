@@ -185,18 +185,13 @@ def sendfeedback():
 @get(siteconfig["rootPath"] + "dmlex_schema.json") # OK
 def dmlex_schema():
     try:
-        schema, desc_dict = ops.getDmlLexSchemaItems(request.query.modules)
-        return {"schema": schema, "desc_dict": desc_dict, "success": True}
-    except:
-        return {"schema": "", "desc_dict": "", "success": False}
-
-@get(siteconfig["rootPath"] + "schemaitems.json") # OK
-def schemaitems():
-    return {"items": ops.getSchemaItems()}
-
-@post(siteconfig["rootPath"] + "schemafinal.json") # OK
-def schemafinal():
-    return {"schemafinal": ops.mergeSchemaItems(json.loads(request.forms.schema_items))}
+        schema, desc_dict, used_modules = ops.getDmlLexSchemaItems(json.loads(request.query.modules),
+                                                                   json.loads(request.query.xlingual_langs) if request.query.xlingual_langs else [],
+                                                                   json.loads(request.query.linking_relations) if request.query.linking_relations else [],
+                                                                   json.loads(request.query.etymology_langs) if request.query.etymology_langs else [])
+        return {"elements": schema, "desc_dict": desc_dict, 'modules': used_modules, "root": "entry", "success": True}
+    except Exception as e:
+        return {"elements": "", "desc_dict": "", 'modules': [], "root": "", "success": False, "error": e}
 
 @post(siteconfig["rootPath"] + "schema_to_json.json") # OK
 def schema_to_json():
@@ -236,7 +231,7 @@ def entryupdate(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/entrycreate.json")
 @authDict(["canEdit"])
 def entrycreate(dictID, user, dictDB, configs):
-    adjustedEntryID, adjustedNvh, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, request.forms.json, user["email"], {})
+    adjustedEntryID, adjustedNvh, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, user["email"], {})
     result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
     if feedback:
         result["feedback"] = feedback
@@ -530,7 +525,7 @@ def makedictjson(user):
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
         if supported_formats.match(upload.filename):
             res = ops.makeDict(request.forms.url, None, None, request.forms.title,
-                               request.forms.language, "", user["email"],
+                               request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
                                deduplicate=True if request.forms.deduplicate=='true' else False,
                                clean=True if request.forms.clean=='true' else False,
@@ -539,8 +534,8 @@ def makedictjson(user):
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
     else:
-        res = ops.makeDict(request.forms.url, request.forms.nvhSchema, json.loads(request.forms.schemaKeys),
-                           request.forms.title, request.forms.language, "", user["email"],
+        res = ops.makeDict(request.forms.url, request.forms.nvhSchema, request.forms.jsonSchema,
+                           request.forms.title, request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=request.forms.addExamples=="true",
                            deduplicate=False, clean=False, bottle_file_object=None, hwNode=None)
     return res
@@ -951,23 +946,29 @@ def configread(dictID, user, dictDB, configs):
     if request.forms.id == 'ske':
         config_data = configs.get('ske', None)
     else:
-        if request.forms.id == 'structure' and 'structure' not in configs:
-            config_data = configs['structure']
-        else:
-            config_data = configs[request.forms.id]
+        config_data = configs[request.forms.id]
     if request.forms.id == 'ident':
         config_data['langs'] = ops.get_iso639_1()
     if request.forms.id == 'titling':
         config_data['locales'] = ops.get_locales()
     return {"success": True, "id": request.forms.id, "content": config_data}
 
+@get(siteconfig["rootPath"]+"<dictID>/dmlexschemaupdate.json")
+@authDict(["canConfig"])
+def dmlexschemaupdate(dictID, user, dictDB, configs):
+    try:
+        final_schema, desc_dict, used_modules, removed_nodes = ops.updateDmLexSchema(configs['structure'], json.loads(request.query.modules),
+                                                                                     json.loads(request.query.xlingual_langs) if request.query.xlingual_langs else [],
+                                                                                     json.loads(request.query.linking_relations) if request.query.linking_relations else [],
+                                                                                     json.loads(request.query.etymology_langs) if request.query.etymology_langs else [])
+        return {"elements": final_schema, "desc_dict": desc_dict, 'modules': used_modules, 'removed_nodes': removed_nodes, 'root': 'entry', "success": True}
+    except Exception as e:
+        return {"success": False, "elements": {}, "desc_dict": '', 'modules': [], 'removed_nodes':{}, 'root': 'entry', "error": str(e)}
+
 @post(siteconfig["rootPath"]+"<dictID>/dictconfigupdate.json")
 @authDict(["canConfig"])
 def configupdate(dictID, user, dictDB, configs):
-    if request.forms.id == 'ske':
-        adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', json.loads(request.forms.content))
-    else:
-        adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, request.forms.id, json.loads(request.forms.content))
+    adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, request.forms.id, json.loads(request.forms.content))
 
     if resaveNeeded:
         configs = ops.readDictConfigs(dictDB)

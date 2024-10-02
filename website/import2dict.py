@@ -324,7 +324,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         while import_entries:
             entry = import_entries.pop(0)
             entry_str = entry.dump_string()
-            entry_json = ops.nvh2json(entry)
+            entry_json = ops.nvh2jsonDump(entry)
 
             if entry_inserted >= max_import:
                 limit_reached = True

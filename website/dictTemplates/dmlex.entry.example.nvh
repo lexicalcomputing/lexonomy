@@ -1,0 +1,57 @@
+entry: lens
+  homograph: 1
+  pos: N
+  label: label
+  pronunciation: lɛns
+    transcription: lenz
+      scheme: IPA
+    label: google
+  form: lenses
+    tag: pl
+    label: label
+    pronunciation: lenziz
+      transcription: lenziz
+        scheme: IPA
+    label: google
+  sense: camera lens
+    definition: assembly of optical lenses used to direct light on camera sensor
+      definitionType: type1
+      headword: lenses
+      collocate: optical
+        lemma: optical
+        label: label
+        id: 1
+    de_translation: kameraobjektiv
+      pod: N
+      placeholder: objektiv
+    de_explanation: Anordnung von Linsen, die verwendet werden, um Licht auf den Kamerasensor zu lenken
+    example: For portrait shooting I bought new 50mm camera lens for my Sony camera.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      label: label
+      headword: lens
+      de_exampleTranslation: Für Porträtaufnahmen habe ich ein neues 50-mm-Kameraobjektiv für meine Sony-Kamera gekauft.
+        soundFile: de_audio_file.mp3
+        label: label
+        headword: Kameraobjektiv
+        collocate: Kamera
+          lemma: lamera
+          label: label
+          id: 2345ABGD
+      collocate: camera
+        lemma: camera
+        label: label
+        id: 123ABC
+    id: 1244HGH
+    label: medicine
+  id: 74569FHJ
+  placeholder: lens
+  etymology:
+    etymon: b2000
+      when: 600-1500
+      note: note
+      lat-med_etymonUnit: lēns
+        etymonTranslation: lentil
+        pos: N
+        reconstructed: latin
