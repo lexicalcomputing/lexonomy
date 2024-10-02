@@ -155,15 +155,15 @@ class ConfigurationCheckerClass {
    check_titling(config){
       let result = []
       if(config.titling){
-         if(config.titling.headword && !this.isElementInStrucutre(config.titling.headword, config)){
+         if(config.titling.headword && !this.isElementInStructure(config.titling.headword, config)){
             result.push(["titling", "error", `Headword element "${config.titling.headword}" not found in entry structure.`])
          }
-         if(config.titling.headwordSorting && !this.isElementInStrucutre(config.titling.headwordSorting, config)){
+         if(config.titling.headwordSorting && !this.isElementInStructure(config.titling.headwordSorting, config)){
             result.push(["titling", "error", `Headword sorting element "${config.titling.headwordSorting}" not found in entry structure.`])
          }
          if(config.titling.headwordAnnotationType == "simple" && this.isNonEmptyArray(config.titling.headwordAnnotations)){
             config.titling.headwordAnnotations.forEach(elementName => {
-               if(!this.isElementInStrucutre(elementName, config)){
+               if(!this.isElementInStructure(elementName, config)){
                   result.push(["titling", "warning", `Headword annotation element "${elementName}" not found in entry structure.`])
                }
             })
@@ -176,7 +176,7 @@ class ConfigurationCheckerClass {
                config.titling.headwordAnnotationsAdvanced.match(regex)
                      .map(x => x.slice(2, -1))
                      .forEach(elementName => {
-                        if(!this.isElementInStrucutre(elementName, config)){
+                        if(!this.isElementInStructure(elementName, config)){
                            result.push(["titling", "error", `Element "${elementName}" in Headword annotation template not found in entry structre.`])
                         }
                      })
@@ -191,13 +191,22 @@ class ConfigurationCheckerClass {
       if(config.searchability){
          if(this.isNonEmptyArray(config.searchability.searchElements)){
             config.searchability.searchElements.forEach(elementName => {
-               if(!this.isElementInStrucutre(elementName, config)){
+               if(!this.isElementInStructure(elementName, config)){
                   result.push(["searchability", "warning", `Searchable element "${elementName}" not found in entry structure.`])
                }
             })
          }
          if(this.isNonEmptyArray(config.searchability.templates)){
             config.searchability.templates.forEach(searchTemplate => {
+               let error = ""
+               try{
+                  this.store.advancedSearchParseQuery(searchTemplate.template)
+               } catch(e){
+                  error = e
+               }
+               if(error){
+                  result.push(["searchability", "error", `Search template "${searchTemplate.label}: ${searchTemplate.template}" is not valid: "${error}".`])
+               }
                if(searchTemplate.template.toLowerCase().indexOf("%query%") == -1){
                   result.push(["searchability", "warning", `Search template "${searchTemplate.label}: ${searchTemplate.template}" does not contain string "%query%".`])
                }
@@ -211,7 +220,7 @@ class ConfigurationCheckerClass {
       let result = []
       if(config.links){
          Object.entries(config.links).forEach(([linkingElement, elementConfig]) => {
-            if(!this.isElementInStrucutre(linkingElement, config)){
+            if(!this.isElementInStructure(linkingElement, config)){
                result.push(["links", "warning", `Linking element "${linkingElement}" not found in entry structure.`])
             }
             if(!elementConfig.identifier){
@@ -224,7 +233,7 @@ class ConfigurationCheckerClass {
                      elementConfig.identifier.match(regex)
                            .map(x => x.slice(2, -1))
                            .forEach(elementName => {
-                              if(!this.isElementInStrucutre(elementName, config)){
+                              if(!this.isElementInStructure(elementName, config)){
                                  result.push(["links", "error", `Element "${elementName}" in Identifier field for Linking element "${linkingElement}" not found in entry structre.`])
                               }
                            })
@@ -246,29 +255,29 @@ class ConfigurationCheckerClass {
             config.ske.concquery.match(regex)
                   .map(x => x.slice(2, -1))
                   .forEach(elementName => {
-                     if(!this.isElementInStrucutre(elementName, config)){
+                     if(!this.isElementInStructure(elementName, config)){
                         result.push(["ske", "error", `Element "${elementName}" in Concordance query not found in entry structre.`])
                      }
                })
          }
 
-         if(config.ske.collocationContainer && !this.isElementInStrucutre(config.ske.collocationContainer, config)){
+         if(config.ske.collocationContainer && !this.isElementInStructure(config.ske.collocationContainer, config)){
             result.push(["ske", "error", `Collocation container "${config.ske.collocationContainer}" not found in entry structure.`])
          }
-         if(config.ske.definitionContainer && !this.isElementInStrucutre(config.ske.definitionContainer, config)){
+         if(config.ske.definitionContainer && !this.isElementInStructure(config.ske.definitionContainer, config)){
             result.push(["ske", "error", `Definition container "${config.ske.definitionContainer}" not found in entry structure.`])
          }
          if(this.isNonEmptyArray(config.ske.searchElements)){
             config.ske.searchElements.forEach(elementName => {
-               if(!this.isElementInStrucutre(elementName, config)){
+               if(!this.isElementInStructure(elementName, config)){
                   result.push(["ske", "warning", `Additional search element "${elementName}" not found in entry structure.`])
                }
             })
          }
-         if(config.ske.exampleContainer && !this.isElementInStrucutre(config.ske.exampleContainer, config)){
+         if(config.ske.exampleContainer && !this.isElementInStructure(config.ske.exampleContainer, config)){
             result.push(["ske", "error", `Example container "${config.ske.exampleContainer}" not found in entry structure.`])
          }
-         if(config.ske.thesaurusContainer && !this.isElementInStrucutre(config.ske.thesaurusContainer, config)){
+         if(config.ske.thesaurusContainer && !this.isElementInStructure(config.ske.thesaurusContainer, config)){
             result.push(["ske", "error", `Thesaurus container "${config.ske.thesaurusContainer}" not found in entry structure.`])
          }
       }
@@ -280,8 +289,13 @@ class ConfigurationCheckerClass {
       if(!config.structure){
          result.push(["structure", "error", `Missing structure definition.`])
       } else {
-         if(!this.isElementInStrucutre(config.structure.root, config)){
+         if(!config.structure.root){
+            result.push(["structure", "error", `Root element is not defined in entry structure.`])
+         } else if(!this.isElementInStructure(config.structure.root, config)){f
             result.push(["structure", "error", `Root element not found in structure definition.`])
+         }
+         if(!config.structure.elements){
+            result.push(["structure", "error", `No element defined in entry structure.`])
          }
       }
       return result
@@ -290,7 +304,7 @@ class ConfigurationCheckerClass {
    check_flagging(config){
       let result = []
       if(config.flagging.flag_element){
-         if(!this.isElementInStrucutre(config.flagging.flag_element, config)){
+         if(!this.isElementInStructure(config.flagging.flag_element, config)){
             result.push(["flagging", "error", `Flag element "${config.flagging.flag_element}" not found in entry structure.`])
          }
          let flags = config.flagging.flags
@@ -331,7 +345,8 @@ class ConfigurationCheckerClass {
    }
 
 
-   isElementInStrucutre(elementName, config){
+   isElementInStructure(elementName, config){
+      // TODO ignore elements prefixed with __lexonomy
       return config.structure && config.structure.elements && !!config.structure.elements[elementName]
    }
 
