@@ -84,7 +84,7 @@
          },
 
          getElementColor(){
-            let idx = Object.keys(this.structureStore.data.structure.elements).indexOf(this.props.element.name)
+            let idx = Object.keys(this.structureStore.data.structure.elements).indexOf(this.props.element.path)
             return window.nvhStore.getColorByIndex(idx)
          },
 

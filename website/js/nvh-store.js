@@ -158,7 +158,7 @@ class NVHStoreClass {
          if(window.store.data.entryId == "new"){
             this.data.entry = this._getNewEntry()
          } else{
-            this.data.entry = this.nvhToJson(window.store.data.entry.nvh)
+            this.data.entry = this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
          }
          this.validateAllElements()
          this.history.addState()
@@ -222,8 +222,8 @@ class NVHStoreClass {
    }
 
    parseNvhLine(line, idx, lastIndent){
-      if(!line.match(/^(([ ]{2})*)([a-zA-Z0-9-_]+):(.*)$/)){
-         if(line.match(/^([ ]([  ]{2})*)[^ ]*$/)){
+      if(!line.match(/^(([ ]{2})*)([a-zA-Z0-9-_.]+):(.*)$/)){
+         if(line.match(/^( {2})* [^ ]/)){
             throw `Invalid indent on line ${idx + 1}: '${line.trim()}'.`
          } else if(line.match(/^[^:]*$/)){
             throw `Missing colon on line ${idx + 1}: '${line.trim()}.`
@@ -250,10 +250,11 @@ class NVHStoreClass {
       }
    }
 
-   jsonToNvh(element, indent=0){
-      let nvh = `${" ".repeat(indent * 2)}${element.name}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.nvhNewLine)}\n`
+   jsonToNvh(element, indent=0, fullPath=true){
+      let key = fullPath ? element.name : element.name.split(".").pop()
+      let nvh = `${" ".repeat(indent * 2)}${key}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.nvhNewLine)}\n`
          element.children && element.children.forEach(child => {
-         nvh += this.jsonToNvh(child, indent + 1)
+         nvh += this.jsonToNvh(child, indent + 1, fullPath)
       }, this)
       return nvh
    }
@@ -294,14 +295,16 @@ class NVHStoreClass {
          row = row.replaceAll("\t", "  ")
          if(row.trim() != ""){
             line = this.parseNvhLine(row, idx, el ? el.indent : 0)
+            let parent = getParent(line.indent)
             el = {
                id: this._getNewElementId(),
                name: line.name,
                value: line.value.replaceAll(this.const.nvhNewLine, "\n"),
                indent: line.indent,
-               parent: getParent(line.indent),
+               parent: parent,
                children: [],
-               warnings: []
+               warnings: [],
+               path: parent ? `${parent.path}.${line.name}` : line.name
             }
             if(idx == 0){
                json = el
@@ -387,6 +390,39 @@ class NVHStoreClass {
       }
       addElementAndChildren(this.nvhSchemaToJSON(nvhSchema))
       return nvh
+   }
+
+   replaceElementNamesWithPaths(nvh){
+      let lastIndent
+      let lastParentPath
+      let lastElementName
+      let elementPath
+      let nameWithIndent
+      let value
+      let name
+      let whiteSpaces
+      let match
+      let indent
+      return nvh.split("\n").map(row => {
+         if(row.match(/^(\s*)([a-zA-Z0-9-_.]+):(.*)$/)){
+            [nameWithIndent, value] = row.split(/:(.*)/s) // split by first colon
+            match = nameWithIndent.match(/^\s+/)
+            whiteSpaces = match ? match[0] : ""
+            match = whiteSpaces.replaceAll("\t", "  ").match(new RegExp(/  /g))
+            indent = match ? match.length : 0
+            name = nameWithIndent.trim().split(".").pop() // just to make sure the function does not fail if there are already paths
+            if(indent > lastIndent){
+               lastParentPath = lastParentPath ? `${lastParentPath}.${lastElementName}` : lastElementName
+            } else if(indent < lastIndent){
+               lastParentPath = lastParentPath.split(".").slice(0, indent).join(".")
+            }
+            elementPath = lastParentPath ? `${lastParentPath}.${name}` : name
+            lastIndent = indent
+            lastElementName = name
+            return `${whiteSpaces}${elementPath}:${value}`
+         }
+         return row
+      }).join("\n")
    }
 
    areNvhJsonsEqual(element1, element2){
@@ -1109,8 +1145,8 @@ class NVHStoreClass {
             let elementList = this.getElementList(entry)
             elementList.forEach(element => {
                window.structureEditorStore.validateElementName(element.name)
-               if(elementList.filter(element2 => element.name == element2.name).length > 1){
-                  throw `Duplicate element "${element.name}". Element name must be unique.`
+               if(elementList.filter(element2 => element.path == element2.path).length > 1){
+                  throw `Element "${element.parent}" has two "${element.name}" elements.`
                }
 
                if(!this.parseNvhSchemaOptionsValue(element.value)){
@@ -1131,8 +1167,9 @@ class NVHStoreClass {
       //let re = new RegExp(/^(?<count>([\*\?\+]|\d+\+|\d+-\d+|\d+)?)\s*(?<type>(int|image|bool|audio|empty|url|string|list)?)\s*(?<values>(\[\s*"[^"]*"(\s*,\s*"[^"]*")*\s*\])?)\s*(?<regex>(~.*?)?)$/gm)
       let num = "\\d+"
       let space = "\\s*"
+      let types = Object.keys(window.store.const.ENTRY_TYPES).join("|")
       let re = new RegExp(`^${space}(?<count>([\\*\\?\\+]|${num}\\+|${num}-${num}|${num})?)${space}`
-                   + `(?<type>(int|image|bool|audio|empty|url|string|list)?)${space}`
+                   + `(?<type>(${types})?)${space}`
                    + `(?<values>(\\[${space}"[^"]*"(${space},${space}"[^"]*")*${space}\\])?)${space}`
                    + `(?<regex>(~.*?)?)${space}$`)
       let parsed = re.exec(value)
@@ -1160,7 +1197,11 @@ class NVHStoreClass {
             min: min,
             max: max,
             type: parsed.groups.type,
-            values: parsed.groups.values.split(","),
+            values: parsed.groups.values.length
+                        ? parsed.groups.values.slice(1,-1) // remove [ and  ]
+                              .split(",")
+                              .map(v => v.slice(1,-1))  // remove quotes
+                        : null,
             regex: parsed.groups.regex
          }
       }
@@ -1317,13 +1358,14 @@ class NVHStoreClass {
       return value
    }
 
-   getElementTreeList(elementName, indent=0){
+   getElementTreeList(elementPath, indent=0){
       let list = []
-      elementName = elementName || this.data.rootElement
-      let elementConfig = this.data.structure.elements[elementName]
+      elementPath = elementPath || this.data.rootElement
+      let elementConfig = this.data.structure.elements[elementPath]
       list.push({
-         elementName: elementName,
-         color: this.getElementColor(elementName),
+         path: elementPath,
+         elementName: elementConfig.name,
+         color: this.getElementColor(elementPath),
          indent: indent
       })
       elementConfig && elementConfig.children.forEach(childName => {
@@ -1332,8 +1374,8 @@ class NVHStoreClass {
       return list
    }
 
-   getElementColor(elementName){
-      let elIdx = Object.keys(this.data.structure.elements).indexOf(elementName)
+   getElementColor(elementPath){
+      let elIdx = Object.keys(this.data.structure.elements).indexOf(elementPath)
       return this.getColorByIndex(elIdx)
    }
 

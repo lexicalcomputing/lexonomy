@@ -9,31 +9,11 @@
             </template>
          </div>
 
-         <button if={!structureStore.data.editedElement}
-               class="btn btn-primary btn-floating tooltipped mt-4 ml-12 {!Object.keys(structureStore.data.structure.elements).length ? 'pulse' : ''}"
+         <button class="btn btn-primary btn-floating tooltipped mt-4 ml-12 {!Object.keys(structureStore.data.structure.elements).length ? 'pulse' : ''} {structureStore.data.editedElement ? 'disabled' : ''}"
                data-tooltip="Add new element"
                onclick={onAddClick}>
             <i class="material-icons">add</i>
          </button>
-         <!--button if={!structureStore.data.editedElement}
-               class="btn btn-primary btn-floating mt-4 ml-12"
-               data-target="importMenu">
-            <i class="material-icons">more_horiz</i>
-         </button>
-         <ul id="importMenu"
-               class="dropdown-content">
-            <li onclick={onImportFromSimpleClick}>
-               <a>
-                  Import from Simple settings
-               </a>
-            </li>
-            <li if={structureStore.data.custom_NVHSchema}
-                  onclick={onImportFromCustomClick}>
-               <a>
-                  Import from Custom settings
-               </a>
-            </li>
-         </ul-->
 
          <div class="structure-delete-zone ml-auto mt-6 grey-text"
                ondragenter={onDeleteZoneDragEnter}
@@ -81,8 +61,8 @@
                </template>
                <template if={structureStore.data.editedElement != structureStore.getRootElement()}>
                   <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
-                        value={obj[0]}
-                        selected={obj[0] == structureStore.data.editedElement.type}>{obj[1]}</option>
+                        selected={obj[0] == structureStore.data.editedElement.type}
+                        value={obj[0]}>{obj[1]}</option>
                </template>
             </select>
             <label>Type</label>
@@ -236,10 +216,9 @@
             this.state.errors.name = ""
             try{
                this.structureStore.validateElementName(evt.target.value)
-               if(Object.entries(this.structureStore.data.structure.elements).find(([elementName, element]) => {
-                  return elementName == evt.target.value && element != this.structureStore.data.editedElement
-               })) {
-                  throw "Element name must be unique."
+               let parent = this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent)
+               if(parent && parent.children.some(childPath => childPath.split(".").pop() == evt.target.value)){
+                  throw `There is already element '${evt.target.value}' inside element '${parent.name}'.`
                }
             } catch(e){
                this.state.errors.name = e
@@ -275,9 +254,7 @@
          onTypeChange(evt){
             let type = evt.target.value
             this.structureStore.data.editedElement.type = type
-            if(type != "list"){
-               this.state.values = []
-            }
+            this.state.values = type == "list" ? [""] : []
             this.update()
          },
 
@@ -329,20 +306,26 @@
 
          saveElement(){
             let values = this.state.values.filter(value => value.value != "")
-            let element = {
-               name: $("#name").val(),
-               type: $("#type").val(),
-               min: $("#min").val(),
-               max: $("#max").val(),
-               re: $("#re").val(),
+            let element = Object.assign(this.structureStore.data.editedElement, {
+               name: $("#name", this.root).val(),
+               type: $("#type", this.root).val(),
+               min: $("#min", this.root).val(),
+               max: $("#max", this.root).val(),
+               re: $("#re", this.root).val(),
                values: values
-            }
-            if(this.structureStore.data.structure.elements[this.structureStore.data.editedElement.name]){
-               this.structureStore.updateElement(this.structureStore.data.editedElement.name, element)
+            })
+            if(!element.name){
+               window.showToast("Please, enter element name.")
+            } else if(element.type == "list" && !element.values.filter(v => !!v).length){
+               window.showToast("Please, enter at least one element value.")
             } else {
-               this.structureStore.addElement(element)
+               if(element.path){
+                  this.structureStore.updateElement(element)
+               } else {
+                  this.structureStore.addElement(element)
+               }
+               this.structureStore.stopElementEditing()
             }
-            this.structureStore.stopElementEditing()
          },
 
          onDeleteZoneDragEnter(){
@@ -375,8 +358,8 @@
             let list = []
             let addElementAndItsChildren = (element) => {
                list.push(element)
-               element.children.forEach(childName => {
-                  addElementAndItsChildren(this.structureStore.getElementByName(childName))
+               element.children.forEach(childPath => {
+                  addElementAndItsChildren(this.structureStore.getElementByPath(childPath))
                })
             }
             let rootElement = this.structureStore.getRootElement()
@@ -387,36 +370,6 @@
          initStructureForm(){
             if(this.structureStore.data.editedElement){
                window.makeElementDraggable($(".structureForm", this.root), $(".structureForm h3", this.root))
-               this.updateFormPosition()
-            }
-         },
-
-         updateFormPosition(){
-            if(this.structureStore.data.editedElement){
-               let structureForm = $(".structureForm", this.root)
-               let formHeight = structureForm.outerHeight()
-               let formWidth = structureForm.outerWidth()
-               let windowHeight = $(window).height()
-               let windowWidth = $(window).width()
-               let left = 0
-               let top = 0
-               if(this.structureStore.data.editedElement.name){
-                  let boundingRect = $("structure-editor-item.selected .valueWrapper ")[0].getBoundingClientRect()
-                  let editorOffsetLeft = boundingRect.left
-                  top = Math.min(Math.max(10, boundingRect.top - (formHeight / 2)), windowHeight - formHeight - 30)
-                  if(boundingRect.right + formWidth > windowWidth - 30){ // not enough space to the right -> show form on the left side of selected item
-                     left = Math.max(10, boundingRect.left - formWidth - 30)
-                  } else {
-                     left = Math.min(boundingRect.right + 30, windowWidth - formWidth - 10)
-                  }
-               } else {
-                  top = (windowHeight - formHeight) / 2
-                  left = (windowWidth - formWidth) / 2
-               }
-               structureForm.css({
-                  left: Math.round(left) + "px",
-                  top: Math.round(top) +  "px"
-               })
             }
          }
       }
@@ -445,6 +398,8 @@
       }
       .structureForm{
          z-index: 100;
+         top: max(5vh, calc(40vh - 250px));
+         left: calc(50vw - 200px);
          .input-field input{
             background-color: #fff;
          }

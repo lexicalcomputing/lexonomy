@@ -16,10 +16,10 @@
          <div each={obj in elementOptionList}>
             <label>
                <input type="checkbox"
-                     value={obj.elementName}
-                     checked={state.data.searchableElements && state.data.searchableElements.includes(obj.elementName)}
-                     disabled={obj.elementName == dictData.config.titling.headword}/>
-               <span style="{obj.style}">{store.getElementDisplayedName(obj.elementName)}</span>
+                     value={obj.path}
+                     checked={state.data.searchableElements && state.data.searchableElements.includes(obj.path)}
+                     disabled={obj.path == dictData.config.titling.headword}/>
+               <span style="{obj.style}">{store.getElementDisplayedName(obj.path)}</span>
             </label>
          </div>
       </div>
@@ -28,7 +28,7 @@
       <h2>Search templates</h2>
       <div class="grey-text">
          Define your own entry search templates to make frequent searches easier. In Template field you can use %query% string which will be replaced with actual search term.
-         <br>Example: Label='Adjectives', Template='headword~=".*%query%.*" and partOfSpeech="-j"' will search for all adjectives containing search term in the headword. You can learn more about template syntax in Entry editor -> Advanced search.
+         <br>Example: Label='Adjectives', Template='entry.headword~=".*%query%.*" and entry.pos="-j"' will search for all adjectives containing search term in the headword. You can learn more about template syntax in Entry editor -> Advanced search.
       </div>
       <div if={!state.data.templates.length}
             class="grey-text">
@@ -55,13 +55,16 @@
                      <input type="text"
                            name="label"
                            value={template.label}
-                           oninput={onTemplateValueInput.bind(this, idx)}>
+                           oninput={onTemplateLabelInput.bind(this, idx)}>
                   </td>
-                  <td>
+                  <td class="positionRelative">
                      <input type="text"
                            name="template"
                            value={template.template}
-                           oninput={onTemplateValueInput.bind(this, idx)}>
+                           oninput={onTemplateTemplateInput.bind(this, idx)}>
+                     <span class="templateError red-text">
+                        {template.error}
+                     </span>
                   </td>
                   <td>
                      <a class="btn btn-flat"
@@ -84,7 +87,8 @@
 
    <br><br>
    <dict-config-buttons save-data={saveData}
-         show-save={state.hasElements}></dict-config-buttons>
+         show-save={state.hasElements}
+         btn-class={state.isBtnSaveDisabled ? 'disabled' : ''}/>
 
    <script>
       export default {
@@ -102,7 +106,7 @@
             if(this.state.hasElements){
                this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
                   return {
-                     elementName: element.elementName,
+                     path: element.path,
                      style: `color: ${element.color}; padding-left: ${element.indent * 15 + 35}px`
                   }
                })
@@ -119,6 +123,10 @@
                   })
          },
 
+         onBeforeUpdate(){
+            this.state.isBtnSaveDisabled = this.state.data && Object.values(this.state.data.templates).filter(t => t.error).length > 0
+         },
+
          onAddTemplateClick(evt) {
             this.state.data.templates.push({
                label: "",
@@ -132,8 +140,23 @@
             this.update()
          },
 
-         onTemplateValueInput(idx, evt){
+         onTemplateLabelInput(idx, evt){
             this.state.data.templates[idx][evt.target.name] = evt.target.value
+         },
+
+         onTemplateTemplateInput(idx, evt){
+            let template = evt.target.value
+            let oldError = this.state.data.templates[idx].error
+            this.state.data.templates[idx].template = template
+            try{
+               this.store.advancedSearchParseQuery(template)
+               delete this.state.data.templates[idx].error
+            } catch(e){
+               this.state.data.templates[idx].error = e
+            }
+            if(oldError != this.state.data.templates[idx].error){
+               this.update()
+            }
          },
 
          getConfigData() {
@@ -157,5 +180,14 @@
          }
       }
    </script>
+
+   <style type="scss">
+      .templateError{
+         position: absolute;
+         bottom: 6px;
+         display: block;
+         font-size: 0.7rem;
+      }
+   </style>
 
 </dict-config-searchability>
