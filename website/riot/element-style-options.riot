@@ -63,14 +63,9 @@
                Text size
             </span>
             <span class="nvh-values nvh-value-boxes">
-               <span class={state.style.textsize == 'smaller' ? 'selected' : ''}
-                     onclick={onOptionChangeClick.bind(this, "textsize", "smaller")}
-                     style="font-size: 0.8em;">a</span>
-               <span class={!state.style.textsize ? 'selected' : ''}
-                     onclick={onOptionChangeClick.bind(this, "textsize", "")}>a</span>
-               <span class={state.style.textsize == 'bigger' ? 'selected' : ''}
-                     onclick={onOptionChangeClick.bind(this, "textsize", "bigger")}
-                     style="font-size: 1.2em;">a</span>
+               <span each={size in [1, 2, 3, 4, 5, 6]}
+                     class={state.style.textsize == size || (size == 2 && !state.style.textsize) ? 'selected' : ''}
+                     onclick={onOptionChangeClick.bind(this, "textsize", size)}>{size}</span>
             </span>
          </div>
          <div if={state.availableOptions.includes("weight")}
