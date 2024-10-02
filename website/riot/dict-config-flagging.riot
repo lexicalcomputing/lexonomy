@@ -14,7 +14,7 @@
          </a>
       </div>
 
-      <template if={state.flags}>
+      <template if={state.flags && state.flags.length}>
          <table>
             <thead>
                <tr>
@@ -35,7 +35,7 @@
             <tbody>
                <tr each={(flag, idx) in state.flags}
                      class="flag-info"
-                     key={flag.key}>
+                     key={flag.key + idx}>
                   <td>
                      <input type="text"
                            name="key"
