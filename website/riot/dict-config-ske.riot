@@ -15,11 +15,12 @@
    <template if={!state.showMissingHeadwordWarning}>
       <template if={ authData.ske_username && authData.ske_apiKey && authData.ske_username != "" && authData.ske_apiKey != "" }>
          <div class="row">
-            <div class="input-field">
+            <div class="input-field positionRelative">
                <input data-selected-corpus={ state.data.corpus }
                      type="text"
                      id="corpus"
-                     placeholder="Type to search in the list of corpora"
+                     disabled={state.isLoadingCorpora}
+                     placeholder="{state.isLoadingCorpora ? 'Loading...' : 'Type to search in the list of corpora'}"
                      class="autocomplete"
                      placeholder="Retrieving available corpora from Sketch Engine, please wait...">
                <label for="corpus">Corpus name</label>
@@ -27,6 +28,8 @@
                <span class="helper-text"
                      id="corpusInfo"
                      style="display: none"></span>
+               <i if={state.isLoadingCorpora}
+                     class="corpusListLoadingIcon material-icons spin grey-text">donut_large</i>
             </div>
          </div>
          <div class="row">
@@ -117,6 +120,7 @@
       export default {
          state: {
             isLoading: true,
+            isLoadingCorpora: true,
             isSaving: false,
             showMissingHeadwordWarning: false,
             data: {
@@ -143,9 +147,9 @@
                         this.state.data = response.content || {}
                         this.state.data.concsampling = this.state.data.concsampling || 0
                         this.state.data.searchElements = this.state.data.searchElements || []
-                        // TODO: takes too long, should be loaded in background
                         this.store.skeLoadCorpora()
                               .done(response => {
+                                 this.update({isLoadingCorpora: false})
                                  let corpusList = response.data.map(corpus => {
                                     let size = corpus.sizes ? `, ${(corpus.sizes.tokencount / 1000000).toFixed(2)}M tokens` : ""
                                     return {
@@ -168,14 +172,12 @@
                                     this.refreshCorpusNote(selectedCorpus)
                                  }
                               })
-                              .always(() => {
-                                 this.update({isLoading: false})
-                              })
                      })
                      .fail(() => {
                         this.update({isLoading: false})
                      })
                      .always(() => {
+                        this.update({isLoading: false})
                         M.updateTextFields()
                      })
             }
@@ -212,6 +214,11 @@
    </script>
 
    <style>
+      .corpusListLoadingIcon{
+         position: absolute;
+         top: 8px;
+         right: 10px;
+      }
       #concsampling {
          width: 4em;
       }
