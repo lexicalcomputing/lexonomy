@@ -4,7 +4,7 @@
          <li class="nvh-header grey lighten-2">
             <div>
                <div>
-                  {store.getElementDisplayedName(state.element.name)}
+                  {store.getElementDisplayedName(state.element.path)}
                </div>
                <div if={state.parentItem}
                      class="nvh-breadcrumbs">
@@ -280,9 +280,9 @@
                   o.options.push({
                      id: "addChild",
                      label: "Child",
-                     options: availAbleChildElements.map(c => ({
-                        label: this.store.getElementDisplayedName(c),
-                        action: this.nvhStore.addChildElement.bind(this.nvhStore, element, c)
+                     options: availAbleChildElements.map(path => ({
+                        label: this.store.getElementDisplayedName(path),
+                        action: this.nvhStore.addChildElement.bind(this.nvhStore, element, path.split(".").pop())
                      }))
                   })
                }
@@ -290,16 +290,16 @@
                   o.options.push({
                      id: "addSiblingBefore",
                      label: "Sibling before",
-                     options: availSiblingsElements.map(c => ({
-                        label: this.store.getElementDisplayedName(c),
-                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, c, 'before')
+                     options: availSiblingsElements.map(path => ({
+                        label: this.store.getElementDisplayedName(path),
+                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, path.split(".").pop(), 'before')
                      }))
                   }, {
                      id: "addSiblingAfter",
                      label: "Sibling after",
-                     options: availSiblingsElements.map(c => ({
-                        label: this.store.getElementDisplayedName(c),
-                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, c, 'after')
+                     options: availSiblingsElements.map(path => ({
+                        label: this.store.getElementDisplayedName(path),
+                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, path.split(".").pop(), 'after')
                      }))
                   })
                }
@@ -323,7 +323,7 @@
             if(element.parent){
                let moveOptions = []
                let childIdx = element.parent.children.indexOf(element)
-               let availableParents = this.nvhStore.getAvailableParentElements(element.name)
+               let availableParents = this.nvhStore.getAvailableParentElements(element.path)
                let parentIdx = availableParents.indexOf(element.parent)
                if(childIdx > 0 || parentIdx > 0){
                   moveOptions.push({

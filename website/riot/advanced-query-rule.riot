@@ -88,8 +88,8 @@
             this.props.builder.removeRule(this.props.rule)
          },
 
-         onElementChange(elementName){
-            this.props.rule.attr = elementName
+         onElementChange(elementPath){
+            this.props.rule.attr = elementPath
             if(!this.props.rule.attr){
                this.props.rule.operator = ""
             }

@@ -1,12 +1,13 @@
 <nvh-editor-view-item id="nvh-item-{props.element.id}"
-      class="nvh-editor-view-item nvh-el-{state.escapedName} {state.style.layout == 'inline' ? 'inlineBlock' : 'block'} {props.readOnly ? 'nvh-read-only' : ''}">
+      class="nvh-editor-view-item nvh-el-{state.escapedPath} {props.readOnly ? 'nvh-read-only' : ''}">
    <div if={!state.style.hidden}
          class="nvh-item {props.element.focused ? 'nvh-focused' : ''}">
       <span if={state.beforeElementContent}
             class="nvh-gutter">{state.beforeElementContent}</span>
-      <span class="nvh-outer-wrapper nvh-el-outer-{state.escapedName} {getOuterWrapperStyleClasses()}">
+      <span class="nvh-outer-wrapper nvh-el-outer-{state.escapedPath} {getOuterWrapperStyleClasses()}">
+         <div if={["before", "both"].includes(state.style.layout)}></div>
          <span if={!["empty", "markup"].includes(state.config.type) && !state.style.hideValue}
-               class="nvh-inner-wrapper nvh-el-inner-{state.escapedName} {getInnerWrapperStyleClasses()}">
+               class="nvh-inner-wrapper nvh-el-inner-{state.escapedPath} {getInnerWrapperStyleClasses()}">
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper"
                   onmouseenter={!props.readOnly && onMouseEnter}>
@@ -30,19 +31,22 @@
             <nvh-item-value-editor if={props.element.edit}
                   element={props.element}/>
          </span>
-         <nvh-dnd-zone if={!state.style.hidden}
+         <div if={["after", "both"].includes(state.style.layout)}></div>
+         <!--nvh-dnd-zone if={!state.style.hidden}
                element={props.element}
-               position=0/>
+               position=0/-->
          <div if={props.element.children.length}
                class="nvh-children">
             <template each={(child, idx) in props.element.children}
                   key={child.id}
                   if={isChildElementVisible(child)}>
+               <div if={["before", "both"].includes(nvhStore.getElementStyle(child.path)?.layout)}></div>
                <nvh-editor-view-item element={child}
                      read-only={props.readOnly}/>
-               <nvh-dnd-zone if={isElementDisplayed(child.name)}
+               <div if={["after", "both"].includes(nvhStore.getElementStyle(child.path)?.layout)}></div>
+               <!--nvh-dnd-zone if={isElementDisplayed(child.path)}
                      element={props.element}
-                     position={idx + 1}/>
+                     position={idx + 1}/-->
             </template>
          </div>
       </span>
@@ -60,15 +64,16 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
-            this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.path) || {}
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.path) || {}
             this.state.innerPunc = this.getPuncChars(this.state.style.innerPunc)
             this.state.outerPunc = this.getPuncChars(this.state.style.outerPunc)
             this.state.beforeElementContent = this.getBeforeElementContent()
-            this.state.escapedName = window.idEscape(this.props.element.name)
+            this.state.escapedPath = window.idEscape(this.props.element.path)
          },
 
          onBeforeUpdate(){
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.path) || {}
             this.state.innerPunc = this.getPuncChars(this.state.style.innerPunc)
             this.state.outerPunc = this.getPuncChars(this.state.style.outerPunc)
             this.state.beforeElementContent = this.getBeforeElementContent()
@@ -93,13 +98,13 @@
          },
 
          isChildElementVisible(childElement){
-            let config = this.nvhStore.getElementConfig(childElement.name)
-            return !this.nvhStore.isServiceElement(childElement.name)
+            let config = this.nvhStore.getElementConfig(childElement.path)
+            return !this.nvhStore.isServiceElement(childElement.path)
                && (!config || config.type != "markup")
          },
 
-         isElementDisplayed(elementName){
-            let style = this.nvhStore.getElementStyle(elementName)
+         isElementDisplayed(childPath){
+            let style = this.nvhStore.getElementStyle(childPath)
             return style && !style.hidden
          },
 
@@ -113,8 +118,8 @@
             if(this.state.innerPunc){
                value = `${this.state.innerPunc[0]}${value}${this.state.innerPunc[1]}`
             }
-            value = this.nvhStore.replaceMarkupOccurrences(value, this.props.element, (markupElementName, find) => {
-               let style = this.nvhStore.getElementStyle(markupElementName) || {}
+            value = this.nvhStore.replaceMarkupOccurrences(value, this.props.element, (markupElementPath, find) => {
+               let style = this.nvhStore.getElementStyle(markupElementPath) || {}
                let styleClasses = this.getStyleClasses(["colour", "slant", "textsize", "weight", "border", "borderRadius", "background"], style)
                return`<span class="${styleClasses}">${find}</span>`
             })
@@ -145,7 +150,7 @@
             }
             let gutter = this.state.style.gutter
             if(gutter){
-               let idx = this.props.element.parent ? this.props.element.parent.children.filter(c => c.name == this.props.element.name).indexOf(this.props.element) + 1 : 1
+               let idx = this.props.element.parent ? this.props.element.parent.children.filter(c => c.path == this.props.element.path).indexOf(this.props.element) + 1 : 1
                if(map[gutter]){
                   return map[gutter]
                } else if(gutter == 'sensenum0'){
@@ -196,7 +201,8 @@
 
    <style type="scss">
       :host{
-         display: block;
+         display: inline-block;
+         vertical-align: top;
       }
       .nvh-read-only{
          .pointer {
@@ -207,10 +213,12 @@
 /*         margin-left: 0;*/
          .nvh-children{
             padding: 0;
+            display: inline-block;
          }
       }
       .nvh-item {
-         display: flex;
+         //display: flex;
+         display: inline-block;
          position: relative;
          margin-bottom: 2px;
       }
@@ -221,12 +229,14 @@
          }
       }
       .nvh-outer-wrapper{
-         flex: 1;
+         //flex: 1;
+         display: inline-block
       }
       .nvh-inner-wrapper{
-         display: flex;
+         //display: flex;
          border-radius: 10px;
          padding: 2px 10px;
+         vertical-align: top;
          &:hover{
             .nvh-edit-icon{
                opacity: 0.3;
@@ -246,7 +256,7 @@
          text-align: right;
       }
       .nvh-readonly-value-wrapper{
-         display: inline-flex;
+         //display: inline-flex;
          align-items: center;
          padding: 2px;
          p{
@@ -254,7 +264,7 @@
          }
       }
       .nvh-readonly-value{
-         display: flex;
+         //display: flex;
       }
       .nvh-item-value-editor{
          margin: 8px 0px;

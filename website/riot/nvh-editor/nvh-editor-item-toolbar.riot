@@ -2,14 +2,14 @@
    <div if={state.show}
          class="nvh-toolbar-wrapper">
       <div class="nvh-element-name">
-         {state.element && store.getElementDisplayedName(state.element.name)}
+         {state.element && store.getElementDisplayedName(state.element.path)}
       </div>
       <span class="nvh-value-icons">
-         <i class="nvh-icon-drag material-icons tooltipped {state.isDragDisabled ? 'disabled' : ''}"
+         <!--i class="nvh-icon-drag material-icons tooltipped {state.isDragDisabled ? 'disabled' : ''}"
                draggable="true"
                ondragstart={onDragStart}
                ondragend={onDragEnd}
-               data-tooltip="Drag element to new position">drag_handle</i>
+               data-tooltip="Drag element to new position">drag_handle</i-->
          <i class="nvh-icon-edit material-icons tiny tooltipped"
                onclick={onEditClick}
                data-tooltip="Change element value">edit</i>
@@ -64,7 +64,7 @@
                this.state.isMoveDownDisabled = !this.state.element.parent
                      || (siblings.indexOf(this.state.element) == siblings.length -1
                            && !this.nvhStore.getNextAvailableParentInDirection(this.state.element, 1))
-               this.state.isStyleDisabled = !this.nvhStore.getElementConfig(this.state.element.name)
+               this.state.isStyleDisabled = !this.nvhStore.getElementConfig(this.state.element.path)
             }
          },
 
@@ -146,7 +146,7 @@
 
          onEditStyleClick(evt){
             evt.stopPropagation()
-            this.nvhStore.trigger("openElementStyleEditor", this.state.element.name)
+            this.nvhStore.trigger("openElementStyleEditor", this.state.element.path)
             this.close()
          },
 

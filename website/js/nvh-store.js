@@ -296,15 +296,16 @@ class NVHStoreClass {
          if(row.trim() != ""){
             line = this.parseNvhLine(row, idx, el ? el.indent : 0)
             let parent = getParent(line.indent)
+            let name = line.name.split(".").pop()
             el = {
                id: this._getNewElementId(),
-               name: line.name,
+               name: name,
                value: line.value.replaceAll(this.const.nvhNewLine, "\n"),
                indent: line.indent,
                parent: parent,
                children: [],
                warnings: [],
-               path: parent ? `${parent.path}.${line.name}` : line.name
+               path: parent ? `${parent.path}.${name}` : name
             }
             if(idx == 0){
                json = el
@@ -565,62 +566,62 @@ class NVHStoreClass {
       return this.findElement(e => e.focused)
    }
 
-   getElementConfig(elementName){
-      if(this.isServiceElement(elementName)){
+   getElementConfig(elementPath){
+      if(this.isServiceElement(elementPath)){
          return {
             type: "string",
             children: []
          }
       }
-      return this.data.structure.elements[elementName]
+      return this.data.structure.elements[elementPath]
    }
 
-   getElementStyle(elementName){
-      return this.data.formatting.elements[elementName]
+   getElementStyle(elementPath){
+      return this.data.formatting.elements[elementPath]
    }
 
    getAvailableChildElements(element){
-      let config = this.data.structure.elements[element.name]
+      let config = this.data.structure.elements[element.path]
       let elements = []
       if(config){
-         elements = config.children.filter(childName => {
-            return this.canHaveAnotherChild(element, childName)
+         elements = config.children.filter(childPath => {
+            return this.canHaveAnotherChild(element, childPath)
          })
       }
       return elements
    }
 
-   canHaveAnotherChild(element, childName){
-      if(this.isServiceElement(childName)){
+   canHaveAnotherChild(element, childPath){
+      if(this.isServiceElement(childPath)){
          return true
       } else {
-         let childConfig = this.data.structure.elements[childName]
-         return !childConfig.max || childConfig.max > element.children.filter(c => c.name == childName).length
+         let childConfig = this.data.structure.elements[childPath]
+         return !childConfig.max || childConfig.max > element.children.filter(c => c.path == childPath).length
       }
    }
 
-   getAvailableParentElementNames(elementName){
+   getAvailableParentElementPaths(elementPath){
       let elements = this.data.structure.elements
-      if(this.isServiceElement(elementName)){
+      if(this.isServiceElement(elementPath)){
          return Object.keys(elements)
       } else {
-         return Object.keys(elements).filter(parentName => {
-            return elements[parentName].children.some(child => child == elementName)
+         return Object.keys(elements).filter(parentPath => {
+            return elements[parentPath].children.some(child => child == elementPath)
          })
       }
    }
 
-   getAvailableParentElements(elementName){
-      let availableParentNames = this.getAvailableParentElementNames(elementName)
+   getAvailableParentElements(elementPath){
+      let availableParentPaths = this.getAvailableParentElementPaths(elementPath)
       return this.findElements(parent => {
-         return availableParentNames.includes(parent.name)
+         return availableParentPaths.includes(parent.path)
       })
    }
 
    getNextAvailableParentInDirection(element, direction){
-      let availableParents = this.getAvailableParentElements(element.name)
+      let availableParents = this.getAvailableParentElements(element.path)
       let idx = availableParents.indexOf(element.parent) + direction
-      while (availableParents[idx] && !this.canHaveAnotherChild(availableParents[idx], element.name)){
+      while (availableParents[idx] && !this.canHaveAnotherChild(availableParents[idx], element.path)){
          idx += direction
       }
       return availableParents[idx]
@@ -640,23 +641,23 @@ class NVHStoreClass {
       return $(`#nvh-item-${element.id}`)
    }
 
-   changeElementStyleOption(elementName, option, value){
-      if(this.getElementStyle(elementName)[option] != value){
+   changeElementStyleOption(elementPath, option, value){
+      if(this.getElementStyle(elementPath)[option] != value){
          // TODO temporary fix
-         if(!this.data.formatting.elements[elementName]){
-            this.data.formatting.elements[elementName] = {}
+         if(!this.data.formatting.elements[elementPath]){
+            this.data.formatting.elements[elementPath] = {}
          }
          if(!value){
-            delete this.data.formatting.elements[elementName][option]
+            delete this.data.formatting.elements[elementPath][option]
          } else {
-            this.data.formatting.elements[elementName][option] = value
+            this.data.formatting.elements[elementPath][option] = value
          }
-         let elements = this.findElements(e => e.name == elementName)
-         let config = this.getElementConfig(elementName)
+         let elements = this.findElements(e => e.path == elementPath)
+         let config = this.getElementConfig(elementPath)
          if(config && config.type == "markup"){
             elements = elements.map(e => {
                // markup element style changed - parent element must be updated
-               return [e, ...this.getAvailableParentElements(e.name)]
+               return [e, ...this.getAvailableParentElements(e.path)]
             }).flat()
          }
 
@@ -692,8 +693,8 @@ class NVHStoreClass {
       return false
    }
 
-   isServiceElement(elementName){
-      return elementName.startsWith(this.const.serviceElementPrefix)
+   isServiceElement(elementPath){
+      return elementPath.split(".").pop().startsWith(this.const.serviceElementPrefix)
    }
 
    copyElementAndItsChildren(element, parent=null){
@@ -815,7 +816,7 @@ class NVHStoreClass {
    }
 
    startElementEditing(element){
-      let config = this.getElementConfig(element.name)
+      let config = this.getElementConfig(element.path)
       if(config && config.type != "empty"){  // element with value
          let elements = this.findElements(e => e.focused || e.edit)
          elements.forEach(e => {
@@ -832,7 +833,7 @@ class NVHStoreClass {
 
    startElementOrChildEditing(element){
       let firstEditableElement = this.findElement(el => {
-         let config = this.getElementConfig(el.name)
+         let config = this.getElementConfig(el.path)
          return config && config.type != "empty"
       }, element)
       firstEditableElement && this.startElementEditing(firstEditableElement)
@@ -941,12 +942,12 @@ class NVHStoreClass {
    }
 
    addRequiredChildren(element){
-      let config = this.getElementConfig(element.name)
-      config && config.children.forEach(childName => {
-         let childConfig = this.getElementConfig(childName)
+      let config = this.getElementConfig(element.path)
+      config && config.children.forEach(childPath => {
+         let childConfig = this.getElementConfig(childPath)
          if(childConfig.min > 0){
             Array.from({length: childConfig.min}).forEach(empty => {
-               let childElement = this._addChildElement(element, childName)
+               let childElement = this._addChildElement(element, childPath.split(".").pop())
                this.addRequiredChildren(childElement)
             })
          }
@@ -954,21 +955,23 @@ class NVHStoreClass {
    }
 
    addAllChildren(element){
-      let config = this.getElementConfig(element.name)
-      config && config.children.forEach(childName => {
-         let childConfig = this.getElementConfig(childName)
+      let config = this.getElementConfig(element.path)
+      config && config.children.forEach(childPath => {
+         let childConfig = this.getElementConfig(childPath)
          Array.from({length: childConfig.min || 1}).forEach(empty => {
-            let childElement = this._addChildElement(element, childName)
+            let childElement = this._addChildElement(element, childPath.split(".").pop())
             this.addAllChildren(childElement)
          })
       })
    }
 
    _addChildElement(element, childElementName, idx){
+      let path = `${element.path}.${childElementName}`
       let childElement = {
          id: this._getNewElementId(),
+         path: path,
          name: childElementName,
-         value: this._getElementDefaultValue(childElementName),
+         value: this._getElementDefaultValue(path),
          indent: element.indent + 1,
          parent: element,
          children: [],
@@ -1051,16 +1054,16 @@ class NVHStoreClass {
    isElementDuplicationAllowed(element){
       return element.name != this.data.rootElement
             && !!element.parent
-            && this.getAvailableChildElements(element.parent).includes(element.name)
+            && this.getAvailableChildElements(element.parent).includes(element.path)
    }
 
    isElementRemovalAllowed(element){
       if(element.name == this.data.rootElement){
          return false
       }
-      let config = this.getElementConfig(element.name)
+      let config = this.getElementConfig(element.path)
       if(config){
-         let actualNumberOfElements = this.findElements(e => e.name == element.name, element.parent).length
+         let actualNumberOfElements = this.findElements(e => e.path == element.path, element.parent).length
          return element.name != this.data.rootElement
                && (!config.min || config.min < actualNumberOfElements)
       }
@@ -1068,11 +1071,11 @@ class NVHStoreClass {
    }
 
    validateElement(element){
-      if(element == this.data.detachedEntry || this.isServiceElement(element.name)){
+      if(element == this.data.detachedEntry || this.isServiceElement(element.path)){
          element.warnings = []
          element.isValid = true
       } else {
-         let config = this.getElementConfig(element.name)
+         let config = this.getElementConfig(element.path)
          let warnings = []
          if(!config || !config.type){  // has valid configuration
             warnings.push(`Unknown element "${element.name}".`)
@@ -1095,26 +1098,26 @@ class NVHStoreClass {
                }
             }*/
             let counts = element.children.reduce((counts, e) => {
-               counts[e.name] = counts[e.name] ? counts[e.name] + 1 : 1
+               counts[e.path] = counts[e.path] ? counts[e.path] + 1 : 1
                return counts
             }, {})
-            config.children.forEach(childName => {
-               let childConfig = this.getElementConfig(childName)
+            config.children.forEach(childPath => {
+               let childConfig = this.getElementConfig(childPath)
                if(childConfig){
-                  if (childConfig.max && (counts[childName] || 0) > childConfig.max){
-                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childName}"`)
+                  if (childConfig.max && (counts[childPath] || 0) > childConfig.max){
+                     warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childPath}"`)
                   }
-                  if (childConfig.min && (counts[childName] || 0) < childConfig.min){
-                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childName}"`)
+                  if (childConfig.min && (counts[childPath] || 0) < childConfig.min){
+                     warnings.push(`Element "${element.name}" should have at least ${childConfig.min} "${childPath}"`)
                   }
                }
             })
             element.children.forEach(child => {
-               if(!this.isServiceElement(child.name)){
-                  if(!window.store.data.config.structure.elements[child.name]){
-                     warnings.push(`'${element.name}' has unknown child element '${child.name}'.`)
-                  } else if(!config.children.includes(child.name)){
-                     warnings.push(`'${element.name}' must not have '${child.name}' as child element.`)
+               if(!this.isServiceElement(child.path)){
+                  if(!window.store.data.config.structure.elements[child.path]){
+                     warnings.push(`'${element.path}' has unknown child element '${child.path}'.`)
+                  } else if(!config.children.includes(child.path)){
+                     warnings.push(`'${element.path}' must not have '${child.path}' as child element.`)
                   }
                }
             })
@@ -1212,8 +1215,8 @@ class NVHStoreClass {
       return Math.round(Math.random() * 1000000)
    }
 
-   _getElementDefaultValue(elementName){
-      let config = this.getElementConfig(elementName)
+   _getElementDefaultValue(elementPath){
+      let config = this.getElementConfig(elementPath)
       if(config){
          if(config.type == "empty"){
             return null
@@ -1233,6 +1236,7 @@ class NVHStoreClass {
       } else {
          entry = {
             id: this._getNewElementId(),
+            path: this.data.rootElement,
             name: this.data.rootElement,
             parent: null,
             indent: 0,
@@ -1318,15 +1322,15 @@ class NVHStoreClass {
    replaceMarkupOccurrences(value, element, createReplaceString) {
       let replaceList = []
       element.children.filter(child => {
-         let config = this.getElementConfig(child.name)
-         return !this.isServiceElement(child.name)
+         let config = this.getElementConfig(child.path)
+         return !this.isServiceElement(child.path)
                && config && config.type == "markup"
       })
             .forEach(child => {
                let tmp = child.value.split("#")
                let find = tmp[0]
                if(find.trim()){
-                  let replaceWith = createReplaceString(child.name, find)
+                  let replaceWith = createReplaceString(child.path, find)
                   if(child.value.indexOf("#") == -1){
                      replaceList.push({
                         index: value.indexOf(find),
@@ -1368,8 +1372,8 @@ class NVHStoreClass {
          color: this.getElementColor(elementPath),
          indent: indent
       })
-      elementConfig && elementConfig.children.forEach(childName => {
-         list.push(...this.getElementTreeList(childName, indent + 1))
+      elementConfig && elementConfig.children.forEach(childPath => {
+         list.push(...this.getElementTreeList(childPath, indent + 1))
       })
       return list
    }

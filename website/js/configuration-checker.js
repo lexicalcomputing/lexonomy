@@ -162,9 +162,9 @@ class ConfigurationCheckerClass {
             result.push(["titling", "error", `Headword sorting element "${config.titling.headwordSorting}" not found in entry structure.`])
          }
          if(config.titling.headwordAnnotationType == "simple" && this.isNonEmptyArray(config.titling.headwordAnnotations)){
-            config.titling.headwordAnnotations.forEach(elementName => {
-               if(!this.isElementInStructure(elementName, config)){
-                  result.push(["titling", "warning", `Headword annotation element "${elementName}" not found in entry structure.`])
+            config.titling.headwordAnnotations.forEach(elementPath => {
+               if(!this.isElementInStructure(elementPath, config)){
+                  result.push(["titling", "warning", `Headword annotation element "${elementPath}" not found in entry structure.`])
                }
             })
          }
@@ -175,9 +175,9 @@ class ConfigurationCheckerClass {
             } else{
                config.titling.headwordAnnotationsAdvanced.match(regex)
                      .map(x => x.slice(2, -1))
-                     .forEach(elementName => {
-                        if(!this.isElementInStructure(elementName, config)){
-                           result.push(["titling", "error", `Element "${elementName}" in Headword annotation template not found in entry structre.`])
+                     .forEach(elementPath => {
+                        if(!this.isElementInStructure(elementPath, config)){
+                           result.push(["titling", "error", `Element "${elementPath}" in Headword annotation template not found in entry structre.`])
                         }
                      })
             }
@@ -190,9 +190,9 @@ class ConfigurationCheckerClass {
       let result = []
       if(config.searchability){
          if(this.isNonEmptyArray(config.searchability.searchElements)){
-            config.searchability.searchElements.forEach(elementName => {
-               if(!this.isElementInStructure(elementName, config)){
-                  result.push(["searchability", "warning", `Searchable element "${elementName}" not found in entry structure.`])
+            config.searchability.searchElements.forEach(elementPath => {
+               if(!this.isElementInStructure(elementPath, config)){
+                  result.push(["searchability", "warning", `Searchable element "${elementPath}" not found in entry structure.`])
                }
             })
          }
@@ -232,9 +232,9 @@ class ConfigurationCheckerClass {
                   } else{
                      elementConfig.identifier.match(regex)
                            .map(x => x.slice(2, -1))
-                           .forEach(elementName => {
-                              if(!this.isElementInStructure(elementName, config)){
-                                 result.push(["links", "error", `Element "${elementName}" in Identifier field for Linking element "${linkingElement}" not found in entry structre.`])
+                           .forEach(elementPath => {
+                              if(!this.isElementInStructure(elementPath, config)){
+                                 result.push(["links", "error", `Element "${elementPath}" in Identifier field for Linking element "${linkingElement}" not found in entry structre.`])
                               }
                            })
                   }
@@ -254,9 +254,9 @@ class ConfigurationCheckerClass {
             }
             config.ske.concquery.match(regex)
                   .map(x => x.slice(2, -1))
-                  .forEach(elementName => {
-                     if(!this.isElementInStructure(elementName, config)){
-                        result.push(["ske", "error", `Element "${elementName}" in Concordance query not found in entry structre.`])
+                  .forEach(elementPath => {
+                     if(!this.isElementInStructure(elementPath, config)){
+                        result.push(["ske", "error", `Element "${elementPath}" in Concordance query not found in entry structre.`])
                      }
                })
          }
@@ -268,9 +268,9 @@ class ConfigurationCheckerClass {
             result.push(["ske", "error", `Definition container "${config.ske.definitionContainer}" not found in entry structure.`])
          }
          if(this.isNonEmptyArray(config.ske.searchElements)){
-            config.ske.searchElements.forEach(elementName => {
-               if(!this.isElementInStructure(elementName, config)){
-                  result.push(["ske", "warning", `Additional search element "${elementName}" not found in entry structure.`])
+            config.ske.searchElements.forEach(elementPath => {
+               if(!this.isElementInStructure(elementPath, config)){
+                  result.push(["ske", "warning", `Additional search element "${elementPath}" not found in entry structure.`])
                }
             })
          }
@@ -345,9 +345,9 @@ class ConfigurationCheckerClass {
    }
 
 
-   isElementInStructure(elementName, config){
-      // TODO ignore elements prefixed with __lexonomy
-      return config.structure && config.structure.elements && !!config.structure.elements[elementName]
+   isElementInStructure(elementPath, config){
+      return (config.structure && config.structure.elements && !!config.structure.elements[elementPath])
+            || window.nvhStore.isServiceElement(elementPath)
    }
 
    isNonEmptyArray(object){

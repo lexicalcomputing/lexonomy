@@ -246,14 +246,14 @@
             $(".nvh-suggestions div").eq(this.state.suggestionCursor).addClass("nvh-highlight")
          },
 
-         showAutocomplete(elementName, row, col){
+         showAutocomplete(elementPath, row, col){
             let magicNumber = (22 - (window.getCookie("fontSize") || 16)) * 0.5 //different interface font size correction
             $(".nvh-autocomplete").show()
                   .css({
                      top: `calc(${1.3125 * (row + 1)}rem + ${magicNumber}px)`,
                      left: `calc(2.625rem + 5px + ${col}ch)`
                   })
-            this.updateAutocomplete(elementName)
+            this.updateAutocomplete(elementPath)
          },
 
          updateAutocomplete(elementPath){

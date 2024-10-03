@@ -9,7 +9,7 @@
             value=".*">Any element</option>
       <option each={option in elementOptionList}
             selected={props.multiple ? props.riotValue.includes(option.path) : option.path == props.riotValue}
-            value={option.name}>
+            value={option.path}>
          <span style="{option.style}">
             {store.getElementDisplayedName(option.path)}
          </span>
@@ -26,7 +26,6 @@
             }
             this.elementOptionList = elements.map(element => {
                return {
-                  name: element.elementName,
                   path: element.path,
                   style: `color: ${element.color}; margin-left: ${element.indent * 15}px`
                }

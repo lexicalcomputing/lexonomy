@@ -4,12 +4,12 @@
       <div class="nvh-header grey lighten-3">
          <i class="material-icons clickable mr-auto"
                onclick={onShowPrevElementClick}
-               style={state.prevElementName ? '' : 'visibility:hidden'}>chevron_left</i>
-         <element-select riot-value={state.elementName}
+               style={state.prevElementPath ? '' : 'visibility:hidden'}>chevron_left</i>
+         <element-select riot-value={state.elementPath}
                on-change={onElementChange}/>
          <i class="material-icons clickable ml-auto"
                onclick={onShowNextElementClick}
-               style={state.nextElementName ? '' : 'visibility:hidden'}>chevron_right</i>
+               style={state.nextElementPath ? '' : 'visibility:hidden'}>chevron_right</i>
          <i class="material-icons clickable ml-2"
                onclick={onCloseStyleEditor}>close</i>
       </div>
@@ -17,7 +17,7 @@
             class="message messageInfo borderBottom">
          Custom styles applied. You can change it <a href="#/{dictData.dictId}/config/formatting">here</a>
       </div>
-      <element-style-options element-name={state.elementName}
+      <element-style-options element-path={state.elementPath}
             class="p-2"
             on-change={onStyleChange}/>
       <div class="p-2 borderTop">
@@ -36,7 +36,7 @@
 
          state: {
             show: false,
-            elementName: null
+            elementPath: null
          },
 
          onBeforeMount(){
@@ -64,9 +64,9 @@
 
          onBeforeUpdate(){
             let elementList = Object.keys(this.nvhData.structure.elements)
-            let actualElementIdx = elementList.indexOf(this.state.elementName)
-            this.state.prevElementName = elementList[actualElementIdx - 1]
-            this.state.nextElementName = elementList[actualElementIdx + 1]
+            let actualElementIdx = elementList.indexOf(this.state.elementPath)
+            this.state.prevElementPath = elementList[actualElementIdx - 1]
+            this.state.nextElementPath = elementList[actualElementIdx + 1]
          },
 
          onUpdated(){
@@ -77,8 +77,8 @@
             }
          },
 
-         onOpenStyleEditor(elementName){
-            this.update({elementName: elementName})
+         onOpenStyleEditor(elementPath){
+            this.update({elementPath: elementPath})
            if(!this.state.show){
                this.open()
             }
@@ -88,22 +88,22 @@
             this.close()
          },
 
-         onElementChange(elementName){
-            this.changeElement(elementName)
+         onElementChange(elementPath){
+            this.changeElement(elementPath)
          },
 
          onShowPrevElementClick(evt){
             evt.stopPropagation()
-            this.changeElement(this.state.prevElementName)
+            this.changeElement(this.state.prevElementPath)
          },
 
          onShowNextElementClick(evt){
             evt.stopPropagation()
-            this.changeElement(this.state.nextElementName)
+            this.changeElement(this.state.nextElementPath)
          },
 
-         changeElement(elementName){
-            this.update({elementName: elementName})
+         changeElement(elementPath){
+            this.update({elementPath: elementPath})
          },
 
          onStyleChange(){

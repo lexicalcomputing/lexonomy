@@ -2,12 +2,12 @@ window.nvhPlugins.imageSearch = {
    isActive: function(element){
       let config = window.store.data.config
       return ((config.gapi.apikey && config.gapi.cx) || config.gapi.pixabaykey)
-            && (config.structure.elements[element.name] && config.structure.elements[element.name].type == 'med')
+            && (config.structure.elements[element.path] && config.structure.elements[element.path].type == 'med')
    },
 
    onPluginButtonClick: function(element, evt){
       evt.stopPropagation()
-      var headword = window.nvhStore.findElement(e => e.name == window.store.data.config.titling.headword).value
+      var headword = window.nvhStore.findElement(e => e.path == window.store.data.config.titling.headword).value
       if(headword) {
          window.nvhStore.trigger("toggleWidgetPanelLoading", true, "Searching...")
          window.nvhStore.trigger("toggleWidgetPanelOpen", true, "Image Search")

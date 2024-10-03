@@ -1,4 +1,4 @@
-<nvh-item-value-editor class="nvh-item-value-editor {state.style.layout == 'block' ? 'nvh-full-width' : ''}">
+<nvh-item-value-editor class="nvh-item-value-editor {state.style.layout == 'block' ? 'TODOnvh-full-width' : ''}">
    <div if={state.showEditor}
          class="nvh-text-value">
       <div class="nvh-toolbar">
@@ -8,13 +8,13 @@
          <i class="material-icons tooltipped"
                onclick={onRedoClick}
                data-tooltip="Redo (Ctrl + Y)">redo</i>
-         <button each={elementName in state.markupChildrenNames}
+         <button each={elementPath in state.markupChildrenPaths}
                class="btn markupBtn white-text tooltipped"
-               name="btn_{elementName}"
-               data-tooltip="Mark selected text as '{store.getElementDisplayedName(elementName)}'"
-               onclick={onMarkupButtonClick.bind(this, elementName)}
-               style="--background-color: {nvhStore.getElementColor(elementName)}">
-            {getMarkupNumber(elementName)}: {store.getElementDisplayedName(elementName)}
+               name="btn_{elementPath}"
+               data-tooltip="Mark selected text as '{store.getElementDisplayedName(elementPath)}'"
+               onclick={onMarkupButtonClick.bind(this, elementPath)}
+               style="--background-color: {nvhStore.getElementColor(elementPath)}">
+            {getMarkupNumber(elementPath)}: {store.getElementDisplayedName(elementPath)}
          </button>
 
          <span class="ml-auto"></span>
@@ -71,12 +71,12 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
-            this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.path) || {}
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.path) || {}
             this.state.showEditor = ["string", "markup", "image", "audio", "url"].includes(this.state.config.type)
-            this.state.markupChildrenNames = this.state.config.children
-                  .filter(childName => {
-                     let config = this.nvhStore.getElementConfig(childName)
+            this.state.markupChildrenPaths = this.state.config.children
+                  .filter(childPath => {
+                     let config = this.nvhStore.getElementConfig(childPath)
                      return config && config.type == "markup"
                })
          },
@@ -122,7 +122,7 @@
             this.nvhStore.stopElementEditing()
          },
 
-         onMarkupButtonClick(elementName){
+         onMarkupButtonClick(elementPath){
             let element = this.getElementUnderCaret()
             //TODO return caret to the same position after marking a word
             if(element && element.classList.contains("markupNode")){
@@ -139,13 +139,13 @@
                         this.selectWordUnderCaret()
                      }
                      if(sel.toString().trim()){
-                        const span = window.stringToElement(this.getElementMarkupHTML(elementName))
+                        const span = window.stringToElement(this.getElementMarkupHTML(elementPath))
                         var range = sel.getRangeAt(0).cloneRange()
                         range.surroundContents(span)
                         sel.removeAllRanges()
                         range.collapse()
                         sel.addRange(range)
-                        this.state.elementUnderCaret = elementName
+                        this.state.elementUnderCaret = elementPath
                      }
                   }
                }
@@ -160,8 +160,8 @@
                if(document.getSelection().toString().length){
                   this.state.hasSelection = true
                   let range = document.getSelection().getRangeAt(0)
-                  this.state.markupElementInSelection = this.state.markupChildrenNames.some(elementName => {
-                     return $(".nvh-editable-div").find(`span[name="${elementName}"]`)
+                  this.state.markupElementInSelection = this.state.markupChildrenPaths.some(elementPath => {
+                     return $(".nvh-editable-div").find(`span[name="${elementPath}"]`)
                            .toArray()
                            .some(node => range.intersectsNode(node))
                      })
@@ -236,12 +236,12 @@
             return this.nvhStore.replaceMarkupOccurrences(value, this.props.element, this.getElementMarkupHTML.bind(this))
          },
 
-         getMarkupNumber(elementName){
-            return this.state.markupChildrenNames.lastIndexOf(elementName) + 1
+         getMarkupNumber(elementPath){
+            return this.state.markupChildrenPaths.lastIndexOf(elementPath) + 1
          },
 
-         getElementMarkupHTML(elementName, value=""){
-            return `<span name="${elementName}" class="markupNode" markup_number="${this.getMarkupNumber(elementName)}" style="--bullet-background-color:${this.nvhStore.getElementColor(elementName)}">${value}</span>`
+         getElementMarkupHTML(elementPath, value=""){
+            return `<span name="${elementPath}" class="markupNode" markup_number="${this.getMarkupNumber(elementPath)}" style="--bullet-background-color:${this.nvhStore.getElementColor(elementPath)}">${value}</span>`
          },
 
          getElementUnderCaret(){
@@ -300,10 +300,10 @@
          },
 
          updateMarkupButtons(){
-            this.state.markupChildrenNames.forEach(markupElementName => {
-               $(`.btn[name="btn_${markupElementName}"]`, this.root)
-                     .toggleClass("selected", this.state.focused && this.state.elementUnderCaret == markupElementName)
-                     .toggleClass("disabled", this.state.elementUnderCaret != markupElementName
+            this.state.markupChildrenPaths.forEach(markupElementPath => {
+               $(`.btn[name="btn_${markupElementPath}"]`, this.root)
+                     .toggleClass("selected", this.state.focused && this.state.elementUnderCaret == markupElementPath)
+                     .toggleClass("disabled", this.state.elementUnderCaret != markupElementPath
                               && (this.state.markupElementInSelection || !!this.state.elementUnderCaret))
             })
          },
@@ -325,13 +325,13 @@
          },
 
          updateMarkupChildren(){
-            this.state.markupChildrenNames.forEach(elementName => {
-               this.props.element.children = this.props.element.children.filter(child => child.name != elementName)
-               const markupElements = $(".nvh-editable-div").find(`span[name="${elementName}"]`)
+            this.state.markupChildrenPaths.forEach(elementPath => {
+               this.props.element.children = this.props.element.children.filter(child => child.path != elementPath)
+               const markupElements = $(".nvh-editable-div").find(`span[name="${elementPath}"]`)
                markupElements.each((idx, el) => {
                   let markupValue = el.textContent
                   let preceedingText = window.getElementPreceedingText(el)
-                  let childElement = this.nvhStore._addChildElement(this.props.element, elementName)
+                  let childElement = this.nvhStore._addChildElement(this.props.element, elementPath.split(".").pop())
                   childElement.value = markupValue
                   preceedingValueCount = Array.from(preceedingText.matchAll(window.reEscape(markupValue))).length
                   if(preceedingValueCount){
