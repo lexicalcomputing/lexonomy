@@ -1657,6 +1657,24 @@ class StoreClass {
       return entryList
    }
 
+   guessEntryElementFromFile(content){
+      // just try to find "entry" element in content, it will cover 95%+ cases
+      let lines = content.trimStart().split('\n')
+      let match
+      if(lines[0].startsWith("<")){  // xml
+         let lineWithEntry = lines.find(line => line.toLowerCase().match(/^\s*<entry.*>.*/))
+         if(lineWithEntry){
+            match = lineWithEntry.match(/\s*<(?<element>\w+)[\s>]/)
+         }
+      } else {  // nvh
+         let lineWithEntry = lines.find(line => line.toLowerCase().match(/^\s*entry[ ]*:.*/))
+         if(lineWithEntry){
+            match = lineWithEntry.match(/\s*(?<element>\w+)[ ]?:.*/)
+         }
+      }
+      return match?.groups?.element || "" // use original element instead of "entry" to preserve element name letter case
+   }
+
    _setDictionaryList(dictionaryList){
       this.data.dictionaryList = dictionaryList || []
       this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))

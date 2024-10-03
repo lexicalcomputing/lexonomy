@@ -24,7 +24,7 @@
                oninput={onHeadwordElementInput}/>
          <label>Headword element</label>
          <i if={state.fileReader.readyState == 1}
-               class="headwordElementSpinner material-icons grey-text spin">donut_large</i>
+               class="headwordSpinner material-icons grey-text spin">donut_large</i>
          <div class="helper-text">Element name containing headword</div>
       </div>
       <div class="mt-8">
@@ -146,13 +146,7 @@
          onBeforeMount(){
             this.state.fileReader = new FileReader
             this.state.fileReader.onload = function(e) {
-               this.update({
-                  headwordElement: ((this.state.fileReader.result.trimStart()
-                        .split('\n')
-                        .shift() || "")
-                        .split(":")[0] || "")
-                        .trim()
-               })
+               this.update({headwordElement: this.store.guessEntryElementFromFile(this.state.fileReader.result)})
                this.refreshStartImportBtnDisabled()
             }.bind(this)
          },
@@ -164,7 +158,7 @@
 
          onFileChange(evt){
             this.state.file = evt.target.files[0]
-            this.state.fileReader.readAsText(this.state.file, 'UTF-8')
+            this.state.file && this.state.fileReader.readAsText(this.state.file, 'UTF-8')
             this.update()
          },
 
@@ -191,7 +185,6 @@
             fd.append("purge", $("#purge").is(":checked"))
             fd.append("purge_all", $("#purge_all").is(":checked"))
             fd.append("hwNode", this.state.headwordElement)
-            fd.append("clean", true)  // rename duplicate element names
             fd.append("deduplicate", $("#deduplicate").is(":checked"))
 
             this.update({
@@ -258,7 +251,7 @@
       .uploadForm .input-field{
          max-width: 400px;
       }
-      .headwordElementSpinner{
+      .headwordSpinner{
          position: absolute;
          right: 8px;
          top: 8px;
