@@ -86,10 +86,10 @@ def authDict(checkRights, errorRedirect=False):
     def wrap(func):
         @functools.wraps(func)
         def wrapper_verifyLoginAndDictAccess(*args, **kwargs):
-            try:
-                conn = ops.getDB(kwargs["dictID"])
-            except IOError:
+            conn = ops.getDB(kwargs["dictID"])
+            if conn == None:
                 abort(404, "No such dictionary")
+
             res, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, conn)
             for r in checkRights:
                 if not res.get(r, False):
