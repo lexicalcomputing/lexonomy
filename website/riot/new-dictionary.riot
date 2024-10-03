@@ -198,9 +198,12 @@
                <input id="Headword"
                      type="text"
                      class="validate"
+                     value={state.headwordElement}
                      required
-                     oninput={onHeadwordInput}/>
+                     oninput={onHeadwordElementInput}/>
                <label for="title">Headword element *</label>
+               <i if={state.fileReader.readyState == 1}
+                     class="headwordElementSpinner material-icons grey-text spin">donut_large</i>
             </div>
          </div>
          <div class="row">
@@ -267,11 +270,23 @@
             structureTab: "dmlex",
             customNVHSchema: "",
             DMLexModules: [],
-            isCustomNvhSchemaValid: null
+            isCustomNvhSchemaValid: null,
+            fileReader: null
          },
 
          onBeforeMount(){
             window.structureEditorStore.reset()
+            this.state.fileReader = new FileReader
+            this.state.fileReader.onload = function(e) {
+               this.update({
+                  headwordElement: ((this.state.fileReader.result.trimStart()
+                        .split('\n')
+                        .shift() || "")
+                        .split(":")[0] || "")
+                        .trim()
+               })
+               this.refreshMakeDictFromFileButtonDisabled()
+            }.bind(this)
          },
 
          onMounted() {
@@ -370,10 +385,12 @@
          onUploadFileChange(evt){
             this.state.file = evt.target.files[0]
             this.refreshMakeDictFromFileButtonDisabled()
+            this.state.fileReader.readAsText(this.state.file, 'UTF-8')
+            this.update()
          },
 
-         onHeadwordInput(evt){
-            this.state.headword = evt.target.value
+         onHeadwordElementInput(evt){
+            this.state.headwordElement = evt.target.value
             this.refreshMakeDictFromFileButtonDisabled()
          },
 
@@ -430,7 +447,7 @@
                fd.append("deduplicate", $("#deduplicate").is(":checked"))
                fd.append("title", this.state.title)
                fd.append("url", this.state.url)
-               fd.append("hwNode", this.state.headword)
+               fd.append("hwNode", this.state.headwordElement)
                fd.append("addExamples", false)
                this.store.createDictionary(fd, {
                   processData: false,
@@ -457,7 +474,7 @@
          },
 
          checkImportProgress(upload_file_path){
-            this.store.checkImportProgress(upload_file_path)
+            this.store.checkImportProgress(this.state.newDictId, upload_file_path)
                   .done(response => {
                      clearTimeout(this.state.timeoutHandle)
                      if(response.error.length){
@@ -531,7 +548,9 @@
          },
 
          refreshMakeDictFromFileButtonDisabled(){
-            $("#makeDictFromFileButton", this.root).toggleClass("disabled", !this.state.file || !this.state.headword)
+            $("#makeDictFromFileButton", this.root).toggleClass("disabled", !this.state.file
+                  || this.state.fileReader.readyState == 1
+                  || !this.state.headwordElement)
          }
       }
    </script>
@@ -599,6 +618,11 @@
             display: block;
             width: 100%;
          }
+      }
+      .headwordElementSpinner{
+         position: absolute;
+         right: 8px;
+         top: 8px;
       }
    </style>
 </new-dictionary>

@@ -23,6 +23,8 @@
                value={state.headwordElement}
                oninput={onHeadwordElementInput}/>
          <label>Headword element</label>
+         <i if={state.fileReader.readyState == 1}
+               class="headwordElementSpinner material-icons grey-text spin">donut_large</i>
          <div class="helper-text">Element name containing headword</div>
       </div>
       <div class="mt-8">
@@ -137,7 +139,22 @@
             isImporting: false,
             errorMessage: "",
             infoMessage: "",
-            showLog: false
+            showLog: false,
+            fileReader: null
+         },
+
+         onBeforeMount(){
+            this.state.fileReader = new FileReader
+            this.state.fileReader.onload = function(e) {
+               this.update({
+                  headwordElement: ((this.state.fileReader.result.trimStart()
+                        .split('\n')
+                        .shift() || "")
+                        .split(":")[0] || "")
+                        .trim()
+               })
+               this.refreshStartImportBtnDisabled()
+            }.bind(this)
          },
 
          onBeforeUnmount(){
@@ -147,7 +164,8 @@
 
          onFileChange(evt){
             this.state.file = evt.target.files[0]
-            this.refreshStartImportBtnDisabled()
+            this.state.fileReader.readAsText(this.state.file, 'UTF-8')
+            this.update()
          },
 
          onHeadwordElementInput(evt){
@@ -202,7 +220,7 @@
          },
 
          checkImportProgress(upload_file_path){
-            this.state.checkImportRequest = this.store.checkImportProgress(upload_file_path)
+            this.state.checkImportRequest = this.store.checkImportProgress(this.dictData.dictId, upload_file_path)
                   .done(response => {
                      clearTimeout(this.state.timeoutHandle)
                      if(response.error.length){
@@ -239,6 +257,11 @@
    <style type="scss">
       .uploadForm .input-field{
          max-width: 400px;
+      }
+      .headwordElementSpinner{
+         position: absolute;
+         right: 8px;
+         top: 8px;
       }
       .importProgress{
          max-width: 300px;
