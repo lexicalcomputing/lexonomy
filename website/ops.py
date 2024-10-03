@@ -743,7 +743,7 @@ def recur_filter(node, structure_nodes):
     for item in node:
         for key in list(item.keys()):
             if not key.startswith('_'):
-                if item.get(key, False) and item[key][0]['_path'] not in structure_nodes:
+                if item.get(key, False) and key not in structure_nodes:
                     del item[key]
                 elif item.get(key, False):
                     recur_filter(item[key], structure_nodes)
@@ -754,12 +754,12 @@ def filter_nodes(examples_json, structure_nodes):
     for entry in examples_json['entry']:
         for key in list(entry.keys()):
             if not key.startswith('_'):
-                if entry.get(key, False) and entry[key][0]['_path'] not in structure_nodes:
+                if entry.get(key, False) and key not in structure_nodes:
                     del entry[key]
                 elif entry.get(key, False):
                     recur_filter(entry[key], structure_nodes)
-        result.append({'json': {'entry': [entry], '_path': '', '_value': ''},
-                       'nvh': json2nvh_str({'entry': [entry], '_path': '', '_value': ''}),
+        result.append({'json': {'entry': [entry], '_value': ''},
+                       'nvh': json2nvh_str({'entry': [entry], '_value': ''}),
                        'doctype': 'enntry',
                        "title": '<span class="headword">' + entry["_value"] + '</span>',
                        'sortkey': entry["_value"]})
@@ -2982,16 +2982,14 @@ def dql2sqlite(query): # TODO search
 
 def nvh2jsonDump(entryNvh):
     if type(entryNvh) == str:
-        jsonEntry = nvh2jsonNode(nvh.parse_string(entryNvh))
-    else:
-        jsonEntry = nvh2jsonNode(entryNvh)
+        entryNvh = nvh.parse_string(entryNvh)
+    jsonEntry = nvh2jsonNode(entryNvh)
     return json.dumps(jsonEntry)
 
 def nvh2json(entryNvh):
     if type(entryNvh) == str:
-        jsonEntry = nvh2jsonNode(nvh.parse_string(entryNvh))
-    else:
-        jsonEntry = nvh2jsonNode(entryNvh)
+        entryNvh = nvh.parse_string(entryNvh)
+    jsonEntry = nvh2jsonNode(entryNvh)
     return jsonEntry
 
 def nvh2jsonNode(nvhNode):
@@ -3003,19 +3001,20 @@ def nvh2jsonNode(nvhNode):
         curr_path.insert(0, p.name)
         p = p.parent
     parent_name = '.'.join(curr_path)
-    data_obj['_path'] = parent_name
+    data_obj['_name'] = nvhNode.name
 
     if nvhNode.value:
         data_obj['_value'] = nvhNode.value
     for c in nvhNode.children:
-        if not data_obj.get(c.name):
-            data_obj[c.name] = []
-        data_obj[c.name].append(nvh2jsonNode(c))
+        path = parent_name + '.' if parent_name else ''
+        if not data_obj.get(path + c.name):
+            data_obj[path + c.name] = []
+        data_obj[path + c.name].append(nvh2jsonNode(c))
     return data_obj
 
 def json2nvhLevel(jsonNode, nvhParent):
     for key,val in jsonNode.items():
-        if key != "_value" and key != "_path":
+        if key != "_value" and key != "_name":
             for item in val:
                 indent = nvhParent.indent+"  " if nvhParent.parent else ""
                 value = item["_value"] if item.get("_value") else ""
