@@ -63,11 +63,15 @@ class StructureEditorStoreClass {
       let rootElement = this.getRootElement()
       Object.assign(element, {
          indent: rootElement ? 1 : 0,
-         parent: rootElement ?  this.structureStore.data.structure.root : null,
+         parent: rootElement ? this.data.structure.root : null,
          path: rootElement ? `${this.data.structure.root}.${element.name}` : element.name,
          children: []
       })
-      rootElement && rootElement.children.push(element.path)
+      if(rootElement){
+         rootElement.children.push(element.path)
+      } else {
+         this.data.structure.root = element.name
+      }
       this.data.structure.elements[element.path] = element
       this.trigger("elementChanged")
    }
