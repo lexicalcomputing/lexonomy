@@ -693,7 +693,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     if not bottle_file_object:
         if nvh_schema_string:
             # DICTIONARY STRUCTURE
-            elements = {}
+            elements = {'tab': 'advanced'}
             nvh_structure = nvh.parse_string(nvh_schema_string)
             nvh_structure.build_json(elements)
             structure = {"root": nvh_structure.children[0].name, "elements": elements}

@@ -268,7 +268,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # =============
         # Structure
         # =============
-        elements = {}
+        elements = {'tab': 'advanced', 'dmlex_modules': []}
         get_gen_schema_elements(schema, elements)
         structure = {"root": main_node_name, "elements": elements}
         if purge_all:
