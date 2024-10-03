@@ -278,13 +278,7 @@
             window.structureEditorStore.reset()
             this.state.fileReader = new FileReader
             this.state.fileReader.onload = function(e) {
-               this.update({
-                  headwordElement: ((this.state.fileReader.result.trimStart()
-                        .split('\n')
-                        .shift() || "")
-                        .split(":")[0] || "")
-                        .trim()
-               })
+               this.update({headwordElement: this.store.guessEntryElementFromFile(this.state.fileReader.result)})
                this.refreshMakeDictFromFileButtonDisabled()
             }.bind(this)
          },
@@ -385,7 +379,7 @@
          onUploadFileChange(evt){
             this.state.file = evt.target.files[0]
             this.refreshMakeDictFromFileButtonDisabled()
-            this.state.fileReader.readAsText(this.state.file, 'UTF-8')
+            this.state.file && this.state.fileReader.readAsText(this.state.file, 'UTF-8')
             this.update()
          },
 
