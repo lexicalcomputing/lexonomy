@@ -678,7 +678,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
 
 
 def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
-             clean=False, bottle_file_object=None, hwNode=None):
+             bottle_file_object=None, hwNode=None):
     if title == "":
         title = "?"
     if blurb == "":
@@ -732,7 +732,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     attachDict(dictDB, dictID, users, dict_config)
 
     if bottle_file_object:
-        err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, clean=clean, bottle_upload_obj=bottle_file_object)
+        err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, bottle_upload_obj=bottle_file_object)
         return {'url': dictID, 'success':True, 'upload_error': err, 
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
@@ -1499,7 +1499,7 @@ def getImportProgress(file_path):
         return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], ['No log file found'], file_path
 
 
-def importfile(dictID, email, hwNode, deduplicate=False, clean=False, purge=False, purge_all=False, bottle_upload_obj=None):
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_upload_obj=None):
     """
     return progress, finished status, error messages
     """
@@ -1527,8 +1527,6 @@ def importfile(dictID, email, hwNode, deduplicate=False, clean=False, purge=Fals
         params.append('-p')
     if purge_all:
         params.append('-pp')
-    if clean:
-        params.append('-c')
 
     subprocess.Popen([currdir + "/import2dict.py", dbpath, file_path, email, hwNode] + params,
                       stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
