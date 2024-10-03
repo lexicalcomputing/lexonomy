@@ -21,15 +21,17 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.vertical = this.isChildInline(this.props.position) && this.isChildInline(this.props.position + 1)
+            this.state.vertical = false/*!this.props.block
+                  && this.isChildInline(this.props.position)
+                  && this.isChildInline(this.props.position + 1)*/
          },
 
          onDndStart(){
             if(!this.state.active
                   && (this.props.element == this.nvhData.detachedEntry
                      || (this.nvhData.draggedElement != this.props.element
-                        && this.nvhStore.getAvailableParentElementNames(this.nvhData.draggedElement.name).includes(this.props.element.name)
-                        && (this.props.element == this.nvhData.draggedElement.parent || this.nvhStore.canHaveAnotherChild(this.props.element, this.nvhData.draggedElement.name))
+                        && this.nvhStore.getAvailableParentElementPaths(this.nvhData.draggedElement.path).includes(this.props.element.path)
+                        && (this.props.element == this.nvhData.draggedElement.parent || this.nvhStore.canHaveAnotherChild(this.props.element, this.nvhData.draggedElement.path))
                      )
                   )
                ){
@@ -62,16 +64,16 @@
             this.nvhStore.trigger("updateElements", [this.nvhData.draggedElement.parent])
             this.nvhStore.stopElementDragging()
             $(this.root).removeClass("nvh-hover")
-         },
+         }/*,
 
          isChildInline(position){
             let child = this.props.element.children[position - 1]
             if(child){
-               let style = this.nvhStore.getElementStyle(child.name)
+               let style = this.nvhStore.getElementStyle(child.path)
                return style && style.layout == "inline"
             }
             return false
-         }
+         }*/
       }
    </script>
 

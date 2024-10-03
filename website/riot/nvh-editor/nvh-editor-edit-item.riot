@@ -1,5 +1,5 @@
 <nvh-editor-edit-item id="nvh-item-{props.element.id}"
-      class="nvh-editor-item nvh-editor-el-{window.idEscape(props.element.name)} {state.style.layout == 'inline' ? 'nvh-inline' : 'nvh-block'} {props.readOnly ? 'nvh-read-only' : ''} {!props.readOnly || props.allowDnd ? 'nvh-allow-dnd' : ''}"
+      class="nvh-editor-item nvh-editor-el-{window.idEscape(props.element.path)} {props.readOnly ? 'nvh-read-only' : ''} {!props.readOnly || props.allowDnd ? 'nvh-allow-dnd' : ''}"
       draggable="true"
       ondragstart={onDragStart}
       ondragend={onDragEnd}
@@ -18,7 +18,7 @@
                   class="nvh-warning pulse tooltipped"
                   data-tooltip={props.element.warnings.join("<br>")}
                   style="background-color: {state.labelColor};">!</span>
-            {store.getElementDisplayedName(props.element.name)}{props.element.value ? ": " : ""}
+            {store.getElementDisplayedName(props.element.path)}{props.element.value ? ": " : ""}
             <nvh-plugin-buttons if={!props.readOnly && state.config.type}
                   element={props.element}/>
             <i if={props.element.children.length && !props.readOnly}
@@ -77,9 +77,9 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.style = this.nvhStore.getElementStyle(this.props.element.name) || {}
-            this.state.config = this.nvhStore.getElementConfig(this.props.element.name) || {}
-            this.state.labelColor = this.nvhStore.getElementColor(this.props.element.name)
+            this.state.style = this.nvhStore.getElementStyle(this.props.element.path) || {}
+            this.state.config = this.nvhStore.getElementConfig(this.props.element.path) || {}
+            this.state.labelColor = this.nvhStore.getElementColor(this.props.element.path)
          },
 
          onUpdateElements(elementList){
@@ -171,15 +171,6 @@
          display: block;
          &.nvh-dragged-element{
             opacity: 0.3
-         }
-         &.nvh-block{
-            display: block;
-         }
-         &.nvh-inline{
-            display: inline-block;
-            .nvh-wrapper{
-               padding-right: 10px;
-            }
          }
          &.nvh-read-only{
             .pointer {

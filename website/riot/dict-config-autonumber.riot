@@ -62,10 +62,10 @@
             window.initFormSelects(this.root)
          },
 
-         onElementChange(elementName) {
-            let children = this.dictData.config.structure.elements[elementName].children
+         onElementChange(elementPath) {
+            let children = this.dictData.config.structure.elements[elementPath].children
             this.update({
-               countElement: elementName,
+               countElement: elementPath,
                storeElementList: children,
                storeElement: children[0]
             })

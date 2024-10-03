@@ -5,7 +5,7 @@
             Element
          </span>
          <span class="nvh-values">
-            {props.elementName.split(".").pop()}
+            {props.elementPath.split(".").pop()}
          </span>
       </div>
       <div class="nvh-option nvh">
@@ -275,8 +275,12 @@
             </span>
             <span class="nvh-values">
                <select onchange={onSelectOptionChangeClick.bind(this, "layout")}>
-                  <option value="block"
-                        selected={state.style.layout == "block"}>Before and after</option>
+                  <option value="before"
+                        selected={state.style.layout == "before"}>Before</option>
+                  <option value="after"
+                        selected={state.style.layout == "after"}>After</option>
+                  <option value="both"
+                        selected={state.style.layout == "both"}>Before and after</option>
                   <option value="inline"
                         selected={state.style.layout == "inline"}>None</option>
                </select>
@@ -315,8 +319,8 @@
                ["rtl", "right to left"]
             ]
 
-            this.state.style = this.nvhStore.getElementStyle(this.props.elementName) || {},
-            this.state.availableOptions = this.getAvailableOptions(this.props.elementName)
+            this.state.style = this.nvhStore.getElementStyle(this.props.elementPath) || {},
+            this.state.availableOptions = this.getAvailableOptions(this.props.elementPath)
          },
 
          onMounted(){
@@ -324,8 +328,8 @@
          },
 
          onBeforeUpdate(){
-            this.state.style = this.nvhStore.getElementStyle(this.props.elementName) || {},
-            this.state.availableOptions = this.getAvailableOptions(this.props.elementName)
+            this.state.style = this.nvhStore.getElementStyle(this.props.elementPath) || {},
+            this.state.availableOptions = this.getAvailableOptions(this.props.elementPath)
          },
 
          onUpdated(){
@@ -361,9 +365,9 @@
          onNameInput(evt){
             let name = evt.target.value
             let isNameValid = !this.nvhStore.findElement(el => {
-               return el.name != this.props.elementName
+               return el.path != this.props.elementPath
                      && (el.name.toLowerCase() == name.toLowerCase()
-                           || this.store.getElementDisplayedName(el.name.toLowerCase()) == name.toLowerCase())
+                           || this.store.getElementDisplayedName(el.path).toLowerCase() == name.toLowerCase())
             })
             if(isNameValid){
                this.changeElementStyle("name", name)
@@ -376,19 +380,19 @@
          },
 
          changeElementStyle(option, value){
-            this.nvhStore.changeElementStyleOption(this.props.elementName, option, value)
-            this.props.onChange && this.props.onChange(this.props.elementName, option, value)
+            this.nvhStore.changeElementStyleOption(this.props.elementPath, option, value)
+            this.props.onChange && this.props.onChange(this.props.elementPath, option, value)
             this.update()
          },
 
-         getAvailableOptions(elementName){
-            let config = this.nvhStore.getElementConfig(elementName)
+         getAvailableOptions(elementPath){
+            let config = this.nvhStore.getElementConfig(elementPath)
             if(config){
                let options = []
                if(config.type == "markup"){
                   options = ["border", "borderRadius", "background", "colour", "slant", "weight", "textsize"]
                } else {
-                  if(this.nvhData.rootElement != elementName){
+                  if(this.nvhData.rootElement != elementPath){
                      options.push("hidden")
                   }
                   if(config.type != "empty"){

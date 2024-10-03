@@ -7,20 +7,20 @@
          <h2>Element</h2>
          <div class="elementWrapper">
             <div each={element in elementOptionList}
-                  class="element pointer {element.elementName == state.elementName ? 'selectedElement' : ''}"
-                  onclick={onElementClick.bind(this, element.elementName)}
-                  onmouseenter={onElementMouseEnter.bind(this, element.elementName)}
-                  onmouseleave={onElementMouseLeave.bind(this, element.elementName)}
+                  class="element pointer {element.path == state.path ? 'selectedElement' : ''}"
+                  onclick={onElementClick.bind(this, element.path)}
+                  onmouseenter={onElementMouseEnter.bind(this, element.path)}
+                  onmouseleave={onElementMouseLeave.bind(this, element.path)}
                   style="{element.style}">
-               {store.getElementDisplayedName(element.elementName)}
-               <i if={element.elementName == state.elementName}
+               {store.getElementDisplayedName(element.path)}
+               <i if={element.path == state.elementPath}
                      class="selectedElementArrow grey-text material-icons">chevron_right</i>
             </div>
          </div>
       </div>
       <div class="elementStyleColumn borderLeft borderRight pl-6 pr-6 pb-6">
          <h2>Style</h2>
-         <element-style-options element-name={state.elementName}/>
+         <element-style-options element-path={state.elementPath}/>
       </div>
       <div class="exampleColumn pl-6">
          <h2>Example</h2>
@@ -77,7 +77,7 @@
 
          state: {
             isBusy: false,
-            elementName: null,
+            elementPath: null,
             exampleElement: ""
          },
 
@@ -89,11 +89,11 @@
             this.state.customCss = formatting.customCss
             this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
                return {
-                  elementName: element.elementName,
+                  path: element.path,
                   style: `color: ${element.color}; padding-left: ${element.indent * 15 + 25}px`
                }
             })
-            this.state.elementName = this.elementOptionList[0].elementName
+            this.state.elementPath = this.elementOptionList[0].path
             const changeEntryId = () => {
                if(this.dictData.entryList.length){
                   // TODO: change to randomone.json once fixed
@@ -118,15 +118,15 @@
             window.CustomStyles.remove("nvhEditorCustomStyles")
          },
 
-         onElementClick(elementName){
-            this.update({elementName: elementName})
+         onElementClick(elementPath){
+            this.update({elementPath: elementPath})
          },
 
          onExampleClick(evt){
             let nvhEditorViewItem = $(evt.target).closest("nvh-editor-view-item")
             if(nvhEditorViewItem.length){
-               let elementName = this.nvhStore.getElementById(nvhEditorViewItem.attr("id").split("-")[2]).name
-               this.update({elementName: elementName})
+               let elementPath = this.nvhStore.getElementById(nvhEditorViewItem.attr("id").split("-")[2]).path
+               this.update({elementPath: elementPath})
             }
          },
 
@@ -134,15 +134,15 @@
             this.store.changeEntryId(entry.id)
          },
 
-         onElementMouseEnter(elementName){
+         onElementMouseEnter(elementPath){
             if(this.nvhStore.data.entry){
                $(".highlighted", this.root).removeClass("highlighted")
-               let selector = this.nvhStore.findElements(e => e.name == elementName).map(e => `#nvh-item-${e.id}`).join(",")
+               let selector = this.nvhStore.findElements(e => e.path == elementPath).map(e => `#nvh-item-${e.id}`).join(",")
                $(selector, this.root).addClass("highlighted")
             }
          },
 
-         onElementMouseLeave(elementName){
+         onElementMouseLeave(){
             $(".highlighted", this.root).removeClass("highlighted")
          },
 

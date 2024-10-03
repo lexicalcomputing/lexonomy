@@ -177,11 +177,7 @@ class StoreClass {
 
    getElementDisplayedName(elementPath){
       let elementName = elementPath.split(".").pop()
-      let formatting = this.data.config.formatting.elements
-      if(formatting && formatting[elementName] && formatting[elementName].name){
-         return formatting[elementName].name
-      }
-      return elementName
+      return this.data.config.formatting.elements?.[elementPath]?.name || elementName
    }
 
    getFlag(flagName){
@@ -350,19 +346,18 @@ class StoreClass {
                      response.configs.searchability.templates = []
                   }
                   if(elements){
-                     Object.keys(elements).forEach(elementName => {
-                        if(!response.configs.formatting.elements[elementName]){
-                           response.configs.formatting.elements[elementName] = {}
+                     Object.keys(elements).forEach(elementPath => {
+                        if(!response.configs.formatting.elements[elementPath]){
+                           response.configs.formatting.elements[elementPath] = {}
                         }
                      })
-                     Object.entries(elements).forEach(([elementName, element]) => {
-                        element.name = elementName
+                     Object.entries(elements).forEach(([elementPath, element]) => {
                         if(typeof element.children == "undefined"){
                            element.children = []
                         }
-                        element.children.forEach(childName => {
-                           elements[childName].parent = elementName
-                        })
+                        /*element.children.forEach(childName => {
+                           elements[childName].parent = elementPath
+                        })*/
                         if(typeof element.min != "undefined"){
                            element.min = element.min * 1
                         }
@@ -612,6 +607,7 @@ class StoreClass {
    }
 
    createEntryLink(source_el, target_dict, target_id, target_el){
+      // TODO use paths
       return window.connection.get({
          url: `${window.API_URL}${this.data.dictId}/links/add`,
          data: {

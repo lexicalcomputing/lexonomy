@@ -65,8 +65,8 @@ window.nvhPlugins.ske = {
       let operations = []
       if (element.name == config.structure.root && config.ske.concquery.length > 0) {
          let cql = config.ske.concquery.replace(/%\([^)]+\)/g, function (match) {
-            let elementName = match.substring(2, match.length - 1)
-            let element = window.nvhStore.findElement(el => el == elementName)
+            let elementPath = match.substring(2, match.length - 1)
+            let element = window.nvhStore.findElement(el => el.path == elementPath)
             return element ? element.value : ""
          })
          operations.push({
@@ -98,7 +98,7 @@ window.nvhPlugins.ske = {
    },
 
    getHeadword(){
-      return window.nvhStore.findElement(e => e.name == window.store.data.config.titling.headword).value
+      return window.nvhStore.findElement(e => e.path == window.store.data.config.titling.headword).value
    },
 
    onPluginButtonClick(element, evt){
