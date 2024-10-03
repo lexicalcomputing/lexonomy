@@ -991,15 +991,17 @@ class StoreClass {
       })
    }
 
-   checkImportProgress(upload_file_path){
+   checkImportProgress(dictId, upload_file_path){
       return window.connection.post({
-         url: `${window.API_URL}${this.data.dictId}/getImportProgress.json`,
+         url: `${window.API_URL}${dictId}/getImportProgress.json`,
          data: {upload_file_path: upload_file_path}
       })
             .done(response => {
                if(response.finished){
                   this.loadDictionaryList()
-                  this.loadEntryList()
+                  if(this.data.dictId == dictId){
+                     this.loadEntryList()
+                  }
                }
             })
    }
