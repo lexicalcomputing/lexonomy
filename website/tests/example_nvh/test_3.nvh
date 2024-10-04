@@ -7,12 +7,12 @@ entry: 3
       en_translation: English translation test_3.1
       cs_translation: Czech translation test_3.1
       de_translation: German translation test_3.1
-  image: test_3.jpg
-    license: general
-    source: source_2
-    quality: good
-    author: LCC
-    explicit: no
+    image: test_3.jpg
+      license: general
+      source: source_2
+      quality: good
+      author: LCC
+      explicit: no
   rank: 3
   flag: nok
   notes: TODO more senses

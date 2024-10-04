@@ -24,7 +24,7 @@ def condition2sql(condition, all_json_trees, tl_element, queried_trees=[]):
     if key == tl_element:
         path = f'$."_value"'
     else:
-        path = f'%.{valkey}[_]."_value"' # TODO resolve support for 0-9 items
+        path = f'%."{valkey}"[_]."_value"' # TODO resolve support for 0-9 items
 
     sql = ''
     json_tree = all_json_trees.pop(0)
@@ -58,7 +58,7 @@ def condition2sql(condition, all_json_trees, tl_element, queried_trees=[]):
         case '#<':
             sql = "((" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)<" + value + ") OR " + key_not_exists + ")"
 
-    queried_trees.append("SUBSTR(" + json_tree + ".fullkey, 0, INSTR(" + json_tree + ".fullkey, '." + valkey + "'))")
+    queried_trees.append("SUBSTR(" + json_tree + ".key, 0, INSTR(" + json_tree + ".key, '" + valkey + "'))")
     return sql
 
 

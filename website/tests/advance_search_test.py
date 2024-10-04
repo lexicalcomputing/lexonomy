@@ -21,57 +21,57 @@ class TestQueries(unittest.TestCase):
         self.db.row_factory = sqlite3.Row
 
     def test_key_exists(self):
-        self.assertListEqual(result_id_list('sense', self.db), [1, 2, 3, 5])
+        self.assertListEqual(result_id_list('entry.sense', self.db), [1, 2, 3, 5])
 
     def test_key_not_exists(self):
-        self.assertListEqual(result_id_list('sense#="0"', self.db), [4])
+        self.assertListEqual(result_id_list('entry.sense#="0"', self.db), [4])
 
     # VALUES
     def test_value_equals(self):
-        self.assertListEqual(result_id_list('sense="test_5"', self.db), [5])
+        self.assertListEqual(result_id_list('entry.sense="test_5"', self.db), [5])
 
     def test_value_not_equals(self):
-        self.assertListEqual(result_id_list('sense!="test_5"', self.db), [1,2,3,4])
+        self.assertListEqual(result_id_list('entry.sense!="test_5"', self.db), [1,2,3,4])
 
     def test_value_re_equals(self):
-        self.assertListEqual(result_id_list('sense~="test_2.*"', self.db), [2])
+        self.assertListEqual(result_id_list('entry.sense~="test_2.*"', self.db), [2])
 
     # COUNT
     def test_count_more_than(self):
-        self.assertListEqual(result_id_list('s_example#>"0"', self.db), [1, 2, 3])
+        self.assertListEqual(result_id_list('entry.sense.example#>"0"', self.db), [1, 2, 3])
 
     def test_count_less_than(self):
-        self.assertListEqual(result_id_list('image#<"2"', self.db), [1,2,3,4])
+        self.assertListEqual(result_id_list('entry.sense.image#<"2"', self.db), [1,2,3,4])
 
     def test_count_equals(self):
-        self.assertListEqual(result_id_list('sense#="2"', self.db), [1,2])
+        self.assertListEqual(result_id_list('entry.sense#="2"', self.db), [1,2])
 
     # OPERATORS
     def test_and_operator(self):
-        self.assertListEqual(result_id_list('sense and flag="nok"', self.db), [3])
+        self.assertListEqual(result_id_list('entry.sense and entry.flag="nok"', self.db), [3])
 
     def test_where_operator(self):
-        self.assertListEqual(result_id_list('s_image#="1" where s_i_quality="bad"', self.db), [2])
+        self.assertListEqual(result_id_list('entry.sense.image#="1" where entry.sense.image.quality="bad"', self.db), [2])
 
     def test_where_operator_2(self):
-        self.assertListEqual(result_id_list('i_quality="good" where i_license="general"', self.db), [3, 5])
+        self.assertListEqual(result_id_list('entry.sense.image.quality="good" where entry.sense.image.license="general"', self.db), [1, 2, 3, 5])
 
     def test_where_operator_3(self):
-        self.assertListEqual(result_id_list('i_quality="good" where i_license="general" where i_author="LCC"', self.db), [3, 5])
+        self.assertListEqual(result_id_list('entry.sense.image.quality="good" where entry.sense.image.license="general" where entry.sense.image.author="LCC"', self.db), [1, 2, 3, 5])
     
     def test_where_operator_4(self):
         # TODO [FAIL for now] the restriction on tree.fullpath is not enough need to somehow apply the count again
-        self.assertListEqual(result_id_list('sense#="2" where (s_e_quality="good")', self.db), [1])
+        self.assertListEqual(result_id_list('entry.sense#="2" where (entry.sense.example.quality="good")', self.db), [1])
 
     def test_where_operator_with_or(self):
-        self.assertListEqual(result_id_list('s_image#="1" where (s_i_quality="bad" or s_i_quality="low")', self.db), [2])
+        self.assertListEqual(result_id_list('entry.sense.image#="1" where (entry.sense.image.quality="bad" or entry.sense.image.quality="low")', self.db), [2])
 
     def test_or_operator(self):
-        self.assertListEqual(result_id_list('flag="nok" or flag="low_frq"', self.db), [3, 4, 5])
+        self.assertListEqual(result_id_list('entry.flag="nok" or entry.flag="low_frq"', self.db), [3, 4, 5])
 
     def test_query_parse_1(self):
-        query = 'sense~="my t*" where (flag="nok" or flag="offensive") where image'
-        self.assertEqual(get_query_parts(query), [{'attr': 'sense', 'op': '~=', 'val': 'my t*'}, 'where', [{'attr': 'flag', 'op': '=', 'val': 'nok'}, 'or', {'attr': 'flag', 'op': '=', 'val': 'offensive'}], 'where', {'attr': 'image', 'op': None, 'val': None}])
+        query = 'entry.sense~="my t*" where (entry.flag="nok" or entry.flag="offensive") where entry.sense.image'
+        self.assertEqual(get_query_parts(query), [{'attr': 'entry.sense', 'op': '~=', 'val': 'my t*'}, 'where', [{'attr': 'entry.flag', 'op': '=', 'val': 'nok'}, 'or', {'attr': 'entry.flag', 'op': '=', 'val': 'offensive'}], 'where', {'attr': 'entry.sense.image', 'op': None, 'val': None}])
 
     def test_query_parse_2(self):
         query = 'definition!="asda*" and (headword!="sads" and (example_translation!="akk"))'
