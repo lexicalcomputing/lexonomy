@@ -2983,12 +2983,16 @@ def dql2sqlite(query): # TODO search
 def nvh2jsonDump(entryNvh):
     if type(entryNvh) == str:
         entryNvh = nvh.parse_string(entryNvh)
+    else:
+        entryNvh = nvh.parse_string(entryNvh.dump_string())
     jsonEntry = nvh2jsonNode(entryNvh)
     return json.dumps(jsonEntry)
 
 def nvh2json(entryNvh):
     if type(entryNvh) == str:
         entryNvh = nvh.parse_string(entryNvh)
+    else:
+        entryNvh = nvh.parse_string(entryNvh.dump_string())
     jsonEntry = nvh2jsonNode(entryNvh)
     return jsonEntry
 
