@@ -58,6 +58,12 @@
             isRegistering: false
          },
 
+         onBeforeMount(){
+            let lexonomynext = window.url.parseQuery(window.location.href).next
+                  || encodeURIComponent(window.location.href)
+            this.state.skeLoginUrl = `${this.dictData.siteconfig.sketchengineLoginPage}&lexonomynext=${lexonomynext}`
+         },
+
          onKeyUp(evt){
             evt.keyCode == 13 && this.doRegister()
          },
