@@ -1,4 +1,4 @@
-<nvh-item-value-editor class="nvh-item-value-editor {state.style.layout == 'block' ? 'TODOnvh-full-width' : ''}">
+<nvh-item-value-editor class="nvh-item-value-editor inlineBlock">
    <div if={state.showEditor}
          class="nvh-text-value">
       <div class="nvh-toolbar">
@@ -363,9 +363,7 @@
       :host{
          display: block;
          min-width: 200px;
-         &.nvh-full-width{
-            width: 100%;
-         }
+         max-width: min(75vw, 800px);
          &.nvh-item-value-editor{
             .select-wrapper input{
                width: auto;
