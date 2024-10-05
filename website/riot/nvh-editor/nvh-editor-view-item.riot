@@ -5,7 +5,7 @@
       <span if={state.beforeElementContent}
             class="nvh-gutter">{state.beforeElementContent}</span>
       <span class="nvh-outer-wrapper nvh-el-outer-{state.escapedPath} {getOuterWrapperStyleClasses()}">
-         <div if={["before", "both"].includes(state.style.layout)}></div>
+         <div if={["before", "both"].includes(state.style.lineBreak)}></div>
          <span if={!["empty", "markup"].includes(state.config.type) && !state.style.hideValue}
                class="nvh-inner-wrapper nvh-el-inner-{state.escapedPath} {getInnerWrapperStyleClasses()}">
             <span if={!props.element.edit}
@@ -31,7 +31,7 @@
             <nvh-item-value-editor if={props.element.edit}
                   element={props.element}/>
          </span>
-         <div if={["after", "both"].includes(state.style.layout)}></div>
+         <div if={["after", "both"].includes(state.style.lineBreak)}></div>
          <!--nvh-dnd-zone if={!state.style.hidden}
                element={props.element}
                position=0/-->
@@ -40,10 +40,10 @@
             <template each={(child, idx) in props.element.children}
                   key={child.id}
                   if={isChildElementVisible(child)}>
-               <div if={["before", "both"].includes(nvhStore.getElementStyle(child.path)?.layout)}></div>
+               <div if={["before", "both"].includes(nvhStore.getElementStyle(child.path)?.lineBreak)}></div>
                <nvh-editor-view-item element={child}
                      read-only={props.readOnly}/>
-               <div if={["after", "both"].includes(nvhStore.getElementStyle(child.path)?.layout)}></div>
+               <div if={["after", "both"].includes(nvhStore.getElementStyle(child.path)?.lineBreak)}></div>
                <!--nvh-dnd-zone if={isElementDisplayed(child.path)}
                      element={props.element}
                      position={idx + 1}/-->
@@ -367,8 +367,6 @@
       .nvh_s_gutter_hanging .nvh-readonly-value{
          margin-left: 40px;
          text-indent: -20px;
-      }
-      .nvh_s_layout{
       }
       .nvh_s_separation{
       }

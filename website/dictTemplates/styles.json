@@ -1,6 +1,6 @@
 {
     "entry": {
-        "layout": "block",
+        "lineBreak": "after",
         "separation": "space",
         "gutter": "",
         "weight": "bold",
@@ -9,7 +9,7 @@
         "textsize": "bigger"
     },
     "partOfSpeech": {
-        "layout": "inline",
+        "lineBreak": "none",
         "separation": "space",
         "gutter": "",
         "weight": "",
@@ -17,7 +17,7 @@
         "colour": "green"
     },
     "flag": {
-        "layout": "inline",
+        "lineBreak": "none",
         "separation": "space",
         "gutter": "",
         "weight": "",
@@ -26,7 +26,7 @@
         "innerPunc": "squareBrackets"
     },
     "sense": {
-        "layout": "block",
+        "lineBreak": "after",
         "separation": "space",
         "gutter": "None",
         "weight": "bold",
@@ -36,30 +36,30 @@
         "background": "yellow"
     },
     "example": {
-        "layout": "block",
+        "lineBreak": "after",
         "gutter": "indent",
         "slant": "italic"
     },
     "example_translation": {
-        "layout": "block",
+        "lineBreak": "after",
         "slant": "italic",
         "colour": "blue"
     },
     "example_lang": {
-        "layout": "block",
+        "lineBreak": "after",
         "innerPunc": "colon"
     },
     "translation": {
-        "layout": "block",
+        "lineBreak": "after",
         "colour": "blue"
     },
     "lang": {
-        "layout": "block",
+        "lineBreak": "after",
         "innerPunc": "colon",
         "colour": "grey",
         "textsize": "smaller"
     },
     "__other__": {
-        "layout": "block"
+        "lineBreak": "after"
     }
 }
