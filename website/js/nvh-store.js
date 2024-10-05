@@ -190,7 +190,8 @@ class NVHStoreClass {
    }
 
    hasEntryChanged(){
-      return !this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
+      return window.store.data.entryId == "new"
+            ||!this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
    }
 
    showRevision(revision){
