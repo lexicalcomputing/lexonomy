@@ -315,11 +315,8 @@
             }
          },
 
-         onDMLexSchemaChange(DMLexSchema, DMLexXlingualLanguages){
-            this.update({
-               DMLexSchema: DMLexSchema,
-               DMLexXlingualLanguages: DMLexXlingualLanguages
-            })
+         onDMLexSchemaChange(DMLexSchema){
+            this.update({DMLexSchema: DMLexSchema})
          },
 
          onDMLexModulesChange(DMLexModules, DMLexXlingualLanguages, DMLexEtymologyLanguages){
@@ -403,7 +400,7 @@
                      tab: "dmlex",
                      root: this.state.DMLexSchema.root,
                      elements: this.state.DMLexSchema.elements,
-                     modules: this.state.DMLexModules,
+                     dmlex_modules: this.state.DMLexModules,
                      xlingual_langs: this.state.DMLexXlingualLanguages,
                      etymology_langs: this.state.DMLexEtymologyLanguages
                   })
@@ -415,7 +412,7 @@
                      tab: "custom",
                      root: root,
                      elements: elements,
-                     modules: []
+                     dmlex_modules: []
                   })
                })
             }
