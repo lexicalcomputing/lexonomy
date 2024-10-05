@@ -1083,6 +1083,13 @@ class NVHStoreClass {
                if(element.value){
                   warnings.push(`Element "${element.name}" should not have any text.`)
                }
+            } else if(config.type == "string"){
+               if(config.re){
+                  let re = new RegExp(config.re)
+                  if(!re.test(element.value)){
+                     warnings.push(`Element "${element.name}" does not match regular expression.`)
+                  }
+               }
             } else if(config.type == "list"){
                if(!element.value){
                   warnings.push(`Element "${element.name}" should not be empty.`)
