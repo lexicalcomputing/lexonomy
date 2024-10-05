@@ -93,13 +93,13 @@
             this.state.query = this.props.searchWord
             this.state.cql = `[lemma="${this.props.searchWord}"]`
             this.state.title = `Sketch Engine ${this.props.method}`
-            let skeContainerName = {
+            let skeContainerId = {
                examples: "exampleContainer",
                definitions: "definitionContainer",
                thesaurus: "thesaurusContainer",
                collocations: "collocationContainer"
             }[this.props.method];
-            this.state.containerName =  this.dictData.config.ske[skeContainerName]
+            this.state.containerPath =  this.dictData.config.ske[skeContainerId]
          },
 
          onMounted(){
@@ -134,7 +134,7 @@
          },
 
          onRowClick(row, evt){
-            let element = this.nvhStore._addChildElement(this.nvhData.detachedEntry, this.state.containerName)
+            let element = this.nvhStore._addChildElement(this.nvhData.detachedEntry, this.state.containerPath)
             element.value = typeof row == "string" ? row : `${row.left} ${row.kwic} ${row.right}`
             this.state.data = this.state.data.filter(r => r != row)
             this.update()

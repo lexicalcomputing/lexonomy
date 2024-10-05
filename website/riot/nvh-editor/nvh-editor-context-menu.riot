@@ -282,7 +282,7 @@
                      label: "Child",
                      options: availAbleChildElements.map(path => ({
                         label: this.store.getElementDisplayedName(path),
-                        action: this.nvhStore.addChildElement.bind(this.nvhStore, element, path.split(".").pop())
+                        action: this.nvhStore.addChildElement.bind(this.nvhStore, element, path)
                      }))
                   })
                }
@@ -292,14 +292,14 @@
                      label: "Sibling before",
                      options: availSiblingsElements.map(path => ({
                         label: this.store.getElementDisplayedName(path),
-                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, path.split(".").pop(), 'before')
+                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, path, 'before')
                      }))
                   }, {
                      id: "addSiblingAfter",
                      label: "Sibling after",
                      options: availSiblingsElements.map(path => ({
                         label: this.store.getElementDisplayedName(path),
-                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, path.split(".").pop(), 'after')
+                        action: this.nvhStore.addSiblingElement.bind(this.nvhStore, element, path, 'after')
                      }))
                   })
                }
