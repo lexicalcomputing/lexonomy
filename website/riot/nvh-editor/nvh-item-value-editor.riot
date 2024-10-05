@@ -331,7 +331,7 @@
                markupElements.each((idx, el) => {
                   let markupValue = el.textContent
                   let preceedingText = window.getElementPreceedingText(el)
-                  let childElement = this.nvhStore._addChildElement(this.props.element, elementPath.split(".").pop())
+                  let childElement = this.nvhStore._addChildElement(this.props.element, elementPath)
                   childElement.value = markupValue
                   preceedingValueCount = Array.from(preceedingText.matchAll(window.reEscape(markupValue))).length
                   if(preceedingValueCount){

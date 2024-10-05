@@ -922,8 +922,8 @@ class NVHStoreClass {
       }
    }
 
-   addChildElement(element, childElementName){
-      let childElement = this._addChildElement(element, childElementName)
+   addChildElement(element, childElementPath){
+      let childElement = this._addChildElement(element, childElementPath)
       this.addRequiredChildren(childElement)
       this.trigger("updateElements", [element])
       this.trigger("closeContextMenu")
@@ -931,9 +931,9 @@ class NVHStoreClass {
       this.history.addState()
    }
 
-   addSiblingElement(element, siblingElementName, position){
+   addSiblingElement(element, siblingElementPath, position){
       let idx = element.parent.children.indexOf(element) + (position == 'after' ? 1 : 0)
-      let siblingElement = this._addChildElement(element.parent, siblingElementName, idx)
+      let siblingElement = this._addChildElement(element.parent, siblingElementPath, idx)
       this.addRequiredChildren(siblingElement)
       this.trigger("updateElements", [element.parent])
       this.trigger("closeContextMenu")
@@ -947,7 +947,7 @@ class NVHStoreClass {
          let childConfig = this.getElementConfig(childPath)
          if(childConfig.min > 0){
             Array.from({length: childConfig.min}).forEach(empty => {
-               let childElement = this._addChildElement(element, childPath.split(".").pop())
+               let childElement = this._addChildElement(element, childPath)
                this.addRequiredChildren(childElement)
             })
          }
@@ -959,19 +959,18 @@ class NVHStoreClass {
       config && config.children.forEach(childPath => {
          let childConfig = this.getElementConfig(childPath)
          Array.from({length: childConfig.min || 1}).forEach(empty => {
-            let childElement = this._addChildElement(element, childPath.split(".").pop())
+            let childElement = this._addChildElement(element, childPath)
             this.addAllChildren(childElement)
          })
       })
    }
 
-   _addChildElement(element, childElementName, idx){
-      let path = `${element.path}.${childElementName}`
+   _addChildElement(element, childElementPath, idx){
       let childElement = {
          id: this._getNewElementId(),
-         path: path,
-         name: childElementName,
-         value: this._getElementDefaultValue(path),
+         path: childElementPath,
+         name: childElementPath.split(".").pop(),
+         value: this._getElementDefaultValue(childElementPath),
          indent: element.indent + 1,
          parent: element,
          children: [],
