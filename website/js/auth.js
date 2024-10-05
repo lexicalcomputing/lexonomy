@@ -75,10 +75,13 @@ class AuthClass {
             data: {
                email: email
             },
-            failMessage: "Registration failed.",
-            successMessage: "Registration was successfully completed."
-
+            failMessage: "Registration failed."
          })
+            .done(response => {
+               if(response.success){
+                  window.showToast("Registration was successfully completed.")
+               }
+            })
    }
 
    registerPassword(token, password){
