@@ -151,7 +151,7 @@
                               .done(response => {
                                  this.update({isLoadingCorpora: false})
                                  let corpusList = response.data.map(corpus => {
-                                    let size = corpus.sizes ? `, ${(corpus.sizes.tokencount / 1000000).toFixed(2)}M tokens` : ""
+                                    let size = corpus.sizes ? `, ${window.Formatter.num(corpus.sizes.tokencount / 1000000, 2)}M tokens` : ""
                                     return {
                                        value: corpus.corpname,
                                        label: corpus.name,

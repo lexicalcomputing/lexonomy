@@ -553,6 +553,7 @@ table.striped thead tr{
    padding: 0!important;
    display: flex;
    align-items: center;
+   white-space: pre;
 }
 .autocomplete-content .info{
    color: #9e9e9e !important;
