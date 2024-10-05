@@ -252,8 +252,8 @@ class ConfigurationCheckerClass {
             if(!regex.test(config.ske.concquery)){
                result.push(["ske", "warning", `Concordance query does not contain %(ELEMENT).`])
             }
-            config.ske.concquery.match(regex)
-                  .map(x => x.slice(2, -1))
+            let match = config.ske.concquery.match(regex)
+            match && match.map(x => x.slice(2, -1))
                   .forEach(elementPath => {
                      if(!this.isElementInStructure(elementPath, config)){
                         result.push(["ske", "error", `Element "${elementPath}" in Concordance query not found in entry structre.`])
