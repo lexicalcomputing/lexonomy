@@ -268,21 +268,21 @@
                      oninput={onLabelInput}/>
             </span>
          </div>
-         <div if={state.availableOptions.includes("layout")}
+         <div if={state.availableOptions.includes("lineBreak")}
                class="nvh-option">
             <span class="nvh-label">
                Line break
             </span>
             <span class="nvh-values">
-               <select onchange={onSelectOptionChangeClick.bind(this, "layout")}>
+               <select onchange={onSelectOptionChangeClick.bind(this, "lineBreak")}>
                   <option value="before"
-                        selected={state.style.layout == "before"}>Before</option>
+                        selected={state.style.lineBreak == "before"}>Before</option>
                   <option value="after"
-                        selected={state.style.layout == "after"}>After</option>
+                        selected={state.style.lineBreak == "after"}>After</option>
                   <option value="both"
-                        selected={state.style.layout == "both"}>Before and after</option>
-                  <option value="inline"
-                        selected={state.style.layout == "inline"}>None</option>
+                        selected={state.style.lineBreak == "both"}>Before and after</option>
+                  <option value="none"
+                        selected={state.style.lineBreak == "none" || !state.style.lineBreak}>None</option>
                </select>
             </span>
          </div>
@@ -398,7 +398,7 @@
                   if(config.type != "empty"){
                      options.push("hideValue")
                   }
-                  options.push(...["layout", "separation", "gutter", "border", "borderRadius", "background", "outerPunc", "label"])
+                  options.push(...["lineBreak", "separation", "gutter", "border", "borderRadius", "background", "outerPunc", "label"])
                   if(["string", "int", "bool", "list"].includes(config.type)){
                      options.push(...["colour", "slant", "weight", "textsize", "direction","innerPunc"])
                   }
