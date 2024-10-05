@@ -268,9 +268,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # =============
         # Structure
         # =============
-        elements = {'tab': 'advanced', 'dmlex_modules': []}
+        elements = {}
         get_gen_schema_elements(schema, elements)
-        structure = {"root": main_node_name, "elements": elements}
+        structure = {"root": main_node_name, "elements": elements, 'tab': 'advanced', 'dmlex_modules': []}
         if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
