@@ -92,22 +92,20 @@
                }
             }
             this.focusInput()
-            if(this.state.showEditor){
-               setTimeout(() => {
-                  // timeout, so that clicking to open this editor does not cause it to close
-                  document.addEventListener("mousedown", this.handleMouseDownOutside)
+            setTimeout(() => {
+               // timeout, so that clicking to open this editor does not cause it to close
+               document.addEventListener("mousedown", this.handleMouseDownOutside)
+               if(this.state.showEditor){
                   document.addEventListener("selectionchange", this.onSelectionChange)
                   document.addEventListener("selectstart", this.onSelectionStart)
-               }, 0)
-            }
+               }
+            }, 0)
          },
 
          onBeforeUnmount(){
-            if(this.state.showEditor){
-               document.removeEventListener("mousedown", this.handleMouseDownOutside)
-               document.removeEventListener("selectionchange", this.onSelectionChange)
-               document.removeEventListener("selectstart", this.onSelectionStart)
-            }
+            document.removeEventListener("mousedown", this.handleMouseDownOutside)
+            document.removeEventListener("selectionchange", this.onSelectionChange)
+            document.removeEventListener("selectstart", this.onSelectionStart)
          },
 
          onUndoClick(){
@@ -229,6 +227,7 @@
 
          onBoolChange(evt){
             this.nvhStore.changeElementValue(this.props.element, evt.target.value)
+            this.nvhStore.stopElementEditing()
          },
 
          getValueForEditor(){
@@ -295,7 +294,11 @@
 
          handleMouseDownOutside(evt){
             if(!this.root.contains(evt.target)){
-               this.changeValue()
+               if(this.state.showEditor){
+                  this.changeValue()
+               } else {
+                  this.nvhStore.stopElementEditing()
+               }
             }
          },
 
