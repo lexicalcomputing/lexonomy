@@ -99,12 +99,21 @@
             let alt = evt.altKey
             let shift = evt.shiftKey
             let actions = this.nvhStore.getAvailableActions()
-            if (evt.key == "1"){ // 1
-               !ctrl &&  alt && !shift && actions.view && this.nvhStore.changeEditorMode("view")
-            } else if (evt.key == "2"){ // 2
-               !ctrl && alt && !shift && actions.edit && this.nvhStore.changeEditorMode("edit")
-            } else if (evt.key == "3"){ // 3
-               !ctrl && alt && !shift && actions.code && this.nvhStore.changeEditorMode("code")
+            if (evt.key == "1"){
+               if(!ctrl && alt && !shift && actions.view){
+                  evt.preventDefault()
+                  this.nvhStore.changeEditorMode("view")
+               }
+            } else if (evt.key == "2"){
+               if(!ctrl && alt && !shift && actions.edit){
+                  evt.preventDefault()
+                  this.nvhStore.changeEditorMode("edit")
+               }
+            } else if (evt.key == "3"){
+               if(!ctrl && alt && !shift && actions.code){
+                  evt.preventDefault()
+                  this.nvhStore.changeEditorMode("code")
+               }
             } else if(key == 13){  // enter
                ctrl && !alt && !shift && this.saveEntryAndGoToNext(evt)
             } else if(evt.key == "n"){  // n
