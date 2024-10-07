@@ -291,7 +291,7 @@ class ConfigurationCheckerClass {
       } else {
          if(!config.structure.root){
             result.push(["structure", "error", `Root element is not defined in entry structure.`])
-         } else if(!this.isElementInStructure(config.structure.root, config)){f
+         } else if(!this.isElementInStructure(config.structure.root, config)){
             result.push(["structure", "error", `Root element not found in structure definition.`])
          }
          if(!config.structure.elements){
