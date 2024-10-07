@@ -627,7 +627,7 @@ table.striped thead tr{
 
 @media screen and (max-width: 1500px) {
    .container.wideContainer{
-      width: 95vw;
+      max-width: 95vw;
    }
 }
 
