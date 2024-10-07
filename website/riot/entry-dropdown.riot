@@ -25,7 +25,7 @@
                            html: entry.title,
                            entry: entry,
                            value: entry.id,
-                           label: entry.sortKey
+                           label: entry.title.replace(/<[^>]+>/g, '')  // remove html tags
                         })
                         ))
                      }
