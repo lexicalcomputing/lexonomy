@@ -213,6 +213,7 @@ class StoreClass {
             && this.data.config.structure
             && this.data.config.structure.root
             && this.data.config.structure.elements
+            && !!this.data.config.structure.elements[this.data.config.structure.root]
             && Object.values(this.data.config.structure.elements).every(element => {
                return element.children
                      && element.type

@@ -1373,15 +1373,17 @@ class NVHStoreClass {
       let list = []
       elementPath = elementPath || this.data.rootElement
       let elementConfig = this.data.structure.elements[elementPath]
-      list.push({
-         path: elementPath,
-         elementName: elementConfig.name,
-         color: this.getElementColor(elementPath),
-         indent: indent
-      })
-      elementConfig && elementConfig.children.forEach(childPath => {
-         list.push(...this.getElementTreeList(childPath, indent + 1))
-      })
+      if(elementConfig){
+         list.push({
+            path: elementPath,
+            elementName: elementConfig.name,
+            color: this.getElementColor(elementPath),
+            indent: indent
+         })
+         elementConfig && elementConfig.children.forEach(childPath => {
+            list.push(...this.getElementTreeList(childPath, indent + 1))
+         })
+      }
       return list
    }
 
