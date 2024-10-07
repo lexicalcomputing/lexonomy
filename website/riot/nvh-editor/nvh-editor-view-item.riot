@@ -150,17 +150,20 @@
             }
             let gutter = this.state.style.gutter
             if(gutter){
-               let idx = this.props.element.parent ? this.props.element.parent.children.filter(c => c.path == this.props.element.path).indexOf(this.props.element) + 1 : 1
-               if(map[gutter]){
-                  return map[gutter]
-               } else if(gutter == 'sensenum0'){
-                  return window.numToRomanNum(idx) + "."
-               } else if(gutter == 'sensenum1'){
-                  return idx + "."
-               } else if(gutter == 'sensenum2'){
-                  return window.numToAlphabet(idx) + "."
-               } else if(gutter == 'sensenum3'){
-                  return window.numToRomanNum(idx).toLowerCase() + "."
+               let siblingElements = this.props.element.parent ? this.props.element.parent.children.filter(c => c.path == this.props.element.path) : []
+               if(siblingElements.length > 1 || this.state.style.indentAll){
+                  let idx = siblingElements.indexOf(this.props.element) + 1
+                  if(map[gutter]){
+                     return map[gutter]
+                  } else if(gutter == 'sensenum0'){
+                     return window.numToRomanNum(idx) + "."
+                  } else if(gutter == 'sensenum1'){
+                     return idx + "."
+                  } else if(gutter == 'sensenum2'){
+                     return window.numToAlphabet(idx) + "."
+                  } else if(gutter == 'sensenum3'){
+                     return window.numToRomanNum(idx).toLowerCase() + "."
+                 }
               }
             }
          },

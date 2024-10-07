@@ -31,14 +31,14 @@
             Hide element
          </span>
          <span class="nvh-values">
-               <label>
-                  <input id="hidden"
-                        type="checkbox"
-                        checked={state.style.hidden ? 'checked' : ''}
-                        name="hidden"
-                        onchange={onCheckboxChange}/>
-                  <span></span>
-               </label>
+            <label class="inlineBlock verticalMiddle">
+               <input id="hidden"
+                     type="checkbox"
+                     checked={state.style.hidden ? 'checked' : ''}
+                     name="hidden"
+                     onchange={onCheckboxChange}/>
+               <span></span>
+            </label>
          </span>
       </div>
       <template if={!state.style.hidden}>
@@ -48,13 +48,13 @@
                Hide value
             </span>
             <span class="nvh-values">
-                  <label>
-                     <input type="checkbox"
-                           checked={state.style.hideValue ? 'checked' : ''}
-                           name="hideValue"
-                           onchange={onCheckboxChange}/>
-                     <span></span>
-                  </label>
+               <label class="inlineBlock verticalMiddle">
+                  <input type="checkbox"
+                        checked={state.style.hideValue ? 'checked' : ''}
+                        name="hideValue"
+                        onchange={onCheckboxChange}/>
+                  <span></span>
+               </label>
             </span>
          </div>
          <div if={state.availableOptions.includes("textsize")}
@@ -126,9 +126,9 @@
             </span>
             <span class="nvh-values">
                <select onchange={onSelectOptionChangeClick.bind(this, "direction")}>
-                     <option each={option in directionOptions}
-                           value="{option[0]}"
-                           selected={option[0] == state.style.direction}>{option[1]}</option>
+                  <option each={option in directionOptions}
+                        value="{option[0]}"
+                        selected={option[0] == state.style.direction}>{option[1]}</option>
                </select>
             </span>
          </div>
@@ -248,13 +248,48 @@
                Indentation and bulleting
             </span>
             <span class="nvh-values">
-               <select onchange={onSelectOptionChangeClick.bind(this, "gutter")}>
-                  <option each={option in gutterOptions}
-                        value="{option[0]}"
-                        selected={option[0] == state.style.gutter}>{option[1]}</option>
-               </select>
+               <span>
+                  <select onchange={onSelectOptionChangeClick.bind(this, "gutter")}>
+                     <option value=""
+                           selected={!state.style.gutter}>None</option>
+                     <option each={option in gutterOptions}
+                           value="{option[0]}"
+                           selected={option[0] == state.style.gutter}>{option[1]}</option>
+                  </select>
+               </span>
+               <label if={!!state.style.gutter}
+                     class="inlineBlock verticalMiddle mt-2">
+                  <input id="indentAll"
+                        type="checkbox"
+                        checked={state.style.indentAll ? 'checked' : ''}
+                        name="indentAll"
+                        onchange={onCheckboxChange}/>
+                  <span class="hint tooltipped addToSingleOption"
+                        data-tooltip="Indentation and bulleting is displayed only if there is two or more elements. To display it even for one element, set this option on.">
+                        add to single
+                     <i class="material-icons">help</i>
+                  </span>
+               </label>
             </span>
          </div>
+         <!--div if={state.availableOptions.includes("gutter") && state.style.gutter != ""}
+               class="nvh-option">
+            <span class="nvh-label hint tooltipped pl-8"
+                  data-tooltip="Indentation and bulleting is applied only if there is two or more elements. To use it even for one element, check this option on.">
+                  Add to single element
+               <i class="material-icons">help</i>
+            </span>
+            <span class="nvh-values">
+               <label class="inlineBlock verticalMiddle">
+                  <input id="indentAll"
+                        type="checkbox"
+                        checked={state.style.indentAll ? 'checked' : ''}
+                        name="indentAll"
+                        onchange={onCheckboxChange}/>
+                  <span></span>
+               </label>
+            </span>
+         </div-->
          <div if={state.availableOptions.includes("label")}
                class="nvh-option">
             <span class="nvh-label">
@@ -281,7 +316,7 @@
                         selected={state.style.lineBreak == "after"}>After</option>
                   <option value="both"
                         selected={state.style.lineBreak == "both"}>Before and after</option>
-                  <option value="none"
+                  <option value=""
                         selected={state.style.lineBreak == "none" || !state.style.lineBreak}>None</option>
                </select>
             </span>
@@ -301,7 +336,6 @@
             this.nvhData = this.nvhStore.data
 
             this.gutterOptions = [
-               ["", "None"],
                ["disk", "Round bullet"],
                ["square", "Square bullet"],
                ["diamond", "Diamond bullet"],
@@ -537,6 +571,9 @@
       }
       .dropdown-content{
          min-width: 200px;
+      }
+      .addToSingleOption{
+         text-transform: none
       }
    </style>
 </element-style-options>
