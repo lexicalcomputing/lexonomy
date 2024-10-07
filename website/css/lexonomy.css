@@ -564,6 +564,11 @@ table.striped thead tr{
    color: #F44336 !important;
 }
 
+.material-tooltip{
+   max-width: 500px;
+   text-align: left;
+}
+
 .spin{
    animation: container-rotate 800ms linear infinite;
 }
