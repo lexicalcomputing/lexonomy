@@ -333,7 +333,7 @@
          },
 
          onUpdated(){
-            window.initFormSelects(this.root)
+            window.initFormSelects(this.root, null, {container: document.body})
             //fixed riot bug/feature, if user changes value, then navigates to element without label, label is not updated
             $("#label").val(this.state.style.label)
             if($("#hidden")[0]){
