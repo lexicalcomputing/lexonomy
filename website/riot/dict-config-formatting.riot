@@ -28,11 +28,12 @@
                class="exampleBar grey lighten-4 displayFlex mb-2">
             <entry-dropdown on-change={onExampleEntryChanged}/>
             <i class="material-icons grey-text">search</i>
-            <button class="btn btn-flat  tooltipped ml-auto"
+            <!-- randomone.json does not work, temporarily hidden -->
+            <!--button class="btn btn-flat  tooltipped ml-auto"
                   onclick={onReloadRandomEntryClick}
                   data-tooltip="Load random entry.">
                <i class="material-icons">autorenew</i>
-            </button>
+            </button-->
          </div>
          <div class="exampleWrapper positionRelative">
             <loading-overlay if={dictData.isEntryListLoading || dictData.isEntryLoading}/>
@@ -93,7 +94,7 @@
                   style: `color: ${element.color}; padding-left: ${element.indent * 15 + 25}px`
                }
             })
-            this.state.elementPath = this.elementOptionList[0].path
+            this.state.elementPath = this.elementOptionList[0]?.path
             const changeEntryId = () => {
                if(this.dictData.entryList.length){
                   // TODO: change to randomone.json once fixed
