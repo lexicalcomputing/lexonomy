@@ -51,7 +51,7 @@
 
          onMounted(){
             let highlight = (editor) => {
-               let code = editor.textContent || ""
+               let code = window.escapeHTML(editor.textContent) || ""
                let codeWithPaths = this.nvhStore.replaceElementNamesWithPaths(code)
                let pathWithIndent
                let path

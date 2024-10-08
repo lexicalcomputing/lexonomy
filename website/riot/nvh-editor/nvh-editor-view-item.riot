@@ -109,7 +109,7 @@
          },
 
          getReadOnlyValue(){
-            let value = this.props.element.value
+            let value = window.escapeHTML(this.props.element.value)
             if (this.state.config.type == "string"){
                value = value.replace(/\\n/g, "<br>")
             } else if(this.state.config.type == "bool"){

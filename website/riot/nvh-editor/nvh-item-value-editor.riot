@@ -231,7 +231,7 @@
          },
 
          getValueForEditor(){
-            let value = this.props.element.value.replace(/\\n/g, "<br>")
+            let value = window.escapeHTML(this.props.element.value).replace(/\\n/g, "<br>")
             return this.nvhStore.replaceMarkupOccurrences(value, this.props.element, this.getElementMarkupHTML.bind(this))
          },
 
