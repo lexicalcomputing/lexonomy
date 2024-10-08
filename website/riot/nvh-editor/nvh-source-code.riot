@@ -88,7 +88,7 @@
 
          updateSourceCode(){
             this.validate(this.nvhData.entry)
-            this.editor.updateCode(this.nvhStore.jsonToNvh(this.nvhData.entry, 0, false))
+            this.editor.updateCode(this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry)))
             this.update()
             this.updateLineNumbers()
          },

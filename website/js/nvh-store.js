@@ -42,7 +42,7 @@ class NVHStoreClass {
       if(this.data.customEditor && window.store.data.editorMode != "code"){
          this.setEntryFromCustomEditor()
       }
-      let nvh = this.jsonToNvh(this.data.entry)
+      let nvh = this.replaceElementPathsWithNames(this.jsonToNvh(this.data.entry))
       if(window.store.data.entryId != "new"){
          return window.store.updateEntry(nvh)
                .always(response => {
@@ -251,11 +251,10 @@ class NVHStoreClass {
       }
    }
 
-   jsonToNvh(element, indent=0, fullPath=true){
-      let key = fullPath ? element.name : element.name.split(".").pop()
-      let nvh = `${" ".repeat(indent * 2)}${key}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.nvhNewLine)}\n`
+   jsonToNvh(element, indent=0){
+      let nvh = `${" ".repeat(indent * 2)}${element.path}: ${element.value === null ? "" : (element.value + "").replaceAll("\n", this.const.nvhNewLine)}\n`
          element.children && element.children.forEach(child => {
-         nvh += this.jsonToNvh(child, indent + 1, fullPath)
+         nvh += this.jsonToNvh(child, indent + 1)
       }, this)
       return nvh
    }
@@ -422,6 +421,22 @@ class NVHStoreClass {
             lastIndent = indent
             lastElementName = name
             return `${whiteSpaces}${elementPath}:${value}`
+         }
+         return row
+      }).join("\n")
+   }
+
+   replaceElementPathsWithNames(nvh){
+      let pathWithIndent
+      let value
+      let path
+      let name
+      return nvh.split("\n").map(row => {
+         if(row.match(/^(\s*)([a-zA-Z0-9-_.]+):(.*)$/)){
+            [pathWithIndent, value] = row.split(/:(.*)/s) // split by first colon
+            path = pathWithIndent.trim()
+            name = path.split(".").pop()
+            return `${pathWithIndent.replace(path, name)}: ${value}`
          }
          return row
       }).join("\n")
