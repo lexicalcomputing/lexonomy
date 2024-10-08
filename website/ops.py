@@ -1715,6 +1715,8 @@ def updateDictConfig(dictDB, dictID, configID, content):
             value = {"root": nvh_structure.children[0].name, "elements": elements}
         elif content.get('jsonSchema', False):
             value = content['jsonSchema']
+        elif content.get('elements', False):
+            value = content
     else:
         value = content
 

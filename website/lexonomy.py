@@ -848,30 +848,30 @@ def importconfigs(dictID, user, dictDB, configs):
         return {"success": False}
     else:
         upload = request.files.get("myfile")
-        # try:
-        data = json.loads(upload.file.read().decode())
-        resaveNeeded = False
-        for key in data:
-            if key == 'ske':
-                adjustedJson = {}
-                adjustedJson['ske'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', data['ske'])
-                resaveNeeded = False
-            elif key == 'users':
-                # raise Exception(type(data[key]))
-                old_users = ops.updateDictAccess(dictID, data[key])
-                ops.notifyUsers(old_users, data[key], configs['ident'], dictID)
-            elif key == 'dict_settings':
-                ops.updateDictSettings(dictID, json.dumps(data[key]))
-            else:
-                adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
+        try:
+            data = json.loads(upload.file.read().decode())
+            resaveNeeded = False
+            for key in data:
+                if key == 'ske':
+                    adjustedJson = {}
+                    adjustedJson['ske'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', data['ske'])
+                    resaveNeeded = False
+                elif key == 'users':
+                    # raise Exception(type(data[key]))
+                    old_users = ops.updateDictAccess(dictID, data[key])
+                    ops.notifyUsers(old_users, data[key], configs['ident'], dictID)
+                elif key == 'dict_settings':
+                    ops.updateDictSettings(dictID, json.dumps(data[key]))
+                else:
+                    adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
 
-        if resaveNeeded:
-            configs = ops.readDictConfigs(dictDB)
-            ops.resave(dictDB, dictID, configs)
+            if resaveNeeded:
+                configs = ops.readDictConfigs(dictDB)
+                ops.resave(dictDB, dictID, configs)
 
-        return {"success": True}
-        # except:
-            # return {"success": False}
+            return {"success": True}
+        except Exception as e:
+            return {"success": False, "error": json.dumps(e)}
 
 @get(siteconfig["rootPath"]+"<dictID>/download.json") # OK
 @authDict(["canDownload"], True)
