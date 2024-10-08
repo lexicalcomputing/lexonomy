@@ -199,8 +199,8 @@ class StructureEditorStoreClass {
                }
             }
          }
-         if(element.regex){
-            regex = ` ~${element.regex}`
+         if(element.re){
+            regex = ` ~${element.re}`
          }
          if(element.type == "list" && element.values && element.values.length){
             values = ` [${element.values.map(value => `"${value}"`).join(",")}]`

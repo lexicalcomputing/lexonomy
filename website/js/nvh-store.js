@@ -1181,7 +1181,7 @@ class NVHStoreClass {
       let re = new RegExp(`^${space}(?<count>([\\*\\?\\+]|${num}\\+|${num}-${num}|${num})?)${space}`
                    + `(?<type>(${types})?)${space}`
                    + `(?<values>(\\[${space}"[^"]*"(${space},${space}"[^"]*")*${space}\\])?)${space}`
-                   + `(?<regex>(~.*?)?)${space}$`)
+                   + `(?<re>(~.*?)?)${space}$`)
       let parsed = re.exec(value)
       if(!parsed){
          return null
@@ -1212,7 +1212,7 @@ class NVHStoreClass {
                               .split(",")
                               .map(v => v.slice(1,-1))  // remove quotes
                         : null,
-            regex: parsed.groups.regex
+            re: parsed.groups.re ? parsed.groups.re.slice(1) : ""  // remove ~
          }
       }
    }
