@@ -1,65 +1,162 @@
 {
-    "entry": {
-        "lineBreak": "after",
-        "separation": "space",
-        "gutter": "",
-        "weight": "bold",
-        "slant": "",
-        "colour": "red",
-        "textsize": "bigger"
-    },
-    "partOfSpeech": {
-        "lineBreak": "none",
-        "separation": "space",
-        "gutter": "",
-        "weight": "",
-        "slant": "italic",
-        "colour": "green"
-    },
-    "flag": {
-        "lineBreak": "none",
-        "separation": "space",
-        "gutter": "",
-        "weight": "",
-        "slant": "",
-        "colour": "grey",
-        "innerPunc": "squareBrackets"
-    },
-    "sense": {
-        "lineBreak": "after",
-        "separation": "space",
-        "gutter": "None",
-        "weight": "bold",
-        "slant": "",
-        "colour": "",
-        "border": "solid",
-        "background": "yellow"
-    },
-    "example": {
-        "lineBreak": "after",
-        "gutter": "indent",
-        "slant": "italic"
-    },
-    "example_translation": {
-        "lineBreak": "after",
-        "slant": "italic",
-        "colour": "blue"
-    },
-    "example_lang": {
-        "lineBreak": "after",
-        "innerPunc": "colon"
-    },
-    "translation": {
-        "lineBreak": "after",
-        "colour": "blue"
-    },
-    "lang": {
-        "lineBreak": "after",
-        "innerPunc": "colon",
-        "colour": "grey",
-        "textsize": "smaller"
-    },
-    "__other__": {
-        "lineBreak": "after"
-    }
+   "entry": {
+      "weight": "bold",
+      "textsize": 6,
+      "colour": "blue"
+   },
+   "entry.homograph": {
+      "textsize": 3,
+      "weight": "bold",
+      "colour": "blue"
+   },
+   "entry.pos": {
+      "colour": "grey",
+      "weight": "bold",
+      "lineBreak": "after"
+   },
+   "entry.label": {
+      "hidden": true
+   },
+   "entry.pronunciation": {
+      "hideValue": true
+   },
+   "entry.pronunciation.transcription": {
+      "innerPunc": "squareBrackets",
+      "weight": "bold",
+      "textsize": 2
+   },
+   "entry.pronunciation.transcription.scheme": {
+      "colour": "grey",
+      "textsize": 1,
+      "hideValue": true,
+      "hidden": true
+   },
+   "entry.pronunciation.label": {
+      "textsize": 1,
+      "colour": "grey"
+   },
+   "entry.form": {
+      "lineBreak": "before"
+   },
+   "entry.form.tag": {
+      "textsize": 1,
+      "hidden": true
+   },
+   "entry.form.label": {
+      "textsize": 1,
+      "colour": "grey"
+   },
+   "entry.form.pronunciation": {
+      "hideValue": true
+   },
+   "entry.form.pronunciation.transcription": {
+      "innerPunc": "squareBrackets",
+      "weight": "bold"
+   },
+   "entry.form.pronunciation.transcription.scheme": {
+      "textsize": 1,
+      "colour": "grey",
+      "hidden": true
+   },
+   "entry.sense": {
+      "weight": "bold",
+      "colour": "blue",
+      "textsize": 3,
+      "label": "➽"
+   },
+   "entry.sense.label": {
+      "border": "thick",
+      "borderRadius": "large",
+      "background": "blue"
+   },
+   "entry.sense.definition": {
+      "textsize": 3
+   },
+   "entry.sense.definition.definitionType": {
+      "textsize": 1,
+      "borderRadius": "large",
+      "border": "solid",
+      "hidden": true
+   },
+   "entry.sense.definition.headword": {
+      "hidden": true
+   },
+   "entry.sense.definition.collocate": {
+      "hidden": true
+   },
+   "entry.sense.definition.collocate.lemma": {
+      "hidden": true
+   },
+   "entry.sense.example": {
+      "textsize": 2,
+      "colour": "blue",
+      "slant": "italic",
+      "label": "⏵",
+      "border": "solid"
+   },
+   "entry.sense.example.sourceIdentity": {
+      "hidden": true
+   },
+   "entry.sense.example.sourceElaboration": {
+      "hidden": true
+   },
+   "entry.sense.example.soundFile": {
+      "hidden": true
+   },
+   "entry.sense.example.label": {
+      "hidden": true
+   },
+   "entry.sense.example.headword": {
+      "hidden": true
+   },
+   "entry.sense.example.collocate": {
+      "textsize": 1,
+      "colour": "blue",
+      "hidden": true
+   },
+   "entry.sense.example.collocate.lemma": {
+      "hidden": true
+   },
+   "entry.sense.example.collocate.label": {
+      "textsize": 1,
+      "colour": "grey"
+   },
+   "entry.sense.example.de_exampleTranslation": {
+      "textsize": 2,
+      "slant": "italic",
+      "colour": "green",
+      "label": "⏵"
+   },
+   "entry.sense.example.de_exampleTranslation.soundFile": {
+      "hidden": true
+   },
+   "entry.sense.example.de_exampleTranslation.label": {
+      "hidden": true
+   },
+   "entry.sense.example.de_exampleTranslation.headword": {
+      "hidden": true
+   },
+   "entry.sense.example.de_exampleTranslation.collocate": {
+      "hidden": true
+   },
+   "entry.sense.example.de_exampleTranslation.collocate.lemma": {
+      "hidden": true
+   },
+   "entry.sense.de_explanation": {
+      "textsize": 2,
+      "colour": "green"
+   },
+   "entry.sense.de_translation": {
+      "label": "DE",
+      "textsize": 3,
+      "colour": "green",
+      "weight": "bold",
+      "lineBreak": "both"
+   },
+   "entry.sense.de_translation.placeholder": {
+      "hidden": true
+   },
+   "__other__": {
+      "lineBreak": "after"
+   }
 }

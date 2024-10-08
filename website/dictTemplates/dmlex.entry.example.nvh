@@ -1,28 +1,135 @@
 entry: lens
-  homograph: 1
   pos: N
   label: label
-  pronunciation: lɛns
+  pronunciation: lens-n.mp3
     transcription: lenz
       scheme: IPA
-    label: google
   form: lenses
     tag: pl
-    label: label
-    pronunciation: lenziz
+    pronunciation: lenses-n.mp3
       transcription: lenziz
         scheme: IPA
-    label: google
-  sense: camera lens
-    definition: assembly of optical lenses used to direct light on camera sensor
+  sense: in photography
+    definition: an assembly of optical lenses used to direct light on a camera sensor
       definitionType: type1
       headword: lenses
       collocate: optical
         lemma: optical
         label: label
-        id: 1
+    de_translation: Kameraobjektiv
+      placeholder: objektiv
+    de_explanation: Anordnung von Linsen, die verwendet werden, um Licht auf den Kamerasensor zu lenken
+    example: For portrait shooting I bought a new 50mm camera lens for my Sony camera.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      label: label
+      headword: lens
+      de_exampleTranslation: Für Porträtaufnahmen habe ich ein neues 50-mm-Kameraobjektiv für meine Sony-Kamera gekauft.
+        soundFile: de_audio_file.mp3
+        label: label
+        headword: Kameraobjektiv
+        collocate: Kamera
+          lemma: kamera
+      collocate: camera
+        lemma: camera
+entry: tear
+  homograph: 1
+  pos: N
+  label: label
+  pronunciation: tear1-n-br.mp3
+    transcription: tɪə
+      scheme: IPA
+    label: British
+  pronunciation: tear1-n-am.mp3
+    transcription: tɪr
+      scheme: IPA
+    label: American
+  form: tears
+    tag: pl
+    label: google
+    pronunciation: tears-n.mp3
+      transcription: tɪəz
+        scheme: IPA
+  sense:
+    definition: drops of salty liquid coming out of your eyes when you are sad or crying
+      definitionType: full
+      headword: liquid
+      collocate: crocodile
+        lemma: crocodile
+        label: label
+    definition: drops of liquid coming from your eyes
+      definitionType: abbreviated
+    de_translation: Träne
+      placeholder: somebody
+    de_explanation: Salztropfen, die aus den Augen kommen, wenn man traurig ist oder weint
+    example: The tears were rolling down her cheeks.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      label: x
+      headword: tears
+      de_exampleTranslation: Die Tränen kullerten ihr über die Wangen.
+        soundFile: de_audio_file.mp3
+        label: x
+        headword: Tränen
+        collocate: kullerten
+          lemma: kullern
+          label: x
+      collocate: rolling
+        lemma: roll
+        label: x
+    label: human body
+entry: tear
+  homograph: 2
+  pos: V
+  label: label
+  pronunciation: tear2-v-br.mp3
+    transcription: teə
+      scheme: IPA
+    label: British
+  pronunciation: tear2-v-am.mp3
+    transcription: ter
+      scheme: IPA
+    label: American
+  form: tear
+    tag: inf
+    pronunciation: tear2-v-br.mp3
+      transcription: teə
+        scheme: IPA
+    label: British
+  form: tears
+    tag: 3pers
+    pronunciation: tears2-v-br.mp3
+      transcription: teəz
+        scheme: IPA
+    label: British
+  form: teared
+    tag: past
+    pronunciation: teared2-v-br.mp3
+      transcription: teəd
+        scheme: IPA
+    label: British
+  form: teared
+    tag: participle
+    pronunciation: teared-v-br.mp3
+      transcription: teəd
+        scheme: IPA
+    label: British
+  form: tearing
+    tag: gerund
+    pronunciation: tearing2-v-br.mp3
+      transcription: teərɪŋ
+        scheme: IPA
+    label: British
+  sense: camera lens
+    definition: assembly of optical lenses used to direct light on camera sensor
+      definitionType: full
+      headword: lenses
+      collocate: optical
+        lemma: optical
+        label: label
     de_translation: kameraobjektiv
-      pod: N
       placeholder: objektiv
     de_explanation: Anordnung von Linsen, die verwendet werden, um Licht auf den Kamerasensor zu lenken
     example: For portrait shooting I bought new 50mm camera lens for my Sony camera.
@@ -38,20 +145,111 @@ entry: lens
         collocate: Kamera
           lemma: lamera
           label: label
-          id: 2345ABGD
       collocate: camera
         lemma: camera
         label: label
-        id: 123ABC
-    id: 1244HGH
-    label: medicine
-  id: 74569FHJ
-  placeholder: lens
+    label: technology
+entry: car
+  pos: N
+  label: label
+  pronunciation: car-br.mp3
+    transcription: kɑː
+      scheme: IPA
+    label: British
+  pronunciation: car-am.mp3
+    transcription: kɑːr
+      scheme: IPA
+    label: American
+  form: cars
+    tag: pl
+    pronunciation: cars-br.mp3
+      transcription: kɑːz
+        scheme: IPA
+    label: British
+    pronunciation: cars-am.mp3
+      transcription: kɑːrz
+        scheme: IPA
+    label: American
+  sense: motor vehicle
+    definition: a road vehicle powered by an engine, typically used for transporting passengers
+      definitionType: full
+      headword: vehicle
+      collocate: road
+        lemma: road
+    de_translation: Auto
+      pos: N
+    de_explanation: Ein Straßenfahrzeug, das von einem Motor angetrieben wird und typischerweise zum Transport von Passagieren verwendet wird.
+    example: After I explained to him that I hadn't heard the car, he realized how the situation could have come about.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      headword: car
+      collocate: heard
+        lemma: hear
+      de_exampleTranslation: Nachdem ich ihm erklärte, dass ich das Auto nicht gehört hatte, wurde ihm klar, wie es zu der Situation kommen konnte.
+        soundFile: de_audio_file.mp3
+        headword: Auto
+        collocate: gehört
+          lemma: hören
+  sense: train
+    definition: a train carriage
+      definitionType: full
+      headword: carriage
+    de_translation: Wagen
+      pos: N
+    de_explanation: dem Transport von Personen oder Sachen dienendes, auf Rädern rollendes Fahrzeug, das mit einer Deichsel versehen ist und von Zugtieren (besonders Pferden) gezogen wird
+    example: Nothing was damaged and they pulled the cars back onto the rails.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file1.mp3
+      headword: cars
+      collocate: pulled
+        lemma: pull
+      de_exampleTranslation: Es wurde nichts beschädigt und die Wagen wurden wieder auf die Gleise gezogen.
+        soundFile: de_audio_file2.mp3
+        headword: Wagen
+        collocate: gezogen
+          lemma: ziehen
+entry: reduce somebody to tears
+  label:
+  sense:
+    definition: to make somebody cry
+      definitionType:
+      headword:
+      collocate:
+        lemma:
+        label:
+    de_translation: jemanden zu Tränen rühren
+      form:
+        tag:
+        label:
+        pronunciation:
+          transcription:
+            scheme:
+          label:
+      placeholder:
+    example: The documentary about animal cruelty was so distressing that it reduced me to tears.
+      sourceIdentity:
+      sourceElaboration:
+      soundFile:
+      label:
+      headword:
+      collocate:
+        lemma:
+        label:
+      de_exampleTranslation: Der Dokumentarfilm über Tierquälerei war so erschütternd, dass ich zu Tränen gerührt war.
+        soundFile:
+        label:
+        headword:
+        collocate:
+          lemma:
+          label:
+  placeholder: somebody
   etymology:
-    etymon: b2000
-      when: 600-1500
-      note: note
-      lat-med_etymonUnit: lēns
-        etymonTranslation: lentil
-        pos: N
-        reconstructed: latin
+    etymon:
+      when:
+      note:
+      oen_etymonUnit:
+        reconstructed:
+        pos:
+        etymonTranslation:
