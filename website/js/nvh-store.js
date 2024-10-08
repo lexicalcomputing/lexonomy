@@ -262,7 +262,7 @@ class NVHStoreClass {
    jsonToXML(element){
       let xml = `${" ".repeat(element.indent * 2)}<${element.name}>\n`
       if(element.value){
-         xml += `${" ".repeat((element.indent + 1) * 2)}${this.escapeXMLValue(element.value)}\n`
+         xml += `${" ".repeat((element.indent + 1) * 2)}${window.escapeHTML(element.value)}\n`
       }
       element.children.forEach(child => {
          xml += this.jsonToXML(child)
@@ -339,7 +339,7 @@ class NVHStoreClass {
             lastIndent && closeTags(line.indent)
             attributes = line.value ? ` xml:space="preserve"` : ""
             xml += `${" ".repeat(line.indent * 2)}<${line.name}${attributes}>\n`
-            xml += `${" ".repeat((line.indent + 1) * 2)}${this.escapeXMLValue(line.value)}`
+            xml += `${" ".repeat((line.indent + 1) * 2)}${window.escapeHTML(line.value)}`
             openElements.unshift(line.name)
             lastIndent = line.indent
          }
@@ -436,7 +436,7 @@ class NVHStoreClass {
             [pathWithIndent, value] = row.split(/:(.*)/s) // split by first colon
             path = pathWithIndent.trim()
             name = path.split(".").pop()
-            return `${pathWithIndent.replace(path, name)}: ${value}`
+            return `${pathWithIndent.replace(path, name)}:${value}`
          }
          return row
       }).join("\n")
@@ -1321,24 +1321,6 @@ class NVHStoreClass {
          route.base() // need to update route's "current" value in
                        //order to browser back button works correctly
       }
-   }
-
-   escapeXMLValue(str) {
-      return String(str)
-            .replace(/&/g, "&amp;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&apos;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-   }
-
-   unescapeXMLValue(value) {
-      return String(value)
-           .replace(/&quot;/g, "\"")
-           .replace(/&apos;/g, "'")
-           .replace(/&lt;/g, "<")
-           .replace(/&gt;/g, ">")
-           .replace(/&amp;/g, "&")
    }
 
    replaceMarkupOccurrences(value, element, createReplaceString) {

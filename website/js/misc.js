@@ -255,6 +255,16 @@ window.reEscape = str => {
   return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
 }
 
+
+window.escapeHTML = str => {
+   return String(str)
+         .replace(/&/g, "&amp;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&apos;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+}
+
 window.stringToElement = str => {
    // string should have only one top level element
    str = str.trim()
