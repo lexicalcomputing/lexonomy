@@ -959,7 +959,7 @@ class NVHStoreClass {
       let config = this.getElementConfig(element.path)
       config && config.children.forEach(childPath => {
          let childConfig = this.getElementConfig(childPath)
-         Array.from({length: childConfig.min || 1}).forEach(empty => {
+         Array.from({length: childConfig.min}).forEach(empty => {
             let childElement = this._addChildElement(element, childPath)
             this.addAllChildren(childElement)
          })
