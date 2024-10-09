@@ -4,13 +4,16 @@
       <div class="nvh-toolbar">
          <i class="material-icons tooltipped"
                onclick={onUndoClick}
+               data-position="top"
                data-tooltip="Undo (Ctrl + Z)">undo</i>
          <i class="material-icons tooltipped"
                onclick={onRedoClick}
+               data-position="top"
                data-tooltip="Redo (Ctrl + Y)">redo</i>
          <button each={elementPath in state.markupChildrenPaths}
                class="btn markupBtn white-text tooltipped"
                name="btn_{elementPath}"
+               data-position="top"
                data-tooltip="Mark selected text as '{store.getElementDisplayedName(elementPath)}'"
                onclick={onMarkupButtonClick.bind(this, elementPath)}
                style="--background-color: {nvhStore.getElementColor(elementPath)}">
@@ -20,6 +23,7 @@
          <span class="ml-auto"></span>
          <i class="material-icons icon-close tooltipped"
                onclick={onCloseClick}
+               data-position="top"
                data-tooltip="Close without saving (ESC)">close</i>
       </div>
       <div class="nvh-editable-div"
