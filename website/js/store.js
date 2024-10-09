@@ -565,7 +565,12 @@ class StoreClass {
             .done(response => {
                if(response.success){
                   this.data.entryId = null
-                  this.data.entryList = this.data.entryList.filter(e => e.id != response.id)
+                  let idx = this.data.entryList.findIndex(e => e.id == response.id)
+                  let nextEntry = this.data.entryList[idx + 1] || this.data.entryList[idx - 1]
+                  this.data.entryList.splice(idx, 1)
+                  if(nextEntry){
+                     this.changeEntryId(nextEntry.id)
+                  }
                   this.trigger("entryListChanged", response.id)
                }
             })
