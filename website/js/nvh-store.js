@@ -1018,7 +1018,8 @@ class NVHStoreClass {
 
    duplicateElement(element){
       let elementCopy = this.copyElementAndItsChildren(element, element.parent)
-      element.parent.children.push(elementCopy)
+      let idx = element.parent.children.indexOf(element)
+      element.parent.children.splice(idx + 1, 0, elementCopy)
       this.trigger("updateElements", [element.parent])
       this.trigger("closeContextMenu")
       this.startElementOrChildEditing(elementCopy)
