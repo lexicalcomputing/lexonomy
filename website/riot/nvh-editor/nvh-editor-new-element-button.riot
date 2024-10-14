@@ -1,0 +1,185 @@
+<nvh-editor-new-element-button>
+   <div if={state.availableElements.length}
+         class="nvh-new-element-wrapper"
+         onclick={window.stopEvtPropagation}
+         style="left: -{(props.element.path.split('.').length - 1) * 30 + 20}px">
+      <i class="dropdown-trigger material-icons tiny"
+            data-target={state.dropdownId}
+            onclick={onOpenClick}>add</i>
+      <span></span>
+      <ul if={state.isOpen}
+            id={state.dropdownId}
+            class="dropdown-content white">
+         <li class="pointerEventsNone"
+               tabindex="-1">
+            <a class="grey-text">
+               Add element
+            </a>
+         </li>
+         <li class="divider"
+               tabindex="-1">
+         </li>
+         <li each={element in state.availableElements}
+               onclick={onAddElementClick.bind(this, element.path, element.parent)}
+               style="color: {nvhStore.getElementColor(element.path)}">
+            <a>
+               {store.getElementDisplayedName(element.path)}
+               <small class="displayBlock grey-text">
+                  {store.getElementDisplayedName(element.parent.path)}→{store.getElementDisplayedName(element.path)}
+               </small>
+            </a>
+         </li>
+      </ul>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["nvhStore", "closeContextMenu", "onCloseContextMenu"],
+                    ["nvhStore", "onDndStart", "onDndStart"],
+                    ["nvhStore", "onDndStop", "onDndStop"]],
+
+         state: {
+            isOpen: false,
+            availableElements: []
+         },
+
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            this.refreshAvailableElements()
+            this.state.dropdownId = `add-dropdown-content-${this.props.element.id}`
+         },
+
+         onBeforeUpdate(){
+            this.refreshAvailableElements()
+         },
+
+         onBeforeUnmount(){
+            this.destroyDropdown()
+         },
+
+         onDndStart(){
+            this.root.style.display = "none"
+         },
+
+         onDndStop(){
+            this.root.style.display = ""
+         },
+
+         onCloseContextMenu(){
+            this.destroyDropdown()
+            this.update({isOpen: false})
+         },
+
+         onOpenClick(){
+            this.update({isOpen: true})
+            this.openDropdown()
+         },
+
+         onAddElementClick(elementPath, parent){
+            if(elementPath.startsWith(this.props.element.path)){
+               this.nvhStore.addChildElement(parent, elementPath, 0)
+            } else {
+               let element = this.props.element
+               while(element.parent.path != parent.path){
+                  element = element.parent
+               }
+               let position = parent.children.indexOf(element) + 1
+               this.nvhStore.addChildElement(parent, elementPath, position)
+            }
+         },
+
+         openDropdown(){
+            if(!this.state.dropdown){
+               let dropdownElement = $(".dropdown-trigger", this.root)
+               if(dropdownElement.length){
+                  this.state.dropdown = M.Dropdown.getInstance(dropdownElement.dropdown({
+                     container: document.body,
+                     constrainWidth: false,
+                     onCloseEnd: () => {
+                        this.destroyDropdown()
+                        this.update({isOpen: false})
+                     }
+                  }))
+               }
+            }
+            this.state.dropdown.open()
+         },
+
+         destroyDropdown(){
+            this.state.dropdown?.destroy()
+            this.state.dropdown?.$dropdownEl?.remove()
+            this.state.dropdown = null
+         },
+
+         refreshAvailableElements(){
+            let addChildrenElements = parent => {
+               this.state.availableElements.push(...this.nvhStore.getAvailableChildElements(parent)
+                     .map(elementPath => ({
+                        path: elementPath,
+                        parent: parent
+                     })))
+            }
+            this.state.availableElements = []
+            // add element children
+            addChildrenElements(this.props.element)
+            if(!this.props.element.children.length && this.props.element.parent){
+               // add element siblings
+               addChildrenElements(this.props.element.parent)
+               let element = this.props.element
+               // if element is the last child of parent, add parent siblings
+               while(element?.parent?.parent && element.parent.children.at(-1) == element){
+                  addChildrenElements(element.parent.parent)
+                  element = element.parent
+               }
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .nvh-new-element-wrapper{
+         position: absolute;
+         color: lightgray;
+         right: 100%;
+         bottom: -11px;
+         z-index: 100;
+         height: 24px;
+         i{
+            position: relative;
+            display: inline-block;
+            top: 4px;
+            width: 20px;
+            height: 20px;
+            line-height: 17px;
+            text-align: center;
+            border-radius: 50%;
+            border: 2px solid lightgray;
+            text-shadow: none!important;
+            transition: all 0.1s ease-in-out;
+            z-index: 101;
+            +span{
+               content: " ";
+               display: block;
+               position: absolute;
+               height: 2px;
+               right: -50px;
+               top: 14px;
+               left: 19px;
+               opacity: 0;
+               transition: all 0.1s ease-in-out;
+               background: rgb(211,211,211);
+               background: linear-gradient(90deg, rgba(211,211,211,1) 0%, rgba(211,211,211,1) 75%, rgba(211,211,211,0) 100%);
+            }
+            &:hover{
+               color: #fff;
+               background-color: gray;
+               border-color: gray;
+               transform: scale(1.5);
+               +span{
+                  opacity: 1
+               }
+            }
+         }
+      }
+   </style>
+</nvh-editor-new-element-button>
