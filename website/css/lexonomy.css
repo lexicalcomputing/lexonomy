@@ -625,18 +625,6 @@ table.striped thead tr{
    width: unset;
 }
 
-@media screen and (max-width: 1500px) {
-   .container.wideContainer{
-      max-width: 95vw;
-   }
-}
-
-@media screen and (max-width: 1200px) {
-   .container{
-      max-width: 98vw;
-   }
-}
-
 @media screen and (max-width: 900px){
    h1{
       font-size: 2.6rem;
