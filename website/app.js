@@ -125,6 +125,7 @@ import config_issues_icon from './riot/config-issues-icon.riot'
 import config_issues_dialog from './riot/config-issues-dialog.riot'
 import dict_configuration_issues from './riot/dict-configuration-issues.riot'
 import project_export_to_batches_form from './riot/projects/project-export-to-batches-form.riot'
+import nvh_editor_new_element_button from './riot/nvh-editor/nvh-editor-new-element-button.riot'
 
 riot_register('api', api)
 riot_register('admin-dicts', admin_dicts)
@@ -226,6 +227,6 @@ riot_register('config-issues-icon', config_issues_icon)
 riot_register('config-issues-dialog', config_issues_dialog)
 riot_register('dict-configuration-issues', dict_configuration_issues)
 riot_register('project-export-to-batches-form', project_export_to_batches_form)
-
+riot_register('nvh-editor-new-element-button', nvh_editor_new_element_button)
 
 component(App)(document.getElementById('root'))

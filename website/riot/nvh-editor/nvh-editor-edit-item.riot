@@ -11,6 +11,7 @@
          <span class="nvh-label pointer"
                onclick={!props.readOnly && onLabelClick}
                style="color: {state.labelColor};">
+            <nvh-editor-new-element-button element={props.element}/>
             <span if={props.element.isValid}
                   class="nvh-bullet"
                   style="color: {state.labelColor};"></span>
@@ -35,13 +36,19 @@
                class="nvh-value"
                style={props.element.collapsed ? 'display: none;' : ''}>
             <span if={!props.element.edit}
-                  class="nvh-readonly-value-wrapper"
-                  onmousedown={!props.readOnly && onValueMouseDown}>
-               <span class="nvh-readonly-value pointer">
+                  class="nvh-readonly-value-wrapper">
+               <span class="nvh-readonly-value pointer"
+                     onmousedown={!props.readOnly && onValueMouseDown}>
                   <raw-html content={getReadOnlyValue()}/>
                </span>
-               <i if={!props.readOnly && state.config.type}
-                     class="nvh-edit-icon pointer material-icons tiny">edit</i>
+               <span if={!props.readOnly && state.config.type}
+                     class="nvh-value-icons displayInlineFlex">
+                  <i class="pointer material-icons tiny"
+                        onmousedown={onValueMouseDown}>edit</i>
+                  <i if={props.element.name != nvhData.rootElement}
+                        class="pointer material-icons tiny"
+                        onclick={onRemoveElementClick}>delete</i>
+               </span>
             </span>
             <nvh-item-value-editor if={props.element.edit}
                   element={props.element}/>
@@ -132,6 +139,11 @@
             }
          },
 
+         onRemoveElementClick(evt){
+            evt.stopPropagation()
+            this.nvhStore.removeElement(this.props.element)
+         },
+
          onCollapseToggleClick(evt){
             this.nvhStore.toggleElementCollapsed(this.props.element)
          },
@@ -212,13 +224,36 @@
          }
       }
       .nvh-wrapper{
-         display: flex;
+         display: inline-flex;
          border-radius: 10px;
          white-space: nowrap;
-         align-items: flex-start;
+         align-items: stretch;
+         &:hover{
+            .nvh-value-icons{
+               opacity: 1;
+            }
+         }
          & > * {
             min-height: 24px;
             line-height: 24px;
+         }
+         .nvh-value-icons{
+            position: absolute;
+            left: 100%;
+            top: 1px;
+            gap: 15px;
+            padding-left: 15px;
+            i{
+               opacity: 0.3;
+               transition: all 0.1s ease-in-out;
+               &:hover{
+                  transform: scale(1.5);
+                  opacity: 0.5;
+               }
+            }
+         }
+         .nvh-value-icons{
+            opacity: 0;
          }
       }
       .nvh-item-value-editor{
@@ -229,7 +264,8 @@
          vertical-align: middle;
          position: absolute;
          left: -24px;
-         top: 0px;
+         top: 1px;
+         z-index: 500;
       }
       .nvh-bullet{
          display: inline-block;
@@ -253,6 +289,8 @@
       .nvh-label{
          font-size: 14px;
          margin-right: 5px;
+         position: relative;
+         z-index: 300;
       }
       nvh-plugin-buttons{
          vertical-align: middle;
@@ -263,20 +301,7 @@
       .nvh-readonly-value-wrapper{
          display: inline-flex;
          align-items: flex-start;
-         .nvh-edit-icon{
-            opacity: 0.3;
-            margin-left: 5px;
-            margin-top: 2px;
-            text-decoration: none;
-         }
-         &:hover{
-            i.material-icon{
-               opacity: 0.5;
-               &:hover{
-                  opacity: 1;
-               }
-            }
-         }
+         padding-right: 5px;
       }
       .nvh-collapse-toggle{
          line-height: 20px;
@@ -293,7 +318,8 @@
          position: relative;
          flex: 1;
          .nvh-readonly-value:hover{
-            text-decoration: underline;
+            text-shadow: 0px 0px black;
+            color: #000;
          }
       }
       .nvh-children{
@@ -302,5 +328,15 @@
       .raw-html {
          display: inline-block;
       }
+      nvh-editor-new-element-button{
+         opacity: 0;
+         &:hover{
+            opacity: 1
+         }
+      }
+      .nvh-wrapper:hover nvh-editor-new-element-button{
+         opacity: 0.7;
+      }
+
    </style>
 </nvh-editor-edit-item>

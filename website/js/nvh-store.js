@@ -856,12 +856,22 @@ class NVHStoreClass {
    }
 
    stopElementEditing(){
-      let elements = this.findElements(e => e.edit)
-      elements.forEach(e => {e.edit = false})
+      let elements = this.findElements(element => element.edit)
+      elements.forEach(element => {
+         if(element.isNew){
+            // element was created and its value was not changed before calling this method -> remove new element
+            let childIdx = element.parent.children.findIndex(e => e == element)
+            element.parent.children.splice(childIdx, 1)
+            this.trigger("updateElements", [element.parent])
+         } else {
+            element.edit = false
+         }
+      })
       this.trigger("updateElements", elements)
    }
 
    changeElementValue(element, value){
+      delete element.isNew
       if(element.value != value){
          element.value = value
          this.history.addState()
@@ -938,8 +948,9 @@ class NVHStoreClass {
       }
    }
 
-   addChildElement(element, childElementPath){
-      let childElement = this._addChildElement(element, childElementPath)
+   addChildElement(element, childElementPath, position){
+      let childElement = this._addChildElement(element, childElementPath, position)
+      this.addNewFlagToElement(childElement)
       this.addRequiredChildren(childElement)
       this.trigger("updateElements", [element])
       this.trigger("closeContextMenu")
@@ -950,6 +961,7 @@ class NVHStoreClass {
    addSiblingElement(element, siblingElementPath, position){
       let idx = element.parent.children.indexOf(element) + (position == 'after' ? 1 : 0)
       let siblingElement = this._addChildElement(element.parent, siblingElementPath, idx)
+      this.addNewFlagToElement(siblingElement)
       this.addRequiredChildren(siblingElement)
       this.trigger("updateElements", [element.parent])
       this.trigger("closeContextMenu")
@@ -979,6 +991,16 @@ class NVHStoreClass {
             this.addAllChildren(childElement)
          })
       })
+   }
+
+   addNewFlagToElement(element){
+      let config = this.getElementConfig(element.path)
+      if(config && !["list", "bool"].includes(config.type)){
+         // "list" or "bool" elements are created instantly, other elements are removed
+         // in stopElementEditing(), unless they were saved before. So user can undo
+         // element-creating action with ESC in value editor
+         element.isNew = true
+      }
    }
 
    _addChildElement(element, childElementPath, idx){
@@ -1020,6 +1042,7 @@ class NVHStoreClass {
       let elementCopy = this.copyElementAndItsChildren(element, element.parent)
       let idx = element.parent.children.indexOf(element)
       element.parent.children.splice(idx + 1, 0, elementCopy)
+      this.addNewFlagToElement(elementCopy)
       this.trigger("updateElements", [element.parent])
       this.trigger("closeContextMenu")
       this.startElementOrChildEditing(elementCopy)
