@@ -1650,12 +1650,9 @@ def extractText(nvhParsed, elName):
         return []
     return extractElementText(nvhParsed, elName, [])
 
-def extractElementText(nvhChild, elName, textAr):
-    if nvhChild.name == elName:
-        textAr.append(nvhChild.value)
-    else:
-        for c in nvhChild.children:
-            textAr = extractElementText(c, elName, textAr)
+def extractElementText(nvh_parsed, elName, textAr):
+    nvh_parsed.filter_entries([elName], [elName])
+    nvh_parsed.path2value(textAr)
     return textAr
 
 def extractFirstText(nvhParsed):
