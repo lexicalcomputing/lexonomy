@@ -106,7 +106,10 @@ class nvh:
             if not do_projection or project:
                 c.dump (out, project == 1)
 
-    def dump_string (self, outstr=""):
+    def dump_string (self, outstr="", do_projection = False):
+        if hasattr(self, "do_projection"):
+            delattr(self, "do_projection")
+            return self.dump_string(outstr, True)
         if self.name:
             if self.parent and self.parent.parent and self.parent.parent.name:
                 # force consistent indent
@@ -116,8 +119,16 @@ class nvh:
                 self.indent = self.parent.children[0].indent
             outstr += self.indent + self.name + ": " + self.value + "\n"
         for c in self.children:
-            outstr = c.dump_string(outstr)
+            project = getattr(c, "project", 0)
+            if not do_projection or project:
+                outstr = c.dump_string(outstr, project == 1)
         return outstr
+
+    def path2value(self, res=[]):
+        if getattr(self, "project", 0) == 2:
+            res.append(self.value)
+        for c in self.children:
+            c.path2value(res)
 
     def filter_entries (self, selectors, projectors, maxitems=0):
         def prepare_selector(q):
