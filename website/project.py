@@ -414,6 +414,11 @@ def archiveProject(project_id):
     conn.commit()
     return {"success": True, "projectID": project_id}
 
+def unarchiveProject(project_id):
+    conn = ops.getMainDB()
+    conn.execute("UPDATE projects SET active=? WHERE id=?", (1, project_id))
+    conn.commit()
+    return {"success": True, "projectID": project_id}
 
 def deleteProject(project_id):
     conn = ops.getMainDB()

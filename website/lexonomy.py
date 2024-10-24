@@ -699,6 +699,14 @@ def project_archive(projectID, user, configs):
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
 
+@post(siteconfig["rootPath"] + "projects/<projectID>/unarchive.json") # OK
+@authProject
+def project_unarchive(projectID, user, configs):
+    if projectID in configs["manager_of"] or user['isAdmin']:
+        res = project.unarchiveProject(projectID)
+        return res
+    return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
+
 @post(siteconfig["rootPath"] + "projects/<projectID>/delete.json") # OK
 @authProject
 def project_delete(projectID, user, configs):
