@@ -137,7 +137,7 @@ class TestQueries(unittest.TestCase):
         API_ENDPOINT_1 = self.website + f"/projects/{self.new_project_id}/update.json"
         data = {'name': 'LCL test project updated',
                 'description': 'This is a testing project updated',
-                'annotators': json.dumps({'__all__': ['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'xmedved1.fi.muni.cz']}),
+                'annotators': json.dumps({'sensitive': ['marek.medved3@gmail.com', 'marek.medved@sketchengine.co.uk', 'xmedved1.fi.muni.cz']}),
                 'managers': json.dumps(['marek.medved@sketchengine.eu'])}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)

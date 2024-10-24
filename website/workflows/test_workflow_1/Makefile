@@ -19,7 +19,7 @@ IMPORT_BATCH=$(DIR)/project_import_batch.py $(USER) $(TL_NODE) $(TS)
 
 ### stage snesitive ####################################################
 # QUERY need to be specified separatly
-SENSITIVE_NAME="Label sensitive words"
+SENSITIVE_TITLE="Label sensitive words"
 SENSITIVE_DESCRIPTION="Distingush sensitive words from standard words. Eg. fuck vs walk"
 SENSITIVE_ANNOTATOR_NAME="Sensitivity annotator"
 SENSITIVE_QUERY="entry.sense"
@@ -33,7 +33,7 @@ sensitive.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
 
 ### stage images ####################################################
-IMAGES_NAME="Assign image"
+IMAGES_TITLE="Assign image"
 IMAGES_DESCRIPTION="Pick the most probable image for provided word"
 IMAGES_ANNOTATOR_NAME="Image selector"
 IMAGES_QUERY="entry"
@@ -47,6 +47,9 @@ images.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
 
 ### stage images ####################################################
+SENS_EXAMPLES_TITLE="Assign sense examples"
+SENS_EXAMPLES_DESCRIPTION="Create example for sense"
+SENS_EXAMPLES_ANNOTATOR_NAME="Sense examples"
 SENS_EXAMPLES_QUERY="entry.sense"
 
 sens_examples_new_batches: sensitive.nvh
@@ -58,7 +61,7 @@ sens_examples.nvh: sensitive.nvh $(ACCEPTED_BATCHES)
 	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
 
 ### stage merge ####################################################
-FINAL_NAME="Marge annotations"
+FINAL_TITLE="Marge annotations"
 FINAL_DESCRIPTION="Combine all annotations from previous stages into final dictionary"
 
 final.nvh: $(SOURCE_DICT) sensitive.nvh images.nvh

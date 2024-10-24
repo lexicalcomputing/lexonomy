@@ -197,7 +197,7 @@ def getMakeDeps(make_file):
         else:
             data_dict[stage_name][data_name] = data
 
-    stage_pretty_name_re = re.compile('^(.*)_NAME="(.*)"$')
+    stage_pretty_name_re = re.compile('^(.*)_TITLE="(.*)"$')
     stage_description_re = re.compile('^(.*)_DESCRIPTION="(.*)"$')
     stage_annot_name_re = re.compile('^(.*)_ANNOTATOR_NAME="(.*)"$')
     stage_query_re = re.compile('^(.*)_QUERY="(.*)"$')
@@ -233,7 +233,7 @@ def getMakeDeps(make_file):
                 # add_data(make_data, stage, 'id', stage)
 
             elif stage_pretty_name_line:
-                add_data(make_data, stage_pretty_name_line.group(1).lower(), 'name', stage_pretty_name_line.group(2))
+                add_data(make_data, stage_pretty_name_line.group(1).lower(), 'title', stage_pretty_name_line.group(2))
 
             elif stage_description_line:
                 add_data(make_data, stage_description_line.group(1).lower(), 'description', stage_description_line.group(2))
@@ -253,20 +253,6 @@ def getMakeDeps(make_file):
 def getProject(projectID):
     workflow_stages = []
     conn = ops.getMainDB()
-
-    # ======================
-    # Annotators/Managers
-    # ======================
-    annotators = []
-    managers = []
-    c0 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
-    for r0 in c0.fetchall():
-        if r0['role'] == 'annotator':
-            annotators.append(r0['user_email'])
-        elif r0['role'] == 'manager':
-            managers.append(r0['user_email'])
-        else:
-            raise Exception('problem in user_projects database')
 
     # ======================
     # Stage info in DB
@@ -401,10 +387,40 @@ def getProject(projectID):
     c3 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active FROM projects WHERE id=?",
                       (projectID,))
     r3 = c3.fetchone()
+
+    # ======================
+    # Annotators/Managers
+    # ======================
+    annotators = {}
+    managers = set()
+    all_stages = make_data.keys()
+    c0 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
+    for r0 in c0.fetchall():
+        if r0['role'] in all_stages:
+            if annotators.get(r0['role']):
+                annotators[r0['role']].add(r0['user_email'])
+            else:
+                annotators[r0['role']] = set([r0['user_email']])
+        elif r0['role'] == '__all__':
+            managers.add(r0['user_email'])
+            for stage_n in all_stages:
+                if annotators.get(stage_n):
+                    annotators[stage_n].add(r0['user_email'])
+                else:
+                    annotators[stage_n] = set([r0['user_email']])
+        elif r0['role'] == 'manager':
+            managers.add(r0['user_email'])
+        else:
+            raise Exception('problem in user_projects database')
+
+    for key, value in annotators.items():
+        annotators[key] = list(value)
+    # ======================
+
     conn.close()
 
     return {"projectID": projectID, 'project_name': r3['project_name'], 'description': r3['description'],
-            'annotators': annotators, 'managers': managers, 'workflow': workflow_stages,
+            'annotators': annotators, 'managers': list(managers), 'workflow': workflow_stages,
             'language': r3['language'], 'source_dict': r3['src_dic_id'], 'active': r3['active'], 'tl_node': tl_node}
 
 
