@@ -383,7 +383,7 @@ def getProject(projectID):
         workflow_stages.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
                                 'batches': batches, 'type': stage_type, 'is_locked': phase_stack != [],
                                 'query': make_data[stage].get('query', ''),
-                                'name': make_data[stage].get('title', ''),
+                                'title': make_data[stage].get('title', ''),
                                 'description': make_data[stage].get('description', ''),
                                 'annotator_name': make_data[stage].get('annotator_name', ''),
                                 'type': make_data[stage].get('type', ''),
