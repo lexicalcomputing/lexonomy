@@ -5,7 +5,22 @@
 # import2dict.py
 
 # ============================
-# VARIABLES - Include in each workflow
+# RESTRICTIONS
+# ============================
+# .*_TYPE varaible is required for each stage availabel options: merge, gen_batch
+# .*_QUERY variable required for stages of type gen_batch
+
+# ============================
+# VARIABLES INICIALIZED FROM SHELL
+# ============================
+# USER 
+# BATCH_SIZE
+# MAX_BATCHES
+# ACCEPTED_BATCHES_FILEMASK
+# GENERATED_BATCHES_FILEMASK
+
+# ============================
+# VARIABLES - Include in each workflow (REQUIRED
 # ============================
 ACCEPTED_BATCHES=$(wildcard $(ACCEPTED_BATCHES_FILEMASK))
 DIR=%dir%
@@ -16,12 +31,14 @@ GEN_NEXT_BATCH=$(DIR)/project_gen_next_batch.py $(BATCH_SIZE) $(MAX_BATCHES) $(G
 IMPORT_BATCH=$(DIR)/project_import_batch.py $(USER) $(TL_NODE) $(TS)
 # ============================
 ### stage multi-user ####################################################
+# TODO
 
 ### stage snesitive ####################################################
 # QUERY need to be specified separatly
 SENSITIVE_TITLE="Label sensitive words"
 SENSITIVE_DESCRIPTION="Distingush sensitive words from standard words. Eg. fuck vs walk"
 SENSITIVE_ANNOTATOR_NAME="Sensitivity annotator"
+SENSITIVE_TYPE="gen_batch"
 SENSITIVE_QUERY="entry.sense"
 
 sensitive_new_batches: $(SOURCE_DICT)
@@ -36,6 +53,7 @@ sensitive.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 IMAGES_TITLE="Assign image"
 IMAGES_DESCRIPTION="Pick the most probable image for provided word"
 IMAGES_ANNOTATOR_NAME="Image selector"
+IMAGES_TYPE="gen_batch"
 IMAGES_QUERY="entry"
 
 images_new_batches: $(SOURCE_DICT)
@@ -50,6 +68,7 @@ images.nvh: $(SOURCE_DICT) $(ACCEPTED_BATCHES)
 SENS_EXAMPLES_TITLE="Assign sense examples"
 SENS_EXAMPLES_DESCRIPTION="Create example for sense"
 SENS_EXAMPLES_ANNOTATOR_NAME="Sense examples"
+SENS_EXAMPLES_TYPE="gen_batch"
 SENS_EXAMPLES_QUERY="entry.sense"
 
 sens_examples_new_batches: sensitive.nvh
@@ -63,6 +82,7 @@ sens_examples.nvh: sensitive.nvh $(ACCEPTED_BATCHES)
 ### stage merge ####################################################
 FINAL_TITLE="Marge annotations"
 FINAL_DESCRIPTION="Combine all annotations from previous stages into final dictionary"
+FINAL_TYPE="merge"
 
 final.nvh: $(SOURCE_DICT) sensitive.nvh images.nvh
 	$(DIR)/nvh.py put $< sensitive.nvh > $@.patch

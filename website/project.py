@@ -201,6 +201,7 @@ def getMakeDeps(make_file):
     stage_description_re = re.compile('^(.*)_DESCRIPTION="(.*)"$')
     stage_annot_name_re = re.compile('^(.*)_ANNOTATOR_NAME="(.*)"$')
     stage_query_re = re.compile('^(.*)_QUERY="(.*)"$')
+    stage_type_re = re.compile('^(.*)_TYPE="(.*)"$')
 
     tl_node_re = re.compile('^TL_NODE="(.*)"$')
     target_line_re = re.compile('^(.*?).nvh:\s*(.*?)$')
@@ -216,6 +217,7 @@ def getMakeDeps(make_file):
             stage_description_line = stage_description_re.match(line)
             stage_annot_name_line = stage_annot_name_re.match(line)
             stage_query_line = stage_query_re.match(line)
+            stage_type = stage_type_re.match(line)
             tl_node_line = tl_node_re.match(line)
             if target_line:
                 sources = []
@@ -244,6 +246,9 @@ def getMakeDeps(make_file):
             elif stage_query_line:
                 add_data(make_data, stage_query_line.group(1).lower(), 'query', stage_query_line.group(2))
             
+            elif stage_type:
+                add_data(make_data, stage_type.group(1).lower(), 'type', stage_type.group(2))
+
             elif tl_node_line:
                 tl_node = tl_node_line.group(1)
 
@@ -378,9 +383,10 @@ def getProject(projectID):
         workflow_stages.append({'stage': stage, 'inputDicts': input_dicts, 'outputDict': output_dict,
                                 'batches': batches, 'type': stage_type, 'is_locked': phase_stack != [],
                                 'query': make_data[stage].get('query', ''),
-                                'name': make_data[stage].get('name', ''),
+                                'name': make_data[stage].get('title', ''),
                                 'description': make_data[stage].get('description', ''),
                                 'annotator_name': make_data[stage].get('annotator_name', ''),
+                                'type': make_data[stage].get('type', ''),
                                 'log': stage_log})
 
 
