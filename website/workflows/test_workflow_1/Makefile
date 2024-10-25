@@ -5,10 +5,16 @@
 # import2dict.py
 
 # ============================
+# INFO
+# ============================
+# these variables *._TITLE, *._DESCRIPTION, *._ANNOTATOR_NAME, *._TYPE, *._QUERY are used in lexonomy project info
+
+# ============================
 # RESTRICTIONS
 # ============================
 # .*_TYPE varaible is required for each stage availabel options: merge, gen_batch
 # .*_QUERY variable required for stages of type gen_batch
+# don't create variables with name *._TITLE, *._DESCRIPTION, *._ANNOTATOR_NAME, *._TYPE, *._QUERY
 
 # ============================
 # VARIABLES INICIALIZED FROM SHELL
