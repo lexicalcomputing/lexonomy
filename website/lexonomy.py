@@ -852,34 +852,37 @@ def exportconfigs(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/importconfigs.json")
 @authDict(["canConfig"])
 def importconfigs(dictID, user, dictDB, configs):
-    if not request.files.get("myfile"):
-        return {"success": False}
-    else:
+    if request.forms.json:
+        data = json.loads(request.forms.json)
+    elif request.files.get("myfile"):
         upload = request.files.get("myfile")
-        try:
-            data = json.loads(upload.file.read().decode())
-            resaveNeeded = False
-            for key in data:
-                if key == 'ske':
-                    adjustedJson = {}
-                    adjustedJson['ske'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', data['ske'])
-                    resaveNeeded = False
-                elif key == 'users':
-                    # raise Exception(type(data[key]))
-                    old_users = ops.updateDictAccess(dictID, data[key])
-                    ops.notifyUsers(old_users, data[key], configs['ident'], dictID)
-                elif key == 'dict_settings':
-                    ops.updateDictSettings(dictID, json.dumps(data[key]))
-                else:
-                    adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
+        data = json.loads(upload.file.read().decode())
+    else:
+        return {"success": False}
 
-            if resaveNeeded:
-                configs = ops.readDictConfigs(dictDB)
-                ops.resave(dictDB, dictID, configs)
+    try:
+        resaveNeeded = False
+        for key in data.keys():
+            if key == 'ske':
+                adjustedJson = {}
+                adjustedJson['ske'], resaveNeeded = ops.updateDictConfig(dictDB, dictID, 'ske', data['ske'])
+                resaveNeeded = False
+            elif key == 'users':
+                # raise Exception(type(data[key]))
+                old_users = ops.updateDictAccess(dictID, data[key])
+                ops.notifyUsers(old_users, data[key], configs['ident'], dictID)
+            elif key == 'dict_settings':
+                ops.updateDictSettings(dictID, json.dumps(data[key]))
+            else:
+                adjustedJson, resaveNeeded = ops.updateDictConfig(dictDB, dictID, key, data[key])
 
-            return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": json.dumps(e)}
+        if resaveNeeded:
+            configs = ops.readDictConfigs(dictDB)
+            ops.resave(dictDB, dictID, configs)
+
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": json.dumps(e)}
 
 @get(siteconfig["rootPath"]+"<dictID>/download.json") # OK
 @authDict(["canDownload"], True)
