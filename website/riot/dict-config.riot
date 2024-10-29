@@ -1,240 +1,280 @@
 <dict-config>
    <div class="topBar">
-      <h1 class="pageTitle" style="margin-right: auto;">Configuration</h1>
+      <h1 class="pageTitle mr-auto">
+         Configuration {state.showImport ? " import" : ""} {state.showExport ? " export" : ""}
+      </h1>
       <span class="buttons">
-         <button class="btn {!state.export && 'btn-secondary'}"
+         <button if={state.showExport}
+               class="btn btn-secondary"
+               onclick={onSelectAllClick}>select all</button>
+         <button if={state.showExport}
+               class="btn btn-secondary "
+               onclick={onDeselectAllClick}>deselect all</button>
+         <div if={state.showExport}
+               class="borderRight pr-4 mr-4"></div>
+         <button class="btn {!state.showExport && 'btn-secondary'}"
                onclick={onToggleExportClick}>Export</button>
-         <button class="btn btn-secondary {!state.import && 'btn-secondary'}"
+         <button class="btn btn-secondary {!state.showImport && 'btn-secondary'}"
                onclick={onToggleImportClick}>Import</button>
       </span>
    </div>
 
-   <div if={state.export}
-         class="exportBox">
-      <button class="btn btn-floating btn-flat closeBtn"
-            onclick={onToggleExportClick}>
-         <i class="material-icons black-text">close</i>
-      </button>
-      <div if={!state.selected.length}
-            class="selectNote">
-         Select configurations to export.
-      </div>
-      <div if={state.selected.length}>
-         Export selected ({state.selected.length}) configurations?
-         <form action={`${window.API_URL}${dictData.dictId}/exportconfigs.json`}
-               target="_blank"
-               method="POST"
-               onsubmit={onExportFormSubmit}>
-            <input type="hidden"
-                  name="configs"
-                  value={state.selected.join(",")}>
-            <button class="btn btn-primary"
-                  type="submit">export</button>
-         </form>
-      </div>
-      <br>
-      <div class="buttons">
-         <button class="btn btn-secondary"
-               onclick={onSelectAllClick}>select all</button>
-         <button class="btn btn-secondary"
-               onclick={onDeselectAllClick}>deselect all</button>
-      </div>
-   </div>
-
-   <div if={state.import}
+   <div if={state.showImport}
          class="importBox">
-      <button class="btn btn-floating btn-flat closeBtn"
+      <button class="btn btn-floating btn-flat closeIcon"
             onclick={onToggleImportClick}>
          <i class="material-icons black-text">close</i>
       </button>
-      Select previously exported configuration file.
-      <div class="file-field input-field buttons">
-         <div class="btn">
-            <span>Choose file</span>
-            <input type="file"
-                  accept=".json"
-                  onchange={onImportFileChange}
-                  id="file">
+      <template if={!state.configsInFile}>
+         <div class="file-field input-field buttons">
+            <div class="btn">
+               <span>Choose file</span>
+               <input type="file"
+                     accept=".json"
+                     onchange={onImportFileChange}
+                     id="file">
+               <span class="helper-text">
+                  Select previously exported configuration file.
+               </span>
+            </div>
+            <div class="file-path-wrapper">
+               <input class="file-path validate"
+                     type="text">
+            </div>
          </div>
-         <div class="file-path-wrapper">
-            <input class="file-path validate"
-                  type="text">
+      </template>
+      <div if={state.configsInFile}>
+         <button class="btn btn-floating btn-flat backIcon"
+               onclick={onSelectAnoterhFileClick}>
+            <i class="material-icons black-text">keyboard_backspace</i>
+         </button>
+         <div if={state.importError}
+               class="message messageError">
+            {state.importError}
          </div>
-         <div>
-            <a class="importBtn waves-effect waves-light btn btn-primary {!state.isImportFileSelected || state.isImporting ? 'disabled' : ''}"
-                  onclick={ importDictionaryConfiguration }
-                  id="startButton">
-               <i class="material-icons left">file_upload</i>
-               Import configuration
-            </a>
+         <div if={!state.importError}>
+             <div class="grey-text">
+               Chose configrations found in "{window.trim(state.file.name, 30)}" to import:
+            </div>
+            <div class="columnContainer">
+               <div each={section in state.configsInFile}>
+                  <h3 class="header">{section.label}</h3>
+                  <ul if={section.configs.length}>
+                     <li each={config in section.configs}>
+                        <label class="checkbox">
+                           <input type="checkbox"
+                                 name={config.name}
+                                 class="importChb"
+                                 checked={state.configToImport.includes(config.name)}
+                                 onchange={onImportChbChanged}/>
+                           <span>{config.label}</span>
+                        </label>
+                     </li>
+                  </ul>
+                  <div if={!section.configs.length}
+                        class="grey-text">
+                     no data
+                  </div>
+               </div>
+            </div>
+            <div class="buttons">
+               <button class="btn btn-secondary"
+                     onclick={onSelectAnoterhFileClick}>
+                  back
+               </button>
+               <a class="importBtn waves-effect waves-light btn btn-primary {!state.isImportFileSelected || state.isImporting ? 'disabled' : ''}"
+                     onclick={onImportConfigurationClick}
+                     disabled={!state.configToImport.length}
+                     id="startButton">
+                  <i class="material-icons left">file_upload</i>
+                  Import selected configurations
+               </a>
+            </div>
          </div>
       </div>
    </div>
 
-   <div class="columnContainer">
-      <div>
-         <h2 class="header">Manage dictionary</h2>
+   <div if={!state.showImport}
+         class="columnContainer">
+      <div each={configSection in state.configs}>
+         <h3 class="header">{configSection.label}</h3>
          <ul>
-            <li each={config in state.configs.dictionary}>
-               <label if={state.export && !config[2]}
-                     name={config[0]}
+            <li each={config in configSection.configs}>
+               <label if={state.showExport && !config.isExportDisabled}
                      class="checkbox">
                   <input type="checkbox"
+                        name={config.exportName || config.name}
                         class="exportChb"
                         onchange={onExportChbChanged}/>
-                  <span>{config[1]}</span>
+                  <span>{config.label}</span>
                </label>
-               <a if={!state.export}
-                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
-               <raw-html content={getIssueIcon(config[0])}/>
+               <a if={!state.showExport}
+                     href="#/{ dictData.dictId }/config/{config.name}">{config.label}</a>
+               <raw-html content={getIssueIcon(config.name)}/>
             </li>
          </ul>
-      </div>
-      <div>
-         <h2 class="header">Entry settings</h2>
-         <ul>
-            <li each={config in state.configs.entry}>
-               <label if={state.export}
-                     name={config[0]}
-                     class="checkbox">
-                  <input type="checkbox"
-                        class="exportChb"
-                        onchange={onExportChbChanged}/>
-                  <span>{config[1]}</span>
-               </label>
-               <a if={!state.export}
-                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
-               <raw-html content={getIssueIcon(config[0])}/>
-            </li>
-         </ul>
-      </div>
-      <div>
-         <h2 class="header">Expert settings</h2>
-         <ul>
-            <li each={config in state.configs.expert}>
-               <label if={state.export}
-                     name={config[0]}
-                     class="checkbox">
-                  <input type="checkbox"
-                        class="exportChb"
-                        onchange={onExportChbChanged}/>
-                  <span>{config[1]}</span>
-               </label>
-               <a if={!state.export}
-                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
-               <raw-html content={getIssueIcon(config[0])}/>
-            </li>
-         </ul>
-      </div>
-      <div>
-         <h2 class="header">Editor plugins</h2>
-         <ul>
-            <li each={config in state.configs.plugins}>
-               <label if={state.export}
-                     name={config[0]}
-                     class="checkbox">
-                  <input type="checkbox"
-                        class="exportChb"
-                        onchange={onExportChbChanged}/>
-                  <span>{config[1]}</span>
-               </label>
-               <a if={!state.export}
-                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
-               <raw-html content={getIssueIcon(config[0])}/>
-            </li>
-         </ul>
-      </div>
-      <div if={authData.isAdmin}>
-         <h2 class="header">Admin settings</h2>
-         <ul>
-            <li each={config in state.configs.admin}>
-               <label if={state.export}
-                     name={config[2]}
-                     class="checkbox">
-                  <input type="checkbox"
-                        class="exportChb"
-                        onchange={onExportChbChanged}/>
-                  <span>{config[1]}</span>
-               </label>
-               <a if={!state.export}
-                     href="#/{ dictData.dictId }/config/{config[0]}">{config[1]}</a>
-               <raw-html content={getIssueIcon(config[0])}/>
-            </li>
-         </ul>
-      </div>
-      <div class="mr-a">
       </div>
    </div>
+
+   <form if={state.showExport}
+         action={`${window.API_URL}${dictData.dictId}/exportconfigs.json`}
+         class="mt-6"
+         target="_blank"
+         method="POST"
+         onsubmit={onExportFormSubmit}>
+      <input type="hidden"
+            name="configs"
+            value={state.configToExport.join(",")}>
+      <div class="buttons mb-4">
+         <button class="btn btn-secondary ml-auto"
+               onclick={onToggleExportClick}>
+            cancel
+         </button>
+         <button class="btn btn-primary mr-auto"
+               disabled={!state.configToExport.length}
+               type="submit">
+            <i class="material-icons left">file_download</i>
+            export selected configurations
+         </button>
+      </div>
+   </form>
 
    <script>
       export default {
          bindings: [["store", "dictionaryChanged", "update"]],
 
          state: {
-            configs: {
-               "dictionary": [
-                  ["ident", "Basic settings"],
-                  ["users", "Users"],
-                  ["publico", "Publishing"],
-                  ["url", "Change URL", true]  // true - only a link, do not include in the export checkbox list
-               ],
-               "entry": [
-                  ["structure", "Structure"],
-                  ["formatting", "Formatting"],
-                  ["titling", "Headword list"],
-                  ["searchability", "Searching"]
-               ],
-               "expert": [
-                  ["editing", "Custom entry editor"],
-                  ["flagging", "Flags"],
-                  ["autonumber", "Auto-numbering"],
-                  ["styles", "Custom styles"]
-               ],
-               "plugins": [
-                  ["links", "Linking"],
-                  ["ske", "Sketch Engine"],
-                  ["kontext", "KonText"],
-                  ["gapi", "Multimedia API"]
-               ],
-               "admin": [
-                  ["limits", "Limits", "dict_settings"]
-               ]
-            },
-            selected: [],
-            export: false,
-            import: false,
+            configs: [
+               {
+                  label: "Manage dictionary",
+                  configs: [
+                     {
+                        name: "ident",
+                        label: "Basic settings"
+                     }, {
+                        name: "users",
+                        label: "Users"
+                     }, {
+                        name: "publico",
+                        label: "Publishing"
+                     }, {
+                        name: "url",
+                        label: "Change URL",
+                        isExportDisabled: true
+                     }
+                  ]
+               }, {
+                  label: "Entry settings",
+                  configs: [
+                     {
+                        name: "structure",
+                        label: "Structure"
+                     }, {
+                        name: "formatting",
+                        label: "Formatting"
+                     }, {
+                        name: "titling",
+                        label: "Headword list"
+                     },{
+                        name: "searchability",
+                        label: "Searching"
+                     }
+                  ]
+               }, {
+                  label: "Expert settings",
+                  configs: [
+                     {
+                        name: "editing",
+                        label: "Custom entry editor"
+                     },{
+                        name: "flagging",
+                        label: "Flags"
+                     }, {
+                        name: "autonumber",
+                        label: "Auto-numbering"
+                     }, {
+                        name: "styles",
+                        label: "Custom styles"
+                     }
+                  ]
+               }, {
+                  label: "Editor plugins",
+                  configs: [
+                     {
+                        name: "links",
+                        label: "Linking"
+                     }, {
+                        name: "ske",
+                        label: "Sketch Engine"
+                     }, {
+                        name: "kontext",
+                        label: "KonText"
+                     }, {
+                        name: "gapi",
+                        label: "Multimedia API"
+                     }
+                  ]
+               }, {
+                  label: "Admin settings",
+                  disableImport: true,
+                  configs: [
+                     {
+                        name: "limits",
+                        label: "Limits",
+                        exportName: "dict_settings"
+                     }
+                  ]
+               }
+            ],
+            configToExport: [],
+            configToImport: [],
+            showExport: false,
+            showImport: false,
             isImporting: false,
             isImportFileSelected: false
          },
 
+         onBeforeMount(){
+            this.state.fileReader = new FileReader()
+            this.state.fileReader.onload = function(e) {
+               this.processImportedFile()
+               this.update()
+            }.bind(this)
+         },
+
          onToggleExportClick(){
             this.update({
-               export: !this.state.export,
-               import: false,
-               selected: []
+               showExport: !this.state.showExport,
+               showImport: false,
+               configToExport: []
             })
          },
 
          onToggleImportClick(){
             this.update({
-               import: !this.state.import,
-               export: false,
+               showImport: !this.state.showImport,
+               showExport: false,
                isImportFileSelected: false,
-               selected: []
+               configToImport: [],
+               configsInFile: null
             })
          },
 
-         onSelectAllClick(){
-            this.state.selected = []
+         onSelectAnoterhFileClick(){
+            this.update({configsInFile: null})
+         },
+
+         onSelectAllClick(el){
+            this.state.configToExport = []
             $(".exportChb").each((idx, el) => {
                $(el).attr("checked", true)
-               this.state.selected.push($(el).parent().attr("name"))
+               this.state.configToExport.push($(el).attr("name"))
             })
             this.update()
          },
 
          onDeselectAllClick(){
-            this.state.selected = []
+            this.state.configToExport = []
             $(".exportChb").each((idx, el) => {
                $(el).attr("checked", false)
             })
@@ -242,9 +282,17 @@
          },
 
          onExportChbChanged(){
-            this.state.selected = []
+            this.state.configToExport = []
             $(".exportChb:checked").each((idx, el) => {
-               this.state.selected.push($(el).parent().attr("name"))
+               this.state.configToExport.push($(el).attr("name"))
+            })
+            this.update()
+         },
+
+         onImportChbChanged(){
+            this.state.configToImport = []
+            $(".importChb:checked").each((idx, el) => {
+               this.state.configToImport.push($(el).attr("name"))
             })
             this.update()
          },
@@ -254,22 +302,74 @@
             setTimeout(this.onToggleExportClick.bind(this), 1)
          },
 
-         onImportFileChange(){
+         onImportFileChange(evt){
+            this.state.file = evt.target.files[0]
+            this.state.file && this.state.fileReader.readAsText(this.state.file, 'UTF-8')
             this.update({isImportFileSelected: true})
          },
 
-         importDictionaryConfiguration(){
+         onImportConfigurationClick(){
             this.update({isImporting: true})
-            let formData = new FormData()
-            formData.append('myfile', $('#file')[0].files[0])
-            this.store.importDictionaryConfiguration(formData)
+            let data = {}
+            let toImport = this.state.configsInFile.map(configSection => configSection.configs)
+                  .flat()
+                  .filter(config =>  config.name)
+                  .forEach(config => data[config.name] = config.data)
+            this.store.importDictionaryConfiguration(data)
                   .always(() => {
                      this.update({
                         isImporting: false,
-                        import: false,
+                        showImport: false,
                         isImportFileSelected: false
                      })
                   })
+         },
+
+         processImportedFile(){
+            this.state.importError = null
+            let importConfig = {}
+            try{
+               importConfig = JSON.parse(this.state.fileReader.result)
+            } catch(e){
+               this.state.importError = "Bad configuration file format."
+            }
+            if(typeof importConfig != "object" || Array.isArray(importConfig) || importConfig == null){
+               this.state.importError = "Bad configuration file format."
+            } else {
+               let validConfigKeys = this.state.configs.map(section => section.configs)
+                     .flat()
+                     .map(config => config.name)
+                     //.filter(key => key != "limits")  // do not import limits
+
+               Object.keys(importConfig).forEach(key => {
+                  if(!validConfigKeys.includes(key)){
+                     delete importConfig[key]
+                  }
+               })
+               if(!Object.keys(importConfig).length){
+                  this.state.importError = "No valid configuration found in the file."
+               } else {
+                  this.state.configToImport = Object.keys(importConfig)
+                  this.state.configsInFile = this.state.configs.filter(section => !section.disableImport)
+                        .map(section => {
+                           let configs = section.configs.map(c => {
+                              if(importConfig[c.name]){
+                                 return {
+                                    name: c.name,
+                                    label: c.label,
+                                    data: importConfig[c.name]
+                                 }
+                              }
+                              return null
+                           })
+                                 .filter(c => c != null)
+                           return {
+                              label: section.label,
+                              configs: configs
+                           }
+                        })
+               }
+            }
          },
 
          getIssueIcon(configId){
@@ -290,7 +390,7 @@
       }
    </script>
 
-   <style>
+   <style type="scss">
       .topBar{
          display: flex;
          flex-wrap: wrap;
@@ -308,44 +408,49 @@
          display: flex;
          gap: 10px;
          position: relative;
+         .checkbox{
+            color: #000;
+            text-transform: none;
+         }
+         .issuesIcon{
+            cursor: help;
+            position: absolute;
+            left: -20px;
+         }
       }
-      li .checkbox{
-         color: #000;
-         text-transform: none;
-      }
-      li .issuesIcon{
-         cursor: help;
-         position: absolute;
-         left: -20px;
-      }
-      .exportBox,
       .importBox{
          position: relative;
          text-align: center;
          background-color: whitesmoke;
          padding: 25px;
-         font-size: 1.2rem;
       }
-      .exportBox .buttons,
       .importBox .buttons {
          justify-content: center;
       }
-      .selectNote{
-         min-height: 36px;
-         line-height: 36px;
+      .importBox{
+         .columnContainer{
+            margin: 30px auto;
+            justify-content: center;
+         }
       }
       .importBtn{
          line-height: 2.5rem;
          height: 2.5rem;
       }
-      .closeBtn{
+      .closeIcon{
          position: absolute;
-         top: 0.3rem;
-         right: 0.3rem;
+         top: 1rem;
+         right: 1rem;
       }
-      form{
-         display: inline-block;
-         margin-left: 20px;
+      .backIcon{
+         position: absolute;
+         top: 1rem;
+         left: 1rem;
+      }
+      .buttonsSeparator{
+         padding-right: 20px;
+         margin-right: 20px;
+         border-right: 1px solid
       }
    </style>
 </dict-config>
