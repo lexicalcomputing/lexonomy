@@ -307,3 +307,16 @@ window.objectEquals = (x, y) => {
    return true
 }
 
+window.debounce = (func, timeout = 300) => {
+   let timer
+   let f = function(...args){
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+         func(args)
+      }, timeout)
+   }
+   f.clearTimeout = () => {
+      clearTimeout(timer)
+   }
+   return f
+}
