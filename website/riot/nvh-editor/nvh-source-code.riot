@@ -34,7 +34,6 @@
                     ["nvhStore", "entryChanged", "updateSourceCode"]],
 
          state:{
-            debounceHandle: null,
             oldSourceCode: null,
             warnings: {},
             autocompleteElementPath: "",
@@ -47,6 +46,8 @@
             this.nvhData = this.nvhStore.data
             this.state.oldSourceCode = this.nvhStore.jsonToNvh(this.nvhData.entry)
             this.nvhData.entry && this.validate(this.nvhData.entry)
+            this.validateEditorDebounced = window.debounce(this.validateEditor, 50)
+            this.addStateToHistoryDebounced = window.debounce(this.addStateToHistory, 1000)
          },
 
          onMounted(){
@@ -75,15 +76,14 @@
                tab: "  ",
                catchTab: false
             })
-            this.editor.onUpdate(this.onEditorUpdateDebounced.bind(this))
+            this.editor.onUpdate(this.onEditorUpdate.bind(this))
             this.updateLineNumbers()
          },
 
          onBeforeUnmount(){
-            if(this.nvhData.entry && this.state.oldSourceCode != this.nvhStore.jsonToNvh(this.nvhData.entry)){
-               this.nvhStore.history.addState()
-            }
-            this.state.debounceHandle && clearTimeout(this.state.debounceHandle)
+            this.addStateToHistory()
+            this.validateEditorDebounced.clearTimeout()
+            this.addStateToHistoryDebounced .clearTimeout()
          },
 
          updateSourceCode(){
@@ -278,25 +278,32 @@
             pos.end += autocompleteElementName.length - this.state.autocompleteQuery.length
             this.hideAutocomplete()
             this.hideSuggestions()
-            this.onEditorUpdateDebounced()
+            this.onEditorUpdate()
             this.editor.restore(pos)
          },
 
-         onEditorUpdateDebounced(){
-            clearTimeout(this.state.debounceHandle)
-            this.state.debounceHandle = setTimeout(() => {
-               clearTimeout(this.state.debounceHandle)
-               let oldWarnings = JSON.stringify(this.state.warnings)
-               if(this.editor.toString().trim()){
-                  this.validate()
-               } else {
-                  this.state.warnings = {}
-               }
-               this.updateLineNumbers()
-               if(oldWarnings != JSON.stringify(this.state.warnings)){
-                  this.update()
-               }
-            }, 30)
+         onEditorUpdate(){
+            this.validateEditorDebounced()
+            this.addStateToHistoryDebounced()
+         },
+
+         validateEditor(){
+            let oldWarnings = JSON.stringify(this.state.warnings)
+            if(this.editor.toString().trim()){
+               this.validate()
+            } else {
+               this.state.warnings = {}
+            }
+            this.updateLineNumbers()
+            if(oldWarnings != JSON.stringify(this.state.warnings)){
+               this.update()
+            }
+         },
+
+         addStateToHistory(){
+            if(this.nvhData.entry && this.state.oldSourceCode != this.nvhStore.jsonToNvh(this.nvhData.entry)){
+               this.nvhStore.history.addState()
+            }
          },
 
          onScrollToLineClick(lineNumber){
