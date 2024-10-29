@@ -144,7 +144,7 @@
          },
 
          onBeforeMount(){
-            this.state.fileReader = new FileReader
+            this.state.fileReader = new FileReader()
             this.state.fileReader.onload = function(e) {
                this.update({headwordElement: this.store.guessEntryElementFromFile(this.state.fileReader.result)})
                this.refreshStartImportBtnDisabled()
