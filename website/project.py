@@ -92,25 +92,25 @@ def project_git_commit(path, msg, stage=''):
     subprocess.run(['git', 'commit', '-m', msg, '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
 
 
-def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict_id, worflow, langauge, user):
+def createProject(project_id, project_name, project_description, project_annotators, project_managers, ref_corpus, src_dict_id, workflow_id, langauge, user):
     if projectExists(project_id):
         return {'success': False, "projectID": project_id, "error": "The project with the entered name already exists"}
-    if not worflow:
+    if not workflow_id:
         return {'success': False, "projectID": project_id, "error": "Workflow not specified."}
-    if not os.path.isdir(os.path.join(currdir, 'workflows', worflow)):
+    if not os.path.isdir(os.path.join(currdir, 'workflows', workflow_id)):
         return {'success': False, "projectID": project_id, "error": "Can not find workflow template."}
 
     os.makedirs(os.path.join(siteconfig["dataDir"], "projects", project_id))
 
     # Copy workflow
-    for file in os.listdir(os.path.join(currdir, 'workflows', worflow)):
+    for file in os.listdir(os.path.join(currdir, 'workflows', workflow_id)):
         if file == 'Makefile':
             with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'w') as dest:
-                with open(os.path.join(currdir, 'workflows', worflow, 'Makefile'), 'r') as source:
+                with open(os.path.join(currdir, 'workflows', workflow_id, 'Makefile'), 'r') as source:
                     for line in source:
                         dest.write(re.sub('%dir%', currdir, line))
         else:
-            shutil.copy2(os.path.join(currdir, 'workflows', worflow, file), os.path.join(siteconfig["dataDir"], "projects", project_id))
+            shutil.copy2(os.path.join(currdir, 'workflows', workflow_id, file), os.path.join(siteconfig["dataDir"], "projects", project_id))
 
     # Dump source dict to NVH
     with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
@@ -120,8 +120,8 @@ def createProject(project_id, project_name, project_description, project_annotat
     project_init_git(os.path.join(siteconfig["dataDir"], "projects", project_id))
 
     conn = ops.getMainDB()
-    conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, src_dic_id, language, active)"\
-                 " VALUES (?,?,?,?,?,?,?)", (project_id, project_name, project_description, ref_corpus, src_dict_id, langauge, 1))
+    conn.execute("INSERT INTO projects (id, project_name, description, ref_corpus, src_dic_id, language, active, workflow_id)"\
+                 " VALUES (?,?,?,?,?,?,?,?)", (project_id, project_name, project_description, ref_corpus, src_dict_id, langauge, 1, workflow_id))
     conn.execute("INSERT INTO project_dicts (project_id, dict_id, source_nvh, stage) VALUES (?,?,?,?)",
                  (project_id, src_dict_id, os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), '__nvh_source__'))
     conn.commit()
@@ -390,7 +390,7 @@ def getProject(projectID):
                                 'log': stage_log})
 
 
-    c3 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active FROM projects WHERE id=?",
+    c3 = conn.execute("SELECT project_name, description, ref_corpus, language, src_dic_id, active, workflow_id FROM projects WHERE id=?",
                       (projectID,))
     r3 = c3.fetchone()
 
@@ -399,7 +399,7 @@ def getProject(projectID):
     # ======================
     annotators = {}
     managers = set()
-    all_stages = make_data.keys()
+    all_stages = list(make_data.keys()) + ['__all__']
     c0 = conn.execute("SELECT user_email, role FROM user_projects WHERE project_id=? ORDER BY user_email;", (projectID,))
     for r0 in c0.fetchall():
         if r0['role'] in all_stages:
@@ -407,13 +407,6 @@ def getProject(projectID):
                 annotators[r0['role']].add(r0['user_email'])
             else:
                 annotators[r0['role']] = set([r0['user_email']])
-        elif r0['role'] == '__all__':
-            managers.add(r0['user_email'])
-            for stage_n in all_stages:
-                if annotators.get(stage_n):
-                    annotators[stage_n].add(r0['user_email'])
-                else:
-                    annotators[stage_n] = set([r0['user_email']])
         elif r0['role'] == 'manager':
             managers.add(r0['user_email'])
         else:
@@ -426,7 +419,7 @@ def getProject(projectID):
     conn.close()
 
     return {"projectID": projectID, 'project_name': r3['project_name'], 'description': r3['description'],
-            'annotators': annotators, 'managers': list(managers), 'workflow': workflow_stages,
+            'annotators': annotators, 'managers': list(managers), 'workflow_id': r3['workflow_id'] ,'workflow': workflow_stages,
             'language': r3['language'], 'source_dict': r3['src_dic_id'], 'active': r3['active'], 'tl_node': tl_node}
 
 
@@ -699,11 +692,11 @@ def rejectBatch(project_id, dictID_list):
 def getWokflows():
     workflows = {}
     conn = ops.getMainDB()
-    c = conn.execute("SELECT name, description FROM workflows ORDER BY name")
+    c = conn.execute("SELECT id, name, description FROM workflows ORDER BY name")
 
     for r in c.fetchall():
-        make_data, tl_node = getMakeDeps(os.path.join(currdir, "workflows", r["name"], "Makefile"))
-        workflows[r["name"]] = {"name": r["name"], "description": r["description"], 'stages': make_data, 'tl_node': tl_node}
+        make_data, tl_node = getMakeDeps(os.path.join(currdir, "workflows", r["id"], "Makefile"))
+        workflows[r["id"]] = {"workflow_id": r["id"], "name": r["name"], "description": r["description"], 'stages': make_data, 'tl_node': tl_node}
 
     total = len(workflows)
     return {"workflows": workflows, "total": total, "success": True}

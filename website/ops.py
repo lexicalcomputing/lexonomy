@@ -224,7 +224,7 @@ def verifyLoginAndProjectAccess(email, sessionkey):
     for r in c.fetchall():
         if r['role'] == 'manager':
             configs['manager_of'].append(r['project_id'])
-        elif r['role'] == 'annotator':
+        else:
             configs['annotator_of'].append(r['project_id'])
     return ret, configs
 
