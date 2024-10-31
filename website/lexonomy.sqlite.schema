@@ -22,8 +22,8 @@ CREATE INDEX project_dicts_dict_id ON project_dicts (dict_id);
 CREATE INDEX project_dicts_project_id ON project_dicts (project_id);
 CREATE INDEX project_dicts_stage ON project_dicts (stage);
 
-CREATE TABLE workflows (name TEXT PRIMARY KEY, description TEXT);
-CREATE INDEX workflow_id ON workflows (name);
+CREATE TABLE workflows (id TEXT PRIMARY KEY, name TEXT, description TEXT);
+CREATE INDEX workflow_id ON workflows (id);
 
 CREATE TABLE recovery_tokens (email text, requestAddress text, token text, expiration datetime, usedDate datetime, usedAddress text);
 CREATE TABLE register_tokens (email text, requestAddress text, token text, expiration datetime, usedDate datetime, usedAddress text);

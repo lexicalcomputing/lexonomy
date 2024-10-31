@@ -98,7 +98,7 @@ class TestQueries(unittest.TestCase):
                 'managers': json.dumps(['marek.medved3@gmail.com', 'marek.medved@sketchengine.eu', 'marek.medved@sketchengine.co.uk']),
                 'ref_corpus': 'ententen21_tt31',
                 'source_dict_id': self.source_dict_id,
-                'workflow': self.workflow,
+                'workflow_id': self.workflow,
                 'language': 'cs'}
         r1 = requests.post(url=API_ENDPOINT_1, data=data, headers=self.headers, cookies=self.cookies)
         self.assertEqual(r1.json()['success'], True)
