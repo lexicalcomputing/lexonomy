@@ -1,5 +1,5 @@
 <dict-config-editing>
-   <loading-overlay if={state.isLoading || state.isSaving}/>
+   <loading-overlay if={state.isLoading || state.isLoadingEditor || state.isSaving}/>
    <h1 class="pageTitle">Custom entry editor</h1>
    <dict-configuration-issues config-id="editing"/>
    <p>
@@ -8,46 +8,53 @@
    <label class="checkbox">
       <input type="checkbox"
             checked={state.data.useOwnEditor}
-            onclick={onCheckboxClick}/>
+            onclick={onUseOwnEditorClick}/>
       <span>Use own editor</span>
    </label>
    <br><br>
-   <div id="editors"
-         class="row displayFlex mb-16"
+
+   <div if={!state.isLoadingEditor}
+         id="editors"
          style="display: none;">
-      <div class="jsCode input-field">
-         <label>JavaScript</label>
-         <pre id="editor_js"
-               class="codeEditor language-javascript"
-               onkeydown={onKeyDown}></pre>
-         <div id="codeStatus"
-               class="displayFlex">
-            <span class="codeStatusMessage"></span>
-            <small class="ml-auto grey-text">Ctrl+s or ⌘+s to save</small>
-         </div>
-         <span class="helper-text">
-            You can create your own entry editor (<a class="pointer" onclick={onShowEditorHelpClick}>learn more</a>). If you would like to see an example,
-            <a class="pointer" onclick={ exampleJS }>click here to load a sample JavaScript code</a>.
-         </span>
+      <div class="grey-text">
+         You can create your own entry editor (<a class="pointer" onclick={onShowEditorHelpClick}>learn more</a>). If you would like to see an example,
+         <a class="pointer" onclick={onLoadExampleClick}>click here to load a sample code</a>.
       </div>
-      <div class="cssCode input-field">
-         <label for="editor_css">CSS</label>
-         <pre id="editor_css"
-               onkeydown={onKeyDown}
-               class="codeEditor language-css"></pre>
-         <span class="helper-text mt-2">
-            You can customize the editor look and feel by writing your own CSS styles. If you would like to see an example,
-            <a class="pointer" onclick={ exampleCSS }>click here to load a sample CSS style</a>.
-         </span>
+      <h2 id="title_js"
+            class="mt-8">JavaScript</h2>
+      <div id="editorJS"
+            onkeydown={onKeyDown}></div>
+      <div id="codeStatus"
+            class="displayFlex">
+         <span class="codeStatusMessage"></span>
+         <small class="ml-auto grey-text">Ctrl+s or ⌘+s to save</small>
+      </div>
+
+      <h2 id="title_css"
+            class="mt-8">CSS</h2>
+      <div id="editorCSS"
+            onkeydown={onKeyDown}></div>
+      <div class="fixed-action-btn buttons mb-4 mr-2">
+         <a class="btn-floating btn-large grey"
+               onclick={onScrollToClick.bind(this, "js")}>
+            <span class="white-text">JS</span>
+         </a>
+         <a class="btn-floating btn-large grey"
+               onclick={onScrollToClick.bind(this, "css")}>
+            <span class="white-text">CSS</span>
+         </a>
       </div>
    </div>
-   <dict-config-buttons save-data={saveData}></dict-config-buttons>
+
+   <dict-config-buttons save-data={saveData}/>
 
    <script>
       export default {
          state: {
             isLoading: true,
+            isLoadingEditor: false,
             isSaving: false,
+            editorsInitialized: false,
             isJSValid: null,
             data: {
                useOwnEditor: undefined,
@@ -56,13 +63,30 @@
             }
          },
 
-         onCheckboxClick(evt){
-            this.state.data.useOwnEditor = evt.target.checked
-            $("#editors").toggle(evt.target.checked)
-            this.checkJSCode()
+         onMounted() {
+            this.store.loadDictionaryConfig("editing")
+                  .done(response => {
+                     this.state.data = response.content
+                     if(this.state.data.useOwnEditor){
+                        this.loadAndInitEditors()
+                     }
+                  })
+                  .always(response => {
+                     this.update({isLoading: false})
+                  })
+            this.checkJsCodeDebounced = window.debounce(this.checkJSCode, 100)
          },
 
-         exampleJS() {
+         onUseOwnEditorClick(evt){
+            this.state.data.useOwnEditor = evt.target.checked
+            if(this.state.editorsInitialized){
+               $("#editors").toggle(this.state.data.useOwnEditor)
+            } else {
+               this.loadAndInitEditors()
+            }
+         },
+
+         onLoadExampleClick() {
             this.state.data.js =
 `{
    editor: function(options) {
@@ -132,11 +156,7 @@
       }
    }
 }`
-            this.codeEditorJS.updateCode(this.state.data.js)
-            this.checkJSCode()
-         },
 
-         exampleCSS() {
             this.state.data.css =
 `.myEditor{
    padding: 0 30px
@@ -144,41 +164,18 @@
 .myEditor headword{
    font-size: 1.25em
 }`
-            this.codeEditorCSS.updateCode(this.state.data.css)
-         },
-
-         onMounted() {
-            let options = {
-              tab: '   ',
-              indentOn: /[{(\[]$/
-            }
-            this.codeEditorJS = CodeJar($('#editor_js')[0], Prism.highlightElement.bind(this, $('#editor_js')[0], false, null), options)
-            this.codeEditorCSS = CodeJar($('#editor_css')[0], Prism.highlightElement.bind(this, $('#editor_css')[0], false, null), options)
-            this.codeEditorJS.onUpdate(this.onJSCodeUpdate.bind(this))
-            this.codeEditorCSS.onUpdate(this.onCSSCodeUpdate.bind(this))
-
-            this.store.loadDictionaryConfig("editing")
-                  .done(response => {
-                     this.state.data = response.content
-                  })
-                  .always(response => {
-                     this.update({isLoading: false})
-                     this.state.data.js && this.codeEditorJS.updateCode(this.state.data.js)
-                     this.state.data.css && this.codeEditorCSS.updateCode(this.state.data.css)
-                     if(this.state.data.useOwnEditor){
-                        $("#editors").show()
-                     }
-                     this.state.data.js && this.checkJSCode()
-                  })
-         },
-
-         onJSCodeUpdate(){
-            this.state.data.js = this.codeEditorJS.toString()
+            this.editorJS.dispatch({changes: {from: 0, to: this.editorJS.state.doc.length, insert: this.state.data.js}})
+            this.editorCSS.dispatch({changes: {from: 0, to: this.editorCSS.state.doc.length,insert: this.state.data.css}})
             this.checkJSCode()
          },
 
+         onJSCodeUpdate(){
+            this.state.data.js = this.editorJS.state.doc.toString()
+            this.checkJsCodeDebounced()
+         },
+
          onCSSCodeUpdate(){
-            this.state.data.css = this.codeEditorCSS.toString()
+            this.state.data.css = this.editorCSS.state.doc.toString()
          },
 
          onKeyDown(evt){
@@ -230,6 +227,46 @@
             })
          },
 
+         onScrollToClick(section){
+            $([document.documentElement, document.body]).animate({
+               scrollTop: $(`#title_${section}`).offset().top
+            }, 400);
+         },
+
+         loadAndInitEditors(){
+            if(this.state.isLoadingEditor){
+               return
+            }
+            this.update({isLoadingEditor: true})
+            window.loadScript("bundle.codemirror.js", () => {
+               this.update({
+                  isLoadingEditor: false,
+                  editorsInitialized: true,
+               })
+               this.editorJS = new window.CodeMirror.EditorView({
+                  extensions: [window.CodeMirror.basicSetup,
+                        window.CodeMirror.javascript(),
+                        window.CodeMirror.EditorView.updateListener.of((v) => {
+                           v.viewportChanged && this.onJSCodeUpdate()
+                        })],
+                  parent: document.getElementById("editorJS")
+               })
+               this.editorCSS = new window.CodeMirror.EditorView({
+                  extensions: [window.CodeMirror.basicSetup,
+                        window.CodeMirror.css(),
+                        window.CodeMirror.EditorView.updateListener.of((v) => {
+                           v.viewportChanged && this.onCSSCodeUpdate()
+                        })],
+                  parent: document.getElementById("editorCSS")
+               })
+               $("#editors").show()
+               this.editorJS.dispatch({changes: {from: 0,insert: this.state.data.js}})
+               this.editorCSS.dispatch({changes: {from: 0,insert: this.state.data.css}})
+               this.state.data.js && this.checkJSCode()
+               this.editorJS.focus()
+            })
+         },
+
          getConfigData() {
             return Object.assign({
                _version: window.LEXONOMY_VERSION
@@ -253,6 +290,8 @@
                }
                $("#codeStatus .codeStatusMessage").html(isValid ? `<b class="green-text">valid</b>` : `<b class="red-text">${err}</b>`)
                this.state.isJSValid = isValid
+            } else {
+               $("#codeStatus .codeStatusMessage").empty()
             }
             $("#submit_button").toggleClass("disabled", !isValid)
          },
@@ -265,32 +304,7 @@
       }
    </script>
 
-   <style>
-      textarea{
-         min-height: 30vh;
-      }
-      #editors{
-         gap: 20px;
-
-      }
-      .jsCode{
-         max-width: 65%;
-      }
-      .cssCode{
-         max-width: 35%;
-      }
-      @media screen and (max-width: 1450px) {
-         #editors{
-            flex-wrap: wrap;
-         }
-         .jsCode,
-         .cssCode{
-            max-width: 100%;
-         }
-      }
-      #editor_js{
-         padding-top: 25px;
-      }
+   <style type="scss">
       #codeStatus{
          position: sticky;
          bottom: 0px;
@@ -301,9 +315,11 @@
          margin-bottom: 5px;
          align-items: center;
       }
-      .codeEditor{
-         margin: 0;
-         min-height: 150px;
+      .fixed-action-btn{
+         span{
+            font-size: 20px;
+            line-height: 56px;
+         }
       }
    </style>
 </dict-config-editing>

@@ -788,3 +788,23 @@ body #buorgpermanent{
    color: #fff;
    background-color: #000;
 }
+
+
+/* CodeMirror modification */
+body .cm-editor{
+   background-color: #f5f2f0;
+}
+body .cm-content,
+body .cm-gutters {
+   min-height: 200px!important;
+}
+/*
+body .cm-gutters {
+   margin: 1px;
+}
+body .cm-scroller {
+   overflow: auto;
+}
+body .cm-wrap {
+   border: 1px solid silver
+}*/

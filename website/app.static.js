@@ -5,4 +5,4 @@ import './libs/materialize/materialize.js'
 import './libs/materialize/materialize-colorpicker.min.js'
 import './libs/fuzzysort/fuzzysort.js'
 import './libs/sortable/sortable.min.js'
-import './libs/prism/prism.js'
+

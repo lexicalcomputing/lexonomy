@@ -1,5 +1,5 @@
 <dict-config-formatting>
-   <loading-overlay if={state.isBusy}/>
+   <loading-overlay if={state.isBusy || state.isLoadingEditor}/>
    <h1 class="pageTitle">Entry formatting</h1>
    <dict-configuration-issues config-id="formatting"/>
    <div if={state.elementPath}
@@ -52,7 +52,7 @@
          </div>
       </div>
    </div>
-   <div>
+   <div class="mb-12">
       <label class="checkbox">
          <input type="checkbox"
                id="custom_css"
@@ -60,11 +60,11 @@
                onchange={onUseCustomCssClick}/>
          <span>Add custom style</span>
       </label>
-      <div if={state.useCustomCss}
-            class="cssCode input-field ml-8">
+      <div id="csEditorWrapper"
+            class="cssCode input-field ml-8"
+            style="display: none;">
          <label for="editor_css">CSS</label>
-         <pre id="editor_css"
-               class="codeEditor language-css"></pre>
+         <div id="editorCSS"></div>
       </div>
    </div>
 
@@ -80,7 +80,8 @@
          state: {
             isBusy: false,
             elementPath: null,
-            exampleElement: ""
+            exampleElement: "",
+            editorInitialized: false
          },
 
          onBeforeMount(){
@@ -111,8 +112,10 @@
          },
 
          onMounted(){
-            this.initCustomCssEditor()
-            this.state.customCss && this.refreshCustomStyles()
+            if(this.state.customCss){
+               this.loadAndInitEditor()
+               this.refreshCustomStyles()
+            }
          },
 
          onBeforeUnmount(){
@@ -153,17 +156,22 @@
          },
 
          onUseCustomCssClick(){
-            this.update({useCustomCss: !this.state.useCustomCss})
-            this.initCustomCssEditor()
+            this.state.useCustomCss = !this.state.useCustomCss
             if(this.state.useCustomCss){
-               this.refreshCustomStyles()
+               if(this.state.editorInitialized){
+                  $("#csEditorWrapper").show()
+                  this.editorCSS.focus()
+               } else {
+                  this.loadAndInitEditor()
+               }
             } else {
+               $("#csEditorWrapper").hide()
                window.CustomStyles.remove("nvhEditorCustomStyles")
             }
          },
 
          onCustomCssUpdate(){
-            this.state.customCss = this.codeEditorCSS.toString()
+            this.state.customCss = this.editorCSS.state.doc.toString()
             this.customCssInputDebounceTimer && clearTimeout(this.customCssInputDebounceTimer)
             this.customCssInputDebounceTimer = setTimeout(() => {
                clearTimeout(this.customCssInputDebounceTimer)
@@ -175,17 +183,33 @@
             window.CustomStyles.add("nvhEditorCustomStyles", this.state.customCss, ".exampleWrapper")
          },
 
-         initCustomCssEditor(){
-            if(this.state.useCustomCss){
-               let editorNode = document.getElementById("editor_css")
-               let options = {
-                 tab: "   ",
-                 indentOn: /[{]$/
-               }
-               this.codeEditorCSS = CodeJar(editorNode, Prism.highlightElement.bind(this, editorNode, false, null), options)
-               this.state.customCss && this.codeEditorCSS.updateCode(this.state.customCss)
-               this.codeEditorCSS.onUpdate(this.onCustomCssUpdate.bind(this))
+         loadAndInitEditor(){
+            if(this.state.isLoadingEditor){
+               return
             }
+            this.update({isLoadingEditor: true})
+            window.loadScript("bundle.codemirror.js", () => {
+               this.update({
+                  isLoadingEditor: false,
+                  editorInitialized: true,
+               })
+               this.editorCSS = new window.CodeMirror.EditorView({
+                  extensions: [window.CodeMirror.basicSetup,
+                        window.CodeMirror.css(),
+                        window.CodeMirror.EditorView.updateListener.of(v => {
+                           v.viewportChanged && this.onCustomCssUpdate()
+                        })],
+                  parent: document.getElementById("editorCSS")
+               })
+               $("#csEditorWrapper").show()
+               this.editorCSS.dispatch({
+                  changes: {
+                     from: 0,
+                     insert: this.state.customCss
+                  }
+               })
+               this.editorCSS.focus()
+            })
          },
 
          save(){
@@ -258,9 +282,6 @@
          input{
             height: 2rem;
          }
-      }
-      .cssCode{
-         max-width: 500px;
       }
    </style>
 </dict-config-formatting>

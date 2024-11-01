@@ -320,3 +320,28 @@ window.debounce = (func, timeout = 300) => {
    }
    return f
 }
+
+window.loadScript = (src, onLoad) => {
+   let id = window.idEscape(src)
+   let script = document.getElementById(id)
+   if(!script){
+      script = document.createElement("script")
+      script.onload = () => {
+         script.attributes.loaded = 1
+         window.dispatcher.trigger(`SCRIPT_LOADED_${id}`)
+      }
+      script.onerror = () => {
+         window.showToast(`Could not load script "${src}".`)
+      }
+      window.dispatcher.one(`SCRIPT_LOADED_${id}`, onLoad)
+      script.id = id
+      script.src = `${src}?ver=${window.LEXONOMY_VERSION}`
+      document.head.appendChild(script)
+   } else {
+      if(script.attributes.loaded){
+         onLoad()
+      } else {
+         window.dispatcher.one(`SCRIPT_LOADED_${id}`, onLoad)
+      }
+   }
+}
