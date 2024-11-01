@@ -7,9 +7,8 @@
    </div>
    <div class="cssCode input-field mb-12">
       <label for="editor_css">CSS</label>
-      <pre id="editor_css"
-            class="codeEditor language-css"
-            onkeydown={onKeyDown}></pre>
+      <div id="editorCSS"
+            onkeydown={onKeyDown}></div>
       <div id="codeStatus"
             class="displayFlex">
          <small class="ml-auto grey-text">Ctrl+s or ⌘+s to save</small>
@@ -21,15 +20,26 @@
    <script>
       export default{
          state: {
-            isBusy: false,
+            isBusy: true,
             customCss: null
          },
 
          onMounted(){
             this.state.customCss = this.dictData.config.styles.css
             this.state.customCss && this.refreshCustomStyles()
-            this.initCustomCssEditor()
-            $("#editor_css").focus()
+            window.loadScript("bundle.codemirror.js", () => {
+               this.update({isBusy: false})
+               this.editor = new window.CodeMirror.EditorView({
+                  extensions: [window.CodeMirror.basicSetup,
+                        window.CodeMirror.css(),
+                        window.CodeMirror.EditorView.updateListener.of((v) => {
+                           v.viewportChanged && this.onCustomCssUpdate()
+                        })],
+                  parent: document.getElementById("editorCSS")
+               })
+               this.editor.dispatch({changes: {from: 0, insert: this.state.customCss}})
+               this.editor.focus()
+            })
          },
 
          onBeforeUnmount(){
@@ -37,7 +47,7 @@
          },
 
          onCustomCssUpdate(){
-            this.state.customCss = this.codeEditorCSS.toString()
+            this.state.customCss = this.editor.state.doc.toString()
             this.refreshCustomStyles()
          },
 
@@ -50,17 +60,6 @@
 
          refreshCustomStyles(){
             window.CustomStyles.add("customDictionaryStyle", this.state.customCss)
-         },
-
-         initCustomCssEditor(){
-            let editorNode = document.getElementById("editor_css")
-            let options = {
-              tab: "   ",
-              indentOn: /[{]$/
-            }
-            this.codeEditorCSS = CodeJar(editorNode, Prism.highlightElement.bind(this, editorNode, false, null), options)
-            this.state.customCss && this.codeEditorCSS.updateCode(this.dictData.config.styles.css)
-            this.codeEditorCSS.onUpdate(this.onCustomCssUpdate.bind(this))
          },
 
          save(){
@@ -76,9 +75,6 @@
    </script>
 
    <style>
-      .codeEditor{
-         margin-bottom: 0;
-      }
       #codeStatus{
          position: sticky;
          bottom: 0px;
