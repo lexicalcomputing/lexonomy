@@ -109,7 +109,7 @@
          </a>
       </li>
       <li>
-         <a href="#/"
+         <a href="javascript:void(0);"
                onclick={onLogoutClick}>
             <i class="material-icons left">exit_to_app</i>
             Log out
@@ -268,7 +268,7 @@
                   class="sidenav-close">Your profile</a>
          </li>
          <li>
-            <a href="#/"
+            <a href="javascript:void(0);"
                   class="sidenav-close"
                   onclick={onLogoutClick}>Log out</a>
          </li>
@@ -301,9 +301,9 @@
          },
 
          onLogoutClick(event) {
-            if(!window.nvhStore.editorNeedsSaving(event)){
+            window.nvhStore.callIfNoNeedToSave(() => {
                this.auth.logout()
-            }
+            })
          },
 
          onHelpClick(){

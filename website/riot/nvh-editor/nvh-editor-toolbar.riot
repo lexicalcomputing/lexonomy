@@ -168,7 +168,9 @@
          },
 
          onNewEntryClick(){
-            !this.nvhStore.editorNeedsSaving() && this.nvhStore.createNewEntry()
+            this.nvhStore.callIfNoNeedToSave(() => {
+               this.nvhStore.createNewEntry()
+            })
          },
 
          onNewEntryCancelClick(){
@@ -176,7 +178,9 @@
          },
 
          onDuplicateClick(){
-            !this.nvhStore.editorNeedsSaving() && this.nvhStore.duplicateEntry()
+            this.nvhStore.callIfNoNeedToSave(() => {
+               this.nvhStore.duplicateEntry()
+            })
          },
 
          onDeleteClick(){
@@ -196,11 +200,15 @@
          },
 
          onOpenPreviousEntryClick(){
-            !this.nvhStore.editorNeedsSaving() && this.store.changeEntryId(this.state.prevEntryId)
+            this.nvhStore.callIfNoNeedToSave(() => {
+               this.store.changeEntryId(this.state.prevEntryId)
+            })
          },
 
          onOpenNextEntryClick(){
-            !this.nvhStore.editorNeedsSaving() && this.store.changeEntryId(this.state.nextEntryId)
+            this.nvhStore.callIfNoNeedToSave(() => {
+               this.store.changeEntryId(this.state.nextEntryId)
+            })
          },
 
          onModeChangeClick(mode){

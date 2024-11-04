@@ -117,7 +117,9 @@
             } else if(key == 13){  // enter
                ctrl && !alt && !shift && this.saveEntryAndGoToNext(evt)
             } else if(evt.key == "n"){  // n
-               !ctrl &&  alt && !shift && actions.new && !this.nvhStore.editorNeedsSaving() && this.nvhStore.createNewEntry()
+               !ctrl &&  alt && !shift && actions.new && this.nvhStore.callIfNoNeedToSave(() => {
+                  this.nvhStore.createNewEntry()
+               })
             } else if(key == 83){  // s
                if(ctrl && !alt && !shift){
                   evt.preventDefault()
@@ -125,10 +127,10 @@
                }
             }
             if(key == 38 || key == 40){  // up, down
-               if(alt && !window.nvhStore.editorNeedsSaving()){
+               alt && window.nvhStore.callIfNoNeedToSave(() => {
                   let nextEntry = this.dictData.entryList[this.dictData.entryList.findIndex(e => e.id == this.dictData.entryId) + (key == 38 ? -1 : 1)]
                   nextEntry && this.store.changeEntryId(nextEntry.id)
-               }
+               })
                if(!["TEXTAREA", "INPUT"].includes(evt.target.nodeName)
                   && evt.target.contentEditable != 'true'
                   && evt.target.contentEditable != 'plaintext-only'){
