@@ -15,7 +15,8 @@ class NVHStoreClass {
          isContextMenuOpen: false,
          isRevisionsOpen: false,
          draggedElement: null,
-         rootElement: null
+         rootElement: null,
+         collapsedElements: new Set() //  to collapse same elements after changing the entry
       }
       observable(this)
       window.store.on("dictionaryChanged", this.onDictionaryChanged.bind(this))
@@ -126,6 +127,7 @@ class NVHStoreClass {
       this.data.rootElement = this.data.structure.root
       this.data.customEditor = null
       this.data.legacyCustomEditor = false
+      this.data.collapsedElements.clear()
       if(this.data.editing.useOwnEditor){
          try{
             let customEditor = new Function("return " + this.data.editing.js)();
@@ -159,6 +161,9 @@ class NVHStoreClass {
             this.data.entry = this._getNewEntry()
          } else{
             this.data.entry = this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
+            this.forEachElement(el => {
+               el.collapsed = this.data.collapsedElements.has(el.path)
+            })
          }
          this.validateAllElements()
          this.history.addState()
@@ -782,13 +787,20 @@ class NVHStoreClass {
    }
 
    toggleElementCollapsed(element){
-      element.collapsed ? this.expandElement(element) : this.collapseElement(element)
+      if(element.collapsed){
+         this.expandElement(element)
+         this.data.collapsedElements.delete(element.path)
+      } else {
+         this.collapseElement(element)
+         this.data.collapsedElements.add(element.path)
+      }
    }
 
    expandElement(element){
       element = element || this.getFocusedElement()
       if(element.children.length && element.collapsed){
          element.collapsed = false
+         this.data.collapsedElements.delete(element.path)
          this.trigger("elementCollapsedChanged", element)
       }
    }
@@ -797,6 +809,7 @@ class NVHStoreClass {
       element = element || this.getFocusedElement()
       if(element.children.length && !element.collapsed){
          element.collapsed = true
+         this.data.collapsedElements.add(element.path)
          let focused = this.getFocusedElement()
          if(element.collapsed && focused && this.isElementDescendantOf(focused, element)){
             this.focusElement(element)
