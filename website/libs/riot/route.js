@@ -291,22 +291,20 @@ window.route = function () {
     ) { return }
 
     /* BEGIN added for Screenful */
-    if(window.nvhStore.editorNeedsSaving(e)){
-         return
-    }
-    /* END added for Screenful */
-
-    var base = route._.base;
-
-    if (el.href !== loc.href
-      && (
-        el.href.split('#')[0] === loc.href.split('#')[0] // internal jump
-        || base[0] !== '#' && getPathFromRoot(el.href).indexOf(base) !== 0 // outside of base
-        || base[0] === '#' && el.href.split(base)[0] !== loc.href.split(base)[0] // outside of #base
-        || !go(getPathFromBase(el.href), el.title || doc.title) // route not found
-      )) { return }
-
     e.preventDefault();
+    window.nvhStore.callIfNoNeedToSave(() => {
+      var base = route._.base;
+      if (el.href !== loc.href
+        && (
+          el.href.split('#')[0] === loc.href.split('#')[0] // internal jump
+          || base[0] !== '#' && getPathFromRoot(el.href).indexOf(base) !== 0 // outside of base
+          || base[0] === '#' && el.href.split(base)[0] !== loc.href.split(base)[0] // outside of #base
+          || !go(getPathFromBase(el.href), el.title || doc.title) // route not found
+        )) {
+        window.location.href = el.href
+      }
+    }, e)
+    /* END added for Screenful */
   }
 
   /**

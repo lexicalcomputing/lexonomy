@@ -171,6 +171,7 @@ class AuthClass {
             .done(() => {
                this.data.authorized = false;
                this.resetUser()
+               route("/")
                this.trigger("authChanged")
             })
             .always(() => {

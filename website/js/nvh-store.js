@@ -173,7 +173,7 @@ class NVHStoreClass {
       this.trigger("entryChanged")
    }
 
-   editorNeedsSaving(evt) {
+   callIfNoNeedToSave(callback, evt) {
       if(window.store.data.actualPage == "dict-edit"
             && (this.data.entryId == "new"
                   || (window.store.data.entry
@@ -182,16 +182,28 @@ class NVHStoreClass {
                      )
                )
             ){
-         if(!confirm("You have some unsaved changes. Do you wish to continue and discard the changes?")){
-            if(evt){
-               evt.stopImmediatePropagation()
-               evt.stopPropagation()
-               evt.preventDefault()
-            }
-            return true
-         }
+         window.modal.open({
+            title: "Discard changes?",
+            content: "You have some unsaved changes. Do you wish to continue and discard the changes?",
+            dismissible: false,
+            showCloseButton: false,
+            small: true,
+            buttons: [{
+               label: "back to editor",
+               onClick: (dialog, modal) => {
+                  modal.close()
+               }
+            }, {
+               label: "discard changes",
+               onClick: (dialog, modal) => {
+                  callback && callback()
+                  modal.close()
+               }
+            }]
+         })
+      } else {
+         callback && callback()
       }
-      return false
    }
 
    hasEntryChanged(){
