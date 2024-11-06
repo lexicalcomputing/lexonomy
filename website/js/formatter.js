@@ -25,6 +25,19 @@ class FormatterClass{
       return this.numFormat.format(num);
    }
 
+   numWithOrder(num){
+      if(isNaN(num)){
+         return num
+      }
+      let order = 4
+      while(num < Math.pow(10, order * 3)){
+         order--
+      }
+      let resultNumber = Math.round(num / Math.pow(10, order * 3) * 10) / 10
+      let resultUnit = ['', ' thousand', ' million', ' billion', ' trillion'][order]
+      return `${this.num(resultNumber)}${resultUnit}`
+   }
+
    date(dateObj, options){
       if(this._validDate(dateObj)){
          if(options){
@@ -55,15 +68,6 @@ class FormatterClass{
       if(this._validDate(dateObj)){
          return `${this.shortDate(dateObj)} at ${this.time(dateObj)}`
       }
-   }
-
-   address(addresses){
-      if(!addresses){
-         return ""
-      }
-      return addresses.map(address => {
-         return `${address.address || ""}${address.address && address.country ? ", " : ""}${address.country || ""}`
-      }).join("<br><br>")
    }
 
    _validDate(dateObj){
