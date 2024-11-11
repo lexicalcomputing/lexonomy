@@ -1,0 +1,648 @@
+<projects-form>
+   <div if={!props.projectID && !props.new}
+         class="message error">
+      <h2>Bad request</h2>
+      Missing project ID. <a href="#projects/dashboard">Go to projects dashboard</a>.
+   </div>
+
+   <div if={state.error}
+         class="message error">
+      <h2 class="mt-8">Could not load the project</h2>
+      {state.error}
+      <div class="mt-4">
+         <a href="#projects/dashboard">Go to projects dashboard</a>
+      </div>
+   </div>
+   <loading-overlay if={state.isBusy || dictData.isDictionaryListLoading || dictData.isWorkflowListLoading}/>
+
+   <div if={state.project && dictData.isWorkflowListLoaded}>
+      <h1 class="pageTitle">
+         <a href="#projects/dashboard"
+               class="clickable mr-2 tooltipped"
+               data-tooltip="Back to projects">
+            <i class="material-icons">
+               arrow_back
+            </i>
+         </a><!--
+      -->{props.projectID ? state.project.project_name : "New project"}
+      </h1>
+      <div class="displayFlex">
+         <div>
+            <h2>Project</h2>
+            <div class="input-field mb-8">
+               <input type="text"
+                     id="name"
+                     value={state.project.project_name}
+                     oninput={onNameInput}>
+               <label>Name *</label>
+            </div>
+
+            <div class="input-field mb-8">
+               <input type="text"
+                     id="id"
+                     disabled={props.projectID}
+                     value={state.project.projectID}
+                     oninput={onIdInput}>
+               <label>ID *</label>
+            </div>
+
+            <div class="input-field mb-8">
+               <textarea id="description"
+                     class="materialize-textarea"
+                     oninput={onDescriptionInput}
+                     rows="3">{state.project.description}</textarea>
+               <label>Description</label>
+            </div>
+
+            <div class="input-field mb-8">
+               <input type="text"
+                     disabled={props.projectID}
+                     value={store.getLanguageName(state.project.language)}
+                     id="language">
+               <label>Language</label>
+            </div>
+
+            <div class="input-field mb-8">
+               <input if={props.projectID}
+                     disabled
+                     value={state.project.workflow_id}/>
+               <select if={!props.projectID}
+                     id="workflow"
+                     onchange={onWorkflowChange}>
+                  <option value="" selected>-select-</option>
+                  <option each={obj in Object.entries(dictData.workflowList)}
+                        value={obj[0]}>
+                     <div class="displayFlex alignCenter gap10">
+                        <span>{obj[1].name}</span>
+                        <span class="material-icons tooltipped ml-auto workflowHelp"
+                              data-tooltip={obj[1].description}></span>
+                     </div>
+                  </option>
+               </select>
+               <label>Workflow *</label>
+            </div>
+
+            <div class="sourceDictRow input-field mb-8">
+               <select if={!props.projectID}
+                     id="source_dict"
+                     onchange={onSourceDictionaryChange}>
+                  <option value="" selected>-select-</option>
+                  <option each={dict in dictData.dictionaryList}
+                        value={dict.id}
+                        selected={dict.id == state.project.source_dict}>{dict.title}</option>
+               </select>
+               <input if={props.projectID}
+                     disabled
+                     value={getSourceDictValue()}/>
+               <a href="#{state.project.source_dict}"
+                     if={state.project.source_dict}
+                     target="_blank">
+                  <i class="material-icons">open_in_new</i>
+               </a>
+               <label>Central dictionary *</label>
+            </div>
+
+            <div class="input-field inputFieldWithProgressBar mb-8">
+               <input if={auth.data.ske_apiKey}
+                     type="text"
+                     id="ref_corpus"
+                     value={getReferenceCorpusValue()}
+                     placeholder={state.project.language ? "Type to search in the list of corpora" : "Select language first"}
+                     class="{state.project.language ? '' : 'disabled'}"
+                     disabled={state.isCorporaLoading}/>
+               <label>Reference corpus</label>
+               <div if={state.isCorporaLoading}
+                     class="progress">
+                  <div class="indeterminate"></div>
+               </div>
+            </div>
+            <div if={!auth.data.ske_apiKey}
+                  class="warning">
+               To select reference corpus you need to set up Sketch Engine connection first. You can do it on your <a href="#/member-profile">profile page</a>.
+            </div>
+         </div>
+
+         <div class="columnTeam">
+            <h2>Team</h2>
+            <div class="teamRole displayFlex mb-8">
+               <label>Managers *</label>
+               <div>
+                  <div>
+                     <div if={!state.project.managers.length}
+                           class="noTeamMember grey-text">
+                        No manager selected.
+                     </div>
+                     <span each={email in state.project.managers}
+                           class="chip">
+                        {email}
+                        <i class="close material-icons"
+                              onclick={onRemoveManagerClick.bind(this, email)}>close</i>
+                     </span>
+                  </div>
+                  <div class="input-field mt-2">
+                     <user-dropdown id="managersMemberDropdown"
+                           on-change={onAddManager}
+                           dataProcessor={getManagerList}/>
+                     <span class="helper-text">
+                        Enter email address to add a new manager. <br>
+                        If there is no user with given email, new account will be created.
+                     </span>
+                  </div>
+               </div>
+            </div>
+            <div class="teamRole teamRole__all__ displayFlex">
+               <label>Editors *</label>
+               <div class="input-field mt-0">
+                  <textarea id="editorTextarea-__all__"
+                        class="materialize-textarea"
+                        placeholder=""
+                        rows="3"
+                        oninput={onEditorInput.bind(this, "__all__")}>
+                     {state.project.annotators.__all__?.join(", ")}
+                  </textarea>
+                  <label>Editors for all stages</label>
+                  <span class="helper-text">
+                     List of emails separated by comma, space, or a new line.
+                  </span>
+                  <span class="helper-text red-text">
+                     '<span class="invalidAddress"></span>' not a valid email address
+                  </span>
+               </div>
+               <button if={!state.visibleEditorSearch.has("__all__")}
+                     class="btn btn-floating btn-flat tooltipped"
+                     data-tooltip="Find the editor in the list of registered users."
+                     onclick={onToggleEditorSearchClick.bind(this, "__all__")}>
+                  <i class="material-icons">search</i>
+               </button>
+               <template if={state.visibleEditorSearch.has("__all__")}>
+                  <div class="input-field searchUserField mt-0">
+                     <user-dropdown id="annotatorsMemberDropdown-{window.idEscape("__all__")}"
+                           on-change={onAddEditor.bind(this, "__all__")}
+                           data-processor={getEditorList.bind(this, "__all__")}/>
+                     <label>Editor search</label>
+                     <span class="helper-text">
+                        Search registered users to add an editor
+                     </span>
+                  </div>
+                  <button class="btn btn-flat btn-floating"
+                        onclick={onToggleEditorSearchClick.bind(this, "__all__")}>
+                     <i class="material-icons">close</i>
+                  </button>
+               </template>
+            </div>
+
+            <div if={state.project.workflow_id}
+                  class="stageAnnotatorsSettingsWrapper">
+               <div class="input-field setAllAnnotatorsCheckbox">
+                  <label>
+                     <input type="checkbox"
+                           id="setAllStagesCheckbox"
+                           checked={state.setAllStagesChecked}
+                           onchange={onStageAnnotatorSettingsCheckboxChange}>
+                     <span>
+                        Set editors for each workflow stage
+                        <span class="hint tooltipped"
+                             data-tooltip="Editors in the field above can be assigned to every batch. Editors below can be assigned only to batch in the specific stage. If no editor is set above, ">
+                         <i class="material-icons">help_outline</i>
+                        </span>
+                     </span>
+                  </label>
+               </div>
+               <div class="stageAnnotatorSettings pt-8"
+                     style="{state.setAllStagesChecked ? '' : 'display: none;'">
+                  <div each={stage in dictData.workflowList[state.project.workflow_id].stages}
+                        if={stage.type == "gen_batch"}
+                        class="teamRole  teamRole{stage.id} displayFlex mb-6">
+                     <div class="input-field mt-0">
+                        <textarea id="editorTextarea-{window.idEscape(stage.id)}"
+                              class="materialize-textarea"
+                              placeholder=""
+                              rows="3"
+                              oninput={onEditorInput.bind(this, stage.id)}>
+                           {state.project.annotators[stage.id]?.join(", ")}
+                        </textarea>
+                        <label>{stage.title}</label>
+                        <span class="helper-text">
+                           List of emails separated by comma, space, or a new line.
+                        </span>
+                        <span class="helper-text red-text">
+                           '<span class="invalidAddress"></span>' not a valid email address
+                        </span>
+                     </div>
+                     <button if={!state.visibleEditorSearch.has(stage.id)}
+                           class="btn btn-floating btn-flat tooltipped"
+                           data-tooltip="Find the editor in the list of registered users."
+                           onclick={onToggleEditorSearchClick.bind(this, stage.id)}>
+                        <i class="material-icons">search</i>
+                     </button>
+
+                     <template if={state.visibleEditorSearch.has(stage.id)}>
+                        <div class="input-field searchUserField mt-0">
+                           <user-dropdown id="annotatorsMemberDropdown-{window.idEscape(stage.id)}"
+                                 on-change={onAddEditor.bind(this, stage.id)}
+                                 data-processor={getEditorList.bind(this, stage.id)}/>
+                           <label>Editor search</label>
+                           <span class="helper-text">
+                              Search registered users to add an editor
+                           </span>
+                        </div>
+                        <button class="btn btn-flat btn-floating"
+                              onclick={onToggleEditorSearchClick.bind(this, stage.id)}>
+                           <i class="material-icons">close</i>
+                        </button>
+                     </template>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <div class="buttons pt-6 mb-4 borderTop">
+      <a href="javascript:window.history.back()"
+            class="btn btn-secondary ml-auto">
+         back
+      </a>
+      <button id="btnSaveProject"
+            class="btn btn-primary disabled mr-auto"
+            onclick={onSaveProjectClick}>
+         {props.projectID ? "update" : "create"}
+      </button>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["store", "dictionaryListLoadingChanged", "update"],
+                    ["store", "isWorkflowListLoadingChanged", "onWorkflowListLoadingChanged"]],
+
+         state: {
+            project: null,
+            isCorporaLoading: true,
+            corpora: [],
+            isBusy: false,
+            visibleEditorSearch: new Set()
+         },
+
+         onBeforeMount(){
+            if(this.props.new){
+               this.state.project = {
+                  project_name: null,
+                  description: null,
+                  managers: [window.auth.data.email],
+                  annotators: {
+                     __all__: []
+                  },
+                  workflow_id: null,
+                  source_dict: null,
+                  ref_corpus: null
+               }
+            }
+            this.state.isBusy = !!this.props.projectID
+            this.store.loadWorkflowList()
+         },
+
+         onMounted(){
+            if(this.props.projectID){
+               this.store.loadProject(this.props.projectID)
+                     .done(response => {
+                        if(response.error){
+                           this.state.project = null
+                           this.state.error = response.error
+                        } else {
+                           this.state.error = null
+                           this.state.project = response
+                           this.state.setAllStagesChecked = Object.keys(this.state.project.annotators)
+                                 .filter(a => a != "__all__")
+                                 .length > 0
+                        }
+                     })
+                  .always(response => {
+                     this.update({isBusy: false})
+                     M.updateTextFields()
+                     M.textareaAutoResize($("textarea", this.root))
+                     this.refreshSaveBtnDisabled()
+                  })
+            } else {
+               this.store.suggestProjectId()
+                     .done(response => {
+                        this.state.project.projectID = response.suggested
+                        this.update()
+                     })
+               window.initFormSelects(this.root)
+            }
+            this.store.skeLoadCorpora()
+                  .done(response => {
+                     this.state.corpora = response.data
+                     $("#ref_corpus").autocomplete({
+                        onAutocomplete: corpus => {
+                           this.state.project.ref_corpus = corpus.value
+                           this.refreshSaveBtnDisabled()
+                        },
+                        dropdownOptions: {
+                           constrainWidth: false
+                        }
+                     })
+                     if(this.state.project.ref_corpus){
+                        let corpus = this.state.corpora.find(c => c.corpname == this.state.project.ref_corpus)
+                        if(corpus){
+                           $("#ref_corpus").val(corpus.name)
+                        }
+                     }
+                     if(this.state.project.language){
+                        this.refreshReferenceCorporaList()
+                     }
+                  })
+                  .always(() => {
+                     this.update({isCorporaLoading: false})
+                  })
+
+            this.initLanguages()
+            $("#name", this.root).focus()
+         },
+
+         onUpdated(){
+            window.initFormSelects(this.root)
+         },
+
+         onWorkflowListLoadingChanged(){
+            this.update()
+            this.initLanguages()
+            $("#name", this.root).focus()
+         },
+
+         onNameInput(evt){
+            this.state.project.project_name = evt.target.value
+            this.refreshSaveBtnDisabled()
+         },
+
+         onIdInput(evt){
+            this.state.project.projectID = evt.target.value
+            this.refreshSaveBtnDisabled()
+         },
+
+         onDescriptionInput(evt){
+            this.state.project.description = evt.target.value
+         },
+
+         initLanguages(){
+            $("#language").autocomplete({
+               data: this.store.data.siteconfig.langs.map(lang => {
+                  return {
+                     value: lang.code,
+                     label: lang.lang
+                  }
+               }),
+               onAutocomplete: language => {
+                  this.state.project.language = language.value
+                  this.state.project.ref_corpus = null
+                  this.update()
+                  $("#ref_corpus").val("")
+                  this.refreshReferenceCorporaList()
+               }
+            })
+         },
+
+         refreshReferenceCorporaList(){
+            if(this.state.corpora){
+               let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
+                     .map(corpus => {
+                        return {
+                              value: corpus.corpname,
+                              label: corpus.name,
+                              info: corpus.language_name
+                           }
+                        })
+               let instance = M.Autocomplete.getInstance($("#ref_corpus"))
+               instance && instance.updateData(corpora)
+            }
+         },
+
+         onAddManager(member){
+            if(member){
+               this.state.project.managers.push(member.email)
+               this.update()
+               $("#managersMemberDropdown input").val("")
+               this.refreshSaveBtnDisabled()
+            }
+         },
+
+         onAddEditor(stageId, editor){
+            if(!this.state.project.annotators[stageId]){
+               this.state.project.annotators[stageId] = []
+            }
+            this.state.project.annotators[stageId].push(editor.email)
+            $(`#annotatorsMemberDropdown-${window.idEscape(stageId)} input`, this.root).val("")
+            let textarea = $(`#editorTextarea-${window.idEscape(stageId)}`, this.root)
+            let value = textarea.val().trim()
+            textarea.val(value + (value ? ", " : "") + editor.email)
+            M.textareaAutoResize(textarea)
+            this.refreshSaveBtnDisabled()
+         },
+
+         onEditorInput(stageId, evt){
+            this.state.project.annotators[stageId] = evt.target.value.split(/[,\s\n]+/)
+                  .map(email => email.trim())
+                  .filter(email => !!email)
+            let invalidEmail = this.state.project.annotators[stageId].find(email => {
+               return !window.isEmail(email)
+            })
+            $(evt.target).parent().find(".invalidAddress").html(invalidEmail)
+            $(evt.target).toggleClass("invalid", !!invalidEmail)
+            this.refreshSaveBtnDisabled()
+         },
+
+         onToggleEditorSearchClick(stageId, evt){
+            if(this.state.visibleEditorSearch.has(stageId)){
+               this.state.visibleEditorSearch.delete(stageId)
+            } else {
+               this.state.visibleEditorSearch.add(stageId)
+            }
+            this.update()
+            setTimeout(() => {
+               $(`.teamRole${stageId}`)
+                     .find("user-dropdown input")
+                     .focus()
+            }, 0)
+         },
+
+         onRemoveManagerClick(email, evt){
+            evt.stopPropagation()
+            this.state.project.managers = this.state.project.managers.filter(e => e != email)
+            this.update()
+            this.refreshSaveBtnDisabled()
+         },
+
+         onStageAnnotatorSettingsCheckboxChange(evt){
+            $(".stageAnnotatorSettings", this.root).slideToggle()
+            this.refreshSaveBtnDisabled()
+         },
+
+         onSourceDictionaryChange(evt){
+            this.state.project.source_dict = evt.target.value
+            this.update()
+            this.refreshSaveBtnDisabled()
+         },
+
+         onWorkflowChange(evt){
+            this.state.project.workflow_id = evt.target.value
+            if(this.state.project.workflow_id){
+               let oldAnnotators = {...this.state.project.annotators}
+               this.dictData.workflowList[this.state.project.workflow_id].stages.forEach(stage => {
+                  this.state.project.annotators[stage.id] = oldAnnotators[stage.id] || []
+               })
+               this.state.project.annotators.__all__ = oldAnnotators.__all__
+            }
+            this.state.visibleEditorSearch.clear()
+            this.update()
+            this.refreshSaveBtnDisabled()
+         },
+
+         onSaveProjectClick(){
+            this.update({isBusy: true})
+            let project = {
+               project_name: this.state.project.project_name,
+               projectID: this.state.project.projectID,
+               description: this.state.project.description,
+               source_dict_id: this.state.project.source_dict,
+               ref_corpus: this.state.project.ref_corpus,
+               language: this.state.project.language,
+               workflow_id: this.state.project.workflow_id,
+               managers: JSON.stringify(this.state.project.managers),
+               annotators: JSON.stringify(this.state.project.annotators)
+            }
+            if(this.props.new){
+               this.store.createProject(project)
+                     .done(response => {
+                        if(!response.error){
+                           route(`projects/view/${response.projectID}`)
+                        }
+                     })
+                     .always(() => {
+                        this.update({isBusy: false})
+                     })
+
+            } else {
+               this.store.updateProject(project)
+                  .done(response => {
+                     route(`projects/view/${this.props.projectID}`)
+                  })
+                  .always(() => {
+                     this.update({isBusy: false})
+                  })
+            }
+         },
+
+         getMemberList(selectedUsers, usersInDropdown, query){
+            if(!usersInDropdown.length && window.isEmail(query) && !selectedUsers.includes(query)){
+               return [{
+                  html: `create  user <b>${query}</b>`,
+                  value: query,
+                  user: {
+                     email: query
+                  }
+               }]
+            }
+            return usersInDropdown.filter(member => !selectedUsers.includes(member.value))
+         },
+
+         getManagerList(usersInDropdown, query){
+            return this.getMemberList(this.state.project.managers, usersInDropdown, query)
+         },
+
+         getEditorList(stageId, usersInDropdown, query){
+            return this.getMemberList(this.state.project.annotators[stageId] || [], usersInDropdown, query)
+         },
+
+         getSourceDictValue(){
+            if(this.state.project.source_dict){
+               return this.store.getDictionary(this.state.project.source_dict)?.title || this.state.project.source_dict
+            }
+         },
+
+         getReferenceCorpusValue(){
+            if(this.state.project && this.state.corpusList && this.state.project.referenceCorpus){
+               let corpus = this.state.corpusList.find(c => c.value == this.state.project.referenceCorpus)
+               if(corpus){
+                  return corpus.label
+               }
+            }
+            return ""
+         },
+
+         refreshSaveBtnDisabled(){
+            let setAllStages = $("#setAllStagesCheckbox").is(":checked")
+            let disabled = !this.state.project.project_name
+                  || !this.state.project.project_name
+                  || !this.state.project.managers.length
+                  || (!this.state.project.annotators.__all__.length
+                           && (!setAllStages || Object.entries(this.state.project.annotators)
+                                 .some(([stage, annotators]) => stage != "__all__" && !annotators.length)
+                              )
+                     )
+                  || Object.values(this.state.project.annotators)
+                        .flat()
+                        .some(email => {
+                           return !window.isEmail(email)
+                        })
+                  || !this.state.project.source_dict
+                  || !this.state.project.workflow_id
+            $("#btnSaveProject").toggleClass("disabled", disabled)
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .input-field{
+         width: 400px;
+      }
+      .sourceDictRow{
+         display: flex;
+         gap: 5px;
+         align-items: center;
+         .select-wrapper{
+            flex: 1;
+         }
+      }
+      .columnTeam{
+         margin-left: 30px;
+         padding-left: 30px;
+         border-left: 1px solid lightgrey;
+         label{
+            min-width: 90px;
+         }
+         .teamRole{
+            gap: 20px;
+         }
+         .noTeamMember{
+            min-height: 37px;
+         }
+      }
+      .workflowHelp{
+         &::after{
+            /* after pseudo element is used. If help icon is directly in option, "help" text is copied to the select value after chosing the option.*/
+            content: 'help';
+            font-family: 'Material Icons';
+            color: grey;
+         }
+      }
+      .materialize-textarea{
+         min-height: 6em;
+         margin-bottom: 0;
+      }
+      .stageAnnotatorsSettingsWrapper{
+         padding-left: 110px;
+      }
+      .searchUserField{
+         max-width: 180px;
+      }
+      .setAllAnnotatorsCheckbox{
+         min-height: 1px;
+      }
+      .teamRole textarea.invalid ~ .helper-text:not(.red-text){
+         display: none
+      }
+      .teamRole textarea:not(.invalid) ~ .red-text{
+         display: none;
+      }
+   </style>
+</projects-form>

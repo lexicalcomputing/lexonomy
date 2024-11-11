@@ -2,7 +2,7 @@
    <loading-overlay if={state.isBusy}/>
    <a href="#projects/new"
          class="btn right">
-      create project
+      new project
       <i class="material-icons left">add</i>
    </a>
    <label if={state.archived_projects.length > 0}
@@ -40,11 +40,14 @@
                <th>
                   Central Dictionary
                </th>
-               <th>
+               <!--th>
                   Tasks
-               </th>
+               </th-->
                <th>
                   Managers
+               </th>
+               <th>
+                  Project ID
                </th>
                <th>
                </th>
@@ -53,13 +56,13 @@
          <tbody>
             <tr each={project in state.displayedProjects}
                   class="positionRelative {project.isBusy ? 'pointerEventsNone' : ''} {project.archived ? 'grey lighten-4' : ''}"
-                  onclick={onProjectClick.bind(this, project.id)}>
+                  onclick={onProjectClick.bind(this, project.projectID)}>
                <td>
                   <span class="{project.active ? 'green-text' : 'red-text'} ml-2 mr-2 tooltipped"
                         data-tooltip={project.active ? 'active' : 'inactive'}>
                      ●
                   </span>
-                  {project.name}
+                  {project.project_name}
                   <div if={project.isBusy}
                         class="projectLoadingOverlay">
                      <i class="material-icons spin grey-text">donut_large</i>
@@ -69,13 +72,15 @@
                   {store.getLanguageName(project.language)}
                </td>
                <td>
-                  {project.source_dict_name}
                   <a href="#{project.source_dict}"
+                        class="sourceDictLink verticalMiddle pl-2"
                         onclick={window.stopEvtPropagation}>
-                     <i class="material-icons">open_in_new</i>
+                     <trim-text text={store.getDictionary(project.source_dict)?.title} 
+                        max=20/>
+                     <i class="pl-2 material-icons tiny">open_in_new</i>
                   </a>
                </td>
-               <td>
+               <!--td>
                   <table class="workflowTable">
                      <tr each={workflow in project.workflow}>
                         <td>
@@ -94,15 +99,18 @@
                         </td>
                      </tr>
                   </table>
-               </td>
+               </td-->
                <td>
                   {project.managers.join(", ")}
+               </td>
+               <td>
+                  {project.projectID}
                </td>
                <td>
                   <div class="buttons">
                      <button if={!!project.description}
                            class="btn btn-flat btn-floating tooltipped"
-                           data-tooltip="Description"
+                           data-tooltip="Project description"
                            onclick={onShowDescriptionClick.bind(this, project)}>
                         <i class="material-icons">
                            info_outline
@@ -113,7 +121,7 @@
                            data-tooltip="Unarchive project"
                            onclick={onUnarchiveClick.bind(this, project)}>
                         <i class="material-icons">
-                           restore
+                           unarchive
                         </i>
                      </button>
                      <button if={!project.archived}
@@ -159,6 +167,7 @@
 
          onBeforeMount(){
             this.reloadProjects()
+            this.store.loadWorkflowList()
          },
 
          onShowArchivedChange(evt){
@@ -174,7 +183,7 @@
          onShowDescriptionClick(project, evt){
             evt.stopPropagation()
             window.modal.open({
-               title: project.name,
+               title: project.project_name,
                tag: "raw-html",
                props: {
                   content: project.description
@@ -185,7 +194,7 @@
          onArchiveClick(project, evt){
             evt.stopPropagation()
             project.isBusy = true
-            this.store.archiveProject(project.id)
+            this.store.archiveProject(project.projectID)
                   .done(response => {
                      if(response.success){
                         this.reloadProjects()
@@ -201,7 +210,7 @@
          onUnarchiveClick(project, evt){
             evt.stopPropagation()
             project.isBusy = true
-            this.store.unarchiveProject(project.id)
+            this.store.unarchiveProject(project.projectID)
                   .done(response => {
                      if(response.success){
                         this.reloadProjects()
@@ -294,6 +303,9 @@
                }
             }
          }
+      }
+      .sourceDictLink{
+         text-decoration: none;
       }
       .projectLoadingOverlay{
          position: absolute;

@@ -808,3 +808,7 @@ body .cm-scroller {
 body .cm-wrap {
    border: 1px solid silver
 }*/
+
+#sourceDictMenuDropdown{
+   min-width: 230px;
+}

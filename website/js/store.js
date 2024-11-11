@@ -39,6 +39,9 @@ class StoreClass {
          entryRevisions: [],
          isEntryRevisionsLoading: false,
          isEntryRevisionsLoaded: false,
+         workflowList: [],
+         isWorkflowListLoaded: false,
+         isWorkflowListLoading: false,
          actualPage: null,
          search: {
             tab: localStorage.getItem("entryFilterTab") || "basic",
@@ -766,11 +769,11 @@ class StoreClass {
    importDictionaryConfiguration(data){
       return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/importconfigs.json`,
-         data: data,
-         processData: false,
-         contentType: false,
+         data: {
+            json: JSON.stringify(data)
+         },
          failMessage: "Could not import the configuration.",
-         successMessage: "The configuration was imoported."
+         successMessage: "The configuration was imported."
       })
             .done(response => {
                if(response.success){
@@ -1083,7 +1086,7 @@ class StoreClass {
 
    updateProject(project){
       return window.connection.post({
-         url: `${window.API_URL}projects/${project.id}/update.json`,
+         url: `${window.API_URL}projects/${project.projectID}/update.json`,
          data: project,
          failMessage: "Could not update the project.",
          successMessage: "The project was updated."
@@ -1114,10 +1117,41 @@ class StoreClass {
       })
    }
 
-   loadWorkflows(){
+   loadWorkflowList(){
+      if(this.data.isWorkflowListLoaded || this.data.isWorkflowListLoading){
+         return
+      }
+      this.data.isWorkflowListLoading = true
+      this.trigger("isWorkflowListLoadingChanged")
+
       return window.connection.get({
          url: `${window.API_URL}wokflows/list.json`,
          failMessage: "Could not load list of workflows."
+      })
+            .done(response => {
+               if(!response.error){
+                  this.data.workflowList = response.workflows
+                  Object.entries(this.data.workflowList).forEach(([workflowName, workflow]) => {
+                     let stages = []
+                     workflow.stages = Object.entries(workflow.stages).map(([stageName, stage]) => {
+                        stage.id = stageName
+                        return stage
+                     })
+                  })
+                  this.data.isWorkflowListLoaded = true
+                  this.trigger("workflowListChanged")
+               }
+            })
+            .always(response => {
+               this.data.isWorkflowListLoading = false
+               this.trigger("isWorkflowListLoadingChanged")
+            })
+   }
+
+   suggestProjectId(){
+      return window.connection.get({
+         url: `${window.API_URL}projects/suggestid.json`,
+         failMessage: "Could not get new project ID."
       })
    }
 

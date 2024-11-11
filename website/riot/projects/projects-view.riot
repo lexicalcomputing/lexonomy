@@ -147,7 +147,7 @@
                         </a>
                      </div>
                      <h4 if={!workflow.batches.length}
-                           class="grey-text pt-4 center-align">
+                           class="grey-text mt-12 center-align">
                         no batches have been generated
                      </h4>
                      <loading-overlay if={workflow.isExportingBatches}
@@ -165,7 +165,7 @@
                   </div>
                </td>
                <td>
-                  <div class="card-panel grey lighten-4">
+                  <div class="card-panel importPanel grey lighten-4">
                      <project-dict-name dict={workflow.outputDict}
                            hide-assigned={true}/>
                      <span if={!getDictionaryStatus(workflow.outputDict).isBusy}
@@ -251,6 +251,7 @@
          onBeforeMount(){
             this.reset()
             this.loadProject()
+            this.store.loadWorkflowList()
          },
 
          onBeforeUpdate(){
@@ -535,12 +536,19 @@
          }
          .card-panel{
             min-width: 270px;
-            min-height: 150px;
+            min-height: 221px;
             &.workflowWithBatchPanel{
                min-width: 600px;
                padding-bottom: 10px;
                .batchTableWrapper{
                   margin: 0 -24px;
+               }
+            }
+            &.importPanel{
+               display: flex;
+               flex-direction: column;
+               & > project-dict-name{
+                  margin-bottom: auto;
                }
             }
          }

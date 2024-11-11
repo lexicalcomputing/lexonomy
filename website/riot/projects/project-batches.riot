@@ -213,7 +213,8 @@
             selectedBatches: null,
             displayedBatches: null,
             lastSelectedBatch: null,
-            showAllBatches: true
+            showAllBatches: true,
+            editors: []
          },
 
          onBeforeMount(){
@@ -230,6 +231,7 @@
          },
 
          onBeforeUpdate(){
+            this.state.annotators = [...(this.props.project.annotators.__all__ || []), ...(this.props.project.annotators[this.props.workflow.stage] || [])]
             this.refreshDisplayedBatches()
          },
 
@@ -297,7 +299,7 @@
             this.update()
             td.find("input").focus()
             $(".assigneeAutocomplete", this.root).autocomplete({
-               data: this.props.project.annotators.map(email => {
+               data: this.state.annotators.map(email => {
                      return {
                         value: email,
                         label: email
@@ -320,7 +322,7 @@
 
          onBatchAssigneeChange(batch, email){
             batch.edit = false
-            if(this.props.project.annotators.includes(email)){
+            if(this.state.annotators.includes(email)){
                batch.assignee = email
                this._setAssignees([batch], email)
             }
