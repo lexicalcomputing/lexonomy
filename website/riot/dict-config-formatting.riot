@@ -26,7 +26,7 @@
       <div class="exampleColumn pl-6">
          <h2>Example</h2>
          <div if={!dictData.isEntryListLoaded || dictData.entryList.length}
-               class="exampleBar grey lighten-4 displayFlex mb-2">
+               class="exampleBar grey lighten-4 displayFlex mb-4 positionRelative">
             <entry-dropdown on-change={onExampleEntryChanged}/>
             <i class="material-icons grey-text">search</i>
             <!-- randomone.json does not work, temporarily hidden -->
@@ -35,6 +35,14 @@
                   data-tooltip="Load random entry.">
                <i class="material-icons">autorenew</i>
             </button-->
+            <small if={!state.isElementInEntry}
+                  class="elementNotInEntryWarning grey-text">
+               Element does not contains '{store.getElementDisplayedName(state.elementPath)}'. Try to &nbsp;
+               <a onclick={onTryToFindEntryWithElementClick}
+                     href="javascript:void(0);">
+                  find an element with '{store.getElementDisplayedName(state.elementPath)}'.
+               </a>
+            </small>
          </div>
          <div class="exampleWrapper positionRelative">
             <loading-overlay if={dictData.isEntryListLoading || dictData.isEntryLoading}/>
@@ -118,6 +126,10 @@
             }
          },
 
+         onBeforeUpdate(){
+            this.state.isElementInEntry = !!this.nvhStore.findElement(element => element.path == this.state.elementPath)
+         },
+
          onBeforeUnmount(){
             this.nvhStore.data.formatting.elements = JSON.parse(this.state.savedConfig)
             window.CustomStyles.remove("nvhEditorCustomStyles")
@@ -153,6 +165,25 @@
 
          onReloadRandomEntryClick(){
             this.store.loadRandomEntry()
+         },
+
+         onTryToFindEntryWithElementClick(){
+            this.store.loadEntries({
+               offset: 0,
+               howmany: 1,
+               advanced_query: `${this.state.elementPath}#>"0"`
+            })
+                  .done(response => {
+                     if(response.success){
+                        if(response.entries.length){
+                           this.store.changeEntryId(response.entries[0].id)
+                        } else {
+                           window.showToast(`No entry with '${this.state.elementPath}' found.`)
+                        }
+                     } else {
+
+                     }
+                  })
          },
 
          onUseCustomCssClick(){
@@ -270,6 +301,11 @@
       }
       .highlighted{
          box-shadow: 0 4px 5px 0 rgb(0 0 0 / 14%), 0 1px 10px 0 rgb(0 0 0 / 12%), 0 2px 4px -1px rgb(0 0 0 / 30%);
+      }
+      .elementNotInEntryWarning{
+         position: absolute;
+         left: 0;
+         bottom: -20px;
       }
       .exampleBar{
          align-items: center;

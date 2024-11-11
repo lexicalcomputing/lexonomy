@@ -1371,7 +1371,7 @@ class StoreClass {
                let template = this.data.config.searchability.templates.find(t => t.label.toLowerCase() == templateLabel)
                if(template){
                   template = template.template.replaceAll("%query%", this.data.search.searchtext)
-                  data.advance_query = template
+                  data.advanced_query = template
                } else {
                   M.toast({html: "Search template not found."})
                }
@@ -1381,7 +1381,7 @@ class StoreClass {
             data.modifier = this.data.search.modifier
          }
       } else {
-         data.advance_query = this.data.search.advanced_query
+         data.advanced_query = this.data.search.advanced_query
       }
       return data
    }
