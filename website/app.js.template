@@ -1,0 +1,30 @@
+import {register as riot_register, component} from 'riot'
+
+import './js/dispatcher.js'
+import './js/connection.js'
+import './js/store.js'
+import './js/auth.js'
+import './js/extend-riot.js'
+import './js/appupdater.js'
+import './js/url.js'
+import './js/misc.js'
+import './js/configuration-checker.js'
+import './libs/js.cookie.js'
+import './libs/codejar/codejar.js'
+import './libs/jsdiff/jsdiff.js'
+import './libs/cssparser/cssparser.js'
+import './js/nvh-store.js'
+import './js/nvh-plugins/ske.js'
+import './js/nvh-plugins/image-search.js'
+import './js/nvh-plugins/voice-rss.js'
+import './js/nvh-plugins/links.js'
+import './js/extendmaterialize.js'
+import './js/structure-editor-store.js'
+import './js/formatter.js'
+import './js/customstyles.js'
+import './js/browser-update.js'
+
+
+@RIOT_REGISTER_COMPONENTS@
+
+component(main)(document.getElementById('root'))
