@@ -470,7 +470,10 @@ class NVHStoreClass {
 
    changeEditorMode(editorMode){
       if(window.store.data.editorMode != editorMode){
-         if(window.store.data.editorMode != "code" && this.data.customEditor && window.store.data.entryId != "new"){
+         if(window.store.data.editorMode != "code"
+               && this.data.customEditor
+               && this.data.entry
+               && window.store.data.entryId != "new"){
             this.setEntryFromCustomEditor()
             this.history.addState()
             this.validateAllElements()
