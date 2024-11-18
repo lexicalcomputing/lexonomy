@@ -224,6 +224,11 @@
 
          search(){
             this.store.loadEntryList()
+                  .done(response => {
+                     if(response.success && response.entries.length){
+                        this.store.changeEntryId(response.entries[0].id)
+                     }
+                  })
             route(`/${this.dictData.dictId}/edit${this.store.getEntrySearchUrlQueryString()}`)
          },
 
