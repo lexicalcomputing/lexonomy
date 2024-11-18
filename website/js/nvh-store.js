@@ -11,7 +11,6 @@ class NVHStoreClass {
          detachedEntry: {
             children: []
          },
-         isDMLexCompatible: true, // TODO add new setting to dictionary
          isContextMenuOpen: false,
          isRevisionsOpen: false,
          draggedElement: null,
@@ -394,22 +393,6 @@ class NVHStoreClass {
       return json
    }
 
-   nvhSchemaToNewEntryTemplate(nvhSchema){
-      let nvh = ""
-      let addElementAndChildren = (element) => {
-         nvh += `${" ".repeat(element.indent * 2)}${element.name}:\n`
-         element.children.forEach(child => {
-            if(child.min){
-               for(let i = 0; i < child.min; i++){
-                  addElementAndChildren(child)
-               }
-            }
-         })
-      }
-      addElementAndChildren(this.nvhSchemaToJSON(nvhSchema))
-      return nvh
-   }
-
    replaceElementNamesWithPaths(nvh){
       let lastIndent
       let lastParentPath
@@ -711,7 +694,7 @@ class NVHStoreClass {
 
    isElementViewable(element){
       let specialElements = ["relation"]
-      return !this.data.isDMLexCompatible
+      return this.data.structure.tab != "dmlex"
             || (!specialElements.includes(element.name)
                   && !this.getElementAncestors(element)
                      .some(el => {return specialElements.includes(el.name)})
@@ -1011,13 +994,23 @@ class NVHStoreClass {
    }
 
    addAllChildren(element){
+      let structure = this.data.structure
       let config = this.getElementConfig(element.path)
       config && config.children.forEach(childPath => {
-         let childConfig = this.getElementConfig(childPath)
-         Array.from({length: childConfig.min}).forEach(empty => {
-            let childElement = this._addChildElement(element, childPath)
-            this.addAllChildren(childElement)
-         })
+         if(structure.hasNewEntryTemplate){
+            // add child elements acording to settings in new entry emplate
+            if(structure.newEntryTemplate.defaultElements[childPath]){
+               let childElement = this._addChildElement(element, childPath)
+               this.addAllChildren(childElement)
+            }
+         } else {
+            // add child elements to meet minimum child elements of given type
+            let childConfig = this.getElementConfig(childPath)
+            Array.from({length: childConfig.min}).forEach(empty => {
+               let childElement = this._addChildElement(element, childPath)
+               this.addAllChildren(childElement)
+            })
+         }
       })
    }
 
@@ -1188,7 +1181,7 @@ class NVHStoreClass {
             })
             element.children.forEach(child => {
                if(!this.isServiceElement(child.path)){
-                  if(!window.store.data.config.structure.elements[child.path]){
+                  if(!this.data.structure.elements[child.path]){
                      warnings.push(`'${element.path}' has unknown child element '${child.path}'.`)
                   } else if(!config.children.includes(child.path)){
                      warnings.push(`'${element.path}' must not have '${child.path}' as child element.`)
@@ -1290,14 +1283,18 @@ class NVHStoreClass {
    }
 
    _getElementDefaultValue(elementPath){
-      let config = this.getElementConfig(elementPath)
-      if(config){
-         if(config.type == "empty"){
-            return null
-         } else if(config.type == "bool"){
-            return 0
-         } else if(config.type == "list" && config.values.length){
-            return config.values[0]
+      if(this.data.structure.hasNewEntryTemplate){
+         return this.data.structure.newEntryTemplate?.defaultValues[elementPath] || ""
+      } else {
+         let config = this.getElementConfig(elementPath)
+         if(config){
+            if(config.type == "empty"){
+               return null
+            } else if(config.type == "bool"){
+               return 0
+            } else if(config.type == "list" && config.values.length){
+               return config.values[0]
+            }
          }
       }
       return ""
@@ -1305,20 +1302,16 @@ class NVHStoreClass {
 
    _getNewEntry(){
       let entry
-      if(store.data.config.structure.custom_newEntryTemplate){
-         entry = this.nvhToJson(store.data.config.structure.custom_newEntryTemplate)
-      } else {
-         entry = {
-            id: this._getNewElementId(),
-            path: this.data.rootElement,
-            name: this.data.rootElement,
-            parent: null,
-            indent: 0,
-            value: "",
-            children: []
-         }
-         this.addAllChildren(entry)
+      entry = {
+         id: this._getNewElementId(),
+         path: this.data.rootElement,
+         name: this.data.rootElement,
+         parent: null,
+         indent: 0,
+         value: "",
+         children: []
       }
+      this.addAllChildren(entry)
       return entry
    }
 

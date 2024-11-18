@@ -10,6 +10,10 @@ class StructureEditorStoreClass {
             elements: {},
             root: null
          },
+         entryTemplate: {
+            defaultElements: [],
+            defaultValues: {}
+         },
          draggedElement: null,
          editedElement: null
       }
@@ -24,6 +28,10 @@ class StructureEditorStoreClass {
          element.children = element.children || []
          element.parent = element.path.split(".").slice(0, -1).join(".") || null
       })
+   }
+
+   setNewEntryTemplate(newEntryTemplate){
+      this.data.newEntryTemplate = newEntryTemplate
    }
 
    nvhToStructure(nvh){
