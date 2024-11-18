@@ -1,0 +1,248 @@
+<new-entry-template>
+   <div each={(element, idx) in state.elementList}>
+      <i if={state.warnings.includes(element.path)}
+            class="material-icons positionAbsolute orange-text tooltipped help"
+            data-tooltip="The minimum number of element is set in the structure, so the element should be included in the new entry template.">
+         warning
+      </i>
+      <div class="entryRow displayInlineFlex alignCenter">
+         <label style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
+            <input type="checkbox"
+                  checked={state.defaultElements[element.path] || element.name == props.root}
+                  disabled={element.name == props.root}
+                  onclick={onCheckboxChanged.bind(this, element.path)} />
+            <span style="color: {window.nvhStore.getColorByIndex(idx)};">
+               {element.name}
+            </span>
+         </label>
+         <div if={["string", "int", "url", "bool", "list"].includes(element.type)}
+               class="defaultValueWrapper">
+            <template if={state.editedElementPath != element.path}>
+               <span if={state.defaultValues[element.path]}
+                     class="elementDefaultValue grey-text ml-2">
+                  {store.stringifyElementValue(state.defaultValues[element.path], element.type)}
+               </span>
+               <i class="material-icons grey-text tiny pointer ml-2"
+                     onclick={onEditClick.bind(this, element.path)}>edit</i>
+            </template>
+            <div if={state.editedElementPath == element.path}
+                  class="displayFlex gap10 ml-2">
+               <span class="grey-text">Default value</span>
+               <div class="input-field mb-0 mt-0">
+                  <template if={TEXT_ELEMENT_TYPES.includes(element.type)}>
+                     <input class="elementDefaultValueInput"
+                           value={state.defaultValues[element.path]}
+                           onkeyup={onKeyUp.bind(this, element.path)}
+                           type={element.type == "int" ? "number" : "text"}>
+                  </template>
+                  <template if={element.type == "bool"}>
+                     <select onchange={onSelectChange}>
+                        <option selected={state.defaultValues[element.path] == ""} value="">-not set-</option>
+                        <option selected={state.defaultValues[element.path] == "0"} value="0">No</option>
+                        <option selected={state.defaultValues[element.path] == "1"} value="1">Yes</option>
+                     </select>
+                  </template>
+                  <template if={element.type == "list"}>
+                     <select onchange={onSelectChange}>
+                        <option selected={state.defaultValues[element.path] == ""} value="">-not set-</option>
+                        <option each={value in element.values}
+                              selected={value == state.defaultValues[element.path]}
+                              value={value}>{value}</option>
+                     </select>
+                  </template>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["structureStore", "elementChanged", "update"]],
+
+         state: {
+            defaultElements: {},
+            defaultValues: {},
+            warnings: []
+         },
+
+         TEXT_ELEMENT_TYPES: ["string", "int", "url"],
+
+         onBeforeMount(){
+            this.structureStore = window.structureEditorStore
+            this.state.elementList = this.getElementList()
+            this.state.defaultValues = this.props.newEntryTemplate?.defaultValues || {}
+            this.state.defaultElements = this.props.newEntryTemplate?.defaultElements || {}
+            this.validate()
+         },
+
+         onMounted(){
+            window.initFormSelects(this.root)
+         },
+
+         onBeforeUpdate(){
+            this.state.elementList = this.getElementList()
+            this.validate()
+         },
+
+         onUpdated(){
+            window.initFormSelects(this.root)
+         },
+
+         onCheckboxChanged(elementPath, evt){
+            if(this.state.defaultElements[elementPath]){
+               delete this.state.defaultElements[elementPath]
+               Object.keys(this.state.defaultElements).forEach(path => {
+                  // uncheck all child elements
+                  if(path.startsWith(elementPath)){
+                     delete this.state.defaultElements[path]
+                  }
+               })
+            } else {
+               this.state.defaultElements[elementPath] = true
+               let path = elementPath
+               while(path){
+                  // check all parent elements
+                  this.state.defaultElements[path] = true
+                  path = path.split(".").slice(0,-1).join(".")
+               }
+            }
+            this.update()
+            this.callOnChange()
+         },
+
+         onSelectChange(evt){
+            if(evt.value === ""){
+               delete this.state.defaultValues[this.state.editedElementPath]
+            } else {
+               this.state.defaultValues[this.state.editedElementPath] = evt.target.value
+            }
+            this.stopElementValueEditing()
+         },
+
+         onKeyUp(elementPath, evt){
+            if(evt.keyCode == 13){
+               this.updateElementValue()
+            }
+            if([13, 27].includes(evt.keyCode)){
+               this.stopElementValueEditing()
+            }
+         },
+
+         onEditClick(elementPath){
+            this.state.editedElementPath = elementPath
+            this.update()
+            setTimeout(() => {
+               let element = this.getElement(elementPath)
+               document.addEventListener("mousedown", this.handleDocumentMouseDown)
+               if(this.TEXT_ELEMENT_TYPES.includes(element.type)) {
+                  $(".elementDefaultValueInput").focus()
+                  window.scrollToTheEndOfInput(".elementDefaultValueInput")
+               }
+               if(["bool", "list"].includes(element.type)){
+                  M.FormSelect.getInstance($("select", this.root))?.dropdown?.open()
+               }
+            })
+         },
+
+         stopElementValueEditing(){
+            this.state.editedElementPath = null
+            document.removeEventListener("mousedown", this.handleDocumentMouseDown)
+            this.update()
+         },
+
+         handleDocumentMouseDown(evt){
+            let node = $(evt.target)
+            if(!this.root.contains(evt.target)
+                  || !node.closest(".defaultValueWrapper").length){
+               if(this.TEXT_ELEMENT_TYPES.includes(this.getElement(this.state.editedElementPath)?.type)) {
+                  this.updateElementValue()
+               }
+               this.stopElementValueEditing()
+            }
+         },
+
+         getElement(elementPath){
+            return this.props.elements[elementPath]
+         },
+
+         getElementList(elementPath, list=[]){
+            let element = this.getElement(elementPath || this.props.root)
+            if(element){
+               list.push(element)
+               element.children.forEach(child => {
+                  this.getElementList(child, list)
+               }, this)
+            }
+            return list
+         },
+
+         updateElementValue(){
+            let elementPath = this.state.editedElementPath
+            let value = $(".elementDefaultValueInput").val().trim()
+            if(value !== ""){
+               this.state.defaultValues[elementPath] = value
+            } else {
+               delete this.state.defaultValues[elementPath]
+            }
+            this.callOnChange()
+         },
+
+         validate(){
+            this.state.warnings = []
+            Object.values(this.props.elements).forEach(element => {
+               if(element.path != this.props.root
+                     && element.min
+                     && element.min >= 1
+                     && !this.state.defaultElements[element.path]){
+                  this.state.warnings.push(element.path)
+               }
+            })
+         },
+
+         callOnChange(){
+            this.props?.onChange({
+               defaultElements: this.state.defaultElements,
+               defaultValues: this.state.defaultValues
+            })
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .elementDefaultValue{
+         color: grey;
+      }
+      .entryRow{
+         gap: 10px;
+         label{
+            text-transform: none;
+         }
+         span:before,
+         span:after,
+         .material-icons{
+            opacity: 0.2;
+         }
+         &:hover{
+            span:before,
+            span:after,
+            .material-icons{
+               opacity: 1;
+            }
+         }
+         input[checked] + span:before,
+         input[checked] + span:after{
+            opacity: 1!important;
+         }
+      }
+      .entryRow .elementDefaultValueInput{
+         margin-bottom: 0;
+         height: 23px;
+         line-height: 23px;
+      }
+      input.select-dropdown{
+         height: 1.5rem!important;
+         margin-bottom: 0!important;
+      }
+   </style>
+</new-entry-template>

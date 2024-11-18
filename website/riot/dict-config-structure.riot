@@ -10,94 +10,101 @@
             onclick={onShowBrokenStructureClick}>show broken structure</a>
    </div>
 
-   <div if={!state.isLoading}
-         class="contentWrapper displayFlex">
-      <div class="settingsRadio borderRight pr-4">
-         <label >
-           <input name="structure"
-               value="dmlex"
-               onclick={onTabRadioMouseDown}
-               type="radio"
-               checked={state.tab == "dmlex"}
-               onchange={onTabChange}/>
-           <span>DMLex Standard</span>
-         </label>
-         <label>
-           <input name="structure"
-               value="advanced"
-               onclick={onTabRadioMouseDown}
-               type="radio"
-               checked={state.tab == "advanced"}
-               onchange={onTabChange}/>
-           <span>Custom structure</span>
-         </label>
-         <label >
-           <input name="structure"
-               value="custom"
-               onclick={onTabRadioMouseDown}
-               type="radio"
-               checked={state.tab == "custom"}
-               onchange={onTabChange}/>
-           <span>Custom NVH schema</span>
-         </label>
-      </div>
-
-      <div class="tabsContent">
-         <div if={state.tab == "dmlex"}>
-            <nvh-schema modules={state.dmlex_modules}
-                  xlingual_langs={state.xlingual_langs}
-                  etymology_langs={state.etymology_langs}
-                  on-change={onDMLexChange}
-                  on-schema-change={onDMLexSchemaChange}/>
+   <template if={!state.isLoading}>
+      <div class="tabsWrapper displayFlex">
+         <div class="settingsRadio borderRight pr-4">
+            <label >
+              <input name="structure"
+                  value="dmlex"
+                  onclick={onTabRadioMouseDown}
+                  type="radio"
+                  checked={state.tab == "dmlex"}
+                  onchange={onTabChange}/>
+              <span>Simple settings</span>
+            </label>
+            <label>
+              <input name="structure"
+                  value="advanced"
+                  onclick={onTabRadioMouseDown}
+                  type="radio"
+                  checked={state.tab == "advanced"}
+                  onchange={onTabChange}/>
+              <span>Custom structure</span>
+            </label>
+            <label >
+              <input name="structure"
+                  value="custom"
+                  onclick={onTabRadioMouseDown}
+                  type="radio"
+                  checked={state.tab == "custom"}
+                  onchange={onTabChange}/>
+              <span>Expert settings</span>
+            </label>
          </div>
 
-         <div if={state.tab == "advanced"}>
-            <structure-editor/>
-         </div>
+         <div class="tabsContent mb-4">
+            <div if={state.tab == "dmlex"}>
+               <nvh-schema modules={state.dmlex_modules}
+                     xlingual_langs={state.xlingual_langs}
+                     etymology_langs={state.etymology_langs}
+                     on-change={onDMLexChange}
+                     on-schema-change={onDMLexSchemaChange}/>
+            </div>
 
-         <div if={state.tab == "custom"}
-               class="tabCustom">
-            <div class="tabCustomForm">
-               <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
-                  Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
-               </p>
-               <div class="mb-16">
-                  <div class="input-field">
-                     <nvh-schema-textarea riot-value={state.schemaNvh}
-                           on-valid-change={onNVHSchemaValidChange}
-                           on-input={onNVHSchemaInput}/>
-                     <label for="custom_NVHSchema">Your NVH schema</label>
-                  </div>
-                  <div class="buttons">
-                     <button id="custom_loadSampleNVHSchema"
-                           class="btn btn-secondary "
-                           onclick={onLoadSampleNVHSchemaClick}>Load sample NVH schema</button>
-                  </div>
-               </div>
-               <div class="input-field">
-                  <textarea id="custom_newEntryTemplate"
-                        class="materialize-textarea {state.custom_newEntryTemplateError ? 'invalid' : ''}"
-                        oninput={onNewEntryTemplateInput}>{state.custom_newEntryTemplate}</textarea>
-                  <label for="custom_newEntryTemplate">NVH template for new entries</label>
-                  <div class="textareaErrorMessage red-text">
-                     <small>
-                        {state.custom_newEntryTemplateError}
-                     </small>
-                  </div>
-                  <div class="buttons">
-                     <button id="custom_generateNewNVHBtn"
-                           class="btn btn-secondary {state.schemaNvh ? '' : 'disabled'}"
-                           onclick={onNewEntryFromNVHSchemaClick}>Generate from NVH schema</button>
+            <div if={state.tab == "advanced"}>
+               <structure-editor/>
+            </div>
+
+            <div if={state.tab == "custom"}
+                  class="tabCustom">
+               <div class="tabCustomForm">
+                  <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
+                     Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
+                  </p>
+                  <div class="mb-16">
+                     <div class="input-field">
+                        <nvh-schema-textarea riot-value={state.schemaNvh}
+                              on-valid-change={onNVHSchemaValidChange}
+                              on-input={onNVHSchemaInput}/>
+                        <label>Your NVH schema</label>
+                     </div>
+                     <div class="buttons">
+                        <button id="custom_loadSampleNVHSchema"
+                              class="btn btn-secondary "
+                              onclick={onLoadSampleNVHSchemaClick}>Load sample NVH schema</button>
+                     </div>
                   </div>
                </div>
             </div>
-         </div>
 
-         <div class="mt-16">
-            <dict-config-buttons save-data={save}/>
          </div>
       </div>
-   </div>
+      <div class="borderTop pt-4">
+         <label >
+            <input name="new_entry_template"
+                  type="checkbox"
+                  checked={state.hasNewEntryTemplate}
+                  onchange={oneNewEntryTemplateTogglClick} />
+            <span>Set new entry template</span>
+         </label>
+         <div if={state.hasNewEntryTemplate}
+               class="newEntryTemplateSettings">
+            <div class="grey-text mb-4">
+               Select elements to be automatically added when creating a new entry.
+               <br>
+               You can also set a default values for newly added elements.
+            </div>
+            <new-entry-template elements={structureStore.data.structure.elements}
+                  root={structureStore.data.structure.root}
+                  new-entry-template={structureStore.data.newEntryTemplate}
+                  on-change={structureStore.setNewEntryTemplate.bind(structureStore)}/>
+         </div>
+      </div>
+      <div class="mt-16">
+         <dict-config-buttons save-data={save}/>
+      </div>
+   </template>
+
 
    <script>
       export default {
@@ -110,8 +117,6 @@
             data: null,
             brokenConfig: null,
             isCustomNVHSchemaValid: null,
-            custom_newEntryTemplate: "",
-            custom_newEntryTemplateError: "",
             DMLexSchema: null,
             changed: false
          },
@@ -128,8 +133,9 @@
                         this.state.dmlex_modules = response.content.dmlex_modules || []
                         this.state.xlingual_langs = response.content.xlingual_langs || []
                         this.state.etymology_langs = response.content.etymology_langs || []
-                        this.state.custom_newEntryTemplate = response.content.custom_newEntryTemplate || ""
                         this.structureStore.setConfigStructure(response.content)
+                        this.structureStore.setNewEntryTemplate(response.content.newEntryTemplate)
+                        this.state.hasNewEntryTemplate = response.content.hasNewEntryTemplate
                         this.state.originalStructure = {...this.structureStore.data.structure}
                         this.state.originalDmlex_modules = [...this.state.dmlex_modules]
                         this.state.originalXlingual_langs = [...this.state.xlingual_langs]
@@ -156,7 +162,6 @@
                   .always(() => {
                      this.update({isLoading: false})
                      if(this.state.tab == "custom"){
-                        $("#custom_generateNewNVHBtn").toggleClass("disabled", !this.state.schemaNvh || !this.state.isCustomNVHSchemaValid)
                         this.refreshCustomTextFields()
                      }
                      this.refreshBtnSaveDisabled()
@@ -165,35 +170,19 @@
 
          onNVHSchemaInput(schema){
             this.state.schemaNvh = schema
+            if(this.state.hasNewEntryTemplate){
+               try{
+                  let structure = this.structureStore.nvhToStructure(schema)
+                  this.structureStore.setConfigStructure(structure)
+                  this.update()
+               } catch(e){}
+            }
             this.state.changed = true
             this.refreshBtnSaveDisabled()
          },
 
          onNVHSchemaValidChange(isValid){
             this.state.isCustomNVHSchemaValid = isValid
-            this.refreshBtnSaveDisabled()
-            $("#custom_generateNewNVHBtn").toggleClass("disabled", !isValid)
-         },
-
-         onNewEntryTemplateInput(evt){
-            this.state.custom_newEntryTemplate = evt.target.value
-            let error = ""
-            try{
-               let entry = window.nvhStore.nvhToJson(evt.target.value)
-            } catch(e){
-               error = e
-            }
-            if(error != this.state.custom_newEntryTemplateError){
-               this.update({custom_newEntryTemplateError: error})
-            }
-            this.refreshBtnSaveDisabled()
-         },
-
-         onNewEntryFromNVHSchemaClick(){
-            let newEntryTemplate = window.nvhStore.nvhSchemaToNewEntryTemplate(this.state.schemaNvh)
-            this.state.custom_newEntryTemplate = newEntryTemplate
-            $("#custom_newEntryTemplate").val(newEntryTemplate)
-            this.refreshCustomTextFields()
             this.refreshBtnSaveDisabled()
          },
 
@@ -222,6 +211,10 @@
             }
          },
 
+         oneNewEntryTemplateTogglClick(){
+            this.update({hasNewEntryTemplate: !this.state.hasNewEntryTemplate})
+         },
+
          onTabRadioMouseDown(evt){
             let tab = evt.target.value
             if(tab != this.state.tab){
@@ -237,16 +230,18 @@
                         showCloseButton: false,
                         buttons: [{
                            label: "Cancel",
-                           onClick: window.modal.close
+                           onClick: (dialog, modal) => {
+                              modal.close()
+                           }
                         }, {
-                           label: "discard",
+                           label: "discard changes",
                            onClick: function(tab, dialog, modal){
                               this.structureStore.setConfigStructure(this.state.originalStructure)
                               this.changeTab(tab, false)
                               modal.close()
                            }.bind(this, tab)
                         }, {
-                           label: "save",
+                           label: "save changes",
                            onClick: function(tab, dialog, modal){
                               this.save()
                                     .done(function(tab){
@@ -261,7 +256,7 @@
                         title: "Discard changes?",
                         tag: "raw-html",
                         props: {
-                           content: "There is an error in the structure. Before changingthe  structure setting mode you need to fix the structure first or discard the changes."
+                           content: "There is an error in the structure. Before changing the structure setting mode you need to fix the structure first or discard the changes."
                         },
                         small: true,
                         showCloseButton: false,
@@ -269,7 +264,7 @@
                            label: "Cancel",
                            onClick: window.modal.close
                         }, {
-                           label: "discard",
+                           label: "discard changes",
                            onClick: function(tab, dialog, modal){
                               this.structureStore.setConfigStructure(this.state.originalStructure)
                               this.changeTab(tab, false)
@@ -296,6 +291,8 @@
 
          onDMLexSchemaChange(DMLexSchema){
             this.state.DMLexSchema = DMLexSchema
+            this.structureStore.setConfigStructure(this.state.DMLexSchema)
+            this.update()
             this.refreshBtnSaveDisabled()
          },
 
@@ -305,9 +302,8 @@
          },
 
          onLoadSampleNVHSchemaClick() {
-            this.structureStore.data.custom_NVHSchema = `entry:\n  headword:\n  partOfSpeech: ?\n  sense: +\n    definition: ?\n    example: *\n  `
+            this.state.schemaNvh = `entry:\n  headword:\n  partOfSpeech: ?\n  sense: +\n    definition: ?\n    example: *\n  `
             this.update()
-            $("#custom_generateNewNVHBtn").removeClass("disabled")
             this.state.isCustomNVHSchemaValid = true
             this.refreshCustomTextFields()
             this.refreshBtnSaveDisabled()
@@ -341,7 +337,9 @@
                   tab: this.state.tab,
                   dmlex_modules: this.state.dmlex_modules,
                   xlingual_langs: this.state.xlingual_langs,
-                  etymology_langs: this.state.etymology_langs
+                  etymology_langs: this.state.etymology_langsm,
+                  hasNewEntryTemplate: this.state.hasNewEntryTemplate,
+                  newEntryTemplate: this.deleteInvalidElementsInNewEntryTemplate(structure)
                }, structure)
             }
 
@@ -357,6 +355,21 @@
                   .always(() => this.update({isBusy: false}))
          },
 
+         deleteInvalidElementsInNewEntryTemplate(structure){
+            let newEntryTemplate = this.structureStore.data.newEntryTemplate
+            Object.keys(newEntryTemplate.defaultElements).forEach(elementPath => {
+               if(!structure.elements[elementPath]){
+                  delete newEntryTemplate.defaultElements[elementPath]
+               }
+            })
+            Object.keys(newEntryTemplate.defaultValues).forEach(elementPath => {
+               if(!structure.elements[elementPath]){
+                  delete newEntryTemplate.defaultValues[elementPath]
+               }
+            })
+            return newEntryTemplate
+         },
+
          isSchemaValid(){
             if(this.state.tab == "dmlex"){
                return !!this.state.DMLexSchema
@@ -366,7 +379,6 @@
             } else if(this.state.tab == "custom"){
                return !!this.state.schemaNvh
                      && this.state.isCustomNVHSchemaValid
-                     && !this.state.custom_newEntryTemplateError
             }
          },
 
@@ -376,13 +388,12 @@
 
          refreshCustomTextFields(){
             M.updateTextFields()
-            M.textareaAutoResize($("#custom_newEntryTemplate"))
          }
       }
    </script>
 
    <style type="scss">
-      .contentWrapper{
+      .tabsWrapper{
          gap: 40px;
          @media screen and (max-width: 900px) {
             flex-wrap: wrap;
@@ -397,17 +408,8 @@
       .tabsContent{
          width: 100%;
       }
-      .customFieldWithButtons{
-         display: flex;
-         gap: 20px;
-      }
       textarea{
          min-height: 89px;
-      }
-      .textareaErrorMessage{
-         min-height: 24px;
-         position: relative;
-         top: -15px;
       }
       .tabs {
          border-bottom: none;
@@ -420,6 +422,14 @@
             max-width: 760px;
             flex: 1
          }
+      }
+      nvh-schema{
+         h3{
+            margin-top: 0;
+         }
+      }
+      .newEntryTemplateSettings{
+         padding: 10px 0 0 36px;
       }
    </style>
 </dict-config-structure>

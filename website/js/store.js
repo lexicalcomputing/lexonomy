@@ -211,6 +211,16 @@ class StoreClass {
       return "#000000"
    }
 
+   stringifyElementValue(value, elementType){
+      value = window.escapeHTML(value)
+      if(elementType == "bool"){
+         return value == 1 ? "yes" : "no"
+      } else if(elementType == "string"){
+         return value.replace(/\\n/g, "<br>")
+      }
+      return value
+   }
+
    isStructureValid(){
       return this.data.config
             && this.data.config.structure

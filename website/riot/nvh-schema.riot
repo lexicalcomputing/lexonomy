@@ -106,13 +106,27 @@
                   <span class="helper-text">Add language and hit enter.</span>
                </div>
             </div>
+            <div class="borderTop pt-6 mt-6">
+               <label class="displayBlock">
+                  <input type="checkbox"
+                        checked={state.showFinalEntryStructure}
+                        onchange={onShowFinalEntryStructureChanged}>
+                     <span>
+                        Show final entry structure
+                     </span>
+               </label>
+            </div>
          </div>
-         <div class="modulesArrow">
+
+         <div if={state.showFinalEntryStructure}
+               class="modulesArrow">
             <i class="material-icons">chevron_right</i>
          </div>
       </div>
    </div>
-   <div class="finalStructure positionRelative pl-8">
+
+   <div if={state.showFinalEntryStructure}
+         class="finalStructure positionRelative pl-8">
       <h3>Final entry structure</h3>
       <loading-overlay if={state.isLoading}/>
       <div class="pl-4"
@@ -121,13 +135,13 @@
          --><div each={(row, idx) in state.schema.split("\n")}
                   class="displayFlex"
                   style="color: {window.nvhStore.getColorByIndex(idx)};">
-               {row}
+               {row.split(":")[0]}
                <i class="grey-text inlineBlock material-icons ml-2 tiny verticalMiddle help tooltipped"
                      data-tooltip="{state.elementDescription[row.split(":")[0].trim()]}">
                   help_outline
                </i>
-            </div>
-         </pre>
+            </div><!--
+      --></pre>
       </div>
    </div>
 
@@ -141,7 +155,8 @@
             etymology_langs: [],
             isEtymologyLanguageValid: true,
             elementDescription: null,
-            schema: null
+            schema: null,
+            showFinalEntryStructure: false
          },
 
          onBeforeMount(){
@@ -211,6 +226,10 @@
             }
          },
 
+         onShowFinalEntryStructureChanged(){
+            this.update({showFinalEntryStructure: !this.state.showFinalEntryStructure})
+         },
+
          callOnChange(){
             this.props.onChange && this.props.onChange(this.state.modules, this.state.xlingual_langs, this.state.etymology_langs)
          },
@@ -267,9 +286,7 @@
       :host{
          min-height: 200px;
       }
-      .availableModules{
-         gap: 40px;
-      }
+
       .modulesArrow{
          display: flex;
          align-items: center;
