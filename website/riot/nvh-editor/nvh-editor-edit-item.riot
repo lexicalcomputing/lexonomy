@@ -39,7 +39,7 @@
                   class="nvh-readonly-value-wrapper">
                <span class="nvh-readonly-value pointer"
                      onmousedown={!props.readOnly && onValueMouseDown}>
-                  <raw-html content={getReadOnlyValue()}/>
+                  <raw-html content={store.stringifyElementValue(props.element.value, state.config.type)}/>
                </span>
                <span if={!props.readOnly && state.config.type}
                      class="nvh-value-icons displayInlineFlex">
@@ -162,16 +162,6 @@
             setTimeout(() => {
                this.nvhStore.startElementEditing(this.props.element)
             }, 0)
-         },
-
-         getReadOnlyValue(){
-            let value = window.escapeHTML(this.props.element.value)
-            if(this.state.config.type == "bool"){
-               return value == 1 ? "yes" : "no"
-            } else if(this.state.config.type == "string"){
-               return value.replace(/\\n/g, "<br>")
-            }
-            return value
          },
 
          getCollapsedValue(){
