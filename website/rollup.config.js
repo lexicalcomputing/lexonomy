@@ -31,7 +31,7 @@ function createAppJs(){
 
    walk("./riot").forEach(f => {
       let fileName = path.basename(f, ".riot")
-      let normalizedName = fileName.replaceAll("-", "_")
+      let normalizedName = fileName.replace(new RegExp("-", "g"), "_")
       lines.push(`import ${normalizedName} from "./${f}"`)
       lines.push(`riot_register("${fileName}", ${normalizedName})`)
    })
