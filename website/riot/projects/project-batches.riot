@@ -130,7 +130,7 @@
                      <span if={batch.completed_per == 100 && batch.status != "accepted"}
                            class="tooltipped"
                            data-tooltip={batch.status == "rejected" && batch.newerBatchExists ? "If you want to accept this batch you need to delete all newer batches first" : "Accept batch"}>
-                        <button class="btn btn-flat btn-floating btn-small {batch.newerBatchExists ? 'disabled' : ''}"
+                        <button class="btn btn-flat btn-floating btn-small {batch.status == "rejected" && batch.newerBatchExists ? 'disabled' : ''}"
                               onclick={onBatchAcceptClick.bind(this, batch)}>
                            <i class="material-icons">check</i>
                         </button>
