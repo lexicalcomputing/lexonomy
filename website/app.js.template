@@ -25,6 +25,11 @@ import './js/customstyles.js'
 import './js/browser-update.js'
 
 
+import './app.styles.scss'
+
+
+
 @RIOT_REGISTER_COMPONENTS@
+
 
 component(main)(document.getElementById('root'))

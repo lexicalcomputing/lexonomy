@@ -1,0 +1,329 @@
+html{
+   font-size: 16px;
+}
+html body{
+   font-family: 'Roboto Condensed', sans-serif;
+}
+
+h1{
+   font-size: 2.2rem;
+   margin: 1.1rem 0 1rem 0;
+}
+h2{
+   font-size: 1.65rem;
+   margin: 1rem 0 0.9rem 0;
+}
+h3{
+   font-size: 1.3rem;
+   margin: 0.9rem 0 0.8rem 0;
+}
+h4{
+   font-size: 1rem;
+   margin: 0.8rem 0 0.7rem 0;
+}
+h5{
+   font-size: 0.83rem;
+   margin: 0.7rem 0 0.6rem 0;
+}
+h6{
+   font-size: 0.75rem;
+   margin: 0.6rem 0 0.5rem 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+   line-height:110%;
+   text-transform: uppercase;
+}
+
+label{
+   font-size: 1rem;
+   color: #767676;
+   text-transform: uppercase;
+}
+
+thead tr{
+   border-bottom: 2px solid #000;
+}
+
+span.badge{
+   padding: 0 0.4rem;
+   line-height: 1.3rem;
+   height: 1.3rem;
+}
+
+ul{
+   padding-inline-start: 20px;
+}
+
+li {
+   list-style: square;
+}
+
+table.striped thead tr{
+   border-bottom: 2px solid #000;
+}
+
+.buttons{
+   display: flex;
+   gap: 10px;
+}
+
+.hint{
+   cursor: help;
+   i{
+      font-size: 16px;
+   }
+}
+
+.loadingAnimation{
+   display: inline-block;
+   width: 1.5em;
+   i{
+      display: inline-block;
+      width: 1.5em;
+      overflow: hidden;
+      animation: loadingFrames linear 0.7s;
+      animation-iteration-count: infinite;
+      -webkit-animation: loadingFrames linear 0.7s;
+      -webkit-animation-iteration-count: infinite;
+   }
+ }
+
+@keyframes loadingFrames{
+   0% {
+      max-width: 0;
+   }
+   50% {
+      max-width: 1.5em;
+   }
+   100% {
+      max-width: 0px;
+   }
+}
+
+.checkbox{
+   position: relative;
+}
+
+.inputWithRightIcon {
+   input,
+   textarea{
+      padding-right: 1.7rem;
+   }
+   .rightIcon{
+      position: absolute;
+      right: 0.3rem;
+      top: 0.375rem;
+   }
+}
+
+.inputFieldWithProgressBar{
+   position: relative;
+   .progress{
+      position: absolute;
+      bottom: 7px;
+      height: 2px;
+      margin: 0;
+   }
+}
+
+.rowForm{
+   .row{
+      align-items: baseline;
+      display: flex;
+      margin: 0;
+   }
+   .col:first-child{
+      text-align: right;
+   }
+}
+
+
+.spin{
+   animation: container-rotate 800ms linear infinite;
+}
+
+.message{
+   padding: 15px;
+   text-align: center;
+   &.messageInfo{
+      background-color: #e1f5fe;
+   }
+   &.messageSuccess{
+      background-color: #C8E6C9;
+   }
+   &.messageError{
+      background-color: #FFCDD2;
+   }
+}
+
+.overflowVisible .modal{
+   overflow: visible;
+}
+
+.pageTitle{
+   margin: 5px 0 10px 0;
+}
+
+/* flag in entry list  */
+.flagDropdown li{
+   display: flex;
+   min-width: 170px;
+   padding: 0.7rem 1rem;
+   i{
+      margin-right: 5px;
+   }
+   .right{
+      margin-left: auto;
+      padding-left: 20px;
+   }
+}
+
+/* responsivity  */
+
+.container{
+   width: unset;
+}
+
+@media screen and (max-width: 900px){
+   h1{
+      font-size: 2.1rem;
+      margin: 0.9rem 0 0.8rem 0;
+   }
+   h2{
+      font-size: 1.55rem;
+      margin: 0.8rem 0 0.7rem 0;
+   }
+   h3{
+      font-size: 1.2rem;
+      margin: 0.7rem 0 0.6rem 0;
+   }
+   h4{
+      margin: 0.6rem 0 0.5rem 0;
+   }
+   h5{
+      margin: 0.5rem 0 0.4rem 0;
+   }
+   h6{
+      margin: 0.4rem 0 0.3rem 0;
+   }
+   dict-list .dict-size{
+      display: none;
+   }
+   #root div[is="dict-public"] .dictContainer{
+      flex-direction: column;
+   }
+   #root div[is="dict-public"] .description{
+      order: 2;
+   }
+   #root div[is="dict-public"] .sectionDivider{
+      display: none;
+   }
+   #root div[is="dict-public"] .search{
+      order: 1;
+   }
+}
+
+@media screen and (max-width: 700px){
+   h1{
+      font-size: 2rem;
+      margin: 0.9rem 0 0.8rem 0;
+   }
+   h2{
+      font-size: 1.45rem;
+      margin: 0.8rem 0 0.7rem 0;
+   }
+   h3{
+      font-size: 1.1rem;
+      margin: 0.7rem 0 0.6rem 0;
+   }
+   h4{
+      margin: 0.6rem 0 0.5rem 0;
+   }
+   h5{
+      margin: 0.5rem 0 0.4rem 0;
+   }
+   h6{
+      margin: 0.4rem 0 0.3rem 0;
+   }
+   #root .container{
+      max-width: 96vw;
+   }
+   #root .collection-item {
+      padding-left: 0.3rem;
+      padding-right: 0.3rem;
+   }
+   dict-list .checkbox{
+      display: none;
+   }
+   .columnContainer{
+      flex-wrap: wrap;
+   }
+}
+
+@media screen and (max-width: 600px){
+   .columnContainer > div{
+      width: 100%;
+   }
+   #root h1,
+   #root h2,
+   #root h3,
+   #root h4,
+   #root h5,
+   #root h6{
+      margin-left: 0;
+   }
+}
+
+@media screen and (max-width: 500px) {
+   #root .container{
+      padding-left: 0;
+   }
+   #root dict-list .topBar{
+      flex-direction: column;
+      align-items: normal;
+   }
+   #root dict-list .topBar .newDictionaryButton{
+      margin-left: unset;
+   }
+   dict-list .collection-item{
+      flex-direction: column;
+   }
+   dict-list .secondary-content{
+      height: 25px;
+      margin-top: 5px;
+      display: flex;
+   }
+}
+
+@media screen and (max-width: 400px) {
+   #root .fontSize {
+      display: none;
+   }
+   #root .brand-logo{
+      right: 0;
+      left: unset;
+      padding-right: 20px;
+      transform: none;
+   }
+}
+
+@media screen and (max-width: 350px) {
+   #root .site-logo {
+      height: 35px;
+      position: relative;
+      top: 11px;
+   }
+}
+
+
+/* other */
+
+#sourceDictMenuDropdown{
+   min-width: 230px;
+}
