@@ -129,7 +129,7 @@
             this.store.loadDictionaryConfig("structure")
                   .done(response => {
                      if(response.success){
-                        this.state.tab = response.content.tab
+                        this.state.tab = response.content.tab || "dmlex"
                         this.state.dmlex_modules = response.content.dmlex_modules || []
                         this.state.xlingual_langs = response.content.xlingual_langs || []
                         this.state.etymology_langs = response.content.etymology_langs || []
