@@ -57,17 +57,13 @@ function initTooltipDebounced(){
 
 function hideTooltips(){
    $('.tooltipped', this.root).each((idx, el) => {
-      if(M.Tooltip.getInstance(el)){
-         M.Tooltip.getInstance(el).close()
-      }
+      M.Tooltip.getInstance(el)?.close()
    })
 }
 
 function destroyTooltips(){
    $('.tooltipped', this.root).each((idx, el) => {
-      if(M.Tooltip.getInstance(el)){
-         M.Tooltip.getInstance(el).destroy()
-      }
+      M.Tooltip.getInstance(el)?.destroy()
    })
 }
 
