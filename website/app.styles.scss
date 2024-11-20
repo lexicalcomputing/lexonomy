@@ -1,0 +1,11 @@
+/* Order of imports is important - some rules overide others with the same specificity,
+   so order of rules matters. */
+
+@use "./libs/materialize/css/materialize.min.css";
+@use "./libs/materialize/css/materialize-colorpicker.min.css";
+@use "./libs/jquery/css/jquery-ui.css";
+@import './css/codemirror-modifications.scss';
+@import './css/browser-update-modifications.scss';
+@import './css/materialize-modifications.scss';
+@import './css/utility.scss';
+@import './css/lexonomy.scss';

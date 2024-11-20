@@ -2,10 +2,10 @@ import riot from 'rollup-plugin-riot'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import { registerPreprocessor } from '@riotjs/compiler'
 import sass from 'sass'
-import fs from  "fs"
-import path from "path"
-import css from "rollup-plugin-import-css"
-import { terser } from "rollup-plugin-terser"
+import fs from  'fs'
+import path from 'path'
+import scss from 'rollup-plugin-scss'
+import { terser } from 'rollup-plugin-terser'
 
 
 
@@ -69,7 +69,11 @@ export default [{
     },
     riot(),
     terser(),
-    nodeResolve()
+    nodeResolve(),
+    scss({
+      output: 'bundle.css',
+      watch: './css',
+    })
   ]
 }, {
   input: 'app.static.js',
@@ -80,13 +84,4 @@ export default [{
     strict: false
   },
   plugins: [terser(), nodeResolve()]
-}, {
-  input: "app.css.js",
-  output: {
-    file: "bundle.css"
-  },
-  plugins: [
-    css(),
-    nodeResolve()
-  ]
 }]
