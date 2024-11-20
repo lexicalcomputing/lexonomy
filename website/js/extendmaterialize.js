@@ -111,3 +111,16 @@ let dropdownExtension = {
    }
 }
 $.extend(M.Dropdown.prototype, dropdownExtension)
+
+
+
+let tooltipExtension = {
+   old_open: M.Tooltip.prototype.open,
+
+   open: function(params){
+      if(this.el.getAttribute('data-tooltip')?.trim()){
+         this.old_open(params)
+      }
+   }
+}
+$.extend(M.Tooltip.prototype, tooltipExtension)
