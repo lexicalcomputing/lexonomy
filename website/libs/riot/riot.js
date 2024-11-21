@@ -1,4 +1,4 @@
-/* Riot v9.3.0, @license MIT */
+/* Riot v9.4.4, @license MIT */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -376,12 +376,15 @@
       if (mustRemoveRoot) removeChild(this.el);
       else if (!mustRemoveRoot) cleanNode(this.el);
     },
-    clone: noop,
+    clone() {
+      return { ...this }
+    },
     createDOM: noop,
   };
 
   const HEAD_SYMBOL = Symbol();
   const TAIL_SYMBOL = Symbol();
+  const REF_ATTRIBUTE = 'ref';
 
   /**
    * Create the <template> fragments text nodes
@@ -942,6 +945,13 @@
       return
     }
 
+    // ref attributes are treated differently so we early return in this case
+    if (name === REF_ATTRIBUTE) {
+      node && node.removeAttribute(node, name);
+      value(node);
+      return
+    }
+
     // store the attribute on the node to make it compatible with native custom elements
     if (
       !isNativeHtmlProperty(name) &&
@@ -1108,6 +1118,9 @@
     unmount() {
       // unmount only the event handling expressions
       if (this.type === EVENT) apply(this, null);
+      // ref attributes need to be unmounted as well
+      if (this.name === REF_ATTRIBUTE)
+        expressions[ATTRIBUTE](null, this, this.value);
 
       return this
     },
@@ -1186,6 +1199,7 @@
     // node: null,
     // name: null,
     attributes: [],
+    // templateData: null,
     // template: null,
 
     getTemplateScope(scope, parentScope) {
@@ -1198,7 +1212,11 @@
         ? scope.slots.find(({ id }) => id === this.name)
         : false;
       const { parentNode } = this.node;
-      const realParent = getRealParent(scope, parentScope);
+
+      // if the slot did not pass any content, we will use the self slot for optional fallback content (https://github.com/riot/riot/issues/3024)
+      const realParent = templateData ? getRealParent(scope, parentScope) : scope;
+
+      this.templateData = templateData;
 
       // override the template property if the slot needs to be replaced
       this.template =
@@ -1207,7 +1225,7 @@
             parentNode,
           )) ||
         // otherwise use the optional template fallback if provided by the compiler see also https://github.com/riot/riot/issues/3014
-        this.template;
+        this.template?.clone();
 
       if (this.template) {
         cleanNode(this.node);
@@ -1226,7 +1244,10 @@
     },
     update(scope, parentScope) {
       if (this.template) {
-        const realParent = getRealParent(scope, parentScope);
+        const realParent = this.templateData
+          ? getRealParent(scope, parentScope)
+          : scope;
+
         this.template.update(this.getTemplateScope(scope, realParent), realParent);
       }
 
@@ -2521,7 +2542,7 @@
   const withTypes = (component) => component;
 
   /** @type {string} current riot version */
-  const version = 'v9.3.0';
+  const version = 'v9.4.4';
 
   // expose some internal stuff that might be used from external tools
   const __ = {
