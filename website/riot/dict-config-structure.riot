@@ -80,11 +80,11 @@
          </div>
       </div>
       <div class="borderTop pt-4">
-         <label >
+         <label>
             <input name="new_entry_template"
                   type="checkbox"
                   checked={state.hasNewEntryTemplate}
-                  onchange={oneNewEntryTemplateTogglClick} />
+                  onchange={onHasNewEntryTemplateChange} />
             <span>Set new entry template</span>
          </label>
          <div if={state.hasNewEntryTemplate}
@@ -171,11 +171,7 @@
          onNVHSchemaInput(schema){
             this.state.schemaNvh = schema
             if(this.state.hasNewEntryTemplate){
-               try{
-                  let structure = this.structureStore.nvhToStructure(schema)
-                  this.structureStore.setConfigStructure(structure)
-                  this.update()
-               } catch(e){}
+               this.updateStructureFromNVHSchema()
             }
             this.state.changed = true
             this.refreshBtnSaveDisabled()
@@ -211,7 +207,18 @@
             }
          },
 
-         oneNewEntryTemplateTogglClick(){
+         onHasNewEntryTemplateChange(){
+            if(!this.state.hasNewEntryTemplate){ // now hasNewEntryTemplat=false, so it will be changed to true in this function
+               if(this.state.tab == "custom"){
+                  this.updateStructureFromNVHSchema()
+               }
+               if(!this.structureStore.data.newEntryTemplate){
+                  this.structureStore.setNewEntryTemplate({
+                     defaultElements: {},
+                     defaultValues: {}
+                  })
+               }
+            }
             this.update({hasNewEntryTemplate: !this.state.hasNewEntryTemplate})
          },
 
@@ -319,6 +326,14 @@
             })
          },
 
+         updateStructureFromNVHSchema(){
+            try{
+               let structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
+               this.structureStore.setConfigStructure(structure)
+               this.update()
+            } catch(e){}
+         },
+
          save() {
             this.update({isBusy: true})
             let structure
@@ -356,18 +371,22 @@
          },
 
          deleteInvalidElementsInNewEntryTemplate(structure){
-            let newEntryTemplate = this.structureStore.data.newEntryTemplate
-            Object.keys(newEntryTemplate.defaultElements).forEach(elementPath => {
-               if(!structure.elements[elementPath]){
-                  delete newEntryTemplate.defaultElements[elementPath]
-               }
-            })
-            Object.keys(newEntryTemplate.defaultValues).forEach(elementPath => {
-               if(!structure.elements[elementPath]){
-                  delete newEntryTemplate.defaultValues[elementPath]
-               }
-            })
-            return newEntryTemplate
+            if(this.state.hasNewEntryTemplate){
+               let newEntryTemplate = this.structureStore.data.newEntryTemplate
+               Object.keys(newEntryTemplate.defaultElements).forEach(elementPath => {
+                  if(!structure.elements[elementPath]){
+                     delete newEntryTemplate.defaultElements[elementPath]
+                  }
+               })
+               Object.keys(newEntryTemplate.defaultValues).forEach(elementPath => {
+                  if(!structure.elements[elementPath]){
+                     delete newEntryTemplate.defaultValues[elementPath]
+                  }
+               })
+               return newEntryTemplate
+            } else {
+               return null
+            }
          },
 
          isSchemaValid(){

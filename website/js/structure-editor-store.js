@@ -10,7 +10,7 @@ class StructureEditorStoreClass {
             elements: {},
             root: null
          },
-         entryTemplate: {
+         newEntryTemplate: {
             defaultElements: [],
             defaultValues: {}
          },
