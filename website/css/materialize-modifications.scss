@@ -27,6 +27,27 @@ nav ul a:hover,
    color: #c62132;
 }
 
+nav{
+   height: 80px;
+   line-height: 80px;
+   .nav-wrapper i,
+   a.sidenav-trigger,
+   a.sidenav-trigger i{
+      height: 80px;
+      line-height: 80px;
+   }
+   .brand-logo{
+      font-size: initial;
+   }
+   .sidenav-trigger{
+      text-decoration: none;
+   }
+}
+
+.secondary-content{
+   color: #231f20;
+}
+
 
 input:not([type]),
 input[type=text]:not(.browser-default),
@@ -207,6 +228,7 @@ textarea.materialize-textarea:focus:not([readonly])+label{
 }
 
 
+// COMPONENTS
 
 .autocomplete-content{
    li{
@@ -338,6 +360,7 @@ textarea.materialize-textarea:focus:not([readonly])+label{
 }
 
 .file-field{
+   display: flex;
    gap: 0;
    & > .btn{
       width: 7.2rem;
@@ -366,12 +389,24 @@ textarea.materialize-textarea:focus:not([readonly])+label{
       -webkit-transform-origin: 0 0;
       transform-origin: 0 0;
    }
+   .select-wrapper+label{
+      transform: none;
+      top: 0;
+   }
 }
 
 
 .material-tooltip{
    max-width: 500px;
    text-align: left;
+}
+
+.progress{
+   background-color: #d3d3d3;
+   .determinate,
+   .indeterminate{
+      background-color: #4a4a4a;
+   }
 }
 
 
@@ -392,12 +427,6 @@ textarea.materialize-textarea:focus:not([readonly])+label{
       padding-right: 1.5rem;
    }
 }
-.input-field .select-wrapper+label{
-   transform: none;
-   top: 0;
-}
-
-
 
 .tabs{
    display: flex;
