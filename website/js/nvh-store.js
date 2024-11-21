@@ -1308,7 +1308,7 @@ class NVHStoreClass {
          name: this.data.rootElement,
          parent: null,
          indent: 0,
-         value: "",
+         value: this._getElementDefaultValue(this.data.rootElement),
          children: []
       }
       this.addAllChildren(entry)
