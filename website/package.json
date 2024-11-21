@@ -15,7 +15,7 @@
     "sass": "~1.54.4"
   },
   "scripts": {
-    "build": "npx rollup -c",
+    "build": "npx rollup -c && npx rollup -c rollup.config.codemirror.js",
     "watch": "npx rollup -c -w",
     "minify": "npx terser bundle.js -c -m --source-map \"url='bundle.min.js.map'\" --output bundle.min.js"
   },
