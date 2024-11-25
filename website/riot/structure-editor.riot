@@ -217,7 +217,7 @@
             this.state.errors.name = ""
             try{
                this.structureStore.validateElementName(evt.target.value)
-               let parent = this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent)
+               let parent = this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent || this.structureStore.data.structure.root)
                if(parent && parent.children.some(childPath => childPath.split(".").pop() == evt.target.value)){
                   throw `There is already element '${evt.target.value}' inside element '${parent.name}'.`
                }
