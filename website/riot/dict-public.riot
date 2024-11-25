@@ -1,5 +1,5 @@
 <dict-public>
-   <loading-overlay if={state.isLoading || dictData.isDictionaryLoading}/>
+   <loading-overlay if={state.isLoading || dictData.isDictionaryLoading || dictData.isEntryListLoading}/>
    <template if={!dictData.isDictionaryLoading}>
       <div class="header displayFlex">
          <h1 class="pageTitle">
@@ -66,54 +66,69 @@
       <div class="displayFlex dictContainer">
          <template if={dictData.public || dictData.userAccess}>
             <div class="panel">
-               <div class="search">
-                  <h2 class="grey-text">Search</h2>
-                  <dict-entry-filter search-func={search}/>
-               </div>
-               <div class="divider"></div>
-               <div class="randomEntries">
-                  <h2 class="grey-text">
-                     Random entries
-                     <a if={dictData.dictionaryExamplesHasMore}
-                           class="refreshExamplesBtn btn btn-floating btn-flat waves-effect waves-light tooltipped"
-                           data-tooltip="Show other random entries."
-                           onclick={ onReloadExamplesClick }>
-                        <i class="material-icons black-text">refresh</i>
-                     </a>
-                  </h2>
-                  <div class="randomEntryList">
-                     <div if={dictData.isDictionaryExamplesLoading}
-                           class="loadingExamples grey-text">
-                        Loading...
-                     </div>
-                     <ul if={ !dictData.isDictionaryExamplesLoading && dictData.dictionaryExamples }
-                           class="entry-list">
-                        <li each={ entry in dictData.dictionaryExamples }
-                              class={entry.id == state.displayedEntryId ? "activeEntryLink" : ""}>
-                           <a href="javascript:void(0);"
-                                 onclick={onRandomEntryClick.bind(this, entry)}>{ entry.title.replace(/(<([^>]+)>)/gi, "") }</a>
-                        </li>
-                     </ul>
-                  </div>
-
-                  <div class="positionRelative randomEntry">
-                     <a if={state.displayedEntryId }
-                           href={getEntryUrl()}
-                           class="btn btnOpenInEditor">
-                        {dictData.userAccess.canEdit ? "open in editor" : "open in viewer"}
-                     </a>
-                     <loading-overlay if={dictData.isEntryLoading}/>
-                     <template if={nvhData.entry}>
-                        <div if={!nvhData.customEditor}
-                              class="nvh-editor-view-items">
-                           <nvh-editor-view-item element={nvhData.entry}
-                                 read-only={true}/>
-                        </div>
-                        <nvh-custom-editor if={nvhData.customEditor}
-                              read-only={true}/>
+               <template if={!dictData.isEntryListLoading && dictData.entryList && !dictData.entryList.length}>
+                  <h2 class="grey-text">Dictionary is empty</h2>
+                  <div >
+                     <template if={dictData.userAccess.canEdit}>
+                        You can add new entries in the <a href="#/{dictData.dictId}/edit">editor</a> {dictData.userAccess.canUpload ? ' or ' : '.'}
+                     </template>
+                     <template if={dictData.userAccess.canUpload}>
+                        {dictData.userAccess.canEdit ? 'you ' : 'You '}
+                        can&nbsp;<a href="#/{dictData.dictId}/upload">upload</a> dictionary content.
                      </template>
                   </div>
-               </div>
+               </template>
+
+               <template if={!dictData.isEntryListLoading && dictData.entryList?.length}>
+                  <div class="search">
+                     <h2 class="grey-text">Search</h2>
+                     <dict-entry-filter search-func={search}/>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="randomEntries">
+                     <h2 class="grey-text">
+                        Random entries
+                        <a if={dictData.dictionaryExamplesHasMore}
+                              class="refreshExamplesBtn btn btn-floating btn-flat waves-effect waves-light tooltipped"
+                              data-tooltip="Show other random entries."
+                              onclick={ onReloadExamplesClick }>
+                           <i class="material-icons black-text">refresh</i>
+                        </a>
+                     </h2>
+                     <div class="randomEntryList">
+                        <div if={dictData.isDictionaryExamplesLoading}
+                              class="loadingExamples grey-text">
+                           Loading...
+                        </div>
+                        <ul if={ !dictData.isDictionaryExamplesLoading && dictData.dictionaryExamples }
+                              class="entry-list">
+                           <li each={ entry in dictData.dictionaryExamples }
+                                 class={entry.id == state.displayedEntryId ? "activeEntryLink" : ""}>
+                              <a href="javascript:void(0);"
+                                    onclick={onRandomEntryClick.bind(this, entry)}>{ entry.title.replace(/(<([^>]+)>)/gi, "") }</a>
+                           </li>
+                        </ul>
+                     </div>
+
+                     <div class="positionRelative randomEntry">
+                        <a if={state.displayedEntryId }
+                              href={getEntryUrl()}
+                              class="btn btnOpenInEditor">
+                           {dictData.userAccess.canEdit ? "open in editor" : "open in viewer"}
+                        </a>
+                        <loading-overlay if={dictData.isEntryLoading}/>
+                        <template if={nvhData.entry}>
+                           <div if={!nvhData.customEditor}
+                                 class="nvh-editor-view-items">
+                              <nvh-editor-view-item element={nvhData.entry}
+                                    read-only={true}/>
+                           </div>
+                           <nvh-custom-editor if={nvhData.customEditor}
+                                 read-only={true}/>
+                        </template>
+                     </div>
+                  </div>
+               </template>
             </div>
          </template>
          <div class="sectionDivider"></div>
@@ -160,6 +175,7 @@
       export default {
          bindings: [["store", "dictionaryChanged", "onDictionaryChanged"],
                     ["store", "isEntryLoadingChanged", "update"],
+                    ["store", "isEntryListLoadingChanged", "update"],
                     ["store", "isDictionaryExamplesLoadingChanged", "isDictionaryExamplesLoadingChanged"],
                     ["store", "toggleQueryBuilder", "onToggleQueryBuilder"]],
 
@@ -290,7 +306,6 @@
          z-index: 99;
       }
       .dictBtns{
-         margin-top: 5px;
          align-items: center;
       }
       .sectionDivider{
