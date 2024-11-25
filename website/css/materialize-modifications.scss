@@ -439,7 +439,8 @@ textarea.materialize-textarea:focus:not([readonly])+label{
       font-size: 1em;
       text-decoration: none;
       &:hover{
-         color: #c62132;
+         color: #767676;
+         background-color: lightgray;
       }
    }
    li.active a{
