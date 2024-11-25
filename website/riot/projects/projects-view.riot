@@ -1,4 +1,4 @@
-<projects-view>
+ <projects-view>
    <div if={!props.projectID}
          class="message error">
       <h2>Bad request</h2>
@@ -499,17 +499,7 @@
                isImporting: isImporting,
                isExporting: isExporting
             }
-         }/*,
-
-         refreshExportBatchesBtnDisabled(workflow, input){
-            let disabled = isNaN(workflow.batch_size)
-                  || workflow.batch_size <= 0
-                  || isNaN(workflow.batch_count)
-                  || workflow.batch_count <= 0
-            $(input).closest(".exportBatchesForm")
-                  .find(".exportBtn")
-                  .toggleClass("disabled", disabled)
-         }*/
+         }
       }
    </script>
 
@@ -524,6 +514,9 @@
       .projectDetails{
          display: grid;
          grid-template-columns: 180px auto;
+         label{
+            text-transform: none;
+         }
       }
       .workflowTable{
          width: auto!important;
