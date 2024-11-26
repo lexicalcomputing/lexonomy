@@ -311,7 +311,6 @@ def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
         dictDB.execute("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", (entryID, searchTitle_no_pos, 1))
 
     dictDB.execute("INSERT INTO history (entry_id, action, [when], email, nvh, historiography) VALUES (?, ?, ?, ?, ?, ?)", (entryID, "create", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
-    dictDB.commit()
     if configs["links"]:
         entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, False, False)
 
@@ -324,6 +323,7 @@ def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
         r3 = c3.fetchone()
         dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1, 'completed_entries'))
 
+    dictDB.commit()
     return entryID, entryNvh, feedback
 
 def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
