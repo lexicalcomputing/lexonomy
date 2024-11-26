@@ -72,16 +72,20 @@ def getLinkDB():
 
 # SMTP
 def sendmail(mailTo, mailSubject, mailText):
-    if siteconfig["mailconfig"] and siteconfig["mailconfig"]["host"] and siteconfig["mailconfig"]["port"]:
-        if siteconfig["mailconfig"]["secure"]:
-            context = ssl.create_default_context()
-            server = smtplib.SMTP_SSL(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"], context=context)
-        else:
-            server = smtplib.SMTP(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"])
-        message = "Subject: " + mailSubject + "\n\n" + mailText
-        server.sendmail(siteconfig["mailconfig"]["from"], mailTo, message.encode('utf-8'))
-        server.quit()
+    try:
+        if siteconfig["mailconfig"] and siteconfig["mailconfig"]["host"] and siteconfig["mailconfig"]["port"]:
+            if siteconfig["mailconfig"]["secure"]:
+                context = ssl.create_default_context()
+                server = smtplib.SMTP_SSL(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"], context=context)
+            else:
+                server = smtplib.SMTP(siteconfig["mailconfig"]["host"], siteconfig["mailconfig"]["port"])
+            message = "Subject: " + mailSubject + "\n\n" + mailText
+            server.sendmail(siteconfig["mailconfig"]["from"], mailTo, message.encode('utf-8'))
+            server.quit()
+    except smtplib.SMTPRecipientsRefused:
+        return False
 
+    return True
 
 def sendFeedback(email_from, body_text):
     site_url = siteconfig.get('baseUrl', 'None')
@@ -456,8 +460,7 @@ def sendSignupToken(email, remoteip):
         mailText += "Yours,\nThe Lexonomy team"
         conn.execute("insert into register_tokens (email, requestAddress, token, expiration) values (?, ?, ?, ?)", (email, remoteip, token, expireDate))
         conn.commit()
-        sendmail(email, mailSubject, mailText)
-        return True
+        return sendmail(email, mailSubject, mailText)
     else:
         return False
 
@@ -479,8 +482,7 @@ def sendToken(email, remoteip): # OK
         mailText += "Yours,\nThe Lexonomy team"
         conn.execute("insert into recovery_tokens (email, requestAddress, token, expiration) values (?, ?, ?, ?)", (email, remoteip, token, expireDate))
         conn.commit()
-        sendmail(email, mailSubject, mailText)
-        return True
+        return sendmail(email, mailSubject, mailText)
     else:
         return False
 
@@ -2442,10 +2444,7 @@ def notifyUsers(configOld, configNew, dictInfo, dictID):
             mailText += "\nYou can access the dictionary at the following address:\n"
             mailText += siteconfig['baseUrl'] + "#/" + dictID
             mailText += "\n\nYours,\nThe Lexonomy team"
-            try:
-                sendmail(user, mailSubject, mailText)
-            except Exception as e:
-                pass
+            sendmail(user, mailSubject, mailText)
 
 def changeFavDict(userEmail, dictID, status):
     if userEmail != '' and dictID != '':
