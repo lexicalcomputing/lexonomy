@@ -91,7 +91,7 @@ class TestQueries(unittest.TestCase):
     # CREATE PROJECT
     def test_02(self):
         API_ENDPOINT_1 = self.website + "/projects/create.json"
-        data = {'id': self.new_project_id,
+        data = {'projectID': self.new_project_id,
                 'name': 'LCL test project',
                 'description': 'This is a testing project',
                 'annotators': json.dumps({'__all__': ['marek.medved3@gmail.com', 'marek.medved@sketchengine.eu', 'marek.medved@sketchengine.co.uk']}),
