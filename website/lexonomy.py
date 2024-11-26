@@ -658,7 +658,7 @@ def project_list(user):
 @auth
 def project_create(user):
     if user['isProjectManager'] or user['isAdmin']:
-        res = project.createProject(request.forms.id, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
+        res = project.createProject(request.forms.projectID, request.forms.project_name, request.forms.description, json.loads(request.forms.annotators),
                                     json.loads(request.forms.managers), request.forms.ref_corpus, request.forms.source_dict_id,
                                     request.forms.workflow_id, request.forms.language, user)
         return res
@@ -668,7 +668,7 @@ def project_create(user):
 @authProject
 def project_update(projectID, user, configs):
     if projectID in configs["manager_of"] or user['isAdmin']:
-        res = project.editProject(projectID, request.forms.name, request.forms.description, json.loads(request.forms.annotators),
+        res = project.editProject(projectID, request.forms.project_name, request.forms.description, json.loads(request.forms.annotators),
                                   json.loads(request.forms.managers), user)
         return res
     return {"success": False, "projectID": projectID, 'error': 'User is not a manager. Can not create project.'}
@@ -926,9 +926,9 @@ def entrylist(dictID, doctype, user, dictDB, configs):
         else:
             entries = ops.listEntriesById(dictDB, request.forms.id, configs)
             return {"success": True, "entries": entries}
-    elif request.forms.advance_query:
+    elif request.forms.advanced_query:
         try:
-            total, entries, first = advance_search.getEntries(dictDB, configs, request.forms.advance_query, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False, False)
+            total, entries, first = advance_search.getEntries(dictDB, configs, request.forms.advanced_query, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False, False)
         except ValueError as e:
             return {"success": False, "entries": [], "total": 0, "firstRun": False, "error": e}
 
