@@ -761,7 +761,7 @@ def filter_nodes(examples_json, structure_nodes):
                 elif entry.get(key, False):
                     recur_filter(entry[key], structure_nodes)
         result.append({'json': {'entry': [entry], '_value': ''},
-                       'nvh': json2nvh_str({'entry': [entry], '_value': ''}),
+                       'nvh': json2nvh_str({'entry': [entry], '_value': ''}, paths=True),
                        'doctype': 'enntry',
                        "title": '<span class="headword">' + entry["_value"] + '</span>',
                        'sortkey': entry["_value"]})
@@ -3014,24 +3014,28 @@ def nvh2jsonNode(nvhNode):
         data_obj[path + c.name].append(nvh2jsonNode(c))
     return data_obj
 
-def json2nvhLevel(jsonNode, nvhParent):
-    for key,val in jsonNode.items():
+def json2nvhLevel(jsonNode, nvhParent, paths=False):
+    for key, val in jsonNode.items():
         if key != "_value" and key != "_name":
+            if paths:
+                new_key = key.strip().split('.')[-1]
+            else:
+                new_key = key
             for item in val:
                 indent = nvhParent.indent+"  " if nvhParent.parent else ""
                 value = item["_value"] if item.get("_value") else ""
-                newNode = json2nvhLevel(item, nvh(nvhParent, indent, key, value))
+                newNode = json2nvhLevel(item, nvh(nvhParent, indent, new_key, value), paths)
                 nvhParent.children.append(newNode)
     return nvhParent
 
-def json2nvh_str(jsonEntry):
+def json2nvh_str(jsonEntry, paths=False):
     if type(jsonEntry) == str:
         jsonEntry = json.loads(jsonEntry)
-    entryNvh = json2nvhLevel(jsonEntry,nvh(None))
+    entryNvh = json2nvhLevel(jsonEntry,nvh(None), paths)
     nvh_str = entryNvh.dump_string()
     return nvh_str
 
-def json2nvh(jsonEntry):
+def json2nvh(jsonEntry, paths=False):
     if type(jsonEntry) == str:
-        jsonEntry = json.loads(jsonEntry)
+        jsonEntry = json.loads(jsonEntry, paths)
     return json2nvhLevel(jsonEntry,nvh(None))
