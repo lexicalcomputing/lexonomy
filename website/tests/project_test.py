@@ -127,7 +127,7 @@ class TestQueries(unittest.TestCase):
         r3 = requests.get(url=API_ENDPOINT_3, headers=self.headers, cookies=self.cookies)
         found = False
         for x in r3.json()['projects_active']:
-            if x['id'] == self.new_project_id:
+            if x['projectID'] == self.new_project_id:
                 found = True
         self.assertEqual(found, True)
         # ================

@@ -35,16 +35,16 @@ def getProjectsByUser(user):
     for r in c.fetchall():
         project_info = getProject(r["project_id"])
         if project_info["active"] == 1:
-            active_projects.append({"id": project_info["projectID"], "name": project_info["project_name"],
+            active_projects.append({"projectID": project_info["projectID"], "project_name": project_info["project_name"],
                                     "description": project_info["description"], "language": project_info["language"],
                                     "managers": project_info["managers"], "source_dict": project_info["source_dict"],
-                                    "stages": [x['stage'] for x in project_info["workflow"]],
+                                    "stages": [x['stage'] for x in project_info["workflow"]], 'ref_corpus': project_info['ref_corpus'],
                                     "active": 1})
         else:
-            archived_projects.append({"id": project_info["projectID"], "name": project_info["project_name"],
+            archived_projects.append({"projectID": project_info["projectID"], "project_name": project_info["project_name"],
                                       "description": project_info["description"], "language": project_info["language"],
                                       "managers": project_info["managers"], "source_dict": project_info["source_dict"],
-                                      "stages": [x['stage'] for x in project_info["workflow"]],
+                                      "stages": [x['stage'] for x in project_info["workflow"]], 'ref_corpus': project_info['ref_corpus'],
                                       "archived": 1})
 
     total = len(active_projects) + len(archived_projects)
@@ -418,7 +418,7 @@ def getProject(projectID):
 
     conn.close()
 
-    return {"projectID": projectID, 'project_name': r3['project_name'], 'description': r3['description'],
+    return {"projectID": projectID, 'project_name': r3['project_name'], 'description': r3['description'], 'ref_corpus': r3['ref_corpus'],
             'annotators': annotators, 'managers': list(managers), 'workflow_id': r3['workflow_id'] ,'workflow': workflow_stages,
             'language': r3['language'], 'source_dict': r3['src_dic_id'], 'active': r3['active'], 'tl_node': tl_node}
 
