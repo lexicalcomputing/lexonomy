@@ -9,27 +9,30 @@ import string
 import sqlite3
 import hashlib
 
-# currdir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))[0])
+import ops
+
 main_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 siteconfig_file_path = os.environ.get("LEXONOMY_SITECONFIG", os.path.join(main_dir, "siteconfig.json"))
 siteconfig = json.load(open(siteconfig_file_path, encoding="utf-8"))
-path = os.path.join(siteconfig["dataDir"], 'lexonomy.sqlite')
-pathXref = os.path.join(siteconfig["dataDir"], 'crossref.sqlite')
+lexonomy_db_file = os.path.join(siteconfig["dataDir"], 'lexonomy.sqlite')
+Xref_db_file = os.path.join(siteconfig["dataDir"], 'crossref.sqlite')
+dicts_path = os.path.join(siteconfig["dataDir"], 'dicts')
 
 
-def init_dbs():
+def init_main_db():
     # ============================================
     # MAIN LEXONOMY DATABASE SETUP
     # ============================================
-    conn = sqlite3.connect(path)
-    print("Connected to database: %s" % path)
+    conn = sqlite3.connect(lexonomy_db_file)
+    print("Connected to database: %s" % lexonomy_db_file)
 
     if siteconfig.get("dbSchemaFile", False):
         schema = open(siteconfig["dbSchemaFile"], 'r').read()
         try:
             conn.executescript(schema)
             conn.commit()
-            print("Initialized %s with: %s" % (path, siteconfig["dbSchemaFile"]))
+            print("Initialized %s with: %s" % (lexonomy_db_file, siteconfig["dbSchemaFile"]))
         except sqlite3.Error as e:
             print("Problem importing database schema. Likely the DB has already been created. Database error: %s" % e)
     else:
@@ -52,15 +55,15 @@ def init_dbs():
     # ============================================
     # CROSS REFERENCING DATABASE SETUP
     # ============================================
-    connXref = sqlite3.connect(pathXref)
-    print("Connected to database: %s" % pathXref)
+    connXref = sqlite3.connect(Xref_db_file)
+    print("Connected to database: %s" % Xref_db_file)
 
     if siteconfig.get("dbXrefSchemaFile", False):
         schema = open(siteconfig["dbXrefSchemaFile"], 'r').read()
         try:
             connXref.executescript(schema)
             connXref.commit()
-            print("Initialized %s with: %s" % (pathXref, siteconfig["dbXrefSchemaFile"]))
+            print("Initialized %s with: %s" % (Xref_db_file, siteconfig["dbXrefSchemaFile"]))
         except sqlite3.Error as e:
             print("Problem importing database schema. Likely the DB has already been created. Database error: %s" % e)
     else:
@@ -69,13 +72,20 @@ def init_dbs():
     connXref.close()
 
 
-def update_dbs():
-    print("Updating lexonomy database: %s" % path)
-    conn = sqlite3.connect(path)
-    conn.row_factory = sqlite3.Row
+def get_db(file_path):
+    if os.path.isfile(file_path):
+        conn = sqlite3.connect(file_path)
+        conn.row_factory = sqlite3.Row
+        conn.executescript("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=on")
+        return conn
+    else:
+        return None
 
-    #### HELPER FUNCTIONS ####
 
+def update_main_db():
+    # ========================
+    # UPDATING MAIN LEXONOMY DB
+    # ========================
     def get_table_column_names(conn, table):
         r = conn.execute("PRAGMA table_info(%s)" % table)
         return set([x[1] for x in r.fetchall()])
@@ -87,50 +97,71 @@ def update_dbs():
             print("Database error: %s" % e)
             print("Query was: '%s'" % q)
 
-    #### ADDING NEW TABLES ####
+    print("Updating lexonomy database: %s" % lexonomy_db_file)
+    upgrades = {}
+    if upgrades:
+        conn = get_db(lexonomy_db_file)
 
-    do_query(conn, "CREATE TABLE IF NOT EXISTS recovery_tokens (email text, requestAddress text, token text, expiration datetime, usedDate datetime, usedAddress text)")
-    do_query(conn, "CREATE TABLE IF NOT EXISTS register_tokens (email text, requestAddress text, token text, expiration datetime, usedDate datetime, usedAddress text)")
-    do_query(conn, "CREATE TABLE IF NOT EXISTS dict_fav (dict_id text, user_email text)")
-    do_query(conn, "CREATE INDEX IF NOT EXISTS fav_dict_id on dict_fav (dict_id)")
-    do_query(conn, "CREATE INDEX IF NOT EXISTS fav_user_email on dict_fav (user_email)")
+        for db, newcols in upgrades.items():
+            db_columns = get_table_column_names(conn, db)
+            for column in newcols:
+                if column[0] not in db_columns:
+                    do_query(conn, "ALTER TABLE %s ADD COLUMN %s %s" % (db, column[0], column[1]))
 
-    #### ADDING COLUMNS TO EXISTING TABLES ####
+        conn.commit()
+        conn.close()
 
-    upgrades = {
-        "users": [("ske_id", "INTEGER"), ("ske_username", "TEXT"), ("consent", "INTEGER"), ("ske_apiKey", "TEXT"), ("comment", "TEXT"),
-                  ("annotator_role", "JSON"), ("created_by", "TEXT"), ("is_manager", "INTEGER")],
-        "dicts": [("language", "TEXT"), ("public", "BOOLEAN DEFAULT false"), ("creator", "TEXT"), ("configs", "JSON")],
-        "user_dict": [("can_config", "INTEGER"), ("can_download", "INTEGER"), ("can_upload", "INTEGER"), ("can_view", "INTEGER"),
-                      ("can_edit", "INTEGER")]
-    }
 
-    for db, newcols in upgrades.items():
-        db_columns = get_table_column_names(conn, db)
-        for column in newcols:
-            if column[0] not in db_columns:
-                do_query(conn, "ALTER TABLE %s ADD COLUMN %s %s" % (db, column[0], column[1]))
+def update_dict_db():
 
-    #### COMMIT & DONE ####
-    conn.commit()
-    conn.close()
+    #Updates all json entry parts to new format with paths in names -> tag 2.153
+    def update_json_2_153(conn):
+        def versiontuple(v):
+            return tuple(map(int, (v.split("."))))
+
+        dict_meta = conn.execute("SELECT json FROM configs WHERE id='metadata'").fetchone()
+        if dict_meta:
+            metadata = json.loads(dict_meta['json'])
+            version = metadata.get('version', '0.0.0')
+            if versiontuple(version) < versiontuple('2.153'):
+                update_payload = []
+                update_counter = 0
+                for entry in conn.execute('SELECT id, nvh FROM entries').fetchall():
+                    new_json = ops.nvh2jsonDump(entry['nvh'])
+                    update_payload.append((new_json, entry['id']))
+                    update_counter += 1
+                print(f'{file}: updated {update_counter} entries')
+
+                conn.executemany('UPDATE entries SET json=? WHERE id=?', update_payload)
+
+                # Update version
+                metadata['version'] = '2.153'
+                conn.execute('UPDATE configs SET json=? WHERE id=?', (json.dumps(metadata), 'metadata'))
+
+    print("Updating dicts ...")
+    for file in os.listdir(dicts_path):
+        if file.endswith('.sqlite'):
+            conn = get_db(os.path.join(dicts_path, file))
+
+            # ========================
+            # UPDATES
+            # ========================
+            update_json_2_153(conn)
+
+            conn.commit()
+            conn.close()
 
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='Script to initialize database and users, from the siteconfig.json file')
-    parser.add_argument('-i', '--input', type=argparse.FileType('r'),
-                        required=False, default=sys.stdin,
-                        help='Input')
-    parser.add_argument('-o', '--output', type=argparse.FileType('w'),
-                        required=False, default=sys.stdout,
-                        help='Output')
-    args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='Script for initialization/updating lexonomy databases during install and deploy')
+    parser.parse_args()
 
-    if not os.path.isfile(path) and not os.path.isfile(pathXref):
-        init_dbs()
+    if not os.path.isfile(lexonomy_db_file) and not os.path.isfile(Xref_db_file):
+        init_main_db()
     else:
-        update_dbs()
+        update_main_db()
+        update_dict_db()
 
 
 if __name__ == '__main__':

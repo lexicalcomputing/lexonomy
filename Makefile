@@ -18,6 +18,7 @@ website/bundle.js: $(SOURCE_RIOT)
 install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
+	$(DESTDIR)$(INSTALLDIR)/website/adminscripts/init_or_update.py
 
 deploy:
 	mkdir -p $(DEPLOYDIR)/data
