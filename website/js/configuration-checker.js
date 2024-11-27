@@ -29,10 +29,6 @@ class ConfigurationCheckerClass {
             name: "Basic settings",
             url: "ident"
          },
-         kontext: {
-            name: "KonText",
-            url: "kontext"
-         },
          links: {
             name: "Linking",
             url: "links"
@@ -145,9 +141,6 @@ class ConfigurationCheckerClass {
       }
       if(!config.ident.blurb){
          result.push(["ident", "info", `Dictionary description is empty.`])
-      }
-      if(config.ident.handle && !window.isURL(config.ident.handle)){
-         result.push(["ident", "warning", `Link to metadata in CLARIN repository is not a valid URL.`])
       }
       return result
    }

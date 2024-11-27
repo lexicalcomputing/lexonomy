@@ -1294,13 +1294,6 @@ class StoreClass {
       })
    }
 
-   loadKontextCorpora(){
-      return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/kontext/corpora`,
-         failMessage: "Could not load Kontext corpora."
-      })
-   }
-
    suggestUrl(){
       return window.connection.get({
          url: `${window.API_URL}makesuggest.json`,
