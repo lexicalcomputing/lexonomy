@@ -130,13 +130,14 @@ def update_dict_db():
                     new_json = ops.nvh2jsonDump(entry['nvh'])
                     update_payload.append((new_json, entry['id']))
                     update_counter += 1
-                print(f'{file}: updated {update_counter} entries')
 
                 conn.executemany('UPDATE entries SET json=? WHERE id=?', update_payload)
 
                 # Update version
                 metadata['version'] = '2.153'
                 conn.execute('UPDATE configs SET json=? WHERE id=?', (json.dumps(metadata), 'metadata'))
+
+                print(f'OK - {file}: updated {update_counter} entries')
 
     print("Updating dicts ...")
     for file in os.listdir(dicts_path):
@@ -149,7 +150,7 @@ def update_dict_db():
             try:
                 update_json_2_153(file, conn)
             except Exception as e:
-                print(f'Error {file}: {e}\n')
+                print(f'EERROR - {file}: {e}')
 
             conn.commit()
             conn.close()
