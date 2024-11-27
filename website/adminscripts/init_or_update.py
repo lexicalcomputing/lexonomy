@@ -115,7 +115,7 @@ def update_main_db():
 def update_dict_db():
 
     #Updates all json entry parts to new format with paths in names -> tag 2.153
-    def update_json_2_153(conn):
+    def update_json_2_153(file, conn):
         def versiontuple(v):
             return tuple(map(int, (v.split("."))))
 
@@ -146,7 +146,10 @@ def update_dict_db():
             # ========================
             # UPDATES
             # ========================
-            update_json_2_153(conn)
+            try:
+                update_json_2_153(file, conn)
+            except Exception as e:
+                print(f'Error {file}: {e}\n')
 
             conn.commit()
             conn.close()
