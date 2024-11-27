@@ -49,17 +49,6 @@
          <label for="headwordSorting">Text direction</label>
       </div>
    </div>
-   <div class="row">
-      <div class="input-field">
-         <input value={ state.data.handle }
-               placeholder="URL"
-               id="ident_handle"
-               type="text"
-               class="validate"/>
-         <label for="ident_title">Metadata from CLARIN repository</label>
-         <span class="helper-text">Link to metadata recorded in CLARIN repository, provide URL to 'handle' link, eg. <tt>http://hdl.handle.net/11356/1094</tt>.</span>
-      </div>
-   </div>
    <dict-config-buttons save-data={saveData}/>
 
    <script>
@@ -108,8 +97,7 @@
                title: $("#ident_title").val(),
                blurb: $("#ident_blurb").val(),
                lang: this.store.getLanguageCode($("#ident_lang").val()),
-               direction: $("#ident_direction").val(),
-               handle: $("#ident_handle").val()
+               direction: $("#ident_direction").val()
             })
                   .done(this.store.loadDictionaryList.bind(this.store))
                   .always(() => this.update({isSaving: false}))
