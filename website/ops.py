@@ -2042,7 +2042,7 @@ def flagEntry(dictDB, configs, entryID, flags, email, historiography):
     c = dictDB.execute("select id, nvh from entries where id=?", (entryID,))
     row = c.fetchone()
     nvhParsed = nvh.parse_string(row["nvh"])
-    while deleteNode(nvhParsed, configs["flagging"]["flag_element"]):
+    while deleteNode(nvhParsed, configs["flagging"]["flag_element"].strip().split('.')):
         pass
     success = True
     error = ""
@@ -2061,62 +2061,50 @@ def flagEntry(dictDB, configs, entryID, flags, email, historiography):
     return success, error
 
 
-def updateNode(nvhParsed, node_value, node_name, structure):
-    for c in nvhParsed.children:
-        flag_node_exists = updateNodeRecursive(c, node_value, node_name)
-
-    if not flag_node_exists:
-        success, error = addNode(nvhParsed, node_value, node_name, structure)
-    else:
-        success = True
-        error = ''
-
-    return success, error
-
-def updateNodeRecursive(nvhNode, node_value, node_name):
-    flag_node_updated = False
-    if nvhNode.name == node_name:
-        nvhNode.value = node_value
-        flag_node_updated = True
-    else:
-        for c in nvhNode.children:
-            flag_node_updated = flag_node_updated or updateNodeRecursive(c, node_value, node_name)
-            if flag_node_updated:
-                break
-    return flag_node_updated
-
 def addNode(nvhParsed, node_value, node_name, structure):
     parent_name = ''
     for name, params in structure.items():
         if node_name in params.get('children',[]):
             parent_name = name
 
+    nvh_path = node_name.strip().split('.')
     if not parent_name:
         return False, 'Flagging elemennt no present in strucure'
     else:
-        for c in nvhParsed.children:
-            addNodeRecursive(c, node_value, node_name, parent_name)
+        addNodeRecursive(nvhParsed, node_value, nvh_path)
         return True, ''
 
-def addNodeRecursive(nvhNode, node_value, node_name, node_parent_name):
-    if nvhNode.name == node_parent_name:
-        ind_step = nvhNode.indent[len(nvhNode.parent.indent):]
-        indent = nvhNode.indent + ind_step
-        nvhNode.children.append(nvh(nvhNode, indent, node_name, node_value, []))
+
+def addNodeRecursive(nvhNode, node_value, nvh_path):
+    if len(nvh_path) == 2:
+        if nvhNode.name == nvh_path[0]:
+            ind_step = nvhNode.indent[len(nvhNode.parent.indent):]
+            indent = nvhNode.indent + ind_step
+            nvhNode.children.append(nvh(nvhNode, indent, nvh_path[1], node_value, []))
+        else:
+            for c in nvhNode.children:
+                addNodeRecursive(c, node_value, nvh_path)
     else:
         for c in nvhNode.children:
-            addNodeRecursive(c, node_value, node_name, node_parent_name)
+            if c.name == nvh_path[0]:
+                addNodeRecursive(c, node_value, nvh_path[1:])
 
-def deleteNode(nvhParsed, node_name):
+
+def deleteNode(nvhNode, nvh_path):
     success = False
-    for idx, c in enumerate(nvhParsed.children):
-        if c.name == node_name:
-            nvhParsed.children.pop(idx)
-            success = True
+    if len(nvh_path) == 2:
+        if nvhNode.name == nvh_path[0]:
+            for idx, c in enumerate(nvhNode.children):
+                if c.name == nvh_path[1]:
+                    nvhNode.children.pop(idx)
+                    success = True
         else:
-            success = success or deleteNode(c, node_name)
-            if success:
-                break
+            for c in nvhNode.children:
+                success = success or deleteNode(c, nvh_path)
+    else:
+        for c in nvhNode.children:
+            if c.name == nvh_path[0]:
+                success = success or deleteNode(c, nvh_path[1:])
     return success
 
 
