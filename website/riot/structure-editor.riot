@@ -9,7 +9,7 @@
          </template>
       </div>
 
-      <button class="btn btn-primary btn-floating tooltipped mt-4 ml-12 {!Object.keys(structureStore.data.structure.elements).length ? 'pulse' : ''} {structureStore.data.editedElement ? 'disabled' : ''}"
+      <button class="btn btn-primary btn-floating tooltipped ml-12 {!Object.keys(structureStore.data.structure.elements).length ? 'pulse mt-12' : 'mt-4'} {structureStore.data.editedElement ? 'disabled' : ''}"
             data-tooltip="Add new element"
             onclick={onAddClick}>
          <i class="material-icons">add</i>
@@ -217,9 +217,11 @@
             this.state.errors.name = ""
             try{
                this.structureStore.validateElementName(evt.target.value)
-               let parent = this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent || this.structureStore.data.structure.root)
-               if(parent && parent.children.some(childPath => childPath.split(".").pop() == evt.target.value)){
-                  throw `There is already element '${evt.target.value}' inside element '${parent.name}'.`
+               if(evt.target.value != this.structureStore.data.editedElement.name){
+                  let parent = this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent || this.structureStore.data.structure.root)
+                  if(parent && parent.children.some(childPath => childPath.split(".").pop() == evt.target.value)){
+                     throw `There is already element '${evt.target.value}' inside element '${parent.name}'.`
+                  }
                }
             } catch(e){
                this.state.errors.name = e
@@ -377,10 +379,13 @@
    </script>
 
    <style type="scss">
+      :host{
+         min-height: 200px;
+         display: block;
+      }
       .editButtons{
          justify-content: center;
       }
-
       .structure-delete-zone{
          display: flex;
          align-items: center;
