@@ -155,21 +155,26 @@ class NVHStoreClass {
       this.data.storedEntry = null
       this.data.revision = null
       this.history.reset()
-      if(window.store.data.entryId){
-         if(window.store.data.entryId == "new"){
-            this.data.entry = this._getNewEntry()
-         } else{
-            this.data.entry = this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
-            this.forEachElement(el => {
-               el.collapsed = this.data.collapsedElements.has(el.path)
-            })
+      try{
+         if(window.store.data.entryId){
+            if(window.store.data.entryId == "new"){
+               this.data.entry = this._getNewEntry()
+            } else{
+               this.data.entry = this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
+               this.forEachElement(el => {
+                  el.collapsed = this.data.collapsedElements.has(el.path)
+               })
+            }
+            this.validateAllElements()
+            this.history.addState()
+         } else {
+            this.data.entry = null
          }
-         this.validateAllElements()
-         this.history.addState()
-      } else {
-         this.data.entry = null
+         this.trigger("entryChanged")
+      } catch(e){
+          this.data.entry = null
+         window.showToast(`Could not show the entry: ${e}`)
       }
-      this.trigger("entryChanged")
    }
 
    callIfNoNeedToSave(callback, evt) {
@@ -206,8 +211,16 @@ class NVHStoreClass {
    }
 
    hasEntryChanged(){
-      return window.store.data.entryId == "new"
-            ||!this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
+      if(window.store.data.entryId == "new"){
+         return true
+      } else {
+         try{
+            return !this.areNvhJsonsEqual(this.data.entry, this.nvhToJson(window.store.data.entry.nvh))
+         } catch(e){
+            window.showToast(`Entry is invalid: ${e}`)
+            return false
+         }
+      }
    }
 
    showRevision(revision){
