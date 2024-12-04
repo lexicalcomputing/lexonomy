@@ -343,7 +343,10 @@
                   root: this.state.DMLexSchema.root
                }
             } else if(this.state.tab == "advanced"){
-               structure = this.structureStore.data.structure
+               structure = {
+                  elements: this.structureStore.data.structure.elements,
+                  root: this.structureStore.data.structure.root
+               }
             } else if(this.state.tab == "custom"){
                structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
             }
