@@ -73,7 +73,15 @@
                      value: lang.code,
                      label: lang.lang
                   }
-               })
+               }),
+               onAutocomplete: language => {
+                  let direction = this.getLanguageDirection(language.value)
+                  if(direction != this.state.data.direction){
+                     this.state.data.direction = direction
+                     this.update()
+                     window.initFormSelects(this.root)
+                  }
+               }
             })
             this.store.loadDictionaryConfig("ident")
                   .done(response => {
@@ -101,6 +109,10 @@
             })
                   .done(this.store.loadDictionaryList.bind(this.store))
                   .always(() => this.update({isSaving: false}))
+         },
+
+         getLanguageDirection(language){
+            return ["ar", "dv", "fa", "he", "ks", "ps", "sd", "ug", "ur", "yi"].includes(language) ? "rtl" : "ltr"
          }
       }
    </script>
