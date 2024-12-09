@@ -312,6 +312,7 @@ def skeget_xampl(dictID, user, dictDB, configs):
     url += "&viewmode=sen"
     url += "&q=e500"
     url += "&async=0"
+    url += "&structs=\"\""
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
@@ -366,6 +367,7 @@ def skeget_defo(dictID, user, dictDB, configs):
     url += "&q=" + urllib.parse.quote_plus(ops.makeQuery(request.query.lemma))
     url += "&q=p+0+0>0+1+[ws(\".*\",\"definitions\",\".*\")]"
     url += "&viewmode=sen"
+    url += "&structs=\"\""
     if request.query.fromp:
         url += "&" + request.query.fromp
     req = urllib.request.Request(url, headers = {"Authorization": "Bearer " + request.query.apikey})
