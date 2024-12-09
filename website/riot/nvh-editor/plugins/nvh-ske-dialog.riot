@@ -158,8 +158,23 @@
                apikey: this.authData.ske_apiKey
             }
             if(this.props.method == "examples"){
-               data.query = this.state.useCQL ? this.state.cql : this.state.query
-               data.querytype = this.state.useCQL ? "skecql" : "skesimple"
+               if(this.state.useCQL){
+                  data.query = this.state.cql
+                  data.querytype = "skecql"
+               } else {
+                  let query = this.state.query.replace(/[.*+?^${}()|[\]\\"]/g, "\\$&")
+                        .replace(/\s+/g, " ")
+                  if(this.state.query.includes(" ")){
+                     data.querytype = "skecql"
+                     data.query = query.split(" ")
+                           .filter(part => part != " ")
+                           .map(word => `[word="${word}"]`)
+                           .join("")
+                  } else {
+                     data.querytype = "skesimple"
+                     data.query = query
+                  }
+               }
             } else {
                data.lemma = this.state.query
             }
