@@ -138,6 +138,7 @@ window.nvhPlugins.ske = {
             .attr("data-target", id)
             .addClass("dropdown-trigger")
             .dropdown({
+               container: document.body,
                coverTrigger: false,
                constrainWidth: false,
                onCloseEnd: function(target, dropdownContent){
