@@ -1,41 +1,33 @@
 window.nvhPlugins.ske = {
    isActive: function(element){
       return this.hasSkeConnectionSettings()
-            && (this.hasSearchOptions(element)
-               || this.hasExamples(element)
+            && (this.hasExamples(element)
                || this.hasCollocations(element)
                || this.hasThesaurus(element)
                || this.hasDefinitions(element))
    },
 
-   hasSearchOptions(element){
-      let config = window.store.data.config
-      return ((element.name == config.structure.root)
-               || (config.ske.searchElements.includes(element.name)))
-   },
-
    hasExamples: function(element) {
-      let config = window.store.data.config
-      return element.name == config.structure.root
-            && config.structure.elements[config.ske.exampleContainer]
+      return this.hasFeature(element, "exampleContainer")
    },
 
    hasCollocations: function(element) {
-      let config = window.store.data.config
-      return element.name == config.structure.root
-            && config.structure.elements[config.ske.collocationContainer]
+      return this.hasFeature(element, "collocationContainer")
    },
 
    hasThesaurus: function(element) {
-      let config = window.store.data.config
-      return element.name == config.structure.root
-            && config.structure.elements[config.ske.thesaurusContainer]
+      return this.hasFeature(element, "thesaurusContainer")
    },
 
    hasDefinitions: function(element) {
+      return this.hasFeature(element, "definitionContainer")
+   },
+
+   hasFeature: function(element, skeConfigKey) {
       let config = window.store.data.config
-      return element.name == config.structure.root
-            && config.structure.elements[config.ske.definitionContainer]
+      let containerName = config.ske[skeConfigKey]
+      return ((element.name == config.structure.root) || config.ske.searchElements.includes(element.path))
+            && config.structure.elements[containerName]
    },
 
    hasSkeConnectionSettings: function() {
@@ -126,7 +118,7 @@ window.nvhPlugins.ske = {
             .click(this.openSkeDialog.bind(this, "thesaurus", searchWord)))
       this.hasDefinitions(element) && dropdownContent.append($(`<li><a>Find definitions<i class="material-icons left">search</i></a></li>`)
             .click(this.openSkeDialog.bind(this, "definitions", searchWord)))
-      if(searchWord && this.hasSearchOptions(element)){
+      if(searchWord){
          let corpus = encodeURIComponent(config.ske.corpus)
          let concordanceOperations = encodeURIComponent(JSON.stringify(this.getConcordanceOperations(element, searchWord)))
          dropdownContent.append($(`<li><a href="${window.store.data.siteconfig.ske_url}/#wordsketch?corpname=${corpus}&lemma=${searchWord}&showresults=1" target="_blank">Show Word Sketch<i class="material-icons left">open_in_new</i></a></li>`))
