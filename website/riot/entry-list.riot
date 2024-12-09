@@ -23,6 +23,7 @@
                   <raw-html content={entry.title || "&nbsp;"}/>
                </span>
                <span if={dictionaryHasFlags}
+                     class="ml-2"
                      onclick={onOpenFlagMenuClick.bind(this, entry)}>
                   <template each={flag in entry.flags}
                         if={flag}>
