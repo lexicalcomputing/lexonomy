@@ -156,11 +156,12 @@ class NVHStoreClass {
       this.data.revision = null
       this.history.reset()
       try{
+         this.data.brokenEntryNvh = null
          if(window.store.data.entryId){
             if(window.store.data.entryId == "new"){
                this.data.entry = this._getNewEntry()
             } else{
-               this.data.entry = this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
+               this.data.entry = this.nvhToJson(window.store.data.entry.nvh)//this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
                this.forEachElement(el => {
                   el.collapsed = this.data.collapsedElements.has(el.path)
                })
@@ -172,8 +173,27 @@ class NVHStoreClass {
          }
          this.trigger("entryChanged")
       } catch(e){
-          this.data.entry = null
-         window.showToast(`Could not show the entry: ${e}`)
+         this.data.entry = null
+         this.data.brokenEntryNvh = window.store.data.entry.nvh
+         if(window.store.data.actualPage == "dict-edit"){
+            if(this.getAvailableActions().code){
+               this.changeEditorMode("code")
+               window.showToast(`Entry is not valid, please, fix the entry.\n ${e}`)
+            } else {
+               window.showToast(`Could not show the entry: ${e}`)
+            }
+         }
+      }
+   }
+
+   updateEntryNvh(nvh){
+      let entryWasNull = this.data.entry == null
+      try{
+         this.data.entry = this.nvhToJson(nvh)
+         this.data.brokenEntryNvh = null // user fixed entry which was invalid right after loading from the database
+      } catch(e){}
+      if(entryWasNull && (this.data.entry != null)){
+         this.trigger("entryChanged")
       }
    }
 
@@ -558,7 +578,7 @@ class NVHStoreClass {
          edit: uA.canEdit
                && hasEntry,
          code: uA.canEdit
-               && hasEntry,
+               && (hasEntry || !!this.data.brokenEntryNvh),
          history: uA.canEdit
                && hasEntry
                && !isNewEntry

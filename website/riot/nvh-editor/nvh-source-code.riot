@@ -3,7 +3,7 @@
       <div class="nvh-line-numbers"></div>
       <div class="nvh-code-editor"
             onkeydown={editorOnKeyDown}
-            onkeyup={editorOnKeyUp}>{this.nvhStore.jsonToNvh(this.nvhData.entry)}</div>
+            onkeyup={editorOnKeyUp}>{state.sourceCode}</div>
    </div>
 
    <div if={!Object.keys(state.warnings).length}
@@ -34,7 +34,6 @@
                     ["nvhStore", "entryChanged", "updateSourceCode"]],
 
          state:{
-            oldSourceCode: null,
             warnings: {},
             autocompleteElementPath: "",
             suggestions: [],
@@ -44,10 +43,10 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.oldSourceCode = this.nvhStore.jsonToNvh(this.nvhData.entry)
-            this.nvhData.entry && this.validate(this.nvhData.entry)
-            this.validateEditorDebounced = window.debounce(this.validateEditor, 50)
+            this.state.sourceCode = this.nvhData.brokenEntryNvh || this.nvhStore.jsonToNvh(this.nvhData.entry)
+            this.validateAndShowWarningsDebounced = window.debounce(this.validateAndShowWarnings, 50)
             this.addStateToHistoryDebounced = window.debounce(this.addStateToHistory, 1000)
+            this.validate()
          },
 
          onMounted(){
@@ -82,13 +81,14 @@
 
          onBeforeUnmount(){
             this.addStateToHistory()
-            this.validateEditorDebounced.clearTimeout()
+            this.validateAndShowWarningsDebounced.clearTimeout()
             this.addStateToHistoryDebounced .clearTimeout()
          },
 
          updateSourceCode(){
-            this.validate(this.nvhData.entry)
-            this.editor.updateCode(this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry)))
+            this.state.sourceCode = this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry))
+            this.validate()
+            this.editor.updateCode(this.state.sourceCode)
             this.update()
             this.updateLineNumbers()
          },
@@ -283,11 +283,13 @@
          },
 
          onEditorUpdate(){
-            this.validateEditorDebounced()
+            this.state.sourceCode = this.editor.toString()
+            this.nvhStore.updateEntryNvh(this.state.sourceCode)
+            this.validateAndShowWarningsDebounced()
             this.addStateToHistoryDebounced()
          },
 
-         validateEditor(){
+         validateAndShowWarnings(){
             let oldWarnings = JSON.stringify(this.state.warnings)
             if(this.editor.toString().trim()){
                this.validate()
@@ -301,9 +303,7 @@
          },
 
          addStateToHistory(){
-            if(this.nvhData.entry && this.state.oldSourceCode != this.nvhStore.jsonToNvh(this.nvhData.entry)){
-               this.nvhStore.history.addState()
-            }
+            this.nvhData.entry && this.nvhStore.history.addState()
          },
 
          onScrollToLineClick(lineNumber){
@@ -321,26 +321,29 @@
             let lines = this.editor.toString().split("\n")
             let linesCount = Math.max(15, lines.length + 3) // at least 15 lines and 3 lines more than code length
             let lastNonEmptyLineIdx = lines.findLastIndex(l => l.trim() != "")
-            let editorWidth = $(".nvh-code-editor", this.root)[0].clientWidth
-            let html = ""
-            let nonEmptyCounter = 0
-            for (let i = 0; i <= linesCount - 1; i++) {
-               if(lines[i] && lines[i].trim()){
-                  nonEmptyCounter++
+            let editor = $(".nvh-code-editor", this.root)[0]
+            if(editor){
+               let editorWidth = editor.clientWidth
+               let html = ""
+               let nonEmptyCounter = 0
+               for (let i = 0; i <= linesCount - 1; i++) {
+                  if(lines[i] && lines[i].trim()){
+                     nonEmptyCounter++
+                  }
+                  if(i <= lastNonEmptyLineIdx && this.state.warnings[nonEmptyCounter]){
+                     html += `<div class="nvh-code-error">${i +1}<div class="nvh-error-highlight-bar" style="width: ${editorWidth + 42 + 5}px"></div></div>`
+                  } else {
+                     html += `<div>${i + 1}</div>`
+                  }
                }
-               if(i <= lastNonEmptyLineIdx && this.state.warnings[nonEmptyCounter]){
-                  html += `<div class="nvh-code-error">${i +1}<div class="nvh-error-highlight-bar" style="width: ${editorWidth + 42 + 5}px"></div></div>`
-               } else {
-                  html += `<div>${i + 1}</div>`
-               }
+               $(".nvh-line-numbers").html(html)
             }
-            $(".nvh-line-numbers").html(html)
          },
 
          validate(entry){
             this.state.warnings = {}
             try{
-               this.nvhData.entry = entry || this.nvhStore.nvhToJson(this.nvhStore.replaceElementNamesWithPaths(this.editor.toString()))
+               this.nvhStore.nvhToJson(this.state.sourceCode)  //check for parsing error
                this.nvhStore.validateAllElements()
                let allElements = this.nvhStore.getElementList()
                this.nvhStore.forEachElement((element, idx) => {
@@ -349,10 +352,12 @@
                   }
                })
             } catch (e){
-               this.nvhData.entry.warnings = ["Syntax error"]
+               if(this.nvhData.entry){
+                  this.nvhData.entry.warnings = ["Syntax error"]
+               }
                this.nvhData.elementsMatchStructure = false
                this.nvhStore.trigger("isValidChanged")
-               let lineNum = e.match(/on line (\d+):/)[1]
+               let lineNum = e.toString().match(/on line (\d+):/)[1]
                this.state.warnings[lineNum] = e.replace(/ on line (\d+)/, "")
             }
          }
