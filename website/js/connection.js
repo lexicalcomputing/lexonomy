@@ -42,6 +42,8 @@ class ConnectionClass {
                   window.showToast(`${failMessage}\n${response.error}`)
                } else if(typeof response.statusText != "undefined" && response.statusText != "abort"){
                   window.showToast(`${failMessage}\n${response.statusText || ""}`)
+               } else if(response.success === false){
+                  window.showToast(failMessage)
                }
             } else {
                window.showToast(failMessage)
