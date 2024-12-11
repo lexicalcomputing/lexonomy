@@ -251,25 +251,25 @@ class NVHStoreClass {
       this.trigger("updateEditor")
    }
 
-   parseNvhLine(line, idx, lastIndent){
-      if(!line.match(/^(([ ]{2})*)([a-zA-Z0-9-_.]+):(.*)$/)){
-         if(line.match(/^( {2})* [^ ]/)){
+   parseNvhLine(line, idx, lastIndent, indentSize=2){
+      if(!line.match(new RegExp(`^(([ ]{${indentSize}})*)([a-zA-Z0-9-_.]+):(.*)$`))){
+         if(line.match(new RegExp(`^( {${indentSize}})* [^ ]`))){
             throw `Invalid indent on line ${idx + 1}: '${line.trim()}'.`
          } else if(line.match(/^[^:]*$/)){
             throw `Missing colon on line ${idx + 1}: '${line.trim()}.`
-         } else if(line.match(/^(([ ]{2})*)(((?!: ).)+):(.*)$/)){
+         } else if(line.match(new RegExp(`^(([ ]{${indentSize}})*)(((?!: ).)+):(.*)$`))){
             throw `Invalid element name on line ${idx + 1}: '${line.trim()}. Allowed characters: a-z, A-Z, 0-9, _, -'`
          } else{
             throw `Syntax error on line ${idx + 1}: '${line.trim()}'`
          }
       }
       let parts = line.split(/:(.*)/s) // split by first colon
-      let match = parts[0].match(new RegExp(/  /g))
+      let match = parts[0].match(new RegExp(`[ ]{${indentSize}}`, "g"))
       let startsWithSpace = parts[0].startsWith(" ")
-      let evenSpaceNum = match && parts[0].match(new RegExp(/ /g)).length % 2
+      let incorrectSpaceNum = match && parts[0].match(new RegExp(/ /g)).length % indentSize
       let indent = match ? match.length : 0
       if((idx == 0 && startsWithSpace)
-         || (idx != 0 && (!startsWithSpace || evenSpaceNum || !match))
+         || (idx != 0 && (!startsWithSpace || incorrectSpaceNum || !match))
          || (indent > lastIndent + 1)){
          throw `Incorrect indent on line ${idx + 1}: '${line.trim()}'`
       }
@@ -320,10 +320,16 @@ class NVHStoreClass {
       let json
       let line
       let el
-      nvh.split('\n').forEach((row, idx) => {
+      let rows = nvh.split('\n')
+      let indentSize = 2
+      if(rows.length > 1){
+         indentSize = rows[1].replaceAll("\t", "  ")
+               .match(/^ */)[0].length || 2
+      }
+      rows.forEach((row, idx) => {
          row = row.replaceAll("\t", "  ")
          if(row.trim() != ""){
-            line = this.parseNvhLine(row, idx, el ? el.indent : 0)
+            line = this.parseNvhLine(row, idx, el ? el.indent : 0, indentSize)
             let parent = getParent(line.indent)
             let name = line.name.split(".").pop()
             el = {
