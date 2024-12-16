@@ -1,246 +1,383 @@
 <new-dictionary>
-   <loading-overlay if={state.isLoading}/>
-   <h1 class="pageTitle">
-      New dictionary <span class="step">Step {(state.step + "").substr(0, 1)} of 3</span>
-   </h1>
-   <div if={state.step == 1}>
-      <h3 class="grey-text mb-4">Basic information</h3>
-      <div class="row mt-8">
-         <div class="input-field">
-            <input id="title"
-                  type="text"
-                  class="validate inlineBlock"
-                  required
-                  oninput={onTitleInput}
-                  onkeyup={onKeyUp}
-                  value={state.title}
-                  style="max-width: 300px;"/>
-            <label for="title">Title</label>
-            <span class="helper-text">Enter a human-readable title such as "My Esperanto Dictionary". You will be able to change this later.</span>
+   <loading-overlay if={state.isLoading || dictData.isDictionaryListLoading}/>
+   <div class="contentWrapper pl-8 pr-8">
+      <div class="positionRelative mb-12">
+         <span if={props.step != "start"}
+               class="clickable positionAbsolute"
+               onclick={onBackClick}
+               style="left: -30px; top: 10px;">
+            <i class="material-icons grey-text">arrow_back</i>
+         </span>
+         <h1 class="pageTitle borderBottom">
+            {getPageTitle()}
+         </h1>
+      </div>
+
+      <div if={props.step == "start"}>
+         <div class="cardOptions">
+            <div class="cardOption"
+                  onclick={onChangeStepClick.bind(this, "template")}>
+               <i class="material-icons">dvr</i>
+               <div class="cardOptionTitle">
+                  From a template
+               </div>
+               <div class="description grey-text">
+                  Start with one of the ready-made templates for the most frequent types of dictionaries. You can customize, add or remove elements as required.
+               </div>
+            </div>
+            <div class="cardOption"
+                  onclick={onChangeStepClick.bind(this, "upload")}>
+               <i class="material-icons">upload</i>
+               <div class="cardOptionTitle">
+                  Upload entries
+               </div>
+               <div class="cardOptionDescription grey-text">
+                  Upload an existing dictionary in the NVH or XML formats.
+               </div>
+            </div>
+            <div class="cardOption"
+                  onclick={onChangeStepClick.bind(this, "empty")}>
+               <i class="material-icons">add</i>
+               <div class="cardOptionTitle">
+                  Custom dictionary
+               </div>
+               <div class="cardOptionDescription grey-text">
+                  For expert users. Start from scratch by creating your own entry structure.
+               </div>
+            </div>
+         </div>
+
+         <div class="mt-12">
+            <a href="#/"
+                  class="btn btn-secondary">
+               back
+            </a>
          </div>
       </div>
 
-      <div class="row">
-         <div class="input-field">
-            <label>URL</label>
-            <div class="urlWrapper mr-2"
-                  onclick={onUrlWrapperClick}>
-               <span class="grey-text">{state.baseUrl}</span>
-               <span class="input-field">
-                  <input id="url"
+      <div if={props.step == "template"}>
+         <div class="templateWrapper">
+            <div class="templateGroupLabel">
+               <h2 class="grey-text">Monolingual</h2>
+            </div>
+            <div class="cardOptions">
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "simple_monolingual")}>
+                  <i class="material-icons">format_align_justify</i>
+                  <div class="cardOptionTitle">
+                     Monolingual basic
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A simple monolingual dictionary. Entries contain pronunciation, word senses, definition and example sentences.
+                  </div>
+               </div>
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "simple_bilingual")}>
+                  <span class="positionRelative">
+                     <i class="material-icons">format_align_justify</i>
+                     <i class="material-icons iconExtended">add_circle</i>
+                  </span>
+                  <div class="cardOptionTitle">
+                     Monolingual extended
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A monolingual dictionary with rich entries: pronunciation, pronunciation recording, word senses with disambiguating gloss, definitions, collocations, thesaurus, example sentences, usage labels and image.
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="templateWrapper">
+            <div class="templateGroupLabel">
+               <h2 class="grey-text">Bilingual</h2>
+            </div>
+            <div class="cardOptions">
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <i class="material-icons">format_align_justify</i>
+                  <i class="material-icons">format_align_justify</i>
+                  <div class="cardOptionTitle">
+                     Bilingual basic
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A simple bilingual dictionary. Entries contain pronunciation, translation and example sentences.
+                  </div>
+               </div>
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <i class="material-icons">format_align_justify</i>
+                  <span class="positionRelative">
+                     <i class="material-icons">format_align_justify</i>
+                     <i class="material-icons iconExtended">add_circle</i>
+                  </span>
+                  <div class="cardOptionTitle">
+                     Bilingual extended
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A bilingual dictionary with additional information such as example sentences, collocations, thesaurus, usage labels.
+
+                  </div>
+               </div>
+            </div>
+         </div>
+
+         <div class="templateWrapper">
+            <div class="templateGroupLabel">
+               <h2 class="grey-text">Glossary</h2>
+            </div>
+            <div class="cardOptions">
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <span class="glossaryIcon">A-Z</span>
+                  <i class="material-icons">format_align_justify</i>
+                  <div class="cardOptionTitle">
+                     Glossary monolingual simple
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A template for a simple list of words and phrases with explanations.
+                  </div>
+               </div>
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <span class="glossaryIcon">A-Z</span>
+                  <span class="positionRelative">
+                     <i class="material-icons">format_align_justify</i>
+                     <i class="material-icons iconExtended">add_circle</i>
+                  </span>
+                  <div class="cardOptionTitle">
+                     Glossary monolingual extended
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A template for a glossary of terms with additional information such as example sentences or pronunciation.
+                  </div>
+               </div>
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <span class="glossaryIcon">A-Z</span>
+                  <i class="material-icons">format_align_justify</i>
+                  <i class="material-icons">format_align_justify</i>
+                  <div class="cardOptionTitle">
+                     Glossary bilingual simple
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A template for a simple list of words and phrases with translations.
+                  </div>
+               </div>
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <span class="glossaryIcon">A-Z</span>
+                  <i class="material-icons">format_align_justify</i>
+                  <span class="positionRelative">
+                     <i class="material-icons">format_align_justify</i>
+                     <i class="material-icons iconExtended">add_circle</i>
+                  </span>
+                  <div class="cardOptionTitle">
+                     Glossary bilingual extended
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A template for a bilingual glossary of terms with translations and example sentences.
+
+                  </div>
+               </div>
+               <div class="cardOption"
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                  <span class="glossaryIcon">A-Z</span>
+                  <i class="material-icons">format_align_justify</i>
+                  <i class="material-icons">format_align_justify</i>
+                  <i class="material-icons">format_align_justify</i>
+                  <div class="cardOptionTitle">
+                     Glossary multilingual
+                  </div>
+                  <div class="cardOptionDescription grey-text">
+                     A simple bilingual dictionary. Entries contain pronunciation, translation and example sentences.
+                  </div>
+               </div>
+            </div>
+         </div>
+
+
+         <div class="mt-12">
+            <button class="btn btn-secondary"
+                  onclick={onBackClick}>
+               back
+            </button>
+         </div>
+      </div>
+
+      <div if={props.step == "upload"}>
+         <div class="row">
+            <div class="input-field titleInputField">
+               <input id="title"
+                     type="text"
+                     class="validate inlineBlock"
+                     required
+                     oninput={onTitleInput}
+                     value={state.title}/>
+               <label for="title">Dictionary name</label>
+               <span class="helper-text">You will be able to change this later.</span>
+            </div>
+         </div>
+
+         <div class="uploadWrapper">
+            <div class="row">
+               <div class="file-field input-field uploadFileInputField">
+                  <div class="btn">
+                     <span>Choose file</span>
+                     <input type="file"
+                           onchange={onUploadFileChange}
+                           id="file">
+                  </div>
+                  <label for="title">File with entries in NVH format</label>
+                  <div class="file-path-wrapper">
+                     <input class="file-path validate"
+                           type="text">
+                  </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="input-field headwordInputField">
+                  <input id="Headword"
                         type="text"
-                        class="inlineBlock urlInput"
-                        value={state.url}
+                        class="validate"
+                        value={state.headwordElement}
                         required
-                        minlength="5"
-                        oninput={onUrlInput}
-                        onkeyup={onKeyUp}/>
-               </span>
+                        oninput={onHeadwordElementInput}/>
+                  <label for="title">Headword element *</label>
+                  <i if={state.fileReader.readyState == 1}
+                        class="headwordElementSpinner material-icons grey-text spin">donut_large</i>
+               </div>
             </div>
-            <i if={state.isCheckingUrl}
-                  class="material-icons spin grey-text">autorenew</i>
-            <template if={!state.isCheckingUrl}>
-               <span if={state.isUrlValid}
-                     class="green-text">valid</span>
-                <span if={state.isUrlInvalid}
-                     class="red-text">invalid</span>
-            </template>
-            <div class="urlHelperText">This will be your dictionary's address on the web. You will be able to change this later. Allowed:  letters, numbers, - and _</div>
-         </div>
-      </div>
-
-      <div class="row">
-         <div class="input-field">
-            <input type="text"
-                  id="language"
-                  class="autocomplete"
-                  placeholder="Type to search"
-                  value={state.language.label}
-                  style="width:300px">
-            <label for="language">Main language</label>
-         </div>
-      </div>
-
-      <br>
-      <div>
-         <label>Size limitation</label>
-         <div class="grey-text">
-            Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
-         </div>
-      </div>
-
-      <div class="mt-8">
-         <button id="btnNext"
-               class="btn btn-primary disabled"
-               onclick={onGoToStepTwoClick}>
-            next
-         </button>
-      </div>
-   </div>
-
-   <div if={state.step == 2}>
-      <h3 class="grey-text mb-4">Dictionary content</h3>
-      <div class="emptyOrUpload">
-         <div class="option"
-               onclick={onChangeStepClick.bind(this, "3_empty")}>
-            <i class="material-icons">insert_drive_file</i>
-            <div class="name">
-               Empty dictionary
-            </div>
-            <div class="description grey-text">
-               Define entry structure and create empty dictionary.
+            <div class="row">
+               <div class="input-field mb-0">
+                  <label class="checkbox">
+                     <input id="deduplicate"
+                           type="checkbox">
+                     <span>
+                        Deduplicate
+                          <span class="hint tooltipped"
+                              data-tooltip="Remove duplicities from the data. This may slow down the import.">
+                           <i class="material-icons">help_outline</i>
+                       </span>
+                     </span>
+                  </label>
+               </div>
             </div>
          </div>
-         <div class="option"
-               onclick={onChangeStepClick.bind(this, "3_upload")}>
-            <i class="material-icons">upload</i>
-            <div class="name">
-               Upload entries
+
+         <div class="mt-12">
+            <div if={state.errorMessage != ""}
+                  class="section">
+               <div class="message messageError">
+                  { state.errorMessage }
+               </div>
             </div>
-            <div class="description grey-text">
-               Upload entries in NVH or XML format to create new dictionary.
+            <div class="buttons">
+               <button class="btn btn-secondary"
+                     onclick={onBackClick}>
+                  back
+               </button>
+               <button class="btn btn-primary waves-effect waves-light"
+                     name="makeDict"
+                     id="makeDictButton"
+                     onclick={onCreateDictionaryFromFileClick}>Create dictionary
+                  <i class="material-icons left">add</i>
+               </button>
+            </div>
+            <div class="borderTop mt-12">
+               <small class="grey-text">
+                  Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
+               </small>
             </div>
          </div>
       </div>
-      <div class="mt-8">
-         <button class="btn btn-secondary"
-               onclick={onChangeStepClick.bind(this, "1")}>
-            back
-         </button>
-      </div>
-   </div>
 
-   <div if={state.step == "3_empty"}>
-      <div class="row mb-4">
-         <h3 class="grey-text mb-4">Entry structure</h3>
-         <div class="grey-text mb-4">Choose entry structure from predefined modules or use your own schema. You can change this later.<i class="tooltipped material-icons tiny" data-tooltip="The entry structure can be edited in Configuration - Entry settings - Structure.">help_outline</i></div>
-         <ui class="tabs mb-0">
-            <li class="tab {state.structureTab == "dmlex" ? "active" : ""}">
-               <a onclick={onStructureTabClick.bind(this, "dmlex")}>DMLex standard modules</a>
-            </li>
-            <li class="tab {state.structureTab == "nvhSchema" ? "active" : ""}">
-               <a onclick={onStructureTabClick.bind(this, "nvhSchema")}>Custom NVH schema</a>
-            </li>
-         </ui>
-         <div class="grey lighten-5 p-6">
-            <div if={state.structureTab == "dmlex"}>
-               <nvh-schema on-change={onDMLexModulesChange}
-                     on-schema-change={onDMLexSchemaChange}/>
 
-               <div class="row pt-4 mt-8 borderTop">
-                  <div class="input-field mb-0">
-                     <label class="checkbox">
-                        <input id="addExamples"
-                              type="checkbox"
-                              checked="checked">
-                        <span>
-                           Add example entries
-                        </span>
-                     </label>
+      <div if={props.step == "empty"}>
+         <div class="row">
+            <div class="input-field titleInputField">
+               <input id="title"
+                     type="text"
+                     class="validate inlineBlock"
+                     required
+                     oninput={onTitleInput}
+                     value={state.title}/>
+               <label for="title">Dictionary name</label>
+               <span class="helper-text">You will be able to change this later.</span>
+            </div>
+         </div>
+         <div class="row mb-4">
+            <h2>
+               Entry structure
+            </h2>
+            <div class="grey-text mb-4">Choose entry structure from predefined modules or use your own schema. You can change this later.<i class="tooltipped material-icons tiny" data-tooltip="The entry structure can be edited in Configuration - Entry settings - Structure.">help_outline</i></div>
+            <ui class="tabs mb-0">
+               <li class="tab {state.structureTab == "dmlex" ? "active" : ""}">
+                  <a onclick={onStructureTabClick.bind(this, "dmlex")}>Simple settings</a>
+               </li>
+               <li class="tab {state.structureTab == "advanced" ? "active" : ""}">
+                  <a onclick={onStructureTabClick.bind(this, "advanced")}>Custom structure</a>
+               </li>
+               <li class="tab {state.structureTab == "custom" ? "active" : ""}">
+                  <a onclick={onStructureTabClick.bind(this, "custom")}>Expert settings</a>
+               </li>
+            </ui>
+            <div class="grey lighten-5 p-6">
+               <div if={state.structureTab == "dmlex"}>
+                  <nvh-schema on-change={onNvhSchemaChange}/>
+                  <div class="row pt-4 mt-8 borderTop">
+                     <div class="input-field mb-0">
+                        <label class="checkbox">
+                           <input id="addExamples"
+                                 type="checkbox"
+                                 checked="checked">
+                           <span>
+                              Add example entries
+                           </span>
+                        </label>
+                     </div>
+                  </div>
+               </div>
+
+               <div if={state.structureTab == "advanced"}>
+                  <structure-editor/>
+               </div>
+
+               <div if={state.structureTab == "custom"}>
+                  <div class="input-field"
+                        style="max-width: 500px;">
+                     <nvh-schema-textarea riot-value={state.customNvhSchema}
+                           on-input={onCustomNvhSchemaInput}
+                           on-valid-change={onCustomNvhSchemaValidChange}/>
+                     <label>your NVH schema</label>
                   </div>
                </div>
             </div>
 
-            <div if={state.structureTab == "nvhSchema"}>
-               <div class="input-field"
-                     style="max-width: 500px;">
-                  <nvh-schema-textarea riot-value={state.customNvhSchema}
-                        on-input={onCustomNvhSchemaInput}
-                        on-valid-change={onCustomNvhSchemaValidChange}/>
-                  <label>your NVH schema</label>
+         </div>
+         <div class="mt-12">
+            <div if={state.errorMessage != ""}
+                  class="section">
+               <div class="message messageError">
+                  { state.errorMessage }
                </div>
             </div>
-         </div>
-
-      </div>
-      <div class="mt-8">
-         <div if={state.errorMessage != ""}
-               class="section">
-            <div class="message messageError">
-               { state.errorMessage }
+            <div class="buttons">
+               <button class="btn btn-secondary"
+                     onclick={onBackClick}>
+                  back
+               </button>
+               <button class="btn btn-primary waves-effect waves-light"
+                     name="makeDict"
+                     id="makeDictButton"
+                     onclick={onCreateEmptyDictionaryClick}>Create dictionary
+                  <i class="material-icons left">add</i>
+               </button>
             </div>
          </div>
-         <div class="buttons">
-            <button class="btn btn-secondary"
-                  onclick={onChangeStepClick.bind(this, "2")}>
-               back
-            </button>
-            <button class="btn btn-primary waves-effect waves-light"
-                  name="makeDict"
-                  id="makeEmptyDictButton"
-                  onclick={onCreateEmptyDictionaryClick}>Create dictionary
-               <i class="material-icons left">add</i>
-            </button>
-         </div>
-      </div>
-   </div>
-
-   <div if={state.step == "3_upload"}>
-      <h3 class="grey-text mb-4">Upload entries</h3>
-      <div class="uploadWrapper">
-         <div class="row mt-8">
-            <div class="file-field input-field buttons">
-               <div class="btn">
-                  <span>Choose file</span>
-                  <input type="file"
-                        onchange={onUploadFileChange}
-                        id="file">
-               </div>
-               <label for="title">File with entries in NVH format</label>
-               <div class="file-path-wrapper">
-                  <input class="file-path validate"
-                        type="text">
-               </div>
-            </div>
-         </div>
-         <div class="row">
-            <div class="input-field">
-               <input id="Headword"
-                     type="text"
-                     class="validate"
-                     value={state.headwordElement}
-                     required
-                     oninput={onHeadwordElementInput}/>
-               <label for="title">Headword element *</label>
-               <i if={state.fileReader.readyState == 1}
-                     class="headwordElementSpinner material-icons grey-text spin">donut_large</i>
-            </div>
-         </div>
-         <div class="row">
-            <div class="input-field mb-0">
-               <label class="checkbox">
-                  <input id="deduplicate"
-                        type="checkbox">
-                  <span>
-                     Deduplicate
-                       <span class="hint tooltipped"
-                           data-tooltip="Remove duplicities from the data. This may slow down the import.">
-                        <i class="material-icons">help_outline</i>
-                    </span>
-                  </span>
-               </label>
-            </div>
-         </div>
-      </div>
-
-      <div class="mt-8">
-         <div if={state.errorMessage != ""}
-               class="section">
-            <div class="message messageError">
-               { state.errorMessage }
-            </div>
-         </div>
-         <div class="buttons">
-            <button class="btn btn-secondary"
-                  onclick={onChangeStepClick.bind(this, "2")}>
-               back
-            </button>
-            <button class="btn btn-primary waves-effect waves-light"
-                  name="makeDict"
-                  id="makeDictFromFileButton"
-                  onclick={onCreateDictionaryFromFileClick}>Create dictionary
-               <i class="material-icons left">add</i>
-            </button>
+         <div class="borderTop mt-12">
+            <small class="grey-text">
+               Maximum dictionary size is 5,000 entries. To remove the limit, email <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a> and give details of your dictionary project.
+            </small>
          </div>
       </div>
    </div>
@@ -248,172 +385,131 @@
 
    <script>
       export default {
+         bindings: [["store", "dictionaryListLoadingChanged", "update"],
+                    ["structureStore", "elementChanged", "refreshMakeDictButtonDisabled"]],
+
          state: {
-            step: "1",
+            step: "start",
             title: "",
             url: "",
-            isLoading: true,
+            isLoading: false,
             errorMessage: "",
-            baseUrl: "https://www.lexonomy.eu/",
-            DMLexSchema: null,
+            DMLexStructure: null,
+            DMLexSettings: null,
             file: null,
             headword: null,
             isNextBtnEnable: false,
-            isCheckingUrl: false,
-            isUrlValid: true,
-            isUrlInvalid: false,
-            checkUrlRequest: null,
             language: {
                value: "",
                label: ""
             },
             structureTab: "dmlex",
-            customNVHSchema: "",
-            DMLexModules: [],
+            customNvhSchema: "",
             isCustomNvhSchemaValid: null,
             fileReader: null
          },
 
          onBeforeMount(){
-            window.structureEditorStore.reset()
+            this.structureStore = window.structureEditorStore
+            this.structureStore.reset()
             this.state.fileReader = new FileReader
             this.state.fileReader.onload = function(e) {
                this.update({headwordElement: this.store.guessEntryElementFromFile(this.state.fileReader.result)})
-               this.refreshMakeDictFromFileButtonDisabled()
             }.bind(this)
-         },
-
-         onMounted() {
+            this.refreshDictionaryTitle()
             this.store.suggestUrl()
                   .done(response => {
                      this.state.url = response.suggested
-                     this.state.baseUrl = response.baseUrl
-                  })
-                  .always(results => {
-                     this.update({isLoading: false})
-                     M.updateTextFields()
-                     $("#title").focus()
                   })
          },
 
+         onMounted() {
+            $("#title").focus()
+         },
+
+         onBeforeUpdate(){
+            this.refreshDictionaryTitle()
+         },
+
          onUpdated(){
-            if(this.state.step == 1){
-               this.refreshBtnNextDisabled()
-               this.initLanguageAutocomplete()
-            } else if(this.state.step == "3_upload"){
-               this.refreshMakeDictFromFileButtonDisabled()
-            }
+            this.refreshMakeDictButtonDisabled()
          },
 
          onBeforeUnmount(){
             this.state.timeoutHandle && clearTimeout(this.state.timeoutHandle)
          },
 
-         onKeyUp(evt){
-            if(evt.keyCode == 13 && this.state.isNextBtnEnable){
-               this.onGoToStepTwoClick()
-            }
+         onStructureTabClick(structureTab){
+            this.update({structureTab: structureTab})
+            this.refreshMakeDictButtonDisabled()
          },
 
-         onDMLexSchemaChange(DMLexSchema){
-            this.update({DMLexSchema: DMLexSchema})
-         },
-
-         onDMLexModulesChange(DMLexModules, DMLexXlingualLanguages, DMLexEtymologyLanguages){
-            this.state.DMLexModules = DMLexModules
-            this.state.DMLexXlingualLanguages = DMLexXlingualLanguages
-            this.state.DMLexEtymologyLanguages = DMLexEtymologyLanguages
+         onNvhSchemaChange(DMLexStructure, DMLexSettings){
+            this.update({
+               DMLexStructure: DMLexStructure,
+               DMLexSettings: DMLexSettings
+            })
          },
 
          onCustomNvhSchemaInput(nvhSchema){
             this.state.customNvhSchema = nvhSchema
-            this.refreshMakeEmptyDictButtonDisabled()
+            this.refreshMakeDictButtonDisabled()
          },
 
          onCustomNvhSchemaValidChange(isValid){
             this.state.isCustomNvhSchemaValid = isValid
-            this.refreshMakeEmptyDictButtonDisabled()
+            this.refreshMakeDictButtonDisabled()
          },
 
-         onGoToStepTwoClick(){
-            this.update({isLoading: true})
-            this.store.isDictIdTaken(this.state.url)
-                  .done(response => {
-                     if(response.success){
-                        M.toast({html: "This URL is already taken."})
-                        this.update({isLoading: false})
-                     } else {
-                        this.update({
-                           step: 2,
-                           isLoading: false
-                        })
-                     }
-                  })
+         onBackClick(){
+            window.history.back()
          },
 
          onChangeStepClick(step){
-            this.update({step: step})
-            if(step == 1){
-               $("#title").focus()
-            }
+            route("make" + (step != "start" ? `\/${step}` : ""))
+            $("#title").focus()
          },
 
          onTitleInput(evt){
             this.state.title = evt.target.value
-            this.refreshBtnNextDisabled()
-         },
-
-         onUrlInput(evt){
-            this.state.url = evt.target.value
-            this.checkUrl()
-            this.refreshBtnNextDisabled()
-         },
-
-         onUrlWrapperClick(){
-            $("#id").focus()
+            this.refreshMakeDictButtonDisabled()
          },
 
          onUploadFileChange(evt){
             this.state.file = evt.target.files[0]
-            this.refreshMakeDictFromFileButtonDisabled()
             this.state.file && this.state.fileReader.readAsText(this.state.file, 'UTF-8')
             this.update()
          },
 
          onHeadwordElementInput(evt){
             this.state.headwordElement = evt.target.value
-            this.refreshMakeDictFromFileButtonDisabled()
+            this.refreshMakeDictButtonDisabled()
+         },
+
+         onCreateDictionaryFromTemplateClick(template){
+            // TODO
+
          },
 
          onCreateEmptyDictionaryClick(event) {
             this.update({isLoading: true})
+            let structure
+            if(this.state.structureTab == "dmlex"){
+               structure = this.state.DMLexStructure
+            } else if(this.state.structureTab == "advanced"){
+               structure = this.structureStore.data.structure
+            } else {
+               structure = this.structureStore.nvhToStructure(this.state.customNvhSchema)
+            }
             let data = {
                title: this.state.title,
                url: this.state.url,
-               language: this.state.language.value
-            }
-            if(this.state.structureTab == "dmlex"){
-               Object.assign(data, {
-                  addExamples: $("#addExamples").is(":checked"),
-                  dmlex: true,
-                  jsonSchema: JSON.stringify({
-                     tab: "dmlex",
-                     root: this.state.DMLexSchema.root,
-                     elements: this.state.DMLexSchema.elements,
-                     dmlex_modules: this.state.DMLexModules,
-                     xlingual_langs: this.state.DMLexXlingualLanguages,
-                     etymology_langs: this.state.DMLexEtymologyLanguages
-                  })
-               })
-            } else {
-               let {elements, root} = window.structureEditorStore.nvhToStructure(this.state.customNvhSchema)
-               Object.assign(data, {
-                  jsonSchema: JSON.stringify({
-                     tab: "custom",
-                     root: root,
-                     elements: elements,
-                     dmlex_modules: []
-                  })
+               language: this.state.language.value,
+               jsonSchema: JSON.stringify({
+                  tab: this.state.structureTab,
+                  root: structure.root,
+                  elements: structure.elements,
+                  DMLexSettings: this.state.DMLexSettings
                })
             }
             this.store.createDictionary(data)
@@ -459,11 +555,6 @@
             }
          },
 
-         onStructureTabClick(structureTab){
-            this.update({structureTab: structureTab})
-            this.refreshMakeEmptyDictButtonDisabled()
-         },
-
          checkImportProgress(upload_file_path){
             this.store.checkImportProgress(this.state.newDictId, upload_file_path)
                   .done(response => {
@@ -481,128 +572,50 @@
                   })
          },
 
-         checkUrl(){
-            this.state.isUrlValid = false
-            this.state.checkUrlRequest && this.state.checkUrlRequest.abort()
-            this.checkUrlDebounceTimer && clearTimeout(this.checkUrlDebounceTimer)
-            if(!this.state.url.match(/^[a-zA-Z0-9\-_]+$/)){
-               this.state.isUrlInvalid = true
-               this.update()
-            } else{
-               this.checkUrlDebounceTimer = setTimeout(() => {
-                  clearTimeout(this.checkUrlDebounceTimer)
-                     this.update({isCheckingUrl: true})
-                     this.store.isDictionaryUrlTaken(this.state.url)
-                           .done(response => {
-                              this.state.isUrlValid = !response.success
-                              this.state.isUrlInvalid = response.success
-                           })
-                           .always(response => {
-                              this.state.checkUrlRequest = null
-                              this.update({isCheckingUrl: false})
-                              this.refreshBtnNextDisabled()
-                           })
-               }, 200)
-            }
+         getPageTitle(){
+            return {
+               start: "Add dictionary",
+               template: "From Template",
+               new: "New dictionary",
+               empty: "Custom dictionary",
+               upload: "Upload own data"
+            }[this.props.step] || "Add dictionary"
          },
 
-         initLanguageAutocomplete(){
-            $("#language").autocomplete({
-               data: this.store.data.siteconfig.langs.map(lang => {
-                  return {
-                     value: lang.code,
-                     label: lang.lang
+         refreshDictionaryTitle(){
+            let lastNum = this.dictData.dictionaryList.filter(dictionary => dictionary.title.startsWith("New dictionary"))
+                  .map(dictionary => parseInt(dictionary.title.split("New dictionary")[1] || "1", 10))
+                  .sort()
+                  .pop()
+            let title = `New dictionary${lastNum ? ' ' + (lastNum + 1) : ''}`
+            this.state.title = title
+         },
+
+         refreshMakeDictButtonDisabled(){
+            if(["upload", "empty"].includes(this.props.step)){
+               let disabled = !this.state.title
+               if(!disabled){
+                  if(this.props.step == "upload"){
+                     disabled = !this.state.file
+                           || this.state.fileReader.readyState == 1
+                           || !this.state.headwordElement
+                  } else if(this.props.step == "empty"){
+                     if(this.state.structureTab == "advanced"){
+                        disabled = !this.structureStore.data.structure.root
+                     } else if(this.state.structureTab == "custom"){
+                        disabled = !this.state.customNvhSchema
+                           || (this.state.customNvhSchema + "").trim() == ""
+                           || !this.state.isCustomNvhSchemaValid
+                     }
                   }
-               }),
-               onAutocomplete: language => {
-                  this.state.language = language
-                  this.refreshBtnNextDisabled()
                }
-            })
-         },
-
-         refreshBtnNextDisabled(){
-            this.state.isNextBtnEnable = this.state.title != ""
-                  && this.state.language.value != ""
-                  && this.state.isUrlValid
-            $("#btnNext", this.root).toggleClass("disabled", !this.state.isNextBtnEnable)
-         },
-
-         refreshMakeEmptyDictButtonDisabled(){
-            let disabled = false
-            if(this.state.structureTab != "dmlex"){
-               disabled = !this.state.customNvhSchema
-                     || (this.state.customNvhSchema + "").trim() == ""
-                     || !this.state.isCustomNvhSchemaValid
+               $("#makeDictButton", this.root).toggleClass("disabled", disabled)
             }
-            $("#makeEmptyDictButton", this.root).toggleClass("disabled", disabled)
-         },
-
-         refreshMakeDictFromFileButtonDisabled(){
-            $("#makeDictFromFileButton", this.root).toggleClass("disabled", !this.state.file
-                  || this.state.fileReader.readyState == 1
-                  || !this.state.headwordElement)
          }
       }
    </script>
 
    <style type="scss">
-      .step{
-         font-size: 0.85rem;
-         color: #b8b8b8;
-         text-transform: none;
-      }
-      .urlWrapper{
-         display: inline-flex;
-         align-items: baseline;
-         border: 1px solid black;
-         position: relative;
-         padding-left: 10px;
-         height: 2.5rem;
-         .input-field{
-            margin-top: 0;
-            margin-bottom: 0;
-            input{
-               max-width: 300px;
-               padding-left: 5px;
-               border: 0px !important;
-               outline: 0px !important;
-               background: transparent!important;
-            }
-         }
-      }
-      .urlHelperText{
-         color: rgba(0,0,0,0.54);
-         font-size: 0.7rem;
-      }
-      .emptyOrUpload{
-         display: inline-flex;
-         gap: 20px;
-         justify-content: center;
-         .option{
-            width: 300px;
-            text-align: center;
-            cursor: pointer;
-            padding: 1.5rem;
-            background-color: #f5f5f5;
-            &:hover{
-               background-color: #e6e6e6;
-            }
-            i{
-               font-size: 3rem;
-               opacity: 0.3;
-            }
-            .name{
-               font-size: 1.2rem;
-            }
-            .description{
-               font-size: 0.9rem;
-            }
-         }
-      }
-      .uploadWrapper{
-         max-width: 400px;
-      }
       .file-field{
          .file-path-wrapper,
          .file-path{
@@ -610,10 +623,49 @@
             width: 100%;
          }
       }
+      .titleInputField,
+      .uploadFileInputField,
+      .headwordInputField{
+         max-width: 450px;
+      }
+      .templateWrapper{
+         margin-bottom: 40px;
+         display: flex;
+         gap: 20px;
+         @media (max-width: 1260px) {
+            flex-direction: column;
+         }
+         .templateGroupLabel{
+            min-width: 180px;
+            h2{
+               margin-bottom: 0;
+            }
+         }
+      }
+      .cardOption{
+         min-height: 210px;
+      }
       .headwordElementSpinner{
          position: absolute;
          right: 8px;
          top: 8px;
+      }
+      .cardOptions .cardOption i.iconExtended{
+         position: absolute;
+         right: -10px;
+         top: -38px;
+         font-size: 25px;
+         z-index: 99;
+         opacity: 1;
+         color: #b5b5b5;
+         background: #f5f5f5;
+         border-radius: 50%;
+      }
+      .glossaryIcon{
+         opacity: 0.3;
+         vertical-align: top;
+         font-size: 2.5rem;
+         line-height: 3.3rem;
       }
    </style>
 </new-dictionary>

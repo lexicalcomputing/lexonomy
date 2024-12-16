@@ -42,21 +42,19 @@
             </label>
          </div>
 
-         <div class="tabsContent mb-4">
+         <div class="tabsContent">
             <div if={state.tab == "dmlex"}>
-               <nvh-schema modules={state.dmlex_modules}
-                     xlingual_langs={state.xlingual_langs}
-                     etymology_langs={state.etymology_langs}
-                     on-change={onDMLexChange}
-                     on-schema-change={onDMLexSchemaChange}/>
+               <nvh-schema {...state.DMLexSettings}
+                     {...structureStore.data.structure}
+                     on-change={onNvhSchemaChange}/>
             </div>
 
-            <div if={state.tab == "advanced"}>
+            <div if={state.tab == "advanced"} class="mb-8">
                <structure-editor/>
             </div>
 
             <div if={state.tab == "custom"}
-                  class="tabCustom">
+                  class="tabCustom mb-8">
                <div class="tabCustomForm">
                   <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
                      Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
@@ -64,14 +62,13 @@
                   <div class="mb-16">
                      <div class="input-field">
                         <nvh-schema-textarea riot-value={state.schemaNvh}
-                              on-valid-change={onNVHSchemaValidChange}
-                              on-input={onNVHSchemaInput}/>
+                              on-valid-change={onNvhSchemaValidChange}
+                              on-input={onNvhSchemaInput}/>
                         <label>Your NVH schema</label>
                      </div>
                      <div class="buttons">
-                        <button id="custom_loadSampleNVHSchema"
-                              class="btn btn-secondary "
-                              onclick={onLoadSampleNVHSchemaClick}>Load sample NVH schema</button>
+                        <button class="btn btn-secondary"
+                              onclick={onLoadSampleNvhSchemaClick}>Load sample NVH schema</button>
                      </div>
                   </div>
                </div>
@@ -80,13 +77,17 @@
          </div>
       </div>
       <div class="borderTop pt-4">
-         <label>
-            <input name="new_entry_template"
+         <div class="switch">
+            <label>
+               <input name="new_entry_template"
                   type="checkbox"
                   checked={state.hasNewEntryTemplate}
-                  onchange={onHasNewEntryTemplateChange} />
-            <span>Set new entry template</span>
-         </label>
+                  onchange={onHasNewEntryTemplateChange} >
+               <span class="lever"
+                     style="margin-left: 0;"></span>
+               Set new entry template
+            </label>
+         </div>
          <div if={state.hasNewEntryTemplate}
                class="newEntryTemplateSettings">
             <div class="grey-text mb-4">
@@ -116,8 +117,8 @@
             tab: "dmlex",
             data: null,
             brokenConfig: null,
-            isCustomNVHSchemaValid: null,
-            DMLexSchema: null,
+            isCustomNvhSchemaValid: null,
+            DMLexStructure: null,
             changed: false
          },
 
@@ -130,16 +131,22 @@
                   .done(response => {
                      if(response.success){
                         this.state.tab = response.content.tab || "dmlex"
-                        this.state.dmlex_modules = response.content.dmlex_modules || []
-                        this.state.xlingual_langs = response.content.xlingual_langs || []
-                        this.state.etymology_langs = response.content.etymology_langs || []
-                        this.structureStore.setConfigStructure(response.content)
+                        this.state.DMLexSettings = response.content.DMLexSettings
+                              || {
+                                    modules: [],
+                                    xlingual_langs: [],
+                                    etymology_langs: [],
+                                    showMoreSettings: false,
+                                    selectedElements: []
+                                 }
+                        this.structureStore.setConfigStructure({
+                           elements: response.content.elements || {},
+                           root: response.content.root
+                        })
                         this.structureStore.setNewEntryTemplate(response.content.newEntryTemplate)
                         this.state.hasNewEntryTemplate = response.content.hasNewEntryTemplate
                         this.state.originalStructure = {...this.structureStore.data.structure}
-                        this.state.originalDmlex_modules = [...this.state.dmlex_modules]
-                        this.state.originalXlingual_langs = [...this.state.xlingual_langs]
-                        this.state.originalEtymology_langs = [...this.state.etymology_langs]
+                        this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
                         if(this.state.tab == "custom"){
                            this.state.schemaNvh = this.structureStore.getNvh()
                         }
@@ -168,20 +175,6 @@
                   })
          },
 
-         onNVHSchemaInput(schema){
-            this.state.schemaNvh = schema
-            if(this.state.hasNewEntryTemplate){
-               this.updateStructureFromNVHSchema()
-            }
-            this.state.changed = true
-            this.refreshBtnSaveDisabled()
-         },
-
-         onNVHSchemaValidChange(isValid){
-            this.state.isCustomNVHSchemaValid = isValid
-            this.refreshBtnSaveDisabled()
-         },
-
          onTabChange(evt){
             this.changeTab(evt.target.value)
          },
@@ -189,7 +182,7 @@
          changeTab(newTab, updateStructure=true){
             if(updateStructure){
                if(this.state.tab == "dmlex"){
-                  this.structureStore.setConfigStructure(this.state.DMLexSchema)
+                  this.structureStore.setConfigStructure(this.state.DMLexStructure)
                } else if(this.state.tab == "custom"){
                   this.structureStore.setConfigStructure(this.structureStore.nvhToStructure(this.state.schemaNvh))
                }
@@ -205,21 +198,6 @@
             if(newTab == "custom"){
                this.refreshCustomTextFields()
             }
-         },
-
-         onHasNewEntryTemplateChange(){
-            if(!this.state.hasNewEntryTemplate){ // now hasNewEntryTemplat=false, so it will be changed to true in this function
-               if(this.state.tab == "custom"){
-                  this.updateStructureFromNVHSchema()
-               }
-               if(!this.structureStore.data.newEntryTemplate){
-                  this.structureStore.setNewEntryTemplate({
-                     defaultElements: {},
-                     defaultValues: {}
-                  })
-               }
-            }
-            this.update({hasNewEntryTemplate: !this.state.hasNewEntryTemplate})
          },
 
          onTabRadioMouseDown(evt){
@@ -242,11 +220,7 @@
                            }
                         }, {
                            label: "discard changes",
-                           onClick: function(tab, dialog, modal){
-                              this.structureStore.setConfigStructure(this.state.originalStructure)
-                              this.changeTab(tab, false)
-                              modal.close()
-                           }.bind(this, tab)
+                           onClick: this.discardChanges.bind(this, tab)
                         }, {
                            label: "save changes",
                            onClick: function(tab, dialog, modal){
@@ -272,11 +246,7 @@
                            onClick: window.modal.close
                         }, {
                            label: "discard changes",
-                           onClick: function(tab, dialog, modal){
-                              this.structureStore.setConfigStructure(this.state.originalStructure)
-                              this.changeTab(tab, false)
-                              modal.close()
-                           }.bind(this, tab)
+                           onClick: this.discardChanges.bind(this, tab)
                         }]
                      })
                   }
@@ -286,19 +256,30 @@
             }
          },
 
-         onDMLexChange(dmlex_modules, xlingual_langs, etymology_langs){
-            this.state.dmlex_modules = dmlex_modules
-            this.state.xlingual_langs = xlingual_langs
-            this.state.etymology_langs = etymology_langs
-            this.state.changed = !window.objectEquals(dmlex_modules, this.state.originalDmlex_modules)
-                  || !window.objectEquals(xlingual_langs, this.state.originalXlingual_langs)
-                  || !window.objectEquals(etymology_langs, this.state.originalEtymology_langs)
-            this.refreshBtnSaveDisabled()
+         onHasNewEntryTemplateChange(){
+            if(!this.state.hasNewEntryTemplate){ // now hasNewEntryTemplat=false, so it will be changed to true in this function
+               if(this.state.tab == "dmlex"){
+                  this.structureStore.setConfigStructure(this.state.DMLexStructure)
+               } else if(this.state.tab == "custom"){
+                  this.updateStructureFromNvhSchema()
+               }
+               if(!this.structureStore.data.newEntryTemplate){
+                  this.structureStore.setNewEntryTemplate({
+                     defaultElements: {},
+                     defaultValues: {}
+                  })
+               }
+            }
+            this.update({hasNewEntryTemplate: !this.state.hasNewEntryTemplate})
          },
 
-         onDMLexSchemaChange(DMLexSchema){
-            this.state.DMLexSchema = DMLexSchema
-            this.structureStore.setConfigStructure(this.state.DMLexSchema)
+         onNvhSchemaChange(DMLexStructure, DMLexSettings){
+            this.state.DMLexStructure = DMLexStructure
+            this.state.DMLexSettings = DMLexSettings
+            this.state.changed = !window.objectEquals(DMLexSettings, this.state.originalDmlexSettings)
+            if(this.state.hasNewEntryTemplate){
+               this.structureStore.setConfigStructure(DMLexStructure)
+            }
             this.update()
             this.refreshBtnSaveDisabled()
          },
@@ -308,10 +289,24 @@
             this.refreshBtnSaveDisabled()
          },
 
-         onLoadSampleNVHSchemaClick() {
+         onNvhSchemaInput(schema){
+            this.state.schemaNvh = schema
+            if(this.state.hasNewEntryTemplate){
+               this.updateStructureFromNvhSchema()
+            }
+            this.state.changed = true
+            this.refreshBtnSaveDisabled()
+         },
+
+         onNvhSchemaValidChange(isValid){
+            this.state.isCustomNvhSchemaValid = isValid
+            this.refreshBtnSaveDisabled()
+         },
+
+         onLoadSampleNvhSchemaClick() {
             this.state.schemaNvh = `entry:\n  headword:\n  partOfSpeech: ?\n  sense: +\n    definition: ?\n    example: *\n  `
             this.update()
-            this.state.isCustomNVHSchemaValid = true
+            this.state.isCustomNvhSchemaValid = true
             this.refreshCustomTextFields()
             this.refreshBtnSaveDisabled()
          },
@@ -326,7 +321,17 @@
             })
          },
 
-         updateStructureFromNVHSchema(){
+         discardChanges(tab, dialog, modal){
+            if(this.state.tab == "dmlex"){
+               this.state.DMLexSettings =  window.deepCopy(this.state.originalDmlexSettings)
+               this.state.DMLexStructure =  window.deepCopy(this.state.DMLexStructure)
+            }
+            this.structureStore.setConfigStructure(this.state.originalStructure)
+            this.changeTab(tab, false)
+            modal.close()
+         },
+
+         updateStructureFromNvhSchema(){
             try{
                let structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
                this.structureStore.setConfigStructure(structure)
@@ -338,37 +343,26 @@
             this.update({isBusy: true})
             let structure
             if(this.state.tab == "dmlex"){
-               structure = {
-                  elements: this.state.DMLexSchema.elements,
-                  root: this.state.DMLexSchema.root
-               }
+               structure = this.state.DMLexStructure
             } else if(this.state.tab == "advanced"){
-               structure = {
-                  elements: this.structureStore.data.structure.elements,
-                  root: this.structureStore.data.structure.root
-               }
+               structure = this.structureStore.data.structure
             } else if(this.state.tab == "custom"){
                structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
             }
             let data = {
                jsonSchema: Object.assign({
                   tab: this.state.tab,
-                  dmlex_modules: this.state.dmlex_modules,
-                  xlingual_langs: this.state.xlingual_langs,
-                  etymology_langs: this.state.etymology_langsm,
+                  DMLexSettings: this.state.DMLexSettings,
                   hasNewEntryTemplate: this.state.hasNewEntryTemplate,
                   newEntryTemplate: this.deleteInvalidElementsInNewEntryTemplate(structure)
                }, structure)
             }
-
             return this.store.updateDictionaryConfig("structure", data)
                   .done(response => {
                      this.state.brokenConfig = null
                      this.state.changed = false
                      this.state.originalStructure = {...response.content.jsonSchema}
-                     this.state.originalDmlex_modules = [...this.state.dmlex_modules]
-                     this.state.originalXlingual_langs = [...this.state.xlingual_langs]
-                     this.state.originalEtymology_langs = [...this.state.etymology_langs]
+                     this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
                   })
                   .always(() => this.update({isBusy: false}))
          },
@@ -394,13 +388,13 @@
 
          isSchemaValid(){
             if(this.state.tab == "dmlex"){
-               return !!this.state.DMLexSchema
+               return true
             } else if(this.state.tab == "advanced"){
                return !!this.structureStore.data.structure.root
                            && !this.structureStore.data.editedElement
             } else if(this.state.tab == "custom"){
                return !!this.state.schemaNvh
-                     && this.state.isCustomNVHSchemaValid
+                     && this.state.isCustomNvhSchemaValid
             }
          },
 

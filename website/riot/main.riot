@@ -8,7 +8,8 @@
       <div if={!state.isLoading }
             is={ state.page }
             class="container content wideContainer row"
-            {...state.pageProps}></div>
+            {...state.pageProps}
+            step={state.pageProps.step}></div>
    </div>
    <app-footer/>
 
@@ -76,8 +77,11 @@
             route('/user-profile', () => {
                this.goTo('user-profile')
             })
-            route('/make', () => {
-               this.goTo('new-dictionary')
+            route('make', () => {
+               this.goTo('new-dictionary', null, {step: "start"})
+            })
+            route('make/*', (step) => {
+               this.goTo('new-dictionary', null, {step: step})
             })
             route('projects/dashboard', () => {
                this.goTo('projects-dashboard')

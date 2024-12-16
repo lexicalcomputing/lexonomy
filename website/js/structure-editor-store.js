@@ -178,13 +178,13 @@ class StructureEditorStoreClass {
    }
 
    getNvh(){
-      return this.jsonToNvh(this.data.structure)
+      return this.jsonToNvh(this.data.structure.elements)
    }
 
-   jsonToNvh(structure){
+   jsonToNvh(elements){
       let ret = ""
       let elementToNvh = (elementPath, indent=0) => {
-         let element = structure.elements[elementPath]
+         let element = elements[elementPath]
          let count = ""
          let regex = ""
          let values = ""
@@ -221,7 +221,8 @@ class StructureEditorStoreClass {
          }, this)
          return rows.join("\n")
       }
-      return elementToNvh(structure.root)
+      let rootElement = Object.keys(elements).find(elementPath => !elementPath.includes("."))
+      return rootElement ? elementToNvh(rootElement) : ""
    }
 
    getAllAncestors(elementPath){
