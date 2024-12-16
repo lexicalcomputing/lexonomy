@@ -44,7 +44,7 @@ with open(os.path.join(currdir, 'version.txt')) as v_f:
     version = v_f.readline().strip()
 
 # serve static files
-@route('/<path:re:(furniture|customization|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.codemirror\.js|bundle\.css|riot|img|js|css|docs|version\.txt).*>')
+@route('/<path:re:(furniture|customization|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.codemirror\.js|bundle\.css|riot|img|js|css|docs|version\.txt|site\.webmanifest).*>')
 def server_static(path):
     return static_file(path, root="./")
 
