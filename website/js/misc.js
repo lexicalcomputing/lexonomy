@@ -307,6 +307,22 @@ window.objectEquals = (x, y) => {
    return true
 }
 
+window.deepCopy = obj => {
+   if (obj === null || typeof obj !== 'object') {
+      return obj
+   }
+   if (obj instanceof Date) {
+      return new Date(obj.getTime())
+   }
+   let copy = Array.isArray(obj) ? [] : {}
+   for (let key in obj) {
+      if (obj.hasOwnProperty(key)) {
+         copy[key] = window.deepCopy(obj[key])
+      }
+   }
+   return copy
+}
+
 window.debounce = (func, timeout = 300) => {
    let timer
    let f = function(...args){

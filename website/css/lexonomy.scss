@@ -170,6 +170,54 @@ table.striped thead tr{
    margin: 5px 0 10px 0;
 }
 
+.cardOptions{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 20px;
+   .cardOption{
+      width: 300px;
+      text-align: center;
+      cursor: pointer;
+      padding: 1.5rem;
+      background-color: #f5f5f5;
+      &:hover{
+         background-color: #e6e6e6;
+      }
+      i{
+         font-size: 3rem;
+         opacity: 0.3;
+      }
+   }
+   .cardOptionTitle{
+      font-size: 1.2rem;
+   }
+   .cardOptionDescription{
+      font-size: 0.9rem;
+   }
+}
+
+.elementWithCheckbox{
+   label{
+      text-transform: none;
+   }
+   span:before,
+   span:after,
+   .material-icons{
+      opacity: 0.2;
+   }
+   &:hover{
+      span:before,
+      span:after,
+      .material-icons{
+         opacity: 1;
+      }
+   }
+   input[checked] + span:before,
+   input[checked] + span:after{
+      opacity: 1!important;
+   }
+}
+
 /* flag in entry list  */
 .flagDropdown li{
    display: flex;

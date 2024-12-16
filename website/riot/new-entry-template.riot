@@ -1,11 +1,11 @@
 <new-entry-template>
-   <div each={(element, idx) in state.elementList}>
+   <div each={(element, idx) in getElementList()}>
       <i if={state.warnings.includes(element.path)}
             class="material-icons positionAbsolute orange-text tooltipped help"
             data-tooltip="The minimum number of element is set in the structure, so the element should be included in the new entry template.">
          warning
       </i>
-      <div class="entryRow displayInlineFlex alignCenter">
+      <div class="entryRow elementWithCheckbox displayInlineFlex alignCenter">
          <label style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
             <input type="checkbox"
                   checked={state.defaultElements[element.path] || element.name == props.root}
@@ -215,25 +215,6 @@
       }
       .entryRow{
          gap: 10px;
-         label{
-            text-transform: none;
-         }
-         span:before,
-         span:after,
-         .material-icons{
-            opacity: 0.2;
-         }
-         &:hover{
-            span:before,
-            span:after,
-            .material-icons{
-               opacity: 1;
-            }
-         }
-         input[checked] + span:before,
-         input[checked] + span:after{
-            opacity: 1!important;
-         }
       }
       .entryRow .elementDefaultValueInput{
          margin-bottom: 0;

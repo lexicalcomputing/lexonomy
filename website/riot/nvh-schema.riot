@@ -1,148 +1,146 @@
-<nvh-schema class="displayInlineFlex">
-   <div>
-      <h3>DMLex modules</h3>
-      <div class="availableModules displayFlex">
-         <div class="pl-4"
-               style="min-width: 350px;">
-            <label class="checkbox moduleName mt-2">
-               <input type="checkbox"
-                     checked="checked"
-                     disabled="disabled">
-               <span class="displayFlex alignCenter">
-                  Core
-                  <i class="moduleHelpIcon help help material-icons tooltipped"
-                        data-tooltip="DMLex Core allows you to model the basic entries-and-sense structure of a monolingual lexicographic resource.">help_outline</i>
+<nvh-schema class="displayFlex">
+   <div class="pb-8">
+      <h3>Entry components</h3>
+      <div class="pl-4"
+            style="min-width: 350px;">
+         <label class="checkbox moduleName mt-2">
+            <input type="checkbox"
+                  checked="checked"
+                  disabled="disabled">
+            <span class="displayFlex alignCenter">
+               Core
+               <i class="moduleHelpIcon help help material-icons tooltipped"
+                     data-tooltip="DMLex Core allows you to model the basic entries-and-sense structure of a monolingual lexicographic resource.">help_outline</i>
+            </span>
+         </label>
+         <label class="checkbox moduleName mt-2">
+            <input type="checkbox"
+                  checked="checked"
+                  disabled="disabled">
+            <span class="displayFlex alignCenter">
+               Controlled values
+               <i class="moduleHelpIcon help help material-icons tooltipped"
+                     data-tooltip="DMLex Controlled Values Module extends DMLex Core to represent inventories of look-up values to be used as part-of-speech tags, usage label tags and others.">help_outline</i>
+            </span>
+         </label>
+         <label class="checkbox moduleName mt-2">
+            <input type="checkbox"
+                  checked="checked"
+                  disabled="disabled">
+            <span class="displayFlex alignCenter">
+               Linking
+               <i class="moduleHelpIcon help help material-icons tooltipped"
+                     data-tooltip="DMLex Linking Module extends DMLex Core and allows you to model various kinds of relations between entries, senses and other objects, including semantic relations such as synonymy and antonymy and presentational relations such as subentries and subsenses, both within a single lexicographic resource and across multiple lexicographic resources.">help_outline</i>              </span>
+         </label>
+         <label class="checkbox moduleName mt-2">
+            <input type="checkbox"
+                  checked={state.modules.includes("xlingual")}
+                  name="xlingual"
+                  onchange={onModuleCheckboxChange.bind(this, "xlingual")}>
+            <span class="displayFlex alignCenter">
+               Crosslingual module
+               <i class="moduleHelpIcon help material-icons tooltipped"
+                     data-tooltip="DMLex Crosslingual Module extends DMLex Core to model bilingual and multilingual lexicographic resources.">help_outline</i>
+            </span>
+         </label>
+         <div id="xlingualSettings"
+               class="moduleSettings ml-12"
+               style={state.modules.includes("xlingual") ? '' : 'display: none;'}>
+            <div class="selectedLangs">
+               <span each={languageCode in state.xlingual_langs}
+                     class="chip">
+                  {store.getLanguageName(languageCode)}
+                  <i class="close material-icons"
+                     onclick={onRemoveLanguageClick.bind(this, languageCode)}>close</i>
                </span>
-            </label>
-            <label class="checkbox moduleName mt-2">
-               <input type="checkbox"
-                     checked="checked"
-                     disabled="disabled">
-               <span class="displayFlex alignCenter">
-                  Controlled values
-                  <i class="moduleHelpIcon help help material-icons tooltipped"
-                        data-tooltip="DMLex Controlled Values Module extends DMLex Core to represent inventories of look-up values to be used as part-of-speech tags, usage label tags and others.">help_outline</i>
-               </span>
-            </label>
-            <label class="checkbox moduleName mt-2">
-               <input type="checkbox"
-                     checked="checked"
-                     disabled="disabled">
-               <span class="displayFlex alignCenter">
-                  Linking
-                  <i class="moduleHelpIcon help help material-icons tooltipped"
-                        data-tooltip="DMLex Linking Module extends DMLex Core and allows you to model various kinds of relations between entries, senses and other objects, including semantic relations such as synonymy and antonymy and presentational relations such as subentries and subsenses, both within a single lexicographic resource and across multiple lexicographic resources.">help_outline</i>              </span>
-            </label>
-            <label class="checkbox moduleName mt-2">
-               <input type="checkbox"
-                     checked={state.modules.includes("xlingual")}
-                     name="xlingual"
-                     onchange={onModuleCheckboxChange.bind(this, "xlingual")}>
-               <span class="displayFlex alignCenter">
-                  Crosslingual module
-                  <i class="moduleHelpIcon help material-icons tooltipped"
-                        data-tooltip="DMLex Crosslingual Module extends DMLex Core to model bilingual and multilingual lexicographic resources.">help_outline</i>
-               </span>
-            </label>
-            <div id="xlingualSettings"
-                  class="moduleSettings ml-12"
-                  style={state.modules.includes("xlingual") ? '' : 'display: none;'}>
-               <div class="selectedLangs">
-                  <span each={languageCode in state.xlingual_langs}
-                        class="chip">
-                     {store.getLanguageName(languageCode)}
-                     <i class="close material-icons"
-                        onclick={onRemoveLanguageClick.bind(this, languageCode)}>close</i>
-                  </span>
-               </div>
-               <div class="input-field">
-                  <input type="text"
-                        id="language"
-                        autocomplete="off">
-                  <label>Add translation language</label>
-               </div>
             </div>
-            <label class="checkbox moduleName mt-2">
-               <input type="checkbox"
-                     checked={state.modules.includes("annotation")}
-                     name="annotation"
-                     onchange={onModuleCheckboxChange.bind(this, "annotation")}>
-               <span class="displayFlex alignCenter">
-                  Annotation module
-                  <i class="moduleHelpIcon help material-icons tooltipped"
-                              data-tooltip="DMLex Annotation Module extends DMLex Core to allow the modelling of inline markup on various objects such as example sentences, including the modelling of collocations and corpus patterns.">help_outline</i>
-               </span>
-            </label>
-            <label class="checkbox moduleName mt-2">
-               <input type="checkbox"
-                     checked={state.modules.includes("etymology")}
-                     name="etymology"
-                     onchange={onModuleCheckboxChange.bind(this, "etymology")}>
-               <span class="displayFlex alignCenter">
-                  Etymology module
-                  <i class="moduleHelpIcon help material-icons tooltipped"
-                              data-tooltip="DMLex Etymology Module extends DMLex Core to allow the modelling of etymological information in dictionaries.">help_outline</i>
-               </span>
-            </label>
-            <div id="etymologySettings"
-                  class="moduleSettings ml-12"
-                  style={state.modules.includes("etymology") ? '' : 'display: none;'}>
-               <div class="selectedLangs">
-                  <span each={language in state.etymology_langs}
-                        class="chip">
-                     {language}
-                     <i class="close material-icons"
-                        onclick={onRemoveEtymologyLanguageClick.bind(this, language)}>close</i>
-                  </span>
-               </div>
-               <div class="input-field">
-                  <input type="text"
-                        id="etymologyLanguage"
-                        autocomplete="off"
-                        onkeyup={onEtymologyLanguageKeyUp}>
-                  <label>Add etymon language</label>
-                  <span if={!state.isEtymologyLanguageValid}
-                        class="helper-text red-text">Invalid language. Allowed characters: a-z, A-Z, 0-9, -</span>
-                  <span class="helper-text">Add language and hit enter.</span>
-               </div>
-            </div>
-            <div class="borderTop pt-6 mt-6">
-               <label class="displayBlock">
-                  <input type="checkbox"
-                        checked={state.showFinalEntryStructure}
-                        onchange={onShowFinalEntryStructureChanged}>
-                     <span>
-                        Show final entry structure
-                     </span>
-               </label>
+            <div class="input-field">
+               <input type="text"
+                     id="language"
+                     autocomplete="off">
+               <label>Add translation language</label>
             </div>
          </div>
-
-         <div if={state.showFinalEntryStructure}
-               class="modulesArrow">
-            <i class="material-icons">chevron_right</i>
+         <label class="checkbox moduleName mt-2">
+            <input type="checkbox"
+                  checked={state.modules.includes("annotation")}
+                  name="annotation"
+                  onchange={onModuleCheckboxChange.bind(this, "annotation")}>
+            <span class="displayFlex alignCenter">
+               Annotation module
+               <i class="moduleHelpIcon help material-icons tooltipped"
+                           data-tooltip="DMLex Annotation Module extends DMLex Core to allow the modelling of inline markup on various objects such as example sentences, including the modelling of collocations and corpus patterns.">help_outline</i>
+            </span>
+         </label>
+         <label class="checkbox moduleName mt-2">
+            <input type="checkbox"
+                  checked={state.modules.includes("etymology")}
+                  name="etymology"
+                  onchange={onModuleCheckboxChange.bind(this, "etymology")}>
+            <span class="displayFlex alignCenter">
+               Etymology module
+               <i class="moduleHelpIcon help material-icons tooltipped"
+                           data-tooltip="DMLex Etymology Module extends DMLex Core to allow the modelling of etymological information in dictionaries.">help_outline</i>
+            </span>
+         </label>
+         <div id="etymologySettings"
+               class="moduleSettings ml-12"
+               style={state.modules.includes("etymology") ? '' : 'display: none;'}>
+            <div class="selectedLangs">
+               <span each={language in state.etymology_langs}
+                     class="chip">
+                  {language}
+                  <i class="close material-icons"
+                     onclick={onRemoveEtymologyLanguageClick.bind(this, language)}>close</i>
+               </span>
+            </div>
+            <div class="input-field">
+               <input type="text"
+                     id="etymologyLanguage"
+                     autocomplete="off"
+                     onkeyup={onEtymologyLanguageKeyUp}>
+               <label>Add etymon language</label>
+               <span if={!state.isEtymologyLanguageValid}
+                     class="helper-text red-text">Invalid language. Allowed characters: a-z, A-Z, 0-9, -</span>
+               <span class="helper-text">Add language and hit enter.</span>
+            </div>
          </div>
       </div>
    </div>
 
-   <div if={state.showFinalEntryStructure}
-         class="finalStructure positionRelative pl-8">
-      <h3>Final entry structure</h3>
-      <loading-overlay if={state.isLoading}/>
-      <div class="pl-4"
-            style="min-width: 250px;">
-         <pre if={state.schema}><!--
-         --><div each={(row, idx) in state.schema.split("\n")}
-                  class="displayFlex"
-                  style="color: {window.nvhStore.getColorByIndex(idx)};">
-               {row.split(":")[0]}
-               <i class="grey-text inlineBlock material-icons ml-2 tiny verticalMiddle help tooltipped"
-                     data-tooltip="{state.elementDescription[row.split(":")[0].trim()]}">
-                  help_outline
-               </i>
-            </div><!--
-      --></pre>
+   <div class="borderLeft entryElements positionRelative pl-8 pb-8">
+      <div class="switch">
+         <label>
+            <input type="checkbox"
+                  checked={state.showMoreSettings}
+                  onchange={onShowMoreSettingsChanged}>
+            <span class="lever"
+                  style="margin-left: 0;"></span>
+            Choose entry elements
+         </label>
       </div>
+      <template if={state.showMoreSettings}>
+         <loading-overlay if={state.isLoading}/>
+         <div class="ml-4 mt-4">
+            <div each={(element, idx) in state.fullElementList}>
+               <div class="entryLine elementWithCheckbox displayInlineFlex alignCenter">
+                  <label style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
+                     <input type="checkbox"
+                           checked={state.selectedElements.has(element.path) || element.name == state.root}
+                           disabled={element.name == state.root}
+                           onclick={onElementCheckboxChanged.bind(this, element.path)} />
+                     <span style="color: {window.nvhStore.getColorByIndex(idx)};">
+                        {element.name}
+                     </span>
+                     <i class="grey-text inlineBlock material-icons ml-2 tiny verticalMiddle help tooltipped"
+                           data-tooltip="{state.elementDescription[element.name]}">
+                        help_outline
+                     </i>
+                  </label>
+               </div>
+            </div>
+         </div>
+      </template>
    </div>
 
 
@@ -150,19 +148,39 @@
        export default {
          state: {
             isLoading: true,
+            fullElementList: [],
             modules: [],
             xlingual_langs: [],
             etymology_langs: [],
             isEtymologyLanguageValid: true,
             elementDescription: null,
             schema: null,
-            showFinalEntryStructure: false
+            showMoreSettings: false,
+            selectedElements: null
          },
 
          onBeforeMount(){
             this.state.modules = this.props.modules || []
             this.state.xlingual_langs = this.props.xlingual_langs || []
             this.state.etymology_langs = this.props.etymology_langs || []
+            this.state.showMoreSettings = this.props.showMoreSettings
+            this.state.selectedElements = new Set(this.props.selectedElements)
+         },
+
+         onElementCheckboxChanged(elementPath, evt){
+            if(this.state.selectedElements.has(elementPath)){
+               this.state.selectedElements.delete(elementPath)
+               this.state.selectedElements.forEach(path => {
+                  // uncheck all child elements
+                  if(path.startsWith(elementPath)){
+                     this.state.selectedElements.delete(path)
+                  }
+               })
+            } else {
+               this.selectElementAndItsParents(elementPath)
+            }
+            this.update()
+            this.callOnChange()
          },
 
          onMounted(){
@@ -226,12 +244,72 @@
             }
          },
 
-         onShowFinalEntryStructureChanged(){
-            this.update({showFinalEntryStructure: !this.state.showFinalEntryStructure})
+         onShowMoreSettingsChanged(){
+            this.state.showMoreSettings = !this.state.showMoreSettings
+            if(this.state.showMoreSettings){
+               this.state.fullElementList.forEach(element => {
+                  this.state.selectedElements.add(element.path)
+               })
+            }
+            this.update()
+            this.callOnChange()
          },
 
          callOnChange(){
-            this.props.onChange && this.props.onChange(this.state.modules, this.state.xlingual_langs, this.state.etymology_langs)
+            if(this.props.onChange){
+               let elements
+               if(this.state.showMoreSettings){
+                  elements = {}
+                  this.state.fullElementList
+                        .filter(element => element.path == this.props.root || this.state.selectedElements.has(element.path))
+                        .forEach(element => {
+                           let copy = Object.assign({}, element)
+                           if(copy.children){
+                              copy.children = copy.children.filter(childPath => this.state.selectedElements.has(childPath))
+                           }
+                           elements[copy.path] = copy
+                        })
+               } else {
+                  elements = this.state.elements
+               }
+               this.props.onChange({
+                  elements: elements,
+                  root: this.state.root
+               }, {
+                  modules: this.state.modules,
+                  xlingual_langs: this.state.xlingual_langs,
+                  etymology_langs: this.state.etymology_langs,
+                  showMoreSettings: this.state.showMoreSettings,
+                  selectedElements: [...this.state.selectedElements]  // Set to Array
+               })
+            }
+         },
+
+         selectElementAndItsParents(elementPath){
+            this.state.selectedElements.add(elementPath)
+            let path = elementPath
+            while(path){
+               // check all parent elements
+               this.state.selectedElements.add(path)
+               path = path.split(".").slice(0,-1).join(".")
+            }
+         },
+
+         refreshFullElementList(){
+            getElementList = (elementPath, list=[]) => {
+               let element = this.state.elements[elementPath]
+               if(element){
+                  list.push(element)
+                  element.children?.forEach(child => {
+                     getElementList(child, list)
+                  })
+               }
+               return list
+            }
+            this.state.fullElementList = []
+            if(this.state.elements){
+               this.state.fullElementList = getElementList(this.state.root)
+            }
          },
 
          initLanguageAutocomplete(){
@@ -265,18 +343,32 @@
             }
             this.state.loadSchemaRequest = this.store.DMLexToSchema(modules, this.state.xlingual_langs, this.state.etymology_langs)
                   .done(response => {
+                     let oldElementList = this.state.elements ? Object.keys(this.state.elements) : null
                      this.state.elementDescription = response.desc_dict
                      this.state.elements = response.elements
                      this.state.root = response.root
-                     this.state.schema = window.structureEditorStore.jsonToNvh(response)
+                     Object.entries(this.state.elements).forEach(([path, element]) => {
+                        element.path = path
+                     })
+                     if(this.state.showMoreSettings && oldElementList){
+                        // add new elements to selectedElements list
+                        Object.keys(this.state.elements).forEach(elementPath => {
+                           if(!oldElementList.includes(elementPath)){
+                              this.selectElementAndItsParents(elementPath)
+                           }
+                        })
+                        // remove deleted elements from selectedElements list
+                        let removedKeys = Object.keys(this.state.selectedElements).forEach(elementPath => {
+                           if(!this.state.elements[elementPath]){
+                              this.state.selectedElements.delete(elementPat)
+                           }
+                        })
+                     }
+                     this.refreshFullElementList()
                   })
                   .always(() => {
                      this.update({isLoading: false})
-                     this.props.onSchemaChange && this.props.onSchemaChange({
-                        elements: this.state.elements,
-                        root: this.state.root,
-                        schema: this.state.schema
-                     })
+                     this.callOnChange()
                   })
          }
       }
@@ -285,16 +377,6 @@
    <style type="scss">
       :host{
          min-height: 200px;
-      }
-
-      .modulesArrow{
-         display: flex;
-         align-items: center;
-         gap: 20px;
-         i{
-            font-size: 100px;
-            opacity: 0.1
-         }
       }
       .moduleName{
          display: flex;
@@ -312,7 +394,7 @@
             vertical-align: bottom;
          }
       }
-      .finalStructure{
+      .entryElements{
          .overlay{
             background-color: rgba(0, 0, 0, 0)
          }
@@ -320,5 +402,15 @@
       .selectedLangs{
          max-width: 300px;
       }
+      .entryLine{
+         &:not(:hover){
+            input[type="checkbox"]:not(:checked){
+               & + span{
+                  color: #bbbbbb !important
+               }
+            }
+         }
+      }
+
    </style>
 </nvh-schema>
