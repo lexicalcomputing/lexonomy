@@ -61,13 +61,16 @@
       </div>
    </div>
    <div class="mb-12">
-      <label class="checkbox">
-         <input type="checkbox"
-               id="custom_css"
+      <div class="switch">
+         <label>
+            <input id="custom_css"
+               type="checkbox"
                checked={state.useCustomCss}
-               onchange={onUseCustomCssClick}/>
-         <span>Add custom style</span>
-      </label>
+               onchange={onUseCustomCssClick} >
+            <span class="lever"></span>
+            Add custom style
+         </label>
+      </div>
       <div id="csEditorWrapper"
             class="cssCode input-field ml-8"
             style="display: none;">

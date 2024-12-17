@@ -26,17 +26,19 @@
                   class="material-icons rightIcon grey-text clickable">close</i>
             </span>
 
-            <label id="favoriteToggleWrapper"
-                  class="onlyFavoritesChbWrapper"
-                  class="checkbox"
+            <div if={authData.authorized}
+                  id="favoriteToggleWrapper"
+                  class="switch onlyFavoritesChbWrapper"
                   style="display: none;">
-               <input id="onlyFavoritesChb"
+               <label>
+                  <input id="onlyFavoritesChb"
                      type="checkbox"
                      checked={state.showOnlyFavorites}
-                     onclick={onOnlyFavoritesClick}/>
-               <span>Only favorites</span>
-            </label>
-
+                     onchange={onOnlyFavoritesClick} >
+                  <span class="lever"></span>
+                  Only favorites
+               </label>
+            </div>
          </div>
          <table if={state.visibleDictionaries.length}
                class="highlight">
@@ -57,7 +59,7 @@
                      key={dict.id}>
                   <td>
                      <label if={dict.currentUserCanDelete}
-                              class="checkbox">
+                           class="checkbox">
                         <input id="chb_{idx}"
                               type="checkbox"
                               idx={idx}
