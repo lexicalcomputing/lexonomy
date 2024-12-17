@@ -213,16 +213,23 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    cursor: default;
 }
 
-.switch label input[type=checkbox]{
-   &:checked{
-      &+.lever{
-         background-color: rgba(0, 0, 0, 0.38);
-         &:after{
-            background-color: #000;
+.switch {
+   label {
+      input[type=checkbox]{
+         &:checked{
+            &+.lever{
+               background-color: rgba(0, 0, 0, 0.38);
+               &:after{
+                  background-color: #000;
+               }
+            }
+            &:not(:disabled) ~ .lever:active::before{
+               background-color: rgba(0,0,0,0.08)
+            }
          }
       }
-      &:not(:disabled) ~ .lever:active::before{
-         background-color: rgba(0,0,0,0.08)
+      .lever{
+         margin-left: 0;
       }
    }
 }

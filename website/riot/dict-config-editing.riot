@@ -5,12 +5,16 @@
    <p>
       The built-in entry editor can be replaced by a custom one by defining javascript functions.
    </p>
-   <label class="checkbox">
-      <input type="checkbox"
+   <div class="switch">
+      <label>
+         <input id="custom_css"
+            type="checkbox"
             checked={state.data.useOwnEditor}
-            onclick={onUseOwnEditorClick}/>
-      <span>Use own editor</span>
-   </label>
+            onchange={onUseOwnEditorClick} >
+         <span class="lever"></span>
+         Use own editor
+      </label>
+   </div>
    <br><br>
 
    <div if={!state.isLoadingEditor}

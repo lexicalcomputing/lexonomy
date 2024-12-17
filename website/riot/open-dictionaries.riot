@@ -29,17 +29,19 @@
             </select>
             <label>Language</label>
          </div>
-         <label if={authData.authorized}
+         <div if={authData.authorized}
                id="favoriteToggleWrapper"
-               class="onlyFavoritesChbWrapper"
-               class="checkbox"
-               style="display: none;"}>
-            <input id="onlyFavoritesChb"
+               class="switch onlyFavoritesChbWrapper"
+               style="display: none;">
+            <label>
+               <input id="onlyFavoritesChb"
                   type="checkbox"
                   checked={state.showOnlyFavorites}
-                  onclick={onOnlyFavoritesClick}/>
-            <span>Only favorites</span>
-         </label>
+                  onchange={onOnlyFavoritesClick} >
+               <span class="lever"></span>
+               Only favorites
+            </label>
+         </div>
       </div>
       <div if={!state.visibleDictionaries.length}
             class="center"
