@@ -966,7 +966,7 @@ class StoreClass {
       return window.connection.post({
          url: `${window.API_URL}changepwd.json`,
          data: {
-            ske_apiKey: ske_apiKey
+            password: password
          },
          failMessage: "The password could not be changed.",
          successMessage: "The password was changed."
