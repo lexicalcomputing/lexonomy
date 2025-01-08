@@ -13,7 +13,7 @@ from nvh import nvh
 # Unit tests
 class TestQueries(unittest.TestCase):
     def setUp(self):
-        self.import_nvh = nvh.parse_file(fileinput.input('example_nvh/to_clean.nvh'))
+        self.import_nvh = nvh.parse_file(fileinput.input('example_nvh/to_clean.nvh', encoding="utf-8"))
 
     def test_rm_duplicates(self):
         log = io.StringIO()
@@ -27,10 +27,10 @@ class TestQueries(unittest.TestCase):
         log = io.StringIO()
         self.import_nvh.rename_nodes(rename_dict, out=log)
         log.seek(0)
-        self.assertEqual(log.read(), 'WARNING: renaming node name to preserve uniqueness lemma -> sense_lemma\n' 
-                                     'WARNING: renaming node name to preserve uniqueness flag -> image_flag\n' 
-                                     'WARNING: renaming node name to preserve uniqueness quality -> example_quality\n' 
-                                     'WARNING: renaming node name to preserve uniqueness source -> lang_source\n' 
+        self.assertEqual(log.read(), 'WARNING: renaming node name to preserve uniqueness lemma -> sense_lemma\n'
+                                     'WARNING: renaming node name to preserve uniqueness flag -> image_flag\n'
+                                     'WARNING: renaming node name to preserve uniqueness quality -> example_quality\n'
+                                     'WARNING: renaming node name to preserve uniqueness source -> lang_source\n'
                                      'WARNING: renaming node name to preserve uniqueness flag -> lang_flag\n')
 
 if __name__ == '__main__':

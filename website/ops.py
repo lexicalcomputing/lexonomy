@@ -35,7 +35,7 @@ for datadir in ["dicts", "uploads", "sqlite_tmp"]:
     pathlib.Path(os.path.join(siteconfig["dataDir"], datadir)).mkdir(parents=True, exist_ok=True)
 os.environ["SQLITE_TMPDIR"] = os.path.join(siteconfig["dataDir"], "sqlite_tmp")
 
-with open(os.path.join(currdir, 'version.txt')) as v_f:
+with open(os.path.join(currdir, 'version.txt'), encoding="utf8") as v_f:
     version = v_f.readline().strip()
 
 DEFAULT_ENTRY_LIMIT = 5000
@@ -48,7 +48,6 @@ defaultDictConfig = {"editing": {},
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
-phases_re = re.compile('^#\s+phases\s*:\s*(.*?)$')
 
 # db management
 def getDB(dictID):
@@ -109,7 +108,7 @@ def readDictConfigs(dictDB):
     # user access rights form 'user_dict' table
     configs['users'] = {}
     c1 = dictDB.execute("PRAGMA database_list")
-    dictID = c1.fetchone()['file'].strip().split('/')[-1][:-7]
+    dictID = os.path.basename(c1.fetchone()['file'])[:-7]
 
     conn = getMainDB()
     c2 = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (dictID,))
@@ -193,7 +192,7 @@ def verifyLogin(email, sessionkey):
     now = datetime.datetime.utcnow()
     yesterday = now - datetime.timedelta(days=1)
     email = email.lower()
-    c = conn.execute("select email, ske_apiKey, ske_username, apiKey, consent, is_manager from users where email=? and sessionKey=? and sessionLast>=?", 
+    c = conn.execute("select email, ske_apiKey, ske_username, apiKey, consent, is_manager from users where email=? and sessionKey=? and sessionLast>=?",
                      (email, sessionkey, yesterday))
     user = c.fetchone()
     if not user:
@@ -233,7 +232,7 @@ def verifyLoginAndProjectAccess(email, sessionkey):
     return ret, configs
 
 def getDmlLexSchemaItems(modules, xlingual_langs, linking_relations, etymology_langs):
-    with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r') as f:
+    with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r', encoding="utf8") as f:
         result, desc_dict = dmlex2schema.get_dmlex_schema(f, "entry", modules, xlingual_langs, linking_relations, etymology_langs)
         schema = []
         used_modules = set()
@@ -657,10 +656,10 @@ def checkDictExists(dictID):
 
 def initDict(dictID, title, lang, blurb, email, dmlex=False):
     if dmlex:
-        with open(currdir + "/dictTemplates/dmlex.sqlite.schema", 'r') as f:
+        with open(currdir + "/dictTemplates/dmlex.sqlite.schema", 'r', encoding="utf8") as f:
             sql_schema = f.read()
     else:
-        with open(currdir + "/dictTemplates/general.sqlite.schema", 'r') as f:
+        with open(currdir + "/dictTemplates/general.sqlite.schema", 'r', encoding="utf8") as f:
             sql_schema = f.read()
 
     conn = sqlite3.connect("file:" + os.path.join(siteconfig["dataDir"], "dicts/" + dictID) + ".sqlite?modeof=" + os.path.join(siteconfig["dataDir"], "dicts/"), uri=True)
@@ -708,7 +707,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
 
         # DICTIONARY FORMATTING
         formatting = {}
-        with open(currdir + "/dictTemplates/styles.json", 'r') as f:
+        with open(currdir + "/dictTemplates/styles.json", 'r', encoding="utf-8") as f:
             styles = json.loads(f.read())
             for key in structure['elements'].keys():
                 if styles.get(key):
@@ -719,7 +718,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
 
         # ADD EXAMPLES
         if dmlex and addExamples:
-            with open("dictTemplates/dmlex.entry.example.nvh", 'r') as f:
+            with open("dictTemplates/dmlex.entry.example.nvh", 'r', encoding="utf8") as f:
                 examples = filter_nodes(nvh2json(f.read()), structure['elements'].keys())
             for idx, example in enumerate(examples):
                 dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, 'entry', example["nvh"], json.dumps(example['json']), example["title"], example["sortkey"], 0, 0, 0))
@@ -735,7 +734,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
 
     if bottle_file_object:
         err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, bottle_upload_obj=bottle_file_object)
-        return {'url': dictID, 'success':True, 'upload_error': err, 
+        return {'url': dictID, 'success':True, 'upload_error': err,
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
     return {'url': dictID, 'success':True, 'error': ''}
@@ -883,7 +882,7 @@ def moveDict(oldID, newID):
 def getDoc(docID):
     if os.path.isfile("docs/"+docID+".md"):
         doc = {"id": docID, "title":"", "html": ""}
-        html = markdown.markdown(open("docs/"+docID+".md").read())
+        html = markdown.markdown(open("docs/"+docID+".md", encoding="utf8").read())
         title = re.search('<h1>([^<]*)</h1>', html)
         if title:
             doc["title"] = re.sub('<\/?h1>','', title.group(0))
@@ -1481,7 +1480,7 @@ def getImportProgress(file_path):
         warnings = []
         progress = {}
         finished = False
-        with open(file_path + ".log", "r") as log_f:
+        with open(file_path + ".log", "r", encoding="utf8") as log_f:
             for line in log_f:
                 prg = done_re.match(line)
                 warn = waring_re.match(line)
@@ -1519,8 +1518,8 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     file_path =os.path.join(save_path, bottle_upload_obj.filename)
     bottle_upload_obj.save(file_path)
 
-    logfile_f = open(file_path + ".log", "w")
-    dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
+    logfile_f = open(file_path + ".log", "w", encoding="utf8")
+    dbpath = os.path.join(siteconfig["dataDir"], "dicts", dictID+".sqlite")
 
     params = []
     if deduplicate:
@@ -1530,7 +1529,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     if purge_all:
         params.append('-pp')
 
-    subprocess.Popen([currdir + "/import2dict.py", dbpath, file_path, email, hwNode] + params,
+    subprocess.Popen([sys.executable, os.path.join(currdir, "import2dict.py"), dbpath, file_path, email, hwNode] + params,
                       stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
     return '', "Import started. You may close the window, import will run in the background. Please wait...", file_path
 
@@ -2311,9 +2310,9 @@ def autoImage(dictDB, dictID, configs, addElem, addNumber):
     c = dictDB.execute("INSERT INTO bgjobs (type, data) VALUES ('autoimage', 'autoimage')")
     dictDB.commit()
     jobid = c.lastrowid
-    errfile = open("/tmp/autoImage-%s.err" % (dictID), "w")
-    outfile = open("/tmp/autoImage-%s.out" % (dictID), "w")
-    bgjob = subprocess.Popen(['adminscripts/autoImage.py', siteconfig["dataDir"], dictID, addElem, str(addNumber), str(jobid)],
+    errfile = open(os.path.join(tempfile.gettempdir(), "autoImage-%s.err" % (dictID)), "w", encoding="utf8")
+    outfile = open(os.path.join(tempfile.gettempdir(), "autoImage-%s.out" % (dictID)), "w", encoding="utf8")
+    bgjob = subprocess.Popen([sys.executable. os.path.join('adminscripts', 'autoImage.py'), siteconfig["dataDir"], dictID, addElem, str(addNumber), str(jobid)],
         start_new_session=True, close_fds=True, stderr=errfile, stdout=outfile, stdin=subprocess.DEVNULL)
     dictDB.execute("UPDATE bgjobs SET pid=? WHERE id=?", (bgjob.pid, jobid))
     dictDB.commit()
@@ -2364,7 +2363,7 @@ def getNAISCstatus(dictDB, dictID, otherdictID, bgjob):
 
 def autoImageStatus(dictDB, dictID, bgjob):
     try:
-        out = open("/tmp/autoImage-%s.out" % (dictID))
+        out = open(os.path.join(tempfile.gettempdir(), "autoImage-%s.out" %(dictID)), encoding="utf8")
     except:
         return None
     if "COMPLETED\n" in out.readlines():
@@ -2445,7 +2444,7 @@ def changeFavDict(userEmail, dictID, status):
 
 def get_iso639_1():
     codes = []
-    for line in open("libs/iso-639-3.tab").readlines():
+    for line in open("libs/iso-639-3.tab", encoding="utf8").readlines():
         la = line.split("\t")
         if la[3] != "" and la[3] != "Part1":
             codes.append({'code':la[3], 'code3':la[1], 'lang':la[6]})
