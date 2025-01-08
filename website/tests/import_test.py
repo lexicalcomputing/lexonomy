@@ -6,7 +6,8 @@ import sys
 import config
 import requests
 import unittest
-sys.path.append('../')
+# Append the parent directory to the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -81,7 +82,7 @@ class TestImportXML(unittest.TestCase):
         cls.cookies = {"email":r1.json()['email'], 'sessionkey':r1.json()['sessionkey']}
         cls.dicID = 'test_import_xml'
         cls.upload_file_path = ''
-    
+
     @classmethod
     def update_upload_file_path(cls, value):
         cls.upload_file_path = value
@@ -118,7 +119,7 @@ class TestImportXML(unittest.TestCase):
         self.assertEqual(r.json()['total'], 3)
 
     def test_4(self):
-        r = requests.post(url=self.website + '/' + self.dicID + "/destroy.json", 
+        r = requests.post(url=self.website + '/' + self.dicID + "/destroy.json",
                           headers=self.headers, cookies=self.cookies)
         self.assertEqual(r.json()['success'], True)
 

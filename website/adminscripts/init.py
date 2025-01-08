@@ -18,7 +18,7 @@ conn = sqlite3.connect(path)
 print("Connected to database: %s" % path)
 
 if siteconfig.get("dbSchemaFile") != "":
-    schema = open(siteconfig.get("dbSchemaFile"), 'r').read()
+    schema = open(siteconfig.get("dbSchemaFile"), 'r', encoding="utf-8").read()
     try:
         conn.executescript(schema)
         conn.commit()
@@ -32,7 +32,7 @@ connXref = sqlite3.connect(pathXref)
 print("Connected to database: %s" % pathXref)
 
 if siteconfig.get("dbXrefSchemaFile") != "":
-    schema = open(siteconfig.get("dbXrefSchemaFile"), 'r').read()
+    schema = open(siteconfig.get("dbXrefSchemaFile"), 'r', encoding="utf-8").read()
     try:
         connXref.executescript(schema)
         connXref.commit()
@@ -52,4 +52,4 @@ for user in siteconfig["admins"]:
     except sqlite3.Error as e:
         print("Creating a user account for %s has failed. This could be because the account already exists." % user)
 
-conn.close() 
+conn.close()

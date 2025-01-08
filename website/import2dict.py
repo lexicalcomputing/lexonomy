@@ -25,7 +25,7 @@ def purge_dict(db, historiography, purge_all, email):
         db.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) "
                    "SELECT id, 'purge', ?, ?, nvh, ? from entries",
                    (str(datetime.datetime.utcnow()), email, json.dumps(historiography)))
-        
+
     log_info("Purging entries...")
     db.execute("delete from entries")
     db.execute("delete from linkables")
@@ -110,7 +110,7 @@ def xml2nvh(input_xml , fd):
     global rootTag
     global entryTag
     global entryCount
-    with open(input_xml, 'rb') as f:
+    with open(input_xml, 'rb', encoding="utf8") as f:
         xmldata = f.read().decode('utf-8-sig')
     xmldata = re.sub(r'<\?xml[^?]*\?>', '', xmldata)
     xmldata = re.sub(r'<!DOCTYPE[^>]*>', '', xmldata)
@@ -171,7 +171,7 @@ def get_gen_schema_elements(schema, schema_elements, parent=''):
         if parent:
             schema_elements[parent + '.' + k] = {'min': schema[k].get('min', 0), 'max': schema[k].get('max', None),
                                                  'type': schema[k].get('type', 'string'), 'values': schema[k].get('values', []),
-                                                 're': schema[k].get('re', ''), 'children': children, 
+                                                 're': schema[k].get('re', ''), 'children': children,
                                                  'parent': parent, 'name': k}
             get_gen_schema_elements(schema[k]["schema"], schema_elements, parent + '.' + k)
         else:
@@ -186,7 +186,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
     log_start('IMPORT')
     log_info(f'pid: {str(os.getpid())}')
 
-    dict_id = dbname.strip().split('/')[-1][:-7]
+    dict_id = os.path.basename(dbname)[:-7]
     log_info('IMPORTING (%s)' % (dict_id))
     db = None
 
@@ -196,12 +196,12 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # =============
         if filename.endswith('.xml'):
             log_info('XML to NVH processing')
-            with open(filename + ".xml2nvh.nvh", 'w') as f:
+            with open(filename + ".xml2nvh.nvh", 'w', encoding="utf8") as f:
                 xml2nvh(filename, f)
-            import_nvh = nvh.parse_file(fileinput.input(filename + ".xml2nvh.nvh"))
+            import_nvh = nvh.parse_file(fileinput.input(filename + ".xml2nvh.nvh", encoding="utf8"))
 
         elif filename.endswith('.nvh') or filename.endswith('.in'):
-            import_nvh = nvh.parse_file(fileinput.input(filename))
+            import_nvh = nvh.parse_file(fileinput.input(filename, encoding="utf8"))
 
         else:
             log_err(f'NOT a supported format: {filename}')
@@ -224,7 +224,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             log_info('Renaming duplicate NVH nodes')
             import_nvh.rename_nodes(rename_dict, out=sys.stderr)
 
-            with open(filename + ".cleaned", 'w') as clean_f:
+            with open(filename + ".cleaned", 'w', encoding="utf8") as clean_f:
                 import_nvh.dump(clean_f)
 
             for orig_name, rename_list in rename_dict.items():
@@ -237,7 +237,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         log_info('Generating schema')
         schema = {}
         import_nvh.generate_schema(schema, tln=True)
-        with open(filename + ".schema", 'w') as schema_f:
+        with open(filename + ".schema", 'w', encoding="utf8") as schema_f:
             nvh.print_schema(schema, outfile=schema_f)
 
         #import_nvh.check_schema(schema, outfile=sys.stderr)
@@ -289,7 +289,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # Formatting
         # =============
         formatting = {}
-        with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
+        with open(os.path.join(current_dir, "dictTemplates", "styles.json"), 'r', encoding="utf8") as f:
             styles = json.loads(f.read())
             for key in elements.keys():
                 if styles.get(key):
@@ -468,7 +468,7 @@ def main():
 
     config_json = None
     if args.config:
-        with open(args.config) as f:
+        with open(args.config, encoding="utf8") as f:
             config_json = json.load(f)
 
     import_data(args.dbname, args.filename, args.email, args.main_node_name, args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)

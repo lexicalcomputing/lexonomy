@@ -25,6 +25,10 @@ configuration:
 - [Download and install the Markdown module for Python3](https://python-markdown.github.io/)
 - [(Optional) Download and install NodeJS to build the frontend](https://nodejs.org/en/)
 
+### Prerequisites for Windows
+
+- [Download and install PyIcu](https://github.com/ilius/pyglossary/blob/master/doc/pyicu.md) 
+
 # Configuring your Lexonomy
 The frontend configuration file is `website/config.js`. Currently the only setting is the URL of the backend configuration (as `window.API_URL`), which should in most cases be the same as `baseUrl` specified below. However, you can point Lexonomy frontend to an arbitrary backend installation.
 
