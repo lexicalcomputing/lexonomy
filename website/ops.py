@@ -2286,22 +2286,6 @@ def isrunning(dictDB, bgjob, pid=None):
     else:
         return True
 
-def linkNAISC(dictDB, dictID, configs, otherdictDB, otherdictID, otherconfigs):
-    import subprocess
-    res = isLinking(dictDB)
-    if "otherdictID" in res:
-        return res
-    c = dictDB.execute("INSERT INTO bgjobs (type, data) VALUES ('naisc-local', ?)", (otherdictID,))
-    dictDB.commit()
-    jobid = c.lastrowid
-    errfile = open("/tmp/linkNAISC-%s-%s.err" % (dictID, otherdictID), "w")
-    outfile = open("/tmp/linkNAISC-%s-%s.out" % (dictID, otherdictID), "w")
-    bgjob = subprocess.Popen(['adminscripts/linkNAISC.sh', siteconfig["dataDir"], dictID, otherdictID, siteconfig["naiscCmd"], str(jobid)],
-        start_new_session=True, close_fds=True, stderr=errfile, stdout=outfile, stdin=subprocess.DEVNULL)
-    dictDB.execute("UPDATE bgjobs SET pid=? WHERE id=?", (bgjob.pid, jobid))
-    dictDB.commit()
-    return {"bgjob": jobid}
-
 def autoImage(dictDB, dictID, configs, addElem, addNumber):
     import subprocess
     res = isAutoImage(dictDB)
@@ -2347,19 +2331,6 @@ def isAutoImage(dictDB):
         else: # mark as dead
             c = dictDB.execute("UPDATE bgjobs SET finished=-2 WHERE pid=?", (pid,))
     return {"bgjob": -1}
-
-
-def getNAISCstatus(dictDB, dictID, otherdictID, bgjob):
-    try:
-        err = open("/tmp/linkNAISC-%s-%s.err" % (dictID, otherdictID))
-    except:
-        return None
-    if "[COMPLETED] Done\n" in err.readlines():
-        return {"status": "finished"}
-    if isrunning(dictDB, bgjob):
-        return {"status": "linking"}
-    else:
-        return {"status": "failed"}
 
 def autoImageStatus(dictDB, dictID, bgjob):
     try:
