@@ -44,6 +44,9 @@
                      value={state.project.projectID}
                      oninput={onIdInput}>
                <label>ID *</label>
+               <div id="projectIdError"
+                     class="helper-text red-text"
+                     style="display: none;">at least 5 characters, allowed: a-Z, A-Z, 0-9, _ and -.</div>
             </div>
 
             <div class="input-field mb-8">
@@ -209,7 +212,7 @@
                   </label>
                </div>
                <div class="stageAnnotatorSettings pt-8"
-                     style="{state.setAllStagesChecked ? '' : 'display: none;'">
+                     style="{state.setAllStagesChecked ? '' : 'display: none;'}">
                   <div each={stage in dictData.workflowList[state.project.workflow_id].stages}
                         if={stage.type == "gen_batch"}
                         class="teamRole  teamRole{stage.id} displayFlex mb-6">
@@ -256,19 +259,19 @@
             </div>
          </div>
       </div>
+      <div class="buttons pt-6 mb-4 borderTop">
+         <a href="javascript:window.history.back()"
+               class="btn btn-secondary ml-auto">
+            back
+         </a>
+         <button id="btnSaveProject"
+               class="btn btn-primary disabled mr-auto"
+               onclick={onSaveProjectClick}>
+            {props.projectID ? "update" : "create"}
+         </button>
+      </div>
    </div>
 
-   <div class="buttons pt-6 mb-4 borderTop">
-      <a href="javascript:window.history.back()"
-            class="btn btn-secondary ml-auto">
-         back
-      </a>
-      <button id="btnSaveProject"
-            class="btn btn-primary disabled mr-auto"
-            onclick={onSaveProjectClick}>
-         {props.projectID ? "update" : "create"}
-      </button>
-   </div>
 
    <script>
       export default{
@@ -280,7 +283,9 @@
             isCorporaLoading: true,
             corpora: [],
             isBusy: false,
-            visibleEditorSearch: new Set()
+            visibleEditorSearch: new Set(),
+            setAllStagesChecked: false,
+            isProjectIDValid: true
          },
 
          onBeforeMount(){
@@ -314,6 +319,7 @@
                            this.state.setAllStagesChecked = Object.keys(this.state.project.annotators)
                                  .filter(a => a != "__all__")
                                  .length > 0
+                           this.loadCorpora()
                         }
                      })
                   .always(response => {
@@ -323,6 +329,7 @@
                      this.refreshSaveBtnDisabled()
                   })
             } else {
+               this.loadCorpora()
                this.store.suggestProjectId()
                      .done(response => {
                         this.state.project.projectID = response.suggested
@@ -330,6 +337,42 @@
                      })
                window.initFormSelects(this.root)
             }
+
+            this.initLanguages()
+            $("#name", this.root).focus()
+         },
+
+         onUpdated(){
+            window.initFormSelects(this.root)
+         },
+
+         onWorkflowListLoadingChanged(){
+            this.update()
+            this.initLanguages()
+            $("#name", this.root).focus()
+         },
+
+         onNameInput(evt){
+            this.state.project.project_name = evt.target.value
+            this.refreshSaveBtnDisabled()
+         },
+
+         onIdInput(evt){
+            this.state.project.projectID = evt.target.value
+            this.validateProjectId()
+            this.refreshSaveBtnDisabled()
+         },
+
+         validateProjectId(projectID){
+            this.state.isProjectIDValid = /^[a-zA-Z0-9_-]{5,}$/.test(this.state.project.projectID)
+            document.getElementById("projectIdError").style.display = this.state.isProjectIDValid ? "none" : "block"
+         },
+
+         onDescriptionInput(evt){
+            this.state.project.description = evt.target.value
+         },
+
+         loadCorpora(){
             this.store.skeLoadCorpora()
                   .done(response => {
                      this.state.corpora = response.data
@@ -355,33 +398,6 @@
                   .always(() => {
                      this.update({isCorporaLoading: false})
                   })
-
-            this.initLanguages()
-            $("#name", this.root).focus()
-         },
-
-         onUpdated(){
-            window.initFormSelects(this.root)
-         },
-
-         onWorkflowListLoadingChanged(){
-            this.update()
-            this.initLanguages()
-            $("#name", this.root).focus()
-         },
-
-         onNameInput(evt){
-            this.state.project.project_name = evt.target.value
-            this.refreshSaveBtnDisabled()
-         },
-
-         onIdInput(evt){
-            this.state.project.projectID = evt.target.value
-            this.refreshSaveBtnDisabled()
-         },
-
-         onDescriptionInput(evt){
-            this.state.project.description = evt.target.value
          },
 
          initLanguages(){
@@ -571,7 +587,9 @@
 
          refreshSaveBtnDisabled(){
             let setAllStages = $("#setAllStagesCheckbox").is(":checked")
-            let disabled = !this.state.project.project_name
+            let disabled = !this.state.project
+                  || !this.state.project.projectID
+                  || !this.state.isProjectIDValid
                   || !this.state.project.project_name
                   || !this.state.project.managers.length
                   || (!this.state.project.annotators.__all__.length
