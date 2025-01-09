@@ -109,6 +109,7 @@
    </div>
 
    <div class="borderLeft entryElements positionRelative pl-8 pb-8">
+      <h3>Final entry structure</h3>
       <div class="switch">
          <label>
             <input type="checkbox"
@@ -118,28 +119,31 @@
             Choose entry elements
          </label>
       </div>
-      <template if={state.showMoreSettings}>
-         <loading-overlay if={state.isLoading}/>
-         <div class="ml-4 mt-4">
-            <div each={(element, idx) in state.fullElementList}>
-               <div class="entryLine elementWithCheckbox displayInlineFlex alignCenter">
-                  <label style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
-                     <input type="checkbox"
-                           checked={state.selectedElements.has(element.path) || element.name == state.root}
-                           disabled={element.name == state.root}
-                           onclick={onElementCheckboxChanged.bind(this, element.path)} />
-                     <span style="color: {window.nvhStore.getColorByIndex(idx)};">
-                        {element.name}
-                     </span>
-                     <i class="grey-text inlineBlock material-icons ml-2 tiny verticalMiddle help tooltipped"
-                           data-tooltip="{state.elementDescription[element.name]}">
-                        help_outline
-                     </i>
-                  </label>
-               </div>
+      <loading-overlay if={state.isLoading}/>
+      <div class="ml-4 mt-4">
+         <div each={(element, idx) in state.fullElementList}>
+            <div class="entryLine elementWithCheckbox displayInlineFlex alignCenter">
+               <label if={state.showMoreSettings}
+                     style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
+                  <input type="checkbox"
+                        checked={state.selectedElements.has(element.path) || element.name == state.root}
+                        disabled={element.name == state.root}
+                        onclick={onElementCheckboxChanged.bind(this, element.path)} />
+                  <span style="color: {window.nvhStore.getColorByIndex(idx)};">
+                     {element.name}
+                  </span>
+               </label>
+               <span if={!state.showMoreSettings}
+                     style="color: {window.nvhStore.getColorByIndex(idx)}; padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
+                  {element.name}
+               </span>
+               <i class="grey-text inlineBlock material-icons ml-2 tiny verticalMiddle help tooltipped"
+                     data-tooltip="{state.elementDescription[element.name]}">
+                  help_outline
+               </i>
             </div>
          </div>
-      </template>
+      </div>
    </div>
 
 
