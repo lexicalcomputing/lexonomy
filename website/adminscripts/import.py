@@ -45,12 +45,12 @@ def main():
 
     config_json = None
     if args.config:
-        with open(args.config, encoding="utf-8") as f:
+        with open(args.config) as f:
             config_json = json.load(f)
 
     siteconfig = json.load(open(os.path.join(current_dir, "..", "siteconfig.json"), encoding="utf-8"))
 
-    if os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts" + args.dict_id) + ".sqlite"):
+    if os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts/" + args.dict_id) + ".sqlite"):
         sys.stderr.write(f'ERROR: DictID {args.dict_id} already exists\n')
         sys.exit()
 
@@ -58,7 +58,7 @@ def main():
     dict_config = {"limits": {"entries": 10000000000}}
     ops.attachDict(dictDB, args.dict_id, {}, dict_config)
     dictDB.close()
-    import2dict.import_data(os.path.join(siteconfig["dataDir"], "dicts", args.dict_id, ".sqlite"), args.filename, args.email, args.main_node_name,
+    import2dict.import_data(f'{siteconfig["dataDir"]}/dicts/{args.dict_id}.sqlite', args.filename, args.email, args.main_node_name, 
                             args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)
 
     print(args.dict_id)

@@ -289,7 +289,7 @@ class nvh:
 
     def split (self, outdir):
         for c in self.children:
-            outfile = open("%s/%s" % (outdir, get_filename(c.value)), "w", encoding="utf8")
+            outfile = open("%s/%s" % (outdir, get_filename(c.value)), "w")
             c.dump(outfile)
 
     def get_entries(self):
@@ -366,7 +366,7 @@ class nvh:
             outfile.write("ERROR: %s (%s)\n" % (s, ancestor))
 
         from collections import Counter
-        keyval_freqs = Counter((c.name, c.value) for c in self.children if c.value) # not count nodes with "empty" type
+        keyval_freqs = Counter((c.name, c.value) for c in self.children if c.value) # not count nodes with "empty" type 
         duplicates = [d for d in keyval_freqs.items() if d[1] > 1]
         for d in duplicates:
             report("Duplicate key-value pair '%s: %s' for parent %s (occurs %d times)" % (d[0][0], d[0][1], parent, d[1]))
@@ -619,10 +619,10 @@ class nvh:
             if c.value and len(same_nodes) > 1:
                 for s_idx in sorted(same_nodes, reverse=True):
                     if s_idx != curr_pos:
-                        out.write('WARNING: removing duplicate node %s\n' % (self.children[s_idx]))
+                        out.write('WARNING: removing duplicate node %s\n' % (self.children[s_idx])) 
                         del self.children[s_idx]
             elif not c.value and (len(same_nodes) > 1) and (c.name not in reported):
-                out.write('WARNING: repeating node with empty value %s\n' % (c.name))
+                out.write('WARNING: repeating node with empty value %s\n' % (c.name)) 
                 reported.add(c.name)
 
             c.clean_duplicate_nodes(out=out, reported=reported)
@@ -640,7 +640,7 @@ class nvh:
                 if c.parent.name not in [x[0] for x in rename_dict[c.name]]:
                     rename_dict[c.name].append((c.parent.name, f'{c.parent.name}_{c.name}'))
                     if not f'{c.parent.name}_{c.name}' in reported:
-                        out.write('WARNING: renaming node name to preserve uniqueness %s -> %s\n' % (c.name, f'{c.parent.name}_{c.name}'))
+                        out.write('WARNING: renaming node name to preserve uniqueness %s -> %s\n' % (c.name, f'{c.parent.name}_{c.name}')) 
                         reported.add(f'{c.parent.name}_{c.name}')
                     c.name = f'{c.parent.name}_{c.name}'
                 else:
@@ -684,7 +684,7 @@ if __name__ == "__main__":
         usage()
 
     try:
-        infile = fileinput.input([sys.argv[2]], encoding="utf8")
+        infile = fileinput.input([sys.argv[2]])
         dictionary = nvh.parse_file(infile)
         if sys.argv[1].startswith("get"):
             select_filters = []
@@ -702,7 +702,7 @@ if __name__ == "__main__":
         elif sys.argv[1] == "put":
             if len(sys.argv) < 4:
                 usage()
-            infile = fileinput.input([sys.argv[3]], encoding="utf8")
+            infile = fileinput.input([sys.argv[3]])
             patch = nvh.parse_file(infile)
             if len(sys.argv) > 4:
                 replace_filters = sys.argv[4].split(",")
@@ -725,7 +725,7 @@ if __name__ == "__main__":
         elif sys.argv[1] == "checkschema":
             if len(sys.argv) < 4:
                 usage()
-            infile = fileinput.input([sys.argv[3]], encoding="utf8")
+            infile = fileinput.input([sys.argv[3]])
             schema = nvh.parse_file(infile)
             schema = schema.nvh2schema()
             dictionary.check_schema(schema)

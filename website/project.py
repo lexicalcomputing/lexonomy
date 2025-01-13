@@ -78,7 +78,7 @@ def project_init_git(path):
     subprocess.run(['git', 'init', '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
     subprocess.run(['git', 'lfs', 'install'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
     subprocess.run(['git', 'lfs', 'track', '*.nvh', '*.in', '*.rejected', '*.nvh.patch'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
-    with open(os.path.join(path, '.gitignore'), 'w', encoding="utf8") as f:
+    with open(os.path.join(path, '.gitignore'), 'w') as f:
         f.write('*.log')
     subprocess.run(['git', 'add', '-A'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
     subprocess.run(['git', 'commit', '-m', 'init', '-q'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
@@ -105,15 +105,15 @@ def createProject(project_id, project_name, project_description, project_annotat
     # Copy workflow
     for file in os.listdir(os.path.join(currdir, 'workflows', workflow_id)):
         if file == 'Makefile':
-            with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'w', encoding="utf8") as dest:
-                with open(os.path.join(currdir, 'workflows', workflow_id, 'Makefile'), 'r', encoding="utf8") as source:
+            with open(os.path.join(siteconfig["dataDir"], "projects", project_id, 'Makefile'), 'w') as dest:
+                with open(os.path.join(currdir, 'workflows', workflow_id, 'Makefile'), 'r') as source:
                     for line in source:
-                        dest.write(re.sub(r'%dir%', re.escape(currdir), line))
+                        dest.write(re.sub('%dir%', currdir, line))
         else:
             shutil.copy2(os.path.join(currdir, 'workflows', workflow_id, file), os.path.join(siteconfig["dataDir"], "projects", project_id))
 
     # Dump source dict to NVH
-    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w', encoding="utf8") as f:
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
         for nvh in ops.download(ops.getDB(src_dict_id), src_dict_id, 'nvh'):
             f.write(nvh)
 
@@ -162,7 +162,7 @@ def update_project_source_dict(project_id, src_dict_id):
                     os.path.join(siteconfig["dataDir"], "projects", project_id, r['src_dic_id']+'.nvh_'+datetime.datetime.now().strftime("%Y-%m-%d_%H_%M_%S")))
 
 
-    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w', encoding="utf8") as f:
+    with open(os.path.join(siteconfig["dataDir"], "projects", project_id, src_dict_id+'.nvh'), 'w') as f:
         for nvh in ops.download(ops.getDB(src_dict_id), src_dict_id, 'nvh'):
             f.write(nvh)
 
@@ -245,7 +245,7 @@ def getMakeDeps(make_file):
 
             elif stage_query_line:
                 add_data(make_data, stage_query_line.group(1).lower(), 'query', stage_query_line.group(2))
-
+            
             elif stage_type:
                 add_data(make_data, stage_type.group(1).lower(), 'type', stage_type.group(2))
 
@@ -268,14 +268,14 @@ def getProject(projectID):
     r1 = c1.fetchall()
 
     stage_dicts_info = {}
-    for i in r1:
+    for i in r1: 
         if stage_dicts_info.get(i['stage']):
-            stage_dicts_info[i['stage']].append({'dict_id': i['dict_id'], 'remaining': json.loads(i['remaining']),
-                                                 'title': i['title'], 'created': i['created'],
+            stage_dicts_info[i['stage']].append({'dict_id': i['dict_id'], 'remaining': json.loads(i['remaining']), 
+                                                 'title': i['title'], 'created': i['created'], 
                                                  'assignee': i['assignee'], 'status': i['status']})
         else:
-            stage_dicts_info[i['stage']] = [{'dict_id': i['dict_id'], 'remaining': json.loads(i['remaining']),
-                                             'title': i['title'], 'created': i['created'],
+            stage_dicts_info[i['stage']] = [{'dict_id': i['dict_id'], 'remaining': json.loads(i['remaining']), 
+                                             'title': i['title'], 'created': i['created'], 
                                              'assignee': i['assignee'], 'status': i['status']}]
 
     # ======================
@@ -342,9 +342,9 @@ def getProject(projectID):
             r_q = q.fetchone()
             dictDB.close()
 
-            output_dict = {'dictID': dict_info['dict_id'],
-                           'total': int(r_q['json']),
-                           'title': dict_info['title'],
+            output_dict = {'dictID': dict_info['dict_id'], 
+                           'total': int(r_q['json']), 
+                           'title': dict_info['title'], 
                            'created': dict_info['created']}
         else:
             output_dict = {'dictID': None, 'total': 0, 'title': f'{projectID}.{stage}', 'created': ''}
@@ -359,7 +359,7 @@ def getProject(projectID):
             q = dictDB.execute("SELECT id, json FROM configs WHERE id IN ('entry_count', 'completed_entries')")
             r_q = q.fetchall()
             dictDB.close()
-
+            
             entry_count = int([x['json'] for x in r_q if x['id'] == 'entry_count'][0])
             completed_entries = int([x['json'] for x in r_q if x['id'] == 'completed_entries'][0])
 
@@ -491,7 +491,7 @@ def makeStage(project_id, stage, user_email):
     workflow_dir = os.path.join(siteconfig['dataDir'], 'projects', project_id)
     stage_path = os.path.join(siteconfig["dataDir"], 'projects', project_id , stage)
     filemask = os.path.join(stage_path, '*.nvh')
-
+    
     # DELETE previous stage version
     dict_id = ops.suggestDictId()
     for s in project_info['workflow']:
@@ -606,7 +606,7 @@ def acceptBatch(project_id, dictID_list):
 
         mainDB.commit()
 
-        with open(out_nvh_file_name, 'w', encoding="utf8") as out_f:
+        with open(out_nvh_file_name, 'w') as out_f:
             dictDB = ops.getDB(dictID)
             for line in ops.download(dictDB, dictID, 'nvh'):
                 out_f.write(line)

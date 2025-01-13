@@ -40,11 +40,11 @@ if not cgi and len(sys.argv) > 1:
     my_url = sys.argv[1]
 
 currdir = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(currdir, 'version.txt'), encoding="utf8") as v_f:
+with open(os.path.join(currdir, 'version.txt')) as v_f:
     version = v_f.readline().strip()
 
 # serve static files
-@route(r'/<path:re:(furniture|customization|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.codemirror\.js|bundle\.css|riot|img|js|css|docs|tests/swagger|version\.txt|site\.webmanifest).*>')
+@route('/<path:re:(furniture|customization|libs|index.*\.html|config\.js|bundle\.js|bundle\.static\.js|bundle\.codemirror\.js|bundle\.css|riot|img|js|css|docs|version\.txt|site\.webmanifest).*>')
 def server_static(path):
     return static_file(path, root="./")
 
