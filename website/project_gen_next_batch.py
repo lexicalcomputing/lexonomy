@@ -16,7 +16,7 @@ siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="
 def get_already_exported(batch_list, tl_name):
     already_exported = set()
     for filename in batch_list:
-        for line in open(filename, encoding="utf8"):
+        for line in open(filename):
             if line.startswith(tl_name + ': '):
                 already_exported.add(line.strip('\n').split(': ', 1)[1])
     return already_exported
@@ -57,12 +57,12 @@ def split_to_batches(input, max_batches, batch_size , batch_list, tl_node, alrea
                             remaining_hws += 1
                             continue
 
-                        new_filename = os.path.join(batch_dir, stage + '.batch_%03d.in' % next_batch_num)
+                        new_filename = batch_dir + '/' + stage + '.batch_%03d.in' % next_batch_num
                         while os.path.exists(new_filename):
                             next_batch_num += 1
-                            new_filename = os.path.join(batch_dir, stage + '.batch_%03d.in' % next_batch_num)
+                            new_filename = batch_dir + '/' + stage + '.batch_%03d.in' % next_batch_num
 
-                        curr_batch = open(new_filename, 'w', encoding="utf8")
+                        curr_batch = open(new_filename, 'w')
                         next_batch_num += 1
                         new_batches.append(new_filename)
                         log_info("splitting batches: NO:%d/%d, BATCH: %s" % (batches_generated,  max_batches, new_filename))
@@ -111,8 +111,8 @@ def main():
     # INIT
     # ==========================
     batch_list = glob.glob(args.generated_batches_filemask)
-    path_spl = args.generated_batches_filemask)split(os.sep)
-    batch_dir = os.path.join(*path_spl[:-1])
+    path_spl = args.generated_batches_filemask.split('/')
+    batch_dir = '/'.join(path_spl[:-1])
     stage = path_spl[-2]
     project_id = path_spl[-3]
 

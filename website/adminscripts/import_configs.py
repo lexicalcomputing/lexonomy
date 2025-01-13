@@ -23,16 +23,16 @@ def main():
 
     config_json = None
     if args.config:
-        with open(args.config, encoding="utf-8") as f:
+        with open(args.config) as f:
             config_json = json.load(f)
 
     siteconfig = json.load(open(os.path.join(current_dir, "..", "siteconfig.json"), encoding="utf-8"))
 
-    if not os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts" + args.dict_id) + ".sqlite"):
+    if not os.path.isfile(os.path.join(siteconfig["dataDir"], "dicts/" + args.dict_id) + ".sqlite"):
         sys.stderr.write(f'ERROR: DictID {args.dict_id} does not exist\n')
         sys.exit()
 
-    db = sqlite3.connect(os.path.join(siteconfig["dataDir"], "dicts", args.dict_id, ".sqlite"))
+    db = sqlite3.connect(f'{siteconfig["dataDir"]}/dicts/{args.dict_id}.sqlite')
     db.row_factory = sqlite3.Row
 
     import2dict.import_configs(db, args.dict_id, config_json)

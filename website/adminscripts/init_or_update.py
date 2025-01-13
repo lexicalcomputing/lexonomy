@@ -28,7 +28,7 @@ def init_main_db():
     print("Connected to database: %s" % lexonomy_db_file)
 
     if siteconfig.get("dbSchemaFile", False):
-        schema = open(siteconfig["dbSchemaFile"], 'r', encoding="utf-8").read()
+        schema = open(siteconfig["dbSchemaFile"], 'r').read()
         try:
             conn.executescript(schema)
             conn.commit()
@@ -59,7 +59,7 @@ def init_main_db():
     print("Connected to database: %s" % Xref_db_file)
 
     if siteconfig.get("dbXrefSchemaFile", False):
-        schema = open(siteconfig["dbXrefSchemaFile"], 'r', encoding="utf-8").read()
+        schema = open(siteconfig["dbXrefSchemaFile"], 'r').read()
         try:
             connXref.executescript(schema)
             connXref.commit()

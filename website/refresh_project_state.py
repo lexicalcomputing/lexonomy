@@ -42,7 +42,7 @@ def refresh_project_remaining(projectID, dict_id, stage, query, tl_node='entry')
     ###################
     # NVH source entries
     ###################
-    infile = fileinput.input([source_nvh], encoding="utf8")
+    infile = fileinput.input([source_nvh])
     dictionary = nvh.parse_file(infile)
     dictionary = dictionary.filter_entries(query.split(","), [], 0)
 
@@ -58,7 +58,7 @@ def refresh_project_remaining(projectID, dict_id, stage, query, tl_node='entry')
     if os.path.isdir(stage_dir):
         for file in os.listdir(stage_dir):
             if file.endswith('.in'):
-                with open(os.path.join(stage_dir, file), 'r', encoding="utf8") as fd:
+                with open(os.path.join(stage_dir, file), 'r') as fd:
                     for line in fd:
                         if line.startswith(f'{tl_node}:'):
                             if line[len(tl_node)+1:].strip() in source_entries:
@@ -69,7 +69,7 @@ def refresh_project_remaining(projectID, dict_id, stage, query, tl_node='entry')
     source_remaining = json.loads(r1['remaining'])
     source_remaining[stage] = remaining_entries
 
-    conn.execute('UPDATE project_dicts SET remaining=? WHERE dict_id=? AND project_id=?',
+    conn.execute('UPDATE project_dicts SET remaining=? WHERE dict_id=? AND project_id=?', 
                  (json.dumps(source_remaining), dict_id, projectID))
     conn.commit()
     conn.close()
@@ -96,6 +96,6 @@ def main():
     for stage, query in dependent_stages:
         if query:
             refresh_project_remaining(args.project_id, args.dict_id, stage, query, project_info['tl_node'])
-
+    
 if __name__ == '__main__':
     main()
