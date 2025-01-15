@@ -385,7 +385,7 @@
 
    <script>
       export default {
-         bindings: [["store", "dictionaryListLoadingChanged", "update"],
+         bindings: [["store", "dictionaryListLoadingChanged", "onDictionaryListChanged"],
                     ["structureStore", "elementChanged", "refreshMakeDictButtonDisabled"]],
 
          state: {
@@ -427,16 +427,17 @@
             $("#title").focus()
          },
 
-         onBeforeUpdate(){
-            this.refreshDictionaryTitle()
-         },
-
          onUpdated(){
             this.refreshMakeDictButtonDisabled()
          },
 
          onBeforeUnmount(){
             this.state.timeoutHandle && clearTimeout(this.state.timeoutHandle)
+         },
+
+         onDictionaryListChanged(){
+            this.refreshDictionaryTitle()
+            this.update()
          },
 
          onStructureTabClick(structureTab){
