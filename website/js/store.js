@@ -154,6 +154,7 @@ class StoreClass {
                   if(entry.id == this.data.entryId){
                      this.loadEntry()
                   }
+                  this.trigger("entryFlagChanged", entryId, flags)
                }
             }.bind(this, flags))
             .always(response => {
