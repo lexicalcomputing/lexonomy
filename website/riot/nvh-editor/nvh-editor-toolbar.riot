@@ -134,9 +134,9 @@
 
    <script>
       export default{
-         bindings: [["nvhStore", "historyChanged", "update"],
-                    ["nvhStore", "isSavingChanged", "update"],
+         bindings: [["nvhStore", "isSavingChanged", "update"],
                     ["nvhStore", "isRevisionsOpenChanged", "update"],
+                    ["nvhStore", "revisionChanged", "update"],
                     ["nvhStore", "isValidChanged", "update"]],
 
          state: {
@@ -148,11 +148,16 @@
             this.nvhData = this.nvhStore.data
             this.refreshPrevNextEntryId()
             this.refreshAvailableActions()
+            this.nvhStore.history.on("change", this.update.bind(this))
          },
 
          onBeforeUpdate(){
             this.refreshPrevNextEntryId()
             this.refreshAvailableActions()
+         },
+
+         onBeforeUnmount(){
+            this.nvhStore.history.off("change", this.update.bind(this))
          },
 
          onSaveClick(){
@@ -240,7 +245,7 @@
          refreshPrevNextEntryId(){
             this.state.prevEntryId = null
             this.state.nextEntryId = null
-            if(this.nvhData.entry && this.dictData.entryId != "new" && this.dictData.isEntryListLoaded){
+            if(this.dictData.entryId && this.dictData.entryId != "new" && this.dictData.isEntryListLoaded){
                let list = this.dictData.entryList
                let actualIdx = list.findIndex(entry => entry.id == this.dictData.entryId)
                this.state.prevEntryId = list[actualIdx - 1] ? list[actualIdx - 1].id : null

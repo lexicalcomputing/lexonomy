@@ -1,6 +1,5 @@
 class NVHStoreClass {
    constructor(){
-      this.lastId = 0
       this.const = {
          nvhNewLine: "\\\\n",
          serviceElementPrefix: "__lexonomy__"
@@ -18,6 +17,8 @@ class NVHStoreClass {
          collapsedElements: new Set() //  to collapse same elements after changing the entry
       }
       observable(this)
+      this.history = new window.HistoryClass()
+      this.history.on("stateChange", this.onHistoryStateChange.bind(this))
       window.store.on("dictionaryChanged", this.onDictionaryChanged.bind(this))
       window.store.on("entryIdChanged", this.onEntryIdChanged.bind(this))
       window.store.on("entryChanged", this.onEntryChanged.bind(this))
@@ -29,9 +30,10 @@ class NVHStoreClass {
       this.data.entry = this._getNewEntry()
       this.validateAllElements()
       this.history.reset()
-      this.history.addState()
+      this.addStateToHistory()
       window.store.data.editorMode == "view" && this.changeEditorMode("edit")
-      this.trigger("entryChanged")
+      this.trigger("entryIdChanged")
+      this.trigger("entryContentChanged")
       this.updateUrl()
       this.focusFirstElement()
    }
@@ -48,7 +50,6 @@ class NVHStoreClass {
                .always(response => {
                   if(response.success){
                      M.toast({html: "Entry updated"})
-                     this.history.lastSavedIdx = this.history.actualIdx
                   } else {
                      M.toast({html: `Entry was not updated: ${response.feedback || ""}`})
                   }
@@ -61,7 +62,6 @@ class NVHStoreClass {
             .always(response => {
                if(response.success){
                   M.toast({html: "Entry created"})
-                  this.history.lastSavedIdx = this.history.actualIdx
                } else {
                   M.toast({html: `Entry was not created: ${response.feedback}`})
                }
@@ -78,7 +78,7 @@ class NVHStoreClass {
             .done(response => {
                window.store.data.entryId = response.id
                this.history.reset()
-               this.history.addState()
+               this.addStateToHistory()
                this.updateUrl()
                this.focusFirstElement()
             })
@@ -93,7 +93,7 @@ class NVHStoreClass {
                   if(response.success){
                      M.toast({html: "Entry was deleted"})
                      this.data.entry = null
-                     this.trigger("entryChanged")
+                     this.trigger("entryIdChanged")
                      this.updateUrl()
                   } else {
                      M.toast({html: `Entry was not deleted: ${response.feedback}`})
@@ -103,7 +103,7 @@ class NVHStoreClass {
                })
       } else{
          this.data.entry = null
-         this.trigger("entryChanged")
+         this.trigger("entryIdChanged")
          this.updateUrl()
       }
    }
@@ -161,23 +161,28 @@ class NVHStoreClass {
             if(window.store.data.entryId == "new"){
                this.data.entry = this._getNewEntry()
             } else{
-               this.data.entry = this.nvhToJson(window.store.data.entry.nvh)//this.nvhToJson(this.replaceElementNamesWithPaths(window.store.data.entry.nvh))
+               this.data.entry = this.nvhToJson(window.store.data.entry.nvh)
                this.forEachElement(el => {
                   el.collapsed = this.data.collapsedElements.has(el.path)
                })
             }
             this.validateAllElements()
-            this.history.addState()
+            this.addStateToHistory()
          } else {
             this.data.entry = null
          }
-         this.trigger("entryChanged")
+         this.trigger("entryContentChanged")
       } catch(e){
          this.data.entry = null
          this.data.brokenEntryNvh = window.store.data.entry.nvh
+         this.history.addState(window.store.data.entry.nvh)
          if(window.store.data.actualPage == "dict-edit"){
             if(this.getAvailableActions().code){
-               this.changeEditorMode("code")
+               if(window.store.data.editorMode == "code"){
+                  this.trigger("brokenEntryNvhChanged")
+               } else {
+                  this.changeEditorMode("code")
+               }
                window.showToast(`Entry is not valid, please, fix the entry.\n ${e}`)
             } else {
                window.showToast(`Could not show the entry: ${e}`)
@@ -187,13 +192,15 @@ class NVHStoreClass {
    }
 
    updateEntryNvh(nvh){
-      let entryWasNull = this.data.entry == null
       try{
          this.data.entry = this.nvhToJson(nvh)
-         this.data.brokenEntryNvh = null // user fixed entry which was invalid right after loading from the database
-      } catch(e){}
-      if(entryWasNull && (this.data.entry != null)){
-         this.trigger("entryChanged")
+         this.data.brokenEntryNvh = null
+         this.validateAllElements()
+         this.trigger("entryContentChanged")
+      } catch (e){
+         this.data.entry = null
+         this.data.brokenEntryNvh = nvh
+         this.trigger("brokenEntryNvhChanged")
       }
    }
 
@@ -245,30 +252,26 @@ class NVHStoreClass {
 
    showRevision(revision){
       if(revision){
-         try{
+         if(!this.data.storedEntry){
             this.data.storedEntry = this.data.entry
-            this.data.entry = this.nvhToJson(revision.content)
-            this.data.revision = revision
-            this.validateAllElements()
-         } catch(e){
-            // TODO it should be possible to open nvh source code and let user to fix the issue
-            M.toast({html: "Revision data corrputed."})
          }
+         this.updateEntryNvh(revision.content)
+         this.data.revision = revision
       } else{
          this.data.revision = null
          this.data.entry = this.data.storedEntry
          this.data.storedEntry = null
       }
-      this.trigger("updateEditor")
+      this.trigger("revisionChanged")
    }
 
    restoreRevision(){
       this.data.revision = null
       this.data.storedEntry = null
-      //this.history.addState()
+      this.addStateToHistory()
       this.closeRevisions()
       this.saveEntry()
-      this.trigger("updateEditor")
+      this.trigger("entryContentChanged")
    }
 
    parseNvhLine(line, idx, lastIndent, indentSize=2){
@@ -484,6 +487,7 @@ class NVHStoreClass {
    areNvhJsonsEqual(element1, element2){
       return element1 && element2
             && (element1.value + "").trim() == (element2.value + "").trim()
+            && element1.path == element2.path
             && element1.children.length == element2.children.length
             && element1.children.every((child1, idx) => {
                return this.areNvhJsonsEqual(child1, element2.children[idx])
@@ -497,7 +501,7 @@ class NVHStoreClass {
                && this.data.entry
                && window.store.data.entryId != "new"){
             this.setEntryFromCustomEditor()
-            this.history.addState()
+            this.addStateToHistory()
             this.validateAllElements()
          }
          window.store.data.editorMode = editorMode
@@ -533,7 +537,10 @@ class NVHStoreClass {
 
    isValid(){
       return this.data.elementsMatchStructure
-            && (!this.data.customEditor || this.data.legacyCustomEditor || this.data.customEditorIsValid)
+            && (window.store.data.editorMode != "view"
+               || !this.data.customEditor
+               || this.data.legacyCustomEditor
+               || this.data.customEditorIsValid)
    }
 
    getAvailableActions(){
@@ -549,20 +556,23 @@ class NVHStoreClass {
                && hasEntry
                && !this.data.isSaving
                // valid?
-               && (this.data.customEditor || this.isValid())
-               && (!this.data.customEditor || (this.data.legacyCustomEditor ? this.data.elementsMatchStructure : this.data.customEditorIsValid))
-               // anything to save ?
-               && (this.history.actualIdx != this.history.lastSavedIdx
-                        || window.store.data.entryId == "new"
-                        || window.store.data.editorMode == "code"
-                        || this.data.customEditor
+               && (
+                     (window.store.data.editorMode == "view"
+                           && this.data.customEditor
+                           && (this.data.legacyCustomEditor ? this.data.elementsMatchStructure : this.data.customEditorIsValid)
+                     )
+                     || (((window.store.data.editorMode == "view" && !this.data.customEditor)
+                           || window.store.data.editorMode == "edit"
+                           || window.store.data.editorMode == "code")
+                           && this.isValid()
+                        )
                   )
                && !revisions,
          undo: uA.canEdit
                && this.history.actualIdx > 0
                && !revisions,
          redo: uA.canEdit
-               && (this.history.actualIdx < this.history.records.length - 1)
+               && (this.history.actualIdx < this.history.states.length - 1)
                && !revisions,
          add: uA.canEdit,
          duplicate: uA.canEdit
@@ -570,7 +580,6 @@ class NVHStoreClass {
                && !isNewEntry
                && !revisions,
          delete: uA.canEdit
-               && hasEntry
                && !isNewEntry
                && !revisions,
          view: hasEntry
@@ -580,7 +589,6 @@ class NVHStoreClass {
          code: uA.canEdit
                && (hasEntry || !!this.data.brokenEntryNvh),
          history: uA.canEdit
-               && hasEntry
                && !isNewEntry
       }
    }
@@ -638,7 +646,7 @@ class NVHStoreClass {
       return this.data.formatting.elements[elementPath]
    }
 
-   getAvailableChildElements(element){
+   getAvailableChildElementPaths(element){
       let config = this.data.structure.elements[element.path]
       let elements = []
       if(config){
@@ -924,7 +932,7 @@ class NVHStoreClass {
       delete element.isNew
       if(element.value != value){
          element.value = value
-         this.history.addState()
+         this.addStateToHistory()
       }
       this.trigger("updateElements", [element])
    }
@@ -951,7 +959,7 @@ class NVHStoreClass {
          newParent.children.splice(position, 0, element)
       }
       this.trigger("updateElements", [oldParentReference, newParent])
-      this.history.addState()
+      this.addStateToHistory()
    }
 
    moveElementUp(element){
@@ -985,7 +993,7 @@ class NVHStoreClass {
          element.parent.children.splice(childIdx, 1)
          element.parent.children.splice(childIdx + direction, 0, element)
          this.trigger("updateElements", [element.parent])
-         this.history.addState()
+         this.addStateToHistory()
          this.scrollElementIntoViewDebounced()
       }
    }
@@ -1005,7 +1013,7 @@ class NVHStoreClass {
       this.trigger("updateElements", [element])
       this.trigger("closeContextMenu")
       this.startElementOrChildEditing(childElement)
-      this.history.addState()
+      this.addStateToHistory()
    }
 
    addSiblingElement(element, siblingElementPath, position){
@@ -1016,7 +1024,7 @@ class NVHStoreClass {
       this.trigger("updateElements", [element.parent])
       this.trigger("closeContextMenu")
       this.startElementOrChildEditing(siblingElement)
-      this.history.addState()
+      this.addStateToHistory()
    }
 
    addRequiredChildren(element){
@@ -1095,7 +1103,7 @@ class NVHStoreClass {
          this.trigger("updateElements", [element.parent])
       }
       this.trigger("closeContextMenu")
-      this.history.addState()
+      this.addStateToHistory()
    }
 
    duplicateElement(element){
@@ -1106,13 +1114,13 @@ class NVHStoreClass {
       this.trigger("updateElements", [element.parent])
       this.trigger("closeContextMenu")
       this.startElementOrChildEditing(elementCopy)
-      this.history.addState()
+      this.addStateToHistory()
    }
 
    removeAllChildren(element){
       element.children = []
       this.trigger("updateElements", [element])
-      this.history.addState()
+      this.addStateToHistory()
    }
 
    scrollElementIntoViewDebounced(){
@@ -1153,7 +1161,7 @@ class NVHStoreClass {
    isElementDuplicationAllowed(element){
       return element.name != this.data.rootElement
             && !!element.parent
-            && this.getAvailableChildElements(element.parent).includes(element.path)
+            && this.getAvailableChildElementPaths(element.parent).includes(element.path)
    }
 
    isElementRemovalAllowed(element){
@@ -1354,44 +1362,13 @@ class NVHStoreClass {
       return entry
    }
 
-   history = {
-      records: [],
-      actualIdx: 0,
-      lastSavedIdx: 0,
-      addState: () => {
-         if(!this.history.records.length ||
-            (this.jsonToNvh(this.data.entry) != this.jsonToNvh(this.history.records[this.history.actualIdx]))){
-            if(this.history.actualIdx < this.history.records.length - 1){
-               this.history.records.splice(this.history.actualIdx + 1)
-            }
-            this.history.records.push(this.copyElementAndItsChildren(this.data.entry))
-            this.history.actualIdx = this.history.records.length - 1
-            this.trigger("historyChanged")
-         }
-      },
-      undo: () => {
-         if(this.history.actualIdx > 0){
-            this.history.actualIdx--
-            this.data.entry = this.copyElementAndItsChildren(this.history.records[this.history.actualIdx])
-            //this.data.sourceCode = null
-            this.trigger("updateEditor")
-            this.trigger("historyChanged")
-         }
-      },
-      redo: () => {
-         if(this.history.actualIdx < this.history.records.length - 1){
-            this.history.actualIdx++
-            this.data.entry = this.copyElementAndItsChildren(this.history.records[this.history.actualIdx])
-            //this.data.sourceCode = null
-            this.trigger("updateEditor")
-            this.trigger("historyChanged")
-         }
-      },
-      reset: () => {
-         this.history.records = []
-         this.history.actualIdx = 0
-         this.history.lastSavedIdx = 0
-      }
+   addStateToHistory(){
+      let nvh = this.jsonToNvh(this.data.entry)
+      this.history.addState(this.replaceElementPathsWithNames(nvh))
+   }
+
+   onHistoryStateChange(idx, nvh){
+      this.updateEntryNvh(nvh)
    }
 
    updateUrl(){

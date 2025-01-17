@@ -30,8 +30,8 @@
 
    <script>
       export default {
-         bindings: [["nvhStore", "updateEditor", "updateSourceCode"],
-                    ["nvhStore", "entryChanged", "updateSourceCode"]],
+         bindings: [["nvhStore", "entryContentChanged", "onEntryContentChanged"],
+                    ["nvhStore", "brokenEntryNvhChanged", "onBrokenEntryNvhChanged"]],
 
          state:{
             warnings: {},
@@ -82,11 +82,26 @@
          onBeforeUnmount(){
             this.addStateToHistory()
             this.validateAndShowWarningsDebounced.clearTimeout()
-            this.addStateToHistoryDebounced .clearTimeout()
+            this.addStateToHistoryDebounced.clearTimeout()
          },
 
-         updateSourceCode(){
-            this.state.sourceCode = this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry))
+         onEntryContentChanged(){
+            // compare ignoring irrelevant whitespaces
+            let json = this.nvhStore.nvhToJson(this.nvhStore.replaceElementNamesWithPaths(this.state.sourceCode))
+            if(!this.nvhStore.areNvhJsonsEqual(this.nvhData.entry, json)){
+               let nvh = this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry))
+               this.updateSourceCode(nvh)
+            }
+         },
+
+         onBrokenEntryNvhChanged(){
+            if(this.nvhData.brokenEntryNvh.trim() != this.state.sourceCode.trim()){
+               this.updateSourceCode(this.nvhData.brokenEntryNvh)
+            }
+         },
+
+         updateSourceCode(sourceCode){
+            this.state.sourceCode = sourceCode
             this.validate()
             this.editor.updateCode(this.state.sourceCode)
             this.update()
@@ -152,30 +167,20 @@
                      this.state.autocompleteQuery = lastLine.trim().toLowerCase()
                      let nonEmptyLines = lines.slice(0, -1).filter(l => l.trim() != "")  // remove last line and empty lines
                      let indent = Math.ceil(this.editor.findPadding(lastLine)[2] / 2)
-                     let childElements = []
+                     let suggestions = []
                      if(!indent && (!text.trim() || this.nvhStore.data.rootElement.startsWith(text.trim()))){
-                        childElements = [this.nvhStore.data.rootElement]
+                        suggestions = [this.nvhStore.data.rootElement]
                      } else{
-                        let parentElement = this.nvhStore.getElementList()
-                              .slice(0, nonEmptyLines.length)
-                              .reverse()
-                              .find(element => {
-                           return element.indent < indent
-                        })
-                        if(parentElement){
-                           childElements = this.nvhStore.getAvailableChildElements(parentElement)
-                                 .filter(child => {
-                                    return child.split(".").pop().startsWith(this.state.autocompleteQuery)
-                                 })
-                        }
+                        suggestions = this.getAvailableChildElementPaths(lines, indent)
+                              .filter(childElementPath => childElementPath.split(".").pop().startsWith(this.state.autocompleteQuery))
                      }
-                     if(childElements.length == 1){
-                        this.showAutocomplete(childElements[0], lines.length, lastLine.length)
+                     if(suggestions.length == 1){
+                        this.showAutocomplete(suggestions[0], lines.length, lastLine.length)
                         this.hideSuggestions()
                         return
-                     } else if(childElements.length > 1){
-                        this.showSuggestions(childElements, lines.length, lastLine.length)
-                        this.showAutocomplete(childElements[0], lines.length, lastLine.length)
+                     } else if(suggestions.length > 1){
+                        this.showSuggestions(suggestions, lines.length, lastLine.length)
+                        this.showAutocomplete(suggestions[0], lines.length, lastLine.length)
                         return
                      }
                   }
@@ -183,6 +188,62 @@
                this.hideAutocomplete()
                this.hideSuggestions()
             }
+         },
+
+         getAvailableChildElementPaths(linesBeforeCursor, indent){
+            let cursorLineIdx = linesBeforeCursor.length - 1
+            let allLines = this.editor.toString()
+                  .split("\n")
+                  .map(line => {
+                     let trimmed = line.trim()
+                     if(trimmed){
+                        let match = line.match(new RegExp(`[ ]{2}`, "g"))
+                        let lineIndent = match ? match.length : 0
+                        return {
+                           name: line.split(":")[0].trim(),
+                           indent: lineIndent
+                        }
+                     }
+                     return null
+                  })
+
+            let line
+            let parentPathElements = []
+            let lastIndent = indent
+            for(let i = cursorLineIdx; i--; i > 0){
+               line = allLines[i]
+               if(line){
+                  if(line.indent == lastIndent - 1){
+                     lastIndent--
+                     parentPathElements.push(line.name)
+                  }
+               }
+            }
+            let parentPath = parentPathElements.reverse().join(".")
+
+            // range of lines with children of parent element (parent element of line under cursor)
+            let startIdx = cursorLineIdx
+            let endIdx = cursorLineIdx
+            while(startIdx > 0 && (!allLines[startIdx - 1] || allLines[startIdx - 1].indent >= indent)){
+               startIdx --
+            }
+
+            while((endIdx < allLines.length - 1) && (!allLines[endIdx + 1] || allLines[endIdx + 1].indent >= indent)){
+               endIdx++
+            }
+
+            let childElements = allLines.slice(startIdx, endIdx)
+                  .filter(line => line && line.indent == indent)
+                  .map(line => ({
+                     path: `${parentPath}.${line.name}`
+                  }))
+
+            let parentElement = {
+               path: parentPath,
+               children: childElements
+            }
+
+            return this.nvhStore.getAvailableChildElementPaths(parentElement)
          },
 
          handleBackspaceCharacter(evt){
@@ -284,7 +345,10 @@
 
          onEditorUpdate(){
             this.state.sourceCode = this.editor.toString()
-            this.nvhStore.updateEntryNvh(this.state.sourceCode)
+            try{
+               this.nvhStore.nvhToJson(this.state.sourceCode) // check if there is no parsing error
+               this.nvhStore.updateEntryNvh(this.state.sourceCode)
+            } catch(e){}
             this.validateAndShowWarningsDebounced()
             this.addStateToHistoryDebounced()
          },
@@ -303,7 +367,7 @@
          },
 
          addStateToHistory(){
-            this.nvhData.entry && this.nvhStore.history.addState()
+            this.nvhStore.history.addState(this.state.sourceCode.trim())
          },
 
          onScrollToLineClick(lineNumber){
@@ -357,8 +421,11 @@
                }
                this.nvhData.elementsMatchStructure = false
                this.nvhStore.trigger("isValidChanged")
-               let lineNum = e.toString().match(/on line (\d+):/)[1]
-               this.state.warnings[lineNum] = e.replace(/ on line (\d+)/, "")
+               let match = e.toString().match(/on line (\d+):/)
+               if(match) {
+                  let lineNum = match[1]
+                  this.state.warnings[lineNum] = e.replace(/ on line (\d+)/, "")
+               }
             }
          }
       }

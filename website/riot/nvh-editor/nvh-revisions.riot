@@ -38,7 +38,8 @@
       export default{
          bindings: [["nvhStore", "isRevisionsOpenChanged", "onToggle"],
                     ["store", "isEntryRevisionsLoadingChanged", "update"],
-                    ["nvhStore", "entryChanged", "onEntryChanged"]],
+                    ["nvhStore", "revisionChanged", "update"],
+                    ["nvhStore", "entryIdChanged", "onEntryIdChanged"]],
 
          state: {
             resizeHandle: null,
@@ -76,7 +77,7 @@
             }
          },
 
-         onEntryChanged(){
+         onEntryIdChanged(){
             this.state.open && this.store.loadEntryRevisions()
          },
 

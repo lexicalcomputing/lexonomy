@@ -1,9 +1,9 @@
 <nvh-editor class="positionRelative">
    <loading-overlay if={dictData.isEntryLoading}/>
    <nvh-editor-toolbar/>
+   <nvh-revisions/>
    <template if={nvhData.entry}>
       <nvh-editor-context-menu/>
-      <nvh-revisions/>
       <nvh-custom-editor if={nvhData.customEditor && dictData.editorMode != "code"}/>
       <template if={!nvhData.customEditor}>
          <template if={dictData.editorMode == "view"}>
@@ -28,14 +28,25 @@
    </template>
    <nvh-source-code if={(nvhData.entry || nvhData.brokenEntryNvh) && dictData.editorMode == "code"}
          read-only={!dictData.userAccess.canEdit}/>
-   <template if={!dictData.isEntryLoading && !nvhData.entry}>
-      <template if={!nvhData.brokenEntryNvh || dictData.editorMode != "code"}>
-         <div class="nvh-no-entry grey-text">
-            <div class="nvh-no-entry-title mb-2">
+   <template if={!dictData.isEntryLoading && !nvhData.entry && dictData.editorMode != "code"}>
+      <template if={!nvhData.brokenEntryNvh}>
+         <div class="nvh-entry-status grey-text">
+            <div class="nvh-entry-status-title mb-2">
                NO ENTRY SELECTED
             </div>
-            <div class="nvh-no-entry-desc">
+            <div class="nvh-entry-status-desc">
                Select an entry from the side menu<template if={dictData.userAccess.canEdit}> or create a <a href="javascript:void(0);" onclick={onCreateNewEntryClick}>new one</a></template>.
+            </div>
+         </div>
+      </template>
+      <template if={nvhData.brokenEntryNvh}>
+         <div class="nvh-entry-status grey-text">
+            <div class="nvh-entry-status-title mb-2">
+               ENTRY IS BROKEN
+            </div>
+            <div if={nvhStore.getAvailableActions().code}
+                  class="nvh-entry-status-desc">
+               You can fix the entry in the <a href="javascript:void(0);" onclick={onOpenCodeEditorClick}>code editor</a>.
             </div>
          </div>
       </template>
@@ -45,8 +56,8 @@
    <script>
       export default{
          bindings: [["store", "isEntryLoadingChanged", "onIsEntryLoadingChanged"],
-                    ["nvhStore", "updateEditor", "update"],
-                    ["nvhStore", "entryChanged", "onEntryChanged"],
+                    ["nvhStore", "revisionChanged", "update"],
+                    ["nvhStore", "entryContentChanged", "onEntryContentChanged"],
                     ["nvhStore", "editorModeChanged", "onEditorModeChanged"]],
 
 
@@ -77,7 +88,7 @@
             this.refreshListeners()
          },
 
-         onEntryChanged(){
+         onEntryContentChanged(){
             // update URL here not in store, so changing entryId in other part
             // of lexonomy does not trigger URL update
             this.nvhStore.updateUrl()
@@ -86,6 +97,10 @@
 
          onCreateNewEntryClick(){
             this.nvhStore.createNewEntry()
+         },
+
+         onOpenCodeEditorClick(){
+            this.nvhStore.changeEditorMode("code")
          },
 
          handleClickOutside(evt){
@@ -256,12 +271,12 @@
          min-height: 400px;
          display: block;
       }
-      .nvh-no-entry{
+      .nvh-entry-status{
          min-height: 50vh;
          text-align: center;
          padding-top: 20vh;
       }
-      .nvh-no-entry-title{
+      .nvh-entry-status-title{
          margin-top: -30px;
          font-size: 30px;
       }

@@ -113,7 +113,7 @@
 
          refreshAvailableElements(){
             let addChildrenElements = parent => {
-               this.state.availableElements.push(...this.nvhStore.getAvailableChildElements(parent)
+               this.state.availableElements.push(...this.nvhStore.getAvailableChildElementPaths(parent)
                      .map(elementPath => ({
                         path: elementPath,
                         parent: parent
