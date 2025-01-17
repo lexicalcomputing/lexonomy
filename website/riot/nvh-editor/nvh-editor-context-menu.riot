@@ -272,8 +272,8 @@
                let style = this.nvhStore.getElementStyle(elementPath)
                return !style?.hidden && !style?.hideValue
             }
-            let availAbleChildElements = this.nvhStore.getAvailableChildElements(element).filter(filterHiddenElements)
-            let availSiblingsElements = element.parent ? this.nvhStore.getAvailableChildElements(element.parent).filter(filterHiddenElements) : []
+            let availAbleChildElements = this.nvhStore.getAvailableChildElementPaths(element).filter(filterHiddenElements)
+            let availSiblingsElements = element.parent ? this.nvhStore.getAvailableChildElementPaths(element.parent).filter(filterHiddenElements) : []
 
             if(availAbleChildElements.length || availSiblingsElements.length){
                let o = {

@@ -3,8 +3,7 @@
 
    <script>
       export default{
-         bindings: [["nvhStore", "updateEditor", "updateEditor"],
-                    ["nvhStore", "entryChanged", "updateEditor"]],
+         bindings: [["nvhStore", "entryContentChanged", "updateEditor"]],
 
          onBeforeMount(){
             this.nvhStore = window.nvhStore
@@ -56,7 +55,7 @@
                      Editor: {
                         changed: function() {
                            this.nvhData.entry = this.nvhStore.XMLToJson(this.nvhData.customEditor.harvester())
-                           this.nvhStore.history.addState()
+                           this.nvhStore.addStateToHistory()
                         }.bind(this)
                      }
                   }
@@ -86,7 +85,7 @@
          onEditorChange(){
             if(this.nvhData.customEditorIsValid){
                this.nvhStore.setEntryFromCustomEditor()
-               this.nvhStore.history.addState()
+               this.nvhStore.addStateToHistory()
             }
          },
 

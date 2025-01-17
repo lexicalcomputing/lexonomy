@@ -54,8 +54,8 @@
             if(this.state.element){
                let siblings = this.state.element.parent ? this.state.element.parent.children : []
                this.state.isDragDisabled = this.state.element.name == this.nvhData.rootElement
-               this.state.isAddDisabled = !this.nvhStore.getAvailableChildElements(this.state.element).length
-                     && (!this.state.element.parent || !this.nvhStore.getAvailableChildElements(this.state.element.parent).length)
+               this.state.isAddDisabled = !this.nvhStore.getAvailableChildElementPaths(this.state.element).length
+                     && (!this.state.element.parent || !this.nvhStore.getAvailableChildElementPaths(this.state.element.parent).length)
                this.state.isDuplicationDisabled = !this.nvhStore.isElementDuplicationAllowed(this.state.element)
                this.state.isRemovalDisabled = !this.nvhStore.isElementRemovalAllowed(this.state.element)
                this.state.isMoveUpDisabled = !this.state.element.parent
