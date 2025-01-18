@@ -1273,17 +1273,6 @@ class StoreClass {
       })
    }
 
-   autonumberElements(countElem, storeElem){
-      return window.connection.post({
-         url: `${window.API_URL}${this.data.dictId}/autonumber.json`,
-         data: {
-            "countElem": countElem,
-            "storeElem": storeElem
-         },
-         failMessage: "Autonumbering failed."
-      })
-   }
-
    sendFeedback(email, text){
       return window.connection.post({
          url: `${window.API_URL}feedback.json`,
