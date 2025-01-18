@@ -800,7 +800,7 @@ def dictconfig(dictID):
         doctypes = list(set(doctypes))
 
         # WARNING consider if new config item does show personal data, than add to this list
-        hide_items = ["siteconfig", "download", "autonumber", "users"]
+        hide_items = ["siteconfig", "download", "users"]
         for item in hide_items:
             configs.pop(item)
 
@@ -999,12 +999,6 @@ def dict_access_update(dictID, user, dictDB, configs):
 def dict_settings_update(dictID, user):
     ops.updateDictSettings(dictID, request.forms.configs)
     return {"success": True}
-
-@post(siteconfig["rootPath"]+"<dictID>/autonumber.json")
-@authDict(["canConfig"])
-def autonumber(dictID, user, dictDB, configs):
-    process = ops.addAutoNumbers(dictDB, dictID, request.forms.countElem, request.forms.storeElem)
-    return {"success": True, "processed": process}
 
 @post(siteconfig["rootPath"]+"<dictID>/autoimage.json")
 @authDict(["canEdit"])
@@ -1390,7 +1384,7 @@ else:
     host = my_url
     port = 3000
 if cgi: # we are called as CGI script
-    run(host=host, port=port, debug=debug, server="cgi")
+    run(host=host, port=port, debug=True, server="cgi")
 elif "httpd" not in os.environ["HOME"]: # very poor mod_wsgi detection; else run a standalone server, prefer the paste server if available over the builtin one
     try:
         import paste
