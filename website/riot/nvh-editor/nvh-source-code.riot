@@ -43,7 +43,7 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            this.state.sourceCode = this.nvhData.brokenEntryNvh || this.nvhStore.jsonToNvh(this.nvhData.entry)
+            this.state.sourceCode = this.nvhData.brokenEntryNvh || this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry))
             this.validateAndShowWarningsDebounced = window.debounce(this.validateAndShowWarnings, 50)
             this.addStateToHistoryDebounced = window.debounce(this.addStateToHistory, 1000)
             this.validate()
