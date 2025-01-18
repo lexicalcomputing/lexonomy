@@ -155,10 +155,9 @@
                </a>
             </li>
             <li>
-               <a href="javascript:void(0);"
-                     class="iconLink"
-                     onclick={onHelpClick}>
-                  <i class="material-icons">help_outline</i>
+               <a href="https://guide.lexonomy.eu/"
+                     target="_blank">
+                     User guide
                </a>
             </li>
             <li>
@@ -293,14 +292,6 @@
          onLogoutClick(event) {
             window.nvhStore.callIfNoNeedToSave(() => {
                this.auth.logout()
-            })
-         },
-
-         onHelpClick(){
-            window.modal.open({
-               tag: "help-dialog",
-               tall: true,
-               fixedFooter: true
             })
          },
 
