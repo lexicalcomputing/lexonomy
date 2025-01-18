@@ -616,54 +616,6 @@ class StoreClass {
       }
    }
 
-   loadEntryLinks(){
-      return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/entrylinks.json`,
-         data: {
-            id: this.data.entryId
-         },
-         failMessage: "Links could not be loaded."
-      })
-   }
-
-   createEntryLink(source_el, target_dict, target_id, target_el){
-      // TODO use paths
-      return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/links/add`,
-         data: {
-            source_el: source_el,
-            source_id: this.data.entryId,
-            target_dict: target_dict,
-            target_id: target_id,
-            target_el: target_el
-         },
-         failMessage: "Could not create the link.",
-         successMessage: "The link was created."
-      })
-   }
-
-   deleteEntryLink(linkId){
-      return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/links/delete/${linkId}`,
-         failMessage: "Could not delete the link.",
-         successMessage: "The link was deleted."
-      })
-   }
-
-   loadLinkables(dictId){
-       return window.connection.get({
-         url: `${window.API_URL}${dictId}/linkablelist.json`,
-         failMessage: "Links could not be loaded."
-      })
-   }
-
-   loadDictionaryLinks(){
-      return window.connection.get({
-         url: `${window.API_URL}${this.data.dictId}/links.json`,
-         failMessage: "Dictionary links could not be loaded."
-      })
-   }
-
    loadFinalSchema(schemaItems){
       return window.connection.post({
          url: `${window.API_URL}schemafinal.json`,
