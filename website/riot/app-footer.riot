@@ -1,5 +1,12 @@
 <app-footer>
-   <div class="footer-logos displayFlex">
+   <div class="dictionaryExpress">
+      <a href="https://dictionary.express/"
+            target="_blank">
+         <img class="skelogo"
+               src="img/dictionary_express_footer.png"/>
+      </a>
+   </div>
+   <div class="footer-logos">
       <div class="logolint">
          <a target="_blank"
                href="https://www.sketchengine.eu/"
@@ -48,6 +55,20 @@
    <style>
       :host{
          margin-top: auto;
+      }
+      .dictionaryExpress{
+         min-height: 76px;
+         background-color: #7a6f9b;
+         &:hover{
+            opacity: 0.9
+         }
+         a{
+            display: block;
+            text-align: center;
+         }
+         img{
+            max-width: 100vw;
+         }
       }
       .footer-logos{
          padding: 15px 20px 15px 50px;
