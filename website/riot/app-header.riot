@@ -62,12 +62,6 @@
             Upload
          </a>
       </li>
-      <li if={dictData.userAccess.canEdit}>
-         <a href="#/{dictData.dictId}/links">
-            <i class="material-icons left">link</i>
-            Links
-         </a>
-      </li>
       <li class="divider"
             tabindex="-1"></li>
       <li if={dictData.userAccess.canEdit}>
@@ -242,10 +236,6 @@
          <li if={dictData.userAccess.canUpload}>
             <a href="#/{dictData.dictId}/upload"
                   class="sidenav-close">Upload</a>
-         </li>
-         <li if={dictData.userAccess.canEdit}>
-            <a href="#/{dictData.dictId}/links"
-                  class="sidenav-close">Links</a>
          </li>
       </template>
       <template if={!authData.authorized}>

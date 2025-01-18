@@ -113,9 +113,6 @@
             route('/*/config', (dictId) => {
                this.goTo('dict-config', [dictId])
             })
-            route('/*/links', (dictId) => {
-               this.goTo('dict-links', [dictId])
-            })
             route('/*/download', (dictId) => {
                this.goTo('dict-download', [dictId])
             })
@@ -257,8 +254,7 @@
                || (page == "dict-download" && uA.canDownload)
                || (page == "dict-upload" && uA.canUpload)
                || (page != "dict-config-limits" && page.startsWith("dict-config") && uA.canConfig)
-               || (page.startsWith("dict-edit") && uA)
-               || (page.startsWith("dict-links") && (uA.canEdit))){
+               || (page.startsWith("dict-edit") && uA)){
                return true
             }
             return false

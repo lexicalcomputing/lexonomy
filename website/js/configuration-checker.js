@@ -29,10 +29,6 @@ class ConfigurationCheckerClass {
             name: "Basic settings",
             url: "ident"
          },
-         links: {
-            name: "Linking",
-            url: "links"
-         },
          publico: {
             name: "Publishing",
             url: "publico"
@@ -205,34 +201,6 @@ class ConfigurationCheckerClass {
                }
             })
          }
-      }
-      return result
-   }
-
-   check_links(config){
-      let result = []
-      if(config.links){
-         Object.entries(config.links).forEach(([linkingElement, elementConfig]) => {
-            if(!this.isElementInStructure(linkingElement, config)){
-               result.push(["links", "warning", `Linking element "${linkingElement}" not found in entry structure.`])
-            }
-            if(!elementConfig.identifier){
-               result.push(["links", "error", `Missing Identifier for Linking element "${linkingElement}".`])
-            } else {
-               let regex = /%\((.*?)\)/g
-               if(!regex.test(elementConfig.identifier)){
-                     result.push(["links", "warning", `Idenitifer for Linking element "${linkingElement}" does not contain %(ELEMENT).`])
-                  } else{
-                     elementConfig.identifier.match(regex)
-                           .map(x => x.slice(2, -1))
-                           .forEach(elementPath => {
-                              if(!this.isElementInStructure(elementPath, config)){
-                                 result.push(["links", "error", `Element "${elementPath}" in Identifier field for Linking element "${linkingElement}" not found in entry structre.`])
-                              }
-                           })
-                  }
-            }
-         })
       }
       return result
    }
