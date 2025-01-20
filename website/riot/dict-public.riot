@@ -218,12 +218,17 @@
          },
 
          onDelete(){
-            if (confirm("Are you sure you want to delete dictionary " + this.dictData.title + "? You will not be able to undo this.")) {
-               this.update({isLoading: true})
-               this.store.deleteDictionary(this.dictData.dictId)
-                     .done(() => {route("/")})
-                     .fail(() => {this.update({isLoading: false})})
-            }
+            window.openConfirmDialog({
+               title: "Delete dictionary?",
+               content: `Are you sure you want to delete dictionary "${this.dictData.title}"? You will not be able to undo this.`,
+               confirmLabel: "Delete",
+               onConfirm: () => {
+                  this.update({isLoading: true})
+                  this.store.deleteDictionary(this.dictData.dictId)
+                        .done(() => {route("/")})
+                        .fail(() => {this.update({isLoading: false})})
+               }
+            })
          },
 
          reloadDictionaryExamples(){

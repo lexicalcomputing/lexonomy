@@ -301,11 +301,16 @@
          },
 
          onDeleteSelectedClick(){
-            if (confirm("Are you sure you want to delete selected dictionaries? You will not be able to undo this.")) {
-               this.update({isLoading: true})
-               let toDelete = this.state.visibleDictionaries.filter(dict => dict.selected).map(dict => dict.id)
-               this.deleteNextSelected(toDelete)
-            }
+            window.openConfirmDialog({
+               title: "Delete dictionaries?",
+               content: `Are you sure you want to delete selected dictionaries? You will not be able to undo this.`,
+               confirmLabel: "Delete",
+               onConfirm: () => {
+                  this.update({isLoading: true})
+                  let toDelete = this.state.visibleDictionaries.filter(dict => dict.selected).map(dict => dict.id)
+                  this.deleteNextSelected(toDelete)
+               }
+            })
          },
 
          onDeselectAllClick(){
@@ -320,11 +325,16 @@
 
          onDeleteClick(dictId) {
             var dictTitle = this.store.getDictionary(dictId).title
-            if (confirm("Are you sure you want to delete dictionary " + dictTitle + "? You will not be able to undo this.")) {
-               this.update({isLoading: true})
-               this.store.deleteDictionary(dictId)
-                     .always(() => {this.update({isLoading: false})})
-            }
+            window.openConfirmDialog({
+               title: "Delete dictionary?",
+               content: `Are you sure you want to delete dictionary "${dictTitle}"? You will not be able to undo this.`,
+               confirmLabel: "Delete",
+               onConfirm: () => {
+                  this.update({isLoading: true})
+                  this.store.deleteDictionary(dictId)
+                        .always(() => {this.update({isLoading: false})})
+               }
+            })
          },
 
          reload(){
