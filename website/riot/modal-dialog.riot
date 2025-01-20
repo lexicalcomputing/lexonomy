@@ -1,7 +1,7 @@
 <modal-dialog class="modal-dialogs">
    <div each={(dialog, idx) in state.dialogs}
          id={dialog.id}
-         class="modal-dialog {dialog.class} {dialog.small && 'small'} {dialog.big && 'big'} {dialog.large && 'large'} {dialog.tall && 'tall'} {dialog.fullScreen && 'fullScreen'} {dialog.overflowVisible && 'overflowVisible'}">
+         class="modal-dialog {dialog.class} {dialog.small && 'small'} {dialog.big && 'big'} {dialog.large && 'large'} {dialog.tall && 'tall'} {dialog.fullScreen && 'fullScreen'} {dialog.overflowVisible && 'overflowVisible'} {dialog.centered && 'modal-center'}">
       <span if={dialog.fullScreen && (typeof dialog.dismissible != "undefined" ? dialog.dismissible : true)}
             class="fullScreenClose">
          <i class="material-icons material-clickable"
@@ -9,7 +9,7 @@
       </span>
       <div id="dialog_{idx}"
             class="modal {dialog.fixedFooter && 'modal-fixed-footer'} {dialog.bottom && 'bottom-sheet'} {dialog.autowidth && 'autowidth'} {dialog.onTop && 'onTop'}">
-         <div class="{dialog.autowidth && 'modal-center'}">
+         <div>
             <div class="modal-content">
                <h2 if={dialog.title}>
                   {dialog.title}
@@ -231,6 +231,16 @@
          &.overflowVisible{
             .modal{
                overflow: visible;
+            }
+         }
+
+         &.modal-center{
+            h2,
+            .dialogContent{
+               text-align: center;
+            }
+            .modal-footer{
+               justify-content: center;
             }
          }
 
