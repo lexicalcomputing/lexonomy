@@ -130,16 +130,21 @@
 
          doDeleteDict(dictId) {
             var dictTitle = this.state.dictionaries.find(dictionary => dictionary.id == dictId).title
-            if (confirm("Are you sure you want to delete dictionary " + dictTitle + "? You will not be able to undo this.")) {
-               this.update({isLoading: true})
-               this.store.deleteDictionary(dictId)
-                     .always(payload => {
-                        if(!payload.error){
-                           this.state.dictionaries = this.state.dictionaries.filter(dictionary => dictionary.id != dictId)
-                        }
-                        this.update({isLoading: false})
-                     })
-            }
+            window.openConfirmDialog({
+               title: "Delete dictionary?",
+               content: `Are you sure you want to delete dictionary "${dictTitle}"? You will not be able to undo this.`,
+               confirmLabel: "Delete",
+               onConfirm: () => {
+                  this.update({isLoading: true})
+                  this.store.deleteDictionary(dictId)
+                        .always(payload => {
+                           if(!payload.error){
+                              this.state.dictionaries = this.state.dictionaries.filter(dictionary => dictionary.id != dictId)
+                           }
+                           this.update({isLoading: false})
+                        })
+               }
+            })
          },
 
          onSearchInput(evt){

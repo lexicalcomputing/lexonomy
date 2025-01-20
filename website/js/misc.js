@@ -361,3 +361,29 @@ window.loadScript = (src, onLoad) => {
       }
    }
 }
+
+window.openConfirmDialog = (params) => {
+   window.modal.open({
+      title: params.title,
+      tag: "raw-html",
+      props: {
+         content: params.content
+      },
+      dismissible: false,
+      showCloseButton: false,
+      small: true,
+      buttons: [{
+         label: params.cancelLabel || "Cancel",
+         onClick: (dialog, modal) => {
+            params.onCancel && params.onCancel()
+            modal.close()
+         }
+      }, {
+         label: params.confirmLabel || "OK",
+         onClick: (dialog, modal) => {
+            params.onConfirm && params.onConfirm()
+            modal.close()
+         }
+      }]
+   })
+}
