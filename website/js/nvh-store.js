@@ -213,13 +213,40 @@ class NVHStoreClass {
                      )
                )
             ){
-            window.openConfirmDialog({
-               title: "Discard changes?",
-               content: "You have some unsaved changes. Do you wish to continue and discard the changes?",
-               confirmLabel: "Discard changes",
-               onConfirm: callback,
-               cancelLabel: "Back to editor"
+         let isSaveAvailable = this.getAvailableActions().save
+         let buttons = [{
+            label: "Return to editing",
+            onClick: (dialog, modal) => {
+               modal.close()
+            }
+         }, {
+            label: "Discard changes",
+            onClick: (dialog, modal) => {
+               callback()
+               modal.close()
+            }
+         }]
+         if(isSaveAvailable){
+            buttons.unshift({
+               label: "Save",
+               onClick: (dialog, modal) => {
+                  modal.close()
+                  this.saveEntry()
+                  this.one("isSavingChanged", () => {
+                     callback()
+                  })
+               }
             })
+         }
+
+         window.modal.open({
+            title: "Changes not saved",
+            dismissible: false,
+            showCloseButton: false,
+            centered: true,
+            small: true,
+            buttons: buttons
+         })
       } else {
          callback && callback()
       }
