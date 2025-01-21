@@ -1,0 +1,326 @@
+<dict-config-formatting>
+  <h1 class="formatting-page-title">Entry Formatting</h1>
+  <div class="formatting-page-visibility-container">
+    <div onclick={onLayoutClick.bind(this, "showElements")}
+        class="formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
+      <img class="icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+    <div onclick={onLayoutClick.bind(this, "showStyle")}
+        class="formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
+      <img class="icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+    <div onclick={onLayoutClick.bind(this, "showEditing")}
+        class="formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
+      <img class="icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+    <div onclick={onLayoutClick.bind(this, "showExample")}
+        class="formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
+      <img class="icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+  </div>
+  <div class="formatting-page-wrapper-container">
+    <div if={state.showElements}
+        id="elements-container"
+        class="formatting-page-container">
+      <div class="header-box">
+        <img class="icon-svg" src="img/logo_ske_round.png"/>
+        <h2>Elements</h2>
+      </div>
+      <div class="elements-choice-section-wrapper">
+        <elements-choice-section class="elements-choice-section"/>
+      </div>
+    </div>
+    <div if={state.showStyle}
+        id="style-container"
+        class="formatting-page-container">
+      <div class="header-box">
+        <img class="icon-svg" src="img/logo_ske_round.png"/>
+        <h2>Style</h2>
+      </div>
+      <div>TBD</div>
+    </div>
+    <div if={state.showEditing}
+        id="editing-container"
+        class="formatting-page-container">
+      <div class="editing-header">
+        <div class="header-box">
+          <img class="icon-svg" src="img/logo_ske_round.png"/>
+          <h2>Editing</h2>
+        </div>
+        <div onclick={onToggleEditing}
+            id="toggle-edit-mode"
+            class="{state.editing.enabled ? "toggle-edit-mode-active" : "toggle-edit-mode-inactive"}">
+          Edit mode
+        </div>
+        <div if={state.editing.enabled}
+            onclick={onEditModeChange.bind(this, "column")}
+            class="edit-option-mode {state.editing.mode == "column" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
+          Add Column mode
+        </div>
+        <div if={state.editing.enabled}
+            onclick={onEditModeChange.bind(this, "row")}
+            class="edit-option-mode {state.editing.mode == "row" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
+          Add Row mode
+        </div>
+        <div if={state.editing.enabled}
+            onclick={onEditModeChange.bind(this, "delete")}
+            class="edit-option-mode {state.editing.mode == "delete" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
+          Delete mode
+        </div>
+        <div id="columns-color">Columns</div>
+        <div id="rows-color">Rows</div>
+      </div>
+      <div class="editing-layout-wrapper">
+        <edit-layout class="edit-layout"
+                    editing={state.editing}
+                    schema={schema}
+                    parent={this}/>
+      </div>
+    </div>
+    <div if={state.showExample} 
+        id="example-container"
+        class="formatting-page-container">
+      <div class="header-box">
+        <img class="icon-svg" src="img/logo_ske_round.png"/>
+        <h2>Example</h2>
+      </div>
+      <div class="example-section-wrapper">
+        <example-section class="example-section"
+                        schema={schema}/>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    export default {
+      state: {
+        showElements: true,
+        showStyle: true,
+        showEditing: true,
+        showExample: true,
+        editing: {
+          enabled: false,
+          mode: "column" /*types: "column", "row", "delete" */
+        },
+      },
+      schema: {
+        orientation: "column", /*orientation of scrollable-div is always "column"*/
+        children: [
+          {
+            isDeleted: false,
+            orientation: "column", /*default placeholder is of type "column"*/
+            content: {
+              name: "",
+              color: ""
+            },
+            contentColor: "",
+            children: [],
+          }
+        ]
+      },
+
+      onLayoutClick(sectionName) {
+        console.log(sectionName);
+        switch (sectionName) {
+          case "showElements":
+            this.update({showElements: !this.state.showElements});
+            break;
+          case "showStyle":
+            this.update({showStyle: !this.state.showStyle});
+            break;
+          case "showEditing":
+            this.update({showEditing: !this.state.showEditing});
+            break;
+          case "showExample":
+            this.update({showExample: !this.state.showExample});
+        }
+      },
+
+      onToggleEditing() {
+        this.state.editing.enabled = !this.state.editing.enabled;
+        this.update();
+      },
+
+      onEditModeChange(editModeType) {
+        this.state.editing.mode = editModeType;
+        this.update();
+      },
+    }
+  </script>
+
+  <style>
+    * {
+      --color-row: #e3401c;
+      --color-column: #47a6e6;
+    }
+
+
+    .icon-svg {
+      height: 20px;
+      width: 20px;
+    }
+    .header-box {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+
+    .formatting-page-title {
+      text-wrap: nowrap;
+    }
+    .formatting-page-visibility-container {
+      display: flex;
+    }
+    .formatting-page-wrapper-container {
+      display: flex;
+      height: 700px;
+      overflow-x: auto;
+    }
+
+
+    .elements-choice-section {
+      width: fit-content;
+      display: block;
+      height: 100%;
+      min-width: 100%;
+    }
+    .elements-choice-section-wrapper {
+      width: 100%;
+      height: 600px;
+    }
+
+
+    .example-section {
+      width: fit-content;
+      display: block;
+      height: 100%;
+      min-width: 100%;
+    }
+    .example-section-wrapper {
+      width: 100%;
+      height: 600px;
+    }
+
+
+    .formatting-page-visibility-item {
+      padding: 5px;
+      background-color: #40e675;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .formatting-page-visibility-item:hover {
+      cursor: pointer;
+      transform: scale(1.05);
+    }
+    .formatting-page-visibility-item:active {
+      transform: scale(1.1);
+    }
+    .item-inactive {
+      background-color: #d3e8d9;
+    }
+
+
+    .formatting-page-container {
+      width: 100%;
+    }
+    #elements-container {
+      border-right: 1px solid #dcdee3;
+      padding-right: 1.5em;
+      flex: 2 5 auto;
+      min-width: 200px
+    }
+    #style-container {
+      border-right: 1px solid #dcdee3;
+      padding-left: 1.5em;
+      padding-right: 1.5em;
+      flex: 1 6 auto;
+      min-width: 150px;
+    }
+    #editing-container {
+      border-right: 1px solid #dcdee3;
+      padding-left: 1.5em;
+      padding-right: 1.5em;
+      flex: auto;
+      width: auto;
+    }
+    #example-container {
+      border-right: 1px solid #dcdee3;
+      padding-left: 1.5em;
+      padding-right: 1.5em;
+      flex: auto;
+      min-width: 450px;
+    }
+
+
+    .editing-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 450px;
+    }
+    .editing-layout-wrapper {
+      width: 100%;
+      height: 600px;
+    }
+    .edit-layout {
+      width: fit-content;
+      display: block;
+      height: 100%;
+      min-width: 100%;
+    }
+
+
+    #rows-color {
+      background-color: var(--color-row);
+    }
+    #columns-color {
+      background-color: var(--color-column);
+    }
+
+
+    #toggle-edit-mode {
+      padding: 5px;
+      cursor: pointer;
+      text-wrap: nowrap;
+    }
+    #toggle-edit-mode:hover {
+      transform: scale(1.05);
+      background-color:rgb(72, 120, 249);
+    }
+    #toggle-edit-mode:active {
+      transform: scale(1.1);
+    }
+    .toggle-edit-mode-active {
+      padding: 5px;
+      background-color: rgb(87, 129, 244);
+      font-weight: bold;
+    }
+    .toggle-edit-mode-inactive {
+      background-color: rgb(175, 193, 243);;
+    }
+
+
+    .edit-option-mode {
+      padding: 5px;
+      cursor: pointer;
+      text-wrap: nowrap;
+    }
+    .edit-option-mode:hover {
+      transform: scale(1.05);
+      background-color:rgb(53, 242, 204);
+    }
+    .edit-option-mode:active {
+      transform: scale(1.1);
+    }
+    .edit-option-mode-active {
+      padding: 5px;
+      background-color:rgb(97, 246, 216);
+      font-weight: bold;
+    }
+    .edit-option-mode-inactive {
+      background-color: rgb(176, 249, 235);
+    }
+  </style>
+</dict-config-formatting>

@@ -1,0 +1,43 @@
+<elements-choice-item>
+  <div class="elements-choice-item-wrapper"
+      style="padding-left: {props.indentationLevel}px"
+      draggable="true"
+      ondragstart={onDragStart}
+      ondragend={onDragEnd}>
+    <div class="elements-choice-item-box"
+        style="background-color: {props.state.data.color}">
+    </div>
+    <div style="color: {props.state.data.color}">{props.state.data.name}</div>
+  </div>
+  <template each={child in props.state.children}>
+    <elements-choice-item state={child}
+                          indentationLevel={props.indentationLevel + 15}/>
+  </template>
+
+  <script>
+    export default {
+      onDragStart(event) {
+        event.dataTransfer.clearData();
+        const data = JSON.stringify(this.props.state.data);
+        event.dataTransfer.setData("text/plain", data);
+      },
+    }
+  </script>
+
+  <style>
+    .elements-choice-item-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: grab;
+    }
+    .elements-choice-item-wrapper:hover {
+      background-color: #d7e4f7;
+    }
+    .elements-choice-item-box {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+  </style>
+</elements-choice-item>

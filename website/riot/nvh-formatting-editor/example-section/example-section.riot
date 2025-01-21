@@ -1,0 +1,28 @@
+<example-section>
+  <div class="example-section-container">{strSchema}</div>
+
+  <script>
+    export default {
+      schema: null,
+      strSchema: null,
+
+      onBeforeMount(props) {
+        this.schema = props.schema;
+        this.strSchema = JSON.stringify(this.schema);
+      },
+      onBeforeUpdate(props) {
+        this.schema = props.schema;
+        this.strSchema = JSON.stringify(this.schema);
+      },
+    }
+  </script>
+
+  <style>
+    .example-section-container {
+      border: 1px black dashed;
+      width: fit-content;
+      height: 100%;
+      min-width: 100%;
+    }
+  </style>
+</example-section>
