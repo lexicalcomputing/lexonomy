@@ -128,6 +128,9 @@ class NVHStoreClass {
       this.data.legacyCustomEditor = false
       this.data.collapsedElements.clear()
       if(this.data.editing.useOwnEditor){
+         if(window.store.data.editorMode == "view"){
+            this.changeEditorMode("edit") // custom editor does not have view mode
+         }
          try{
             let customEditor = new Function("return " + this.data.editing.js)();
             if(customEditor.editor && customEditor.harvester){
@@ -552,7 +555,7 @@ class NVHStoreClass {
 
    isValid(){
       return this.data.elementsMatchStructure
-            && (window.store.data.editorMode != "view"
+            && (window.store.data.editorMode != "edit"
                || !this.data.customEditor
                || this.data.legacyCustomEditor
                || this.data.customEditorIsValid)
@@ -572,12 +575,12 @@ class NVHStoreClass {
                && !this.data.isSaving
                // valid?
                && (
-                     (window.store.data.editorMode == "view"
+                     (window.store.data.editorMode == "edit"
                            && this.data.customEditor
                            && (this.data.legacyCustomEditor ? this.data.elementsMatchStructure : this.data.customEditorIsValid)
                      )
-                     || (((window.store.data.editorMode == "view" && !this.data.customEditor)
-                           || window.store.data.editorMode == "edit"
+                     || (((window.store.data.editorMode == "view" )
+                           || window.store.data.editorMode == "edit" && !this.data.customEditor
                            || window.store.data.editorMode == "code")
                            && this.isValid()
                         )
