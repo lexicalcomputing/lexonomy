@@ -261,8 +261,10 @@ textarea.materialize-textarea:focus:not([readonly])+label{
          padding: 0!important;
          display: flex;
          align-items: center;
-         white-space: pre;
       }
+   }
+   &.dropdown-content li > span {  // stronger rule
+      white-space: pre;
    }
    .info{
       color: #9e9e9e !important;
