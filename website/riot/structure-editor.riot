@@ -8,8 +8,8 @@
             <structure-dnd-zone element={element}/>
          </template>
       </div>
-
-      <button class="btn btn-primary btn-floating tooltipped ml-12 {!Object.keys(structureStore.data.structure.elements).length ? 'pulse mt-12' : 'mt-4'} {structureStore.data.editedElement ? 'disabled' : ''}"
+      <button if={!structureStore.data.structure.root}
+            class="btn btn-primary btn-floating tooltipped ml-8 pulse mt-6 {structureStore.data.editedElement ? 'disabled' : ''}"
             data-tooltip="Add new element"
             onclick={onAddClick}>
          <i class="material-icons">add</i>
@@ -218,7 +218,8 @@
             try{
                this.structureStore.validateElementName(evt.target.value)
                if(evt.target.value != this.structureStore.data.editedElement.name){
-                  let parent = this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent || this.structureStore.data.structure.root)
+                  let parent = this.structureStore.data.editedElement.parentElement //creating a new element
+                        || this.structureStore.getElementByPath(this.structureStore.data.editedElement.parent || this.structureStore.data.structure.root)
                   if(parent && parent.children.some(childPath => childPath.split(".").pop() == evt.target.value)){
                      throw `There is already element '${evt.target.value}' inside element '${parent.name}'.`
                   }
