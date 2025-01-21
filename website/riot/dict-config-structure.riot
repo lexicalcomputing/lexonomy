@@ -144,7 +144,7 @@
                         })
                         this.structureStore.setNewEntryTemplate(response.content.newEntryTemplate)
                         this.state.hasNewEntryTemplate = response.content.hasNewEntryTemplate
-                        this.state.originalStructure = {...this.structureStore.data.structure}
+                        this.state.originalStructure = window.deepCopy(this.structureStore.data.structure)
                         this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
                         if(this.state.tab == "custom"){
                            this.state.schemaNvh = this.structureStore.getNvh()
@@ -242,7 +242,9 @@
                         showCloseButton: false,
                         buttons: [{
                            label: "Cancel",
-                           onClick: window.modal.close
+                           onClick: (dialog, modal) => {
+                              modal.close()
+                           }
                         }, {
                            label: "discard changes",
                            onClick: this.discardChanges.bind(this, tab)
@@ -360,7 +362,7 @@
                   .done(response => {
                      this.state.brokenConfig = null
                      this.state.changed = false
-                     this.state.originalStructure = {...response.content.jsonSchema}
+                     this.state.originalStructure = window.deepCopy(response.content.jsonSchema)
                      this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
                   })
                   .always(() => this.update({isBusy: false}))
