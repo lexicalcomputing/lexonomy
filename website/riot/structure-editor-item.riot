@@ -6,6 +6,13 @@
    <div if={props.element}
          class="structure-item-wrapper"
          style="padding-left: {props.element.indent * 40}px;">
+      <div class="structure-new-element-wrapper"
+            onclick={window.stopEvtPropagation}
+            style="width: {props.element.indent * 40 + 45}px">
+         <i class="material-icons tiny"
+               onclick={onAddElementClick}>add</i>
+         <span></span>
+      </div>
       <i if={props.element.name != structureStore.data.root}
                class="structure-drag-handle material-icons grey-text">drag_handle</i>
       <div class="valueWrapper positionRelative pr-2 {structureStore.data.editedElement == props.element ? "yellow lighten-3" : ""}"
@@ -73,6 +80,13 @@
             this.structureStore.stopElementDragging()
          },
 
+         onAddElementClick(evt){
+            this.structureStore.startElementEditing({
+               type: "string",
+               parentElement: this.props.element
+            })
+         },
+
          onEditClick(){
             this.structureStore.startElementEditing(this.props.element)
          },
@@ -124,7 +138,13 @@
          }
       }
       .structure-item-wrapper{
-         display: flex
+         display: flex;
+         position: relative;
+         &:hover{
+            .structure-new-element-wrapper{
+               opacity: 0.7;
+            }
+         }
       }
       .structure-item-name{
          font-size: 1.1em;
@@ -152,6 +172,54 @@
          opacity: 0.5;
          &:hover{
             opacity: 1;
+         }
+      }
+      .structure-new-element-wrapper{
+         opacity: 0.4;
+         position: absolute;
+         color: lightgray;
+         right: calc(100% + 25px);
+         left: -20px;
+         bottom: -11px;
+         z-index: 100;
+         height: 24px;
+         &:hover{
+            opacity: 1!important;
+         }
+         i{
+            position: relative;
+            display: inline-block;
+            top: 4px;
+            width: 20px;
+            height: 20px;
+            line-height: 17px;
+            text-align: center;
+            border-radius: 50%;
+            border: 2px solid lightgray;
+            transition: all 0.1s ease-in-out;
+            z-index: 101;
+            +span{
+               content: " ";
+               display: block;
+               position: absolute;
+               height: 2px;
+               right: -50px;
+               top: 14px;
+               left: 19px;
+               opacity: 0;
+               transition: all 0.1s ease-in-out;
+               background: rgb(211,211,211);
+               background: linear-gradient(90deg, rgba(211,211,211,1) 0%, rgba(211,211,211,1) 75%, rgba(211,211,211,0) 100%);
+            }
+            &:hover{
+               color: #fff;
+               background-color: gray;
+               border-color: gray;
+               transform: scale(1.5);
+               +span{
+                  opacity: 1
+               }
+            }
          }
       }
    </style>

@@ -68,15 +68,16 @@ class StructureEditorStoreClass {
    }
 
    addElement(element){
-      let rootElement = this.getRootElement()
+      let parentElement = element.parentElement || this.getRootElement()
+      let parentElementPath = parentElement ? parentElement.path : ""
       Object.assign(element, {
-         indent: rootElement ? 1 : 0,
-         parent: rootElement ? this.data.structure.root : null,
-         path: rootElement ? `${this.data.structure.root}.${element.name}` : element.name,
+         indent: parentElementPath ? parentElementPath.split(".").length : 0,
+         parent: parentElementPath,
+         path: parentElementPath ? `${parentElementPath}.${element.name}` : element.name,
          children: []
       })
-      if(rootElement){
-         rootElement.children.push(element.path)
+      if(parentElement){
+         parentElement.children.unshift(element.path)
       } else {
          this.data.structure.root = element.name
       }
