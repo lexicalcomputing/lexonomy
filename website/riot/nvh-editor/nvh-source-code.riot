@@ -86,9 +86,12 @@
          },
 
          onEntryContentChanged(){
-            // compare ignoring irrelevant whitespaces
-            let json = this.nvhStore.nvhToJson(this.nvhStore.replaceElementNamesWithPaths(this.state.sourceCode))
-            if(!this.nvhStore.areNvhJsonsEqual(this.nvhData.entry, json)){
+            let json = null
+            try{
+               // compare ignoring irrelevant whitespaces
+               json = this.nvhStore.nvhToJson(this.nvhStore.replaceElementNamesWithPaths(this.state.sourceCode))
+            } catch(e){}
+            if(!json || !this.nvhStore.areNvhJsonsEqual(this.nvhData.entry, json)){
                let nvh = this.nvhStore.replaceElementPathsWithNames(this.nvhStore.jsonToNvh(this.nvhData.entry))
                this.updateSourceCode(nvh)
             }
