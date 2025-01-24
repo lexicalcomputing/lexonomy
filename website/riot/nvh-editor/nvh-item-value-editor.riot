@@ -16,7 +16,7 @@
                data-position="top"
                data-tooltip="Mark selected text as '{store.getElementDisplayedName(elementPath)}'"
                onclick={onMarkupButtonClick.bind(this, elementPath)}
-               style="--background-color: {nvhStore.getElementColor(elementPath)}">
+               style="background-color: {nvhStore.getElementColor(elementPath)}">
             {getMarkupNumber(elementPath)}: {store.getElementDisplayedName(elementPath)}
          </button>
 
@@ -333,14 +333,20 @@
 
          updateMarkupChildren(){
             this.state.markupChildrenPaths.forEach(elementPath => {
+               // delete all markup children
                this.props.element.children = this.props.element.children.filter(child => child.path != elementPath)
                const markupElements = $(".nvh-editable-div").find(`span[name="${elementPath}"]`)
                markupElements.each((idx, el) => {
                   let markupValue = el.textContent
                   let preceedingText = window.getElementPreceedingText(el)
+                  // searchText = text before node and all but last character of
+                  // actual node. So the count works properly when values are overlapping.
+                  // For examples if markupValue is "aa" and preceeding text is "aaa"
+                  // correct index of markupValue is 3 (counting from 0)
+                  let searchText = preceedingText + markupValue.substring(0, markupValue.length - 1)
                   let childElement = this.nvhStore._addChildElement(this.props.element, elementPath)
                   childElement.value = markupValue
-                  preceedingValueCount = Array.from(preceedingText.matchAll(window.reEscape(markupValue))).length
+                  preceedingValueCount = window.countAllSubstrings(searchText, markupValue)
                   if(preceedingValueCount){
                      childElement.value += `#${preceedingValueCount + 1}`
                   }
@@ -397,13 +403,6 @@
          padding: 0px 5px;
          text-transform: none;
          font-size: 0.8em;
-         background-color: #343434;
-         &:hover{
-            background-color: var(--background-color);
-         }
-         &.selected{
-            background-color: var(--background-color);
-         }
       }
       .nvh-text-value{
          border: 1px solid grey;
