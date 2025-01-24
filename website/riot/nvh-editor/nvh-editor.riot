@@ -155,6 +155,12 @@
                   evt.preventDefault()
                }
             }
+            if(evt.target?.parentNode.classList.contains("select-dropdown")){
+               // User hit enter when selecting value in select dropdown. Prevent
+               // processing of next onkeyup, which would open dropdown again
+               // TODO: try to find better solution, modification of event in dropdown keyup did not work
+               this.state.ignoreNextKeyUp = true
+            }
             let focused = this.nvhStore.getFocusedElement()
             if(focused
                   && $(this.root).hasClass("focused")
@@ -190,6 +196,10 @@
          },
 
          onKeyUp(evt){
+            if(this.state.ignoreNextKeyUp){
+               this.state.ignoreNextKeyUp = false
+               return
+            }
             let key = evt.keyCode
             let alt = evt.altKey
             let shift = evt.shiftKey
@@ -198,8 +208,7 @@
             if(focused
                   && $(this.root).hasClass("focused")
                   && !this.nvhData.isContextMenuOpen
-                  && !focused.edit
-                  && !["TEXTAREA", "INPUT"].includes(evt.target.nodeName)){
+                  && !focused.edit){
                if (key == 13){  // enter
                   !ctrl && !alt && !shift && this.nvhStore.startElementEditing(focused)
                   !ctrl && !alt &&  shift && this.nvhStore.trigger("openContextMenu")
