@@ -1,15 +1,15 @@
 <new-entry-template>
    <div each={(element, idx) in getElementList()}>
-      <i if={state.warnings.includes(element.path)}
-            class="material-icons positionAbsolute orange-text tooltipped help"
-            data-tooltip="The minimum number of element is set in the structure, so the element should be included in the new entry template.">
-         warning
+      <i if={state.mandatoryElements.includes(element.path)}
+            class="material-icons positionAbsolute blue-text tooltipped help"
+            data-tooltip="This element is defined as compulsory in the entry structure and cannot be removed from the template.">
+         info
       </i>
       <div class="entryRow elementWithCheckbox displayInlineFlex alignCenter">
          <label style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
             <input type="checkbox"
                   checked={state.defaultElements[element.path] || element.name == props.root}
-                  disabled={element.name == props.root}
+                  disabled={element.name == props.root || state.mandatoryElements.includes(element.path)}
                   onclick={onCheckboxChanged.bind(this, element.path)} />
             <span style="color: {window.nvhStore.getColorByIndex(idx)};">
                {element.name}
@@ -63,7 +63,7 @@
          state: {
             defaultElements: {},
             defaultValues: {},
-            warnings: []
+            mandatoryElements: []
          },
 
          TEXT_ELEMENT_TYPES: ["string", "int", "url"],
@@ -73,7 +73,7 @@
             this.state.elementList = this.getElementList()
             this.state.defaultValues = this.props.newEntryTemplate?.defaultValues || {}
             this.state.defaultElements = this.props.newEntryTemplate?.defaultElements || {}
-            this.validate()
+            this.refreshMandatoryElements()
          },
 
          onMounted(){
@@ -82,7 +82,7 @@
 
          onBeforeUpdate(){
             this.state.elementList = this.getElementList()
-            this.validate()
+            this.refreshMandatoryElements()
          },
 
          onUpdated(){
@@ -188,14 +188,14 @@
             this.callOnChange()
          },
 
-         validate(){
-            this.state.warnings = []
+         refreshMandatoryElements(){
+            this.state.mandatoryElements = []
             Object.values(this.props.elements).forEach(element => {
                if(element.path != this.props.root
                      && element.min
-                     && element.min >= 1
-                     && !this.state.defaultElements[element.path]){
-                  this.state.warnings.push(element.path)
+                     && element.min >= 1){
+                  this.state.mandatoryElements.push(element.path)
+                  this.state.defaultElements[element.path] = true
                }
             })
          },
@@ -215,11 +215,18 @@
       }
       .entryRow{
          gap: 10px;
-      }
-      .entryRow .elementDefaultValueInput{
-         margin-bottom: 0;
-         height: 23px;
-         line-height: 23px;
+         &:not(:hover){
+            input[type="checkbox"]:not(:checked){
+               & + span{
+                  color: #bbbbbb !important
+               }
+            }
+         }
+         .elementDefaultValueInput{
+            margin-bottom: 0;
+            height: 23px;
+            line-height: 23px;
+         }
       }
       input.select-dropdown{
          height: 1.5rem!important;
