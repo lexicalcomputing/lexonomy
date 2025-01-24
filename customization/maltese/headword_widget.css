@@ -1,6 +1,10 @@
 nvh-editor-toolbar {
   display: none
 }
-.exampleList li{
+.concLines li {
   list-style-type: disc;
+}
+.concLines li strong {
+  font-weight: bold;
+  color: #ff0000;
 }
