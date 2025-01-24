@@ -1410,8 +1410,7 @@ class NVHStoreClass {
                && config && config.type == "markup"
       })
             .forEach(child => {
-               let tmp = child.value.split("#")
-               let find = tmp[0]
+               let [find, occurrenceIndex] = child.value.split("#")
                if(find.trim()){
                   let replaceWith = createReplaceString(child.path, find)
                   if(child.value.indexOf("#") == -1){
@@ -1421,12 +1420,10 @@ class NVHStoreClass {
                         replaceWith: replaceWith
                      })
                   } else {
-                     let occurrenceIndex = tmp[1]
-                     let regex = new RegExp(window.reEscape(find), 'g');
-                     let matches = Array.from(value.matchAll(regex))
-                     if(matches.length >= occurrenceIndex) {
+                     let index = window.getNthSubstringIndex(value, find, occurrenceIndex)
+                     if(index !== -1){
                         replaceList.push({
-                           index: matches[occurrenceIndex - 1].index,
+                           index: index,
                            find: find,
                            replaceWith: replaceWith
                         })

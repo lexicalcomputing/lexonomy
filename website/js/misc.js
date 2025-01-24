@@ -290,6 +290,33 @@ window.getElementPreceedingText = element => {
    return text.trim()
 }
 
+window.countAllSubstrings = (str, subStr) => {
+   // including overlaps: search "aa" in "aaaa" returns 3
+   let count = 0
+   let pos = str.indexOf(subStr)
+   while (pos !== -1) {
+      count++
+      pos = str.indexOf(subStr, pos + 1)
+   }
+   return count
+}
+
+window.getNthSubstringIndex = (str, subStr, maxIndex) => {
+   let index = null
+   let count = 0
+   while (maxIndex > 0 && index !== -1) {
+        index = str.indexOf(subStr, index)
+        if (index !== -1) {
+            count++
+            if (count == maxIndex) {
+                return index
+            }
+            index++ // Move to the next position after the current match
+        }
+    }
+   return -1
+}
+
 window.objectEquals = (x, y) => {
    if(x === y) return true// if both x and y are null or undefined and exactly the same
    if(!(x instanceof Object) || !(y instanceof Object)) return false // if they are not strictly equal, they both need to be Objects
