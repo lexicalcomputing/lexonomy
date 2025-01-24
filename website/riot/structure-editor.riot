@@ -53,24 +53,24 @@
                data-error={state.errors.name}></span>
 
       </div>
-      <div class="input-field"
-            style="max-width: 130px;">
-         <select id="type"
-               onchange={onTypeChange}>
-            <template if={structureStore.data.editedElement == structureStore.getRootElement()}>
-               <option selected="selected"
-                     value="string">{store.const.ENTRY_TYPES.string}</option>
-            </template>
-            <template if={structureStore.data.editedElement != structureStore.getRootElement()}>
-               <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
-                     selected={obj[0] == structureStore.data.editedElement.type}
-                     value={obj[0]}>{obj[1]}</option>
-            </template>
-         </select>
-         <label>Type</label>
-      </div>
 
       <div class="displayFlex" style="gap: 20px;">
+         <div class="input-field"
+               style="max-width: 130px;">
+            <select id="type"
+                  onchange={onTypeChange}>
+               <template if={structureStore.data.editedElement == structureStore.getRootElement()}>
+                  <option selected="selected"
+                        value="string">{store.const.ENTRY_TYPES.string}</option>
+               </template>
+               <template if={structureStore.data.editedElement != structureStore.getRootElement()}>
+                  <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
+                        selected={obj[0] == structureStore.data.editedElement.type}
+                        value={obj[0]}>{obj[1]}</option>
+               </template>
+            </select>
+            <label>Type</label>
+         </div>
          <div class="input-field inlineBlock"
                style="max-width: 60px;">
             <input id="min"
@@ -130,38 +130,11 @@
                </span>
             </label>
          </div>
-         <div class="pl-4">
-            <div if={!state.values.length}
-                  class="grey-text pt-4 pb-2">
-                  No values added
-            </div>
-            <table if={state.values.length}
-                  class="valueTable">
-               <tbody>
-                  <tr each={(value, idx) in state.values}>
-                     <td>
-                        <span class="input-field">
-                           <input class="valueValue"
-                                 value={value}
-                                 oninput={onValueValueInput.bind(this, idx)}
-                                 onkeyup={idx + 1 == state.values.length ? onValueKeyUp : null}
-                                 type="text">
-                        </span>
-                     </td>
-                     <td>
-                        <button class="btn btn-flat btn-floating"
-                              onclick={onValueDeleteClick.bind(this, value)}>
-                           <i class="material-icons grey-text">delete</i>
-                        </button>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
-            <button class="btn btn-floating mt-4 tooltipped"
-                  data-tooltip="Add value"
-                  onclick={onValueAddClick}>
-               <i class="material-icons">add</i>
-            </button>
+         <div class="input-field">
+            <textarea id="elementValues"
+                  class="materialize-textarea"
+                  oninput={onValueValueInput}>{state.values.join("\n")}</textarea>
+            <span class="helper-text">One value per line.</span>
          </div>
       </div>
       <div class="center-align">
@@ -258,26 +231,16 @@
          onTypeChange(evt){
             let type = evt.target.value
             this.structureStore.data.editedElement.type = type
-            this.state.values = type == "list" ? [""] : []
             this.update()
+            if(type == "list"){
+               document.getElementById("elementValues").focus()
+            }
          },
 
-         onValueAddClick(){
-            this.state.values.push("")
-            this.update()
-            setTimeout(() => {
-               $(".valueTable tbody tr:last-child td:first-child input").focus()
-            }, 1)
-         },
-
-         onValueDeleteClick(value, evt){
-            evt.stopPropagation()
-            this.state.values = this.state.values.filter(v => v != value)
-            this.update()
-         },
-
-         onValueValueInput(idx, evt){
-            this.state.values[idx] = evt.target.value
+         onValueValueInput(evt){
+            this.state.values = [... new Set(evt.target.value.split("\n")
+                  .map(value => value.trim())
+                  .filter(value => value != ""))]
          },
 
          onValueKeyUp(evt){
@@ -309,14 +272,13 @@
          },
 
          saveElement(){
-            let values = this.state.values.filter(value => value.value != "")
             let element = Object.assign(this.structureStore.data.editedElement, {
                name: $("#name", this.root).val(),
                type: $("#type", this.root).val(),
                min: $("#min", this.root).val(),
                max: $("#max", this.root).val(),
                re: $("#re", this.root).val(),
-               values: values
+               values: this.state.values
             })
             if(!element.name){
                window.showToast("Please, enter element name.")
@@ -407,27 +369,17 @@
          z-index: 100;
          top: max(5vh, calc(40vh - 250px));
          left: calc(50vw - 200px);
-         .input-field input{
-            background-color: #fff;
+         .input-field {
+            input,
+            textarea {
+               background-color: #fff;
+            }
          }
       }
-      .valueTable{
-         .input-field{
-            border-bottom: 0;
-            input[type="text"]{
-               height: 2rem;
-               line-height: 2rem;
-               margin: 0;
-            }
-         }
-         tbody{
-            tr{
-               border-bottom: none;
-               td{
-                  padding: 5px 5px 5px 0;
-               }
-            }
-         }
+      #elementValues{
+         margin-bottom: 0;
+         max-height: calc(100vh - 450px);
+         overflow: auto;
       }
    </style>
 </structure-editor>
