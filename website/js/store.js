@@ -21,6 +21,7 @@ class StoreClass {
             int: "Number",
             image: "Image",
             audio: "Audio",
+            video: "Video",
             url: "URL",
             empty: "Empty", // no value, just child elements
             bool: "Yes/No",
