@@ -77,7 +77,7 @@
             this.nvhData = this.nvhStore.data
             this.state.config = this.nvhStore.getElementConfig(this.props.element.path) || {}
             this.state.style = this.nvhStore.getElementStyle(this.props.element.path) || {}
-            this.state.showEditor = ["string", "markup", "image", "audio", "url"].includes(this.state.config.type)
+            this.state.showEditor = ["string", "markup", "image", "audio", "video", "url"].includes(this.state.config.type)
             this.state.markupChildrenPaths = this.state.config.children
                   .filter(childPath => {
                      let config = this.nvhStore.getElementConfig(childPath)
