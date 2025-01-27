@@ -62,9 +62,7 @@ class StoreClass {
       this.changeDictionary(dictId)
       this.changeDoctype(doctype)
       entryId && this.changeEntryId(entryId)
-      if(editorMode){
-         this.data.editorMode = editorMode
-      }
+      this.data.editorMode = editorMode || "edit"
    }
 
    changeDictionary(dictId){
@@ -257,7 +255,7 @@ class StoreClass {
             modifier: 'start',
             advanced_query: ''
          },
-         editorMode: 'view',
+         editorMode: 'edit',
          userAccess: false,
          dictionaryExamples: null,
          dictionaryExamplesHasMore: null
@@ -347,6 +345,9 @@ class StoreClass {
                   if(!response.userAccess){
                      this.trigger("unauthorizedDictionary")
                      return
+                  }
+                  if(!response.userAccess.canEdit){
+                     this.data.editorMode = "view"
                   }
                   let elements = response.configs.structure.elements
                   if(!response.configs.formatting){
