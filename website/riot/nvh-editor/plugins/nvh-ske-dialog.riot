@@ -84,7 +84,8 @@
             useCQL: false,
             data: null,
             error: "",
-            wasRowClick: false
+            wasRowClick: false,
+            request: null
          },
 
          onBeforeMount(){
@@ -117,6 +118,7 @@
                   setTimeout(tooltip.destroy.bind(tooltip), 200)
                }, 4000)
             }
+            this.state.request && this.state.request.abort()
          },
 
          onInput(evt){
@@ -146,6 +148,7 @@
          },
 
          search(){
+            this.state.request && this.state.request.abort()
             this.update({
                isLoading: true,
                error: ""
@@ -178,7 +181,7 @@
             } else {
                data.lemma = this.state.query
             }
-            this.store.skeLoadData(this.props.method, data)
+            this.state.request = this.store.skeLoadData(this.props.method, data)
                   .done(response => {
                      if(response.error){
                         this.state.error = response.error
