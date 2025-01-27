@@ -8,29 +8,10 @@
                   checked="checked"
                   disabled="disabled">
             <span class="displayFlex alignCenter">
-               Core
+               Core components
                <i class="moduleHelpIcon help help material-icons tooltipped"
-                     data-tooltip="DMLex Core allows you to model the basic entries-and-sense structure of a monolingual lexicographic resource.">help_outline</i>
+                     data-tooltip=" Includes the key components useful for all kinds of dictionaries such as part-of-speech, pronunciation, word forms, senses, definitions, examples, labels, tags and others.">help_outline</i>
             </span>
-         </label>
-         <label class="checkbox moduleName mt-2">
-            <input type="checkbox"
-                  checked="checked"
-                  disabled="disabled">
-            <span class="displayFlex alignCenter">
-               Controlled values
-               <i class="moduleHelpIcon help help material-icons tooltipped"
-                     data-tooltip="DMLex Controlled Values Module extends DMLex Core to represent inventories of look-up values to be used as part-of-speech tags, usage label tags and others.">help_outline</i>
-            </span>
-         </label>
-         <label class="checkbox moduleName mt-2">
-            <input type="checkbox"
-                  checked="checked"
-                  disabled="disabled">
-            <span class="displayFlex alignCenter">
-               Linking
-               <i class="moduleHelpIcon help help material-icons tooltipped"
-                     data-tooltip="DMLex Linking Module extends DMLex Core and allows you to model various kinds of relations between entries, senses and other objects, including semantic relations such as synonymy and antonymy and presentational relations such as subentries and subsenses, both within a single lexicographic resource and across multiple lexicographic resources.">help_outline</i>              </span>
          </label>
          <label class="checkbox moduleName mt-2">
             <input type="checkbox"
@@ -38,9 +19,9 @@
                   name="xlingual"
                   onchange={onModuleCheckboxChange.bind(this, "xlingual")}>
             <span class="displayFlex alignCenter">
-               Crosslingual module
+               Multilingual components
                <i class="moduleHelpIcon help material-icons tooltipped"
-                     data-tooltip="DMLex Crosslingual Module extends DMLex Core to model bilingual and multilingual lexicographic resources.">help_outline</i>
+                     data-tooltip="Includes components required for bilingual and multilingual dictionaries such as translations, examples of translations, pronunciations and others.">help_outline</i>
             </span>
          </label>
          <div id="xlingualSettings"
@@ -67,9 +48,9 @@
                   name="annotation"
                   onchange={onModuleCheckboxChange.bind(this, "annotation")}>
             <span class="displayFlex alignCenter">
-               Annotation module
+               Highlighting
                <i class="moduleHelpIcon help material-icons tooltipped"
-                           data-tooltip="DMLex Annotation Module extends DMLex Core to allow the modelling of inline markup on various objects such as example sentences, including the modelling of collocations and corpus patterns.">help_outline</i>
+                     data-tooltip="Includes components required to highlight words, usually in definitions and example sentences, and assign functions to them.">help_outline</i>
             </span>
          </label>
          <label class="checkbox moduleName mt-2">
