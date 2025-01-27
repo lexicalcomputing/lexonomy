@@ -32,8 +32,7 @@
                onclick={onCollapseToggleClick}
                style={props.element.collapsed ? '' : 'display: none;'}>{getCollapsedValue()}</span>
 
-         <span if={state.config.type != "empty"}
-               class="nvh-value"
+         <span class="nvh-value"
                style={props.element.collapsed ? 'display: none;' : ''}>
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper">
@@ -43,7 +42,8 @@
                </span>
                <span if={!props.readOnly && state.config.type}
                      class="nvh-value-icons displayInlineFlex">
-                  <i class="pointer material-icons tiny"
+                  <i if={state.config.type != "empty"}
+                        class="pointer material-icons tiny"
                         onmousedown={onValueMouseDown}>edit</i>
                   <i if={nvhStore.isElementDuplicationAllowed(props.element)}
                         class="pointer material-icons tiny"
