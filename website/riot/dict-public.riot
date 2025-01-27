@@ -156,7 +156,8 @@
             <span class="mr-2">
                {dictData.licence.toUpperCase()}
             </span>
-            <a href={dictData.siteconfig.licences[dictData.licence].url}
+            <a if={dictData.siteconfig.licences[dictData.licence]}
+                  href={dictData.siteconfig.licences[dictData.licence].url}
                   class="verticalMiddle"
                   target="_blank">
                <img src="{dictData.siteconfig.licences[dictData.licence].icon}">

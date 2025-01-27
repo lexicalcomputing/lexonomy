@@ -113,11 +113,15 @@
                </td>
                <td>
                   <span id="i_{idx}">
-                     <a href={dictData.siteconfig.licences[row.licence].url}
+                     <a if={dictData.siteconfig.licences[row.licence]}
+                           href={dictData.siteconfig.licences[row.licence].url}
                            class="verticalMiddle"
                            target="_blank">
                         <img src="{dictData.siteconfig.licences[row.licence].icon}">
                      </a>
+                     <template if={!dictData.siteconfig.licences[row.licence]}>
+                        {row.licence}
+                     </template>
                   </span>
                </td>
                <td>
