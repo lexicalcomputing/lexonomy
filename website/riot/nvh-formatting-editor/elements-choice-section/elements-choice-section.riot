@@ -1,0 +1,70 @@
+<elements-choice-section>
+  <div class="elements-choice-section-container">
+    <template each={child in state.children}>
+      <elements-choice-item state={child} indentationLevel={5}/>
+    </template>
+  </div>
+
+  <script>
+    export default {
+      /*just example of elements for testing*/
+      state: {
+        children: [
+          {
+            data: {
+              name: "entry",
+              color: "blue"
+            },
+            children: [
+              {
+                data: {
+                  name: "pos",
+                  color: "orange"
+                },
+                children: []
+              },
+              {
+                data: {
+                  name: "pronunciation",
+                  color: "purple"
+                },
+                children: [
+                  {
+                    data: {
+                      name: "transcription",
+                      color: "blue"
+                    },
+                    children: []
+                  },
+                  {
+                    data: {
+                      name: "label",
+                      color: "green"
+                    },
+                    children: []
+                  },
+                ]
+              },
+              {
+                data: {
+                  name: "label",
+                  color: "green"
+                },
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+    }
+  </script>
+
+  <style>
+    .elements-choice-section-container {
+      border: 1px black dashed;
+      width: fit-content;
+      height: 100%;
+      min-width: 100%;
+    }
+  </style>
+</elements-choice-section>

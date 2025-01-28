@@ -1,0 +1,93 @@
+<placeholder-component>
+  <div if={props.state.content.name !== ""}
+      class="placeholder-content-box {props.editing.enabled ? "placeholder-content-box-edit" : ""}"
+      style="border: 1px solid {props.state.content.color};
+            color: {props.state.children.length === 0 ? "white" : props.state.content.color};
+            background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}">
+    {props.state.content.name}
+  </div>
+  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}
+              {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-inside-wrapper-deletable" : ""}">
+    <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
+                    onclick={() => props.addElement(0, props.global.parent, props.state, props.editing.mode)}
+                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
+                          {props.state.children.length === 0 ? "adder-first" : ""}"/>
+    <template each={(child, index) in props.state.children}>
+      <placeholder-component onclick={() => props.deleteElement(index, props.global.parent, props.state, props.editing, props.global, false)}
+                            ondragenter={(event) => onDragEnter(event, child.orientation)}
+                            ondragover={onDragOver}
+                            ondrop={(event) => onDrop(event, child)}
+                            ondragleave={onDragLeave}
+                            class="placeholder placeholder-{child.orientation}
+                                  {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}"
+                            state={child}
+                            editing={props.editing}
+                            global={props.global}
+                            delete-element={props.deleteElement}
+                            add-element={props.addElement}
+                            />
+      <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
+                      onclick={() => props.addElement(index + 1, props.global.parent, props.state, props.editing.mode)}
+                      class="adder adder-{props.state.orientation}"/>
+    </template>
+  </div>
+
+  <script>
+    export default {
+      onDragOver(event) {
+        event.preventDefault();
+      },
+      onDrop(event, state) {
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (this.props.global.canBeDropped) {
+          state.content.name = data.name;
+          state.content.color = data.color;
+        }
+        this.props.global.canBeDropped = false;
+      },
+    }
+  </script>
+
+  <style>
+    .placeholder-content-box {
+      padding: 5px 10px;
+    }
+    .placeholder-content-box-edit {
+      margin-bottom: 10px;
+    }
+    .placeholder-inside-wrapper {
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      width: 100%;
+      height: 100%;
+    }
+    .placeholder-inside-wrapper-column {
+      flex-direction: column;
+    }
+    .placeholder-inside-wrapper-row {
+      flex-direction: row;
+    }
+
+
+    .placeholder-deletable:hover {
+      background-color: rgb(241, 165, 159) !important;
+      cursor: pointer;
+    }
+    /*
+    "placeholder-deletable" is hovered and has no descendants that are hovered
+    */
+    .placeholder-deletable:hover:not(:has(.placeholder-deletable:hover)) * {
+      background-color: rgb(241, 165, 159) !important;
+    }
+    /*
+    "placeholder-deletable" has any hovered descendant
+    */
+    .placeholder-deletable:has(.placeholder-deletable:hover) {
+      background-color: white !important;
+    }
+  </style>
+</placeholder-component>

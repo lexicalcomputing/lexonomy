@@ -29,6 +29,7 @@ import './app.styles.scss'
 
 
 
+import adder_component from "./riot/nvh-formatting-editor/edit-layout-section/adder-component.riot"
 import admin_dicts from "./riot/admin-dicts.riot"
 import admin_users from "./riot/admin-users.riot"
 import admin_users_add from "./riot/admin-users-add.riot"
@@ -44,7 +45,7 @@ import dict_config from "./riot/dict-config.riot"
 import dict_config_buttons from "./riot/dict-config-buttons.riot"
 import dict_config_editing from "./riot/dict-config-editing.riot"
 import dict_config_flagging from "./riot/dict-config-flagging.riot"
-import dict_config_formatting from "./riot/dict-config-formatting.riot"
+import dict_config_formatting from "./riot/nvh-formatting-editor/dict-config-formatting.riot"
 import dict_config_gapi from "./riot/dict-config-gapi.riot"
 import dict_config_ident from "./riot/dict-config-ident.riot"
 import dict_config_limits from "./riot/dict-config-limits.riot"
@@ -67,10 +68,14 @@ import dict_public from "./riot/dict-public.riot"
 import dict_upload from "./riot/dict-upload.riot"
 import dictionaries from "./riot/dictionaries.riot"
 import e404 from "./riot/e404.riot"
+import edit_layout from "./riot/nvh-formatting-editor/edit-layout-section/edit-layout.riot"
 import element_select from "./riot/element-select.riot"
 import element_style_options from "./riot/element-style-options.riot"
+import elements_choice_item from "./riot/nvh-formatting-editor/elements-choice-section/elements-choice-item.riot"
+import elements_choice_section from "./riot/nvh-formatting-editor/elements-choice-section/elements-choice-section.riot"
 import entry_dropdown from "./riot/entry-dropdown.riot"
 import entry_list from "./riot/entry-list.riot"
+import example_section from "./riot/nvh-formatting-editor/example-section/example-section.riot"
 import feedback_dialog from "./riot/feedback-dialog.riot"
 import forgot from "./riot/forgot.riot"
 import forgot_password from "./riot/forgot-password.riot"
@@ -103,6 +108,7 @@ import nvh_ske_dialog from "./riot/nvh-editor/plugins/nvh-ske-dialog.riot"
 import nvh_source_code from "./riot/nvh-editor/nvh-source-code.riot"
 import nvh_widget_panel from "./riot/nvh-editor/nvh-widget-panel.riot"
 import open_dictionaries from "./riot/open-dictionaries.riot"
+import placeholder_component from "./riot/nvh-formatting-editor/edit-layout-section/placeholder-component.riot"
 import project_batches from "./riot/projects/project-batches.riot"
 import project_dict_name from "./riot/projects/project-dict-name.riot"
 import project_dictionary_status from "./riot/projects/project-dictionary-status.riot"
@@ -125,6 +131,7 @@ import user_consent from "./riot/user-consent.riot"
 import user_dropdown from "./riot/user-dropdown.riot"
 import user_profile from "./riot/user-profile.riot"
 import welcome from "./riot/welcome.riot"
+riot_register("adder-component", adder_component)
 riot_register("admin-dicts", admin_dicts)
 riot_register("admin-users", admin_users)
 riot_register("admin-users-add", admin_users_add)
@@ -163,10 +170,14 @@ riot_register("dict-public", dict_public)
 riot_register("dict-upload", dict_upload)
 riot_register("dictionaries", dictionaries)
 riot_register("e404", e404)
+riot_register("edit-layout", edit_layout)
 riot_register("element-select", element_select)
 riot_register("element-style-options", element_style_options)
+riot_register("elements-choice-item", elements_choice_item)
+riot_register("elements-choice-section", elements_choice_section)
 riot_register("entry-dropdown", entry_dropdown)
 riot_register("entry-list", entry_list)
+riot_register("example-section", example_section)
 riot_register("feedback-dialog", feedback_dialog)
 riot_register("forgot", forgot)
 riot_register("forgot-password", forgot_password)
@@ -199,6 +210,7 @@ riot_register("nvh-ske-dialog", nvh_ske_dialog)
 riot_register("nvh-source-code", nvh_source_code)
 riot_register("nvh-widget-panel", nvh_widget_panel)
 riot_register("open-dictionaries", open_dictionaries)
+riot_register("placeholder-component", placeholder_component)
 riot_register("project-batches", project_batches)
 riot_register("project-dict-name", project_dict_name)
 riot_register("project-dictionary-status", project_dictionary_status)
