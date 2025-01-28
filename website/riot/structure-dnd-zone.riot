@@ -31,7 +31,7 @@
                if(this.state.availableIndents.length){
                   if(this.state.availableIndents.length >= 2) {
                      for (let i = 0; i < this.state.availableIndents.length - 1; i++) {
-                        this.state.axisXIndentThresholds.push((this.state.availableIndents[i] + this.state.availableIndents[i + 1]) / 2 * 40)
+                        this.state.axisXIndentThresholds.push((this.state.availableIndents[i] + this.state.availableIndents[i + 1]) / 2 * 30 + 24 /* left margin of item */)
                      }
                   } else {
                      this.state.axisXIndentThresholds = [Infinity]
@@ -79,7 +79,7 @@
                for(indentIdx = 0; indentIdx <= this.state.axisXIndentThresholds.length && this.state.axisXIndentThresholds[indentIdx] < fromLeft; indentIdx++){}
                this.state.indent = this.state.availableIndents[indentIdx]
 
-               $(".structure-bar", this.root).css("margin-left", this.state.indent * 40)
+               $(".structure-bar", this.root).css("margin-left", this.state.indent * 30)
             }
          },
 
