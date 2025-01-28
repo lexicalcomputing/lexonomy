@@ -13,13 +13,14 @@
             The contents of elements you select here will be searchable (in addition to each entry's headword).
          </div>
          <br>
-         <div each={obj in elementOptionList}>
-            <label>
+         <div each={element in state.elementList}
+               class="elementWithCheckbox">
+            <label style="padding-left: {element.indent * 30}px;">
                <input type="checkbox"
-                     value={obj.path}
-                     checked={state.data.searchableElements && state.data.searchableElements.includes(obj.path)}
-                     disabled={obj.path == dictData.config.titling.headword}/>
-               <span style="{obj.style}">{store.getElementDisplayedName(obj.path)}</span>
+                     value={element.path}
+                     checked={state.data.searchableElements && state.data.searchableElements.includes(element.path) || element.path == dictData.config.titling.headword}
+                     disabled={element.path == dictData.config.titling.headword}/>
+               <span style="color: {element.color};">{store.getElementDisplayedName(element.path)}</span>
             </label>
          </div>
       </div>
@@ -100,17 +101,8 @@
          },
 
          onBeforeMount() {
-            this.state.hasElements = this.dictData.config.structure
-                  && this.dictData.config.structure.elements
-                  && Object.keys(this.dictData.config.structure.elements).length
-            if(this.state.hasElements){
-               this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
-                  return {
-                     path: element.path,
-                     style: `color: ${element.color}; padding-left: ${element.indent * 15 + 35}px`
-                  }
-               })
-            }
+            this.state.elementList = window.nvhStore.getElementTreeList()
+            this.state.hasElements = this.state.elementList.length
          },
 
          onMounted() {
@@ -188,6 +180,14 @@
          display: block;
          font-size: 0.7rem;
       }
+      .elementWithCheckbox{
+         &:not(:hover){
+            input[type="checkbox"]:not(:checked){
+               & + span{
+                  color: #bbbbbb !important
+               }
+            }
+         }
+      }
    </style>
-
 </dict-config-searchability>
