@@ -5,10 +5,10 @@
       onmousedown={onMouseDown}>
    <div if={props.element}
          class="structure-item-wrapper"
-         style="padding-left: {props.element.indent * 40}px;">
+         style="padding-left: {props.element.indent * 30}px;">
       <div class="structure-new-element-wrapper"
             onclick={window.stopEvtPropagation}
-            style="width: {props.element.indent * 40 + 45}px">
+            style="width: {props.element.indent * 30 + 45}px">
          <i class="material-icons tiny"
                onclick={onAddElementClick}>add</i>
          <span></span>
@@ -155,6 +155,8 @@
       }
       .valueWrapper{
          cursor: pointer;
+         border-radius: 10px;
+         padding-left: 5px;
          .elementActions{
             opacity: 0;
             position: absolute;
