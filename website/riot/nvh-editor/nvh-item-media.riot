@@ -40,7 +40,7 @@
 
          getYouTubeVideoId(){
             let match = this.props.url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/)
-            return match ? match[0] : null
+            return match ? match[1] : null
          }
       }
    </script>
