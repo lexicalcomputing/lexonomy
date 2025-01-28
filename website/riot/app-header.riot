@@ -122,7 +122,6 @@
                class="sidenav-trigger">
             <i class="material-icons">menu</i>
          </a>
-
          <ul class="right hide-on-med-and-down">
             <li if={authData.authorized && authData.isAdmin}>
                <a class="dropdown-trigger"
@@ -250,7 +249,7 @@
       </template>
       <template if={authData.authorized}>
          <li class="sideNavSection">
-            <span>User</span>
+            <span>Account</span>
          </li>
          <li>
             <a href="#/user-profile"
@@ -274,7 +273,9 @@
 
          onMounted(){
             $(".dropdown-trigger", this.root).dropdown({coverTrigger: false, constrainWidth: false})
-            $("#nav-mobile").sidenav()
+            $("#nav-mobile").sidenav({
+               edge: "right"
+            })
          },
 
          onUpdated() {
@@ -317,9 +318,12 @@
          position: relative;
          top: 5px
       }
-      .sidenav-trigger i{
-         color: #000;
-         font-size: 36px;
+      .sidenav-trigger{
+         float: right;
+         i{
+            color: #000;
+            font-size: 36px;
+         }
       }
       .sideNavSection{
          text-transform: uppercase;
@@ -378,6 +382,10 @@
       nav .dropdown-content i {
          height: unset;
          line-height: unset;
+      }
+      .sidenav li > a{
+         height: 30px;
+         line-height: 30px;
       }
 
       @media screen and (max-width: 992px){
