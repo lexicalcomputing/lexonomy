@@ -6,7 +6,8 @@ import sys
 import config
 import requests
 import unittest
-sys.path.append('../')
+# Append the parent directory to the system path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -89,7 +90,7 @@ class TestImportXML(unittest.TestCase):
     # DICT CREATE
     def test_1(self):
         data = {'url': self.dicID,
-                'hwNode': 'entry',
+                'hwNode': 'Entry',
                 'title': self.dicID,
                 'addExamples': 'false',
                 'deduplicate': 'false',
@@ -108,7 +109,7 @@ class TestImportXML(unittest.TestCase):
         data = {'upload_file_path': self.upload_file_path}
         r = requests.post(url=self.website + f"/{self.dicID}/getImportProgress.json", data=data, cookies=self.cookies)
         self.assertEqual(r.json()['finished'], True)
-        self.assertEqual(len(r.json()['warnings']), 1)
+        self.assertEqual(len(r.json()['warnings']), 0)
         self.assertEqual(r.json()['progress']['per'], 100)
 
     def test_3(self):

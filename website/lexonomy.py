@@ -530,7 +530,7 @@ def makedictjson(user):
                                request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
                                deduplicate=True if request.forms.deduplicate=='true' else False,
-                               bottle_file_object=upload, hwNode=request.forms.hwNode)
+                               bottle_file_object=upload, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
         else:
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
@@ -538,7 +538,7 @@ def makedictjson(user):
         res = ops.makeDict(request.forms.url, request.forms.nvhSchema, request.forms.jsonSchema,
                            request.forms.title, request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=request.forms.addExamples=="true",
-                           deduplicate=False, bottle_file_object=None, hwNode=None)
+                           deduplicate=False, bottle_file_object=None, hwNode=None, titling_node=None)
     return res
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
