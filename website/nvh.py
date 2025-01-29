@@ -132,10 +132,14 @@ class nvh:
 
     def filter_entries (self, selectors, projectors, maxitems=0):
         def prepare_selector(q):
-            m = re.match("((?:[a-zA-Z._](?:#[<>=]+\d+)?)+) *(?:(=|!=|~=)(.*))?$", q)
-            # e.g. 'hw.sense.example#=0.quality=bad'
+            try:
+                m = re.match(r"((?:[\w._\-\d](?:#[<>=]+\d+)?)+) *(?:(=|!=|~=)(.*))?$", q)
+                # e.g. 'hw.sense.example#=0.quality=bad'
+            except Exception as e:
+                raise Exception(f"Invalid query: '{q}'")
+
             if not m:
-                raise Exception("Invalid query: '%s'" % q)
+                raise Exception("Cannot parse query: '%s'" % q)
             return m.groups()
         self.refresh()
         children = [c for c in self.children if all(c.selection(*prepare_selector(f)) for f in selectors)]
@@ -488,7 +492,7 @@ class nvh:
     def print_schema (s, indent = 0, outfile = sys.stdout):
         def get_symbol(d):
             result = []
-            if d["optional"]:
+            if d.get("optional"):
                 if  d["max"] == None or d["max"] > 1:
                     result.append("*")
                 else:

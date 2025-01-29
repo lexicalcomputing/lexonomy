@@ -13,6 +13,7 @@ def main():
     parser.add_argument('dictID', type=str,
                         help='Dict ID')
     args = parser.parse_args()
+    sys.stderr.write(f'Deleting {args.dictID}\n')
     ops.destroyDict(args.dictID)
 
 
