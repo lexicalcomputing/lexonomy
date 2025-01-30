@@ -1404,41 +1404,28 @@ class NVHStoreClass {
 
    replaceMarkupOccurrences(value, element, createReplaceString) {
       let replaceList = []
-      element.children.filter(child => {
-         let config = this.getElementConfig(child.path)
-         return !this.isServiceElement(child.path)
-               && config && config.type == "markup"
-      })
+      element.children.filter(child => this.getElementConfig(child.path)?.type == "markup")
             .forEach(child => {
                let [find, occurrenceIndex] = child.value.split("#")
                if(find.trim()){
-                  let replaceWith = createReplaceString(child.path, find)
-                  if(child.value.indexOf("#") == -1){
+                  let index = window.getNthSubstringIndex(value, find, occurrenceIndex || 1)
+                  if(index !== -1){
+                     let replaceWith = createReplaceString(child.path, find, child)
                      replaceList.push({
-                        index: value.indexOf(find),
+                        index: index,
                         find: find,
                         replaceWith: replaceWith
                      })
-                  } else {
-                     let index = window.getNthSubstringIndex(value, find, occurrenceIndex)
-                     if(index !== -1){
-                        replaceList.push({
-                           index: index,
-                           find: find,
-                           replaceWith: replaceWith
-                        })
-                     }
                   }
                }
             })
-      replaceList.sort((a, b) => {
-         return b.index - a.index
-      }).forEach(replaceObj => {
-         // Replace occurrences from the end of the so the indexes will be still valid after each replacing.
-         // Using indexes and backward replacing to avoid matches in already replaced strings (ie. search for "an"
-         // would match "an" in "span" if previous "an" was already replaced with <span class="x">an</span>)
-         value = value.slice(0, replaceObj.index) + replaceObj.replaceWith + value.slice(replaceObj.index + replaceObj.find.length)
-      })
+      // Replace occurrences from the end of the so the indexes will be still valid after each replacing.
+      replaceList.sort((a, b) => b.index - a.index)
+            .forEach(replaceObj => {
+               value = value.slice(0, replaceObj.index)
+                     + replaceObj.replaceWith
+                     + value.slice(replaceObj.index + replaceObj.find.length)
+            })
       return value
    }
 

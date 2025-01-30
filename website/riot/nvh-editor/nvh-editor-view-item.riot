@@ -113,12 +113,15 @@
             if(this.state.innerPunc){
                value = `${this.state.innerPunc[0]}${value}${this.state.innerPunc[1]}`
             }
-            value = this.nvhStore.replaceMarkupOccurrences(value, this.props.element, (markupElementPath, find) => {
-               let style = this.nvhStore.getElementStyle(markupElementPath) || {}
+            let createReplaceString = (childPath, find, child) => {
+               let style = this.nvhStore.getElementStyle(childPath) || {}
                let styleClasses = this.getStyleClasses(["colour", "slant", "textsize", "weight", "border", "borderRadius", "background"], style)
-               return`<span class="${styleClasses}">${find}</span>`
-            })
-            return value
+               let tooltip = child.children.filter(element => element.value !== "")
+                     .map(element => `${window.store.getElementDisplayedName(element.path)}: ${element.value}`)
+                     .join("<br>")
+               return `<span class="${styleClasses} ${tooltip ? 'tooltipped': ''}" data-tooltip="${tooltip}">${find}</span>`
+            }
+            return this.nvhStore.replaceMarkupOccurrences(value, this.props.element, createReplaceString)
          },
 
          getPuncChars(punc){

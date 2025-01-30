@@ -116,11 +116,20 @@ $.extend(M.Dropdown.prototype, dropdownExtension)
 
 let tooltipExtension = {
    old_open: M.Tooltip.prototype.open,
+   old_animateOut: M.Tooltip.prototype._animateOut,
 
    open: function(params){
-      if(this.el.getAttribute('data-tooltip')?.trim()){
+      if(this.el.getAttribute('data-tooltip')?.trim() || this.options.html.trim()){
          this.old_open(params)
       }
+   },
+
+   _animateOut: function(){
+      this.tooltipEl.removeEventListener("mouseenter", this._handleElMouseEnterBound)
+      this.tooltipEl.removeEventListener("mouseleave", this._handleElMouseLeaveBound)
+      this.old_animateOut()
+      this.tooltipEl.style.pointerEvents = "none"
+      this.onClose && this.onClose()
    }
 }
 $.extend(M.Tooltip.prototype, tooltipExtension)

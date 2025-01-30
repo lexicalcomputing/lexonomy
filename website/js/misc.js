@@ -1,10 +1,6 @@
 window.showTooltip = (selector, message, delay, options) => {
    let node = $(selector)
-   let instance = M.Tooltip.getInstance(node)
-   if(instance){
-      instance.destroy()
-   }
-
+   if(M.Tooltip.getInstance(node)) return
 
    node.tooltip(Object.assign({
       enterDelay: delay || 0,
@@ -13,15 +9,21 @@ window.showTooltip = (selector, message, delay, options) => {
    }, options || {}))
    let tooltip = M.Tooltip.getInstance(node)
    setTimeout(function(node){
-      if($(node).is(":hover")){
-         let tooltip = M.Tooltip.getInstance(node)
-         tooltip && tooltip.open()
+      let tooltip = M.Tooltip.getInstance(node)
+      if(tooltip){
+         if(node.is(":hover")){
+            tooltip.open()
+         } else {
+            tooltip.destroy()
+         }
       }
    }.bind(null, node), delay || 0)
-   node.one("mouseleave", function(){
-      !this.isOpen && this.destroy()
-   }.bind(tooltip))
 
+   tooltip.onClose = () => {
+      setTimeout(function(tooltip){
+         tooltip.destroy()
+      }.bind(null, tooltip), 300)
+   }
    return tooltip
 }
 
@@ -263,6 +265,15 @@ window.escapeHTML = str => {
          .replace(/'/g, "&apos;")
          .replace(/</g, "&lt;")
          .replace(/>/g, "&gt;")
+}
+
+window.unescapeHTML = str => {
+   return String(str)
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, "\"")
+      .replace(/&apos;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
 }
 
 window.stringToElement = str => {
