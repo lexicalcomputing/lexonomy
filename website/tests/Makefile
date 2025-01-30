@@ -17,8 +17,10 @@ test_create:
 test_import: test_import.xml test_import.nvh
 	./import_test.py
 
-# test_advance_search: ../../data/dicts/test_import_nvh.sqlite
-# 	./advance_search_test.py
+test_advance_search:
+	./import_test.py TestImportNVH.test_1
+	./advance_search_test.py
+	./import_test.py TestImportNVH.test_4
 
 test_clean_nvh:
 	./clean_nvh_test.py

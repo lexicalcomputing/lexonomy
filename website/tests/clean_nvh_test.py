@@ -2,11 +2,12 @@
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import io
+import os
 import sys
 import unittest
 import fileinput
 
-sys.path.append('../')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from nvh import nvh
 
 
