@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import os
@@ -44,30 +44,52 @@ def main():
                         help='Lexonomy main db.')
     args = parser.parse_args()
 
+    check_access_for_users = {}
     total_dicts = 0
 
-    dict_last_edit = {}
     for root, dirs, files in os.walk(args.dicts_path):
         for file_name in files:
-            total_dicts += 1 
+            total_dicts += 1
             try:
-                dict_id = file_name[:-7]
                 db = get_db(os.path.join(root, file_name))
-                res_c = db.execute("SELECT MAX([when]) as date FROM history;")
-                date_str = res_c.fetchone()['date'][:7]
-                date_format = '%Y-%m'
-                date_obj = datetime.strptime(date_str, date_format)
-                dict_last_edit[dict_id] = date_obj
+                #sys.stderr.write(f'Reading: {os.path.join(root, file_name)}\n')
+                res_c = db.execute("SELECT json FROM configs WHERE id='users'")
+                config = json.loads(res_c.fetchone()['json'])
+                for mail, rights in config.items():
+                    if rights.get('canEdit', False) == True:
+                        if check_access_for_users.get(mail):
+                            check_access_for_users[mail].append(file_name[:-7])
+                        else:
+                            check_access_for_users[mail] = [file_name[:-7]]
                 db.close()
             except:
+                #sys.stderr.write(f'Skipping: {os.path.join(root, file_name)}\n')
                 continue
 
+    dict_last_access = {}
+    lexonomy_db = get_db(args.db_path)
+    res_t = lexonomy_db.execute("SELECT email, sessionLast FROM users WHERE email IN ('" + "','".join(check_access_for_users.keys()) + "')")
+    for i in res_t.fetchall():
+        if i['sessionLast'] and i['sessionLast'].strip() != '':
+            date_str = str(i['sessionLast'])[:7]
+            date_format = '%Y-%m'
+            date_obj = datetime.strptime(date_str, date_format)
+
+            for dict_id in check_access_for_users[i['email']]:
+                if dict_last_access.get(dict_id, False):
+                    if dict_last_access[dict_id] < date_obj:
+                        dict_last_access[dict_id] = date_obj
+                else:
+                    dict_last_access[dict_id] = date_obj
+
+    lexonomy_db.close()
+
     result_csv = []
-    for k, v in reverse_dict(dict_last_edit).items():
+    for k, v in reverse_dict(dict_last_access).items():
         result_csv.append((k.strftime("%Y-%m"), len(v), v))
     result_csv = sorted(result_csv, key=lambda x: x[0])
 
-    with open('lexonomy_last_edit.csv', 'w') as f:
+    with open('lexonomy_last_access.csv', 'w') as f:
         f.write('last_access\tno_of_dicts\tdicts\n')
         for i in result_csv:
             f.write(f'{i[0]}\t{i[1]}\t{i[2]}\n')
@@ -81,10 +103,10 @@ def main():
     addlabels(left, height)
     plt.xticks(rotation=90, ha='right')
     plt.xlabel('Date')
-    plt.ylabel('Edited dicts no.')
-    plt.title(f'Processed {len(dict_last_edit.keys())} out of {total_dicts} ({total_dicts - len(dict_last_edit.keys())} skipped)')
+    plt.ylabel('Accessed dicts no.')
+    plt.title(f'Processed {len(dict_last_access.keys())} out of {total_dicts} ({total_dicts - len(dict_last_access.keys())} skipped)')
     plt.tight_layout()
-    plt.savefig('lexonomy_last_edit.png')
-    
+    plt.savefig('lexonomy_last_access.png')
+
 if __name__ == '__main__':
     main()
