@@ -33,7 +33,8 @@
             oninput={onEditableDivInput}
             onclick={onEditableDivClick}
             onfocus={onEditableDivFocus}
-            onblur={onEditableDivBlur}>
+            onblur={onEditableDivBlur}
+            onmousemove={onEditableDivMouseMove}>
       </div>
       <small class="nvh-save-note grey-text">
          Enter = Save, Shift + Enter = new line
@@ -135,19 +136,25 @@
                this.state.elementUnderCaret = null
             } else if(element.classList.contains("nvh-editable-div")) {
                var sel = window.getSelection()
-               if (sel) {
-                 if(sel.rangeCount){
-                     if(!document.getSelection().toString().length){
-                        this.selectWordUnderCaret()
-                     }
-                     if(sel.toString().trim()){
-                        const span = window.stringToElement(this.getElementMarkupHTML(elementPath))
-                        var range = sel.getRangeAt(0).cloneRange()
-                        range.surroundContents(span)
-                        sel.removeAllRanges()
-                        range.collapse()
-                        sel.addRange(range)
+               if(sel?.rangeCount){
+                  if(!document.getSelection().toString().length){
+                     this.selectWordUnderCaret()
+                  }
+                  if(sel.toString().trim()){
+                     if (sel.rangeCount) {
+                        let value = sel.toString()
+                        range = sel.getRangeAt(0);
+                        range.deleteContents();
+                        let span = window.stringToElement(this.getElementMarkupHTML(elementPath, value))
+                        range.insertNode(span)
                         this.state.elementUnderCaret = elementPath
+                        let config = this.nvhStore.getElementConfig(elementPath)
+                        if(config.children?.length){
+                           this.openMarkupDialog(span.textContent, {
+                              elementPath: elementPath,
+                              markupNode: span
+                           })
+                        }
                      }
                   }
                }
@@ -163,7 +170,7 @@
                   this.state.hasSelection = true
                   let range = document.getSelection().getRangeAt(0)
                   this.state.markupElementInSelection = this.state.markupChildrenPaths.some(elementPath => {
-                     return $(".nvh-editable-div").find(`span[name="${elementPath}"]`)
+                     return $(".nvh-editable-div").find(`span[path="${elementPath}"]`)
                            .toArray()
                            .some(node => range.intersectsNode(node))
                      })
@@ -177,7 +184,7 @@
             let element = this.getElementUnderCaret()
             this.state.elementUnderCaret = null
             if(element && element.classList.contains("markupNode")){
-               this.state.elementUnderCaret = element.getAttribute("name")
+               this.state.elementUnderCaret = element.getAttribute("path")
             }
             this.updateMarkupButtons()
          },
@@ -199,6 +206,13 @@
 
          onEditableDivClick(evt){
             this.onCaretPositionChange()
+            if(evt.target.classList.contains("markupNumber")){
+               let node = evt.target.parentNode
+               this.openMarkupDialog(node.textContent, {
+                  elementPath: node.getAttribute("path"),
+                  markupNode: node
+               })
+            }
          },
 
          onEditableDivInput(evt){
@@ -213,6 +227,24 @@
          onEditableDivBlur(evt){
             this.state.focused = false
             this.updateMarkupButtons()
+         },
+
+         onEditableDivMouseMove(evt){
+            let showTooltip = evt.target.classList.contains("hasAttributes")
+            if(!showTooltip && this.state.tooltipNode){
+               this.state.tooltipNode = null
+            } else if(this.state.tooltipNode != evt.target){
+               let tooltips = []
+               ;[...evt.target.attributes].forEach(attribute => {
+                  if(attribute.name.startsWith("child_")){
+                     tooltips.push(`<b>${attribute.name.substring(6)}</b>: ${attribute.value}`)
+                  }
+               })
+               if(tooltips.length){
+                  window.showTooltip(evt.target, tooltips.join("<br>"), 800)
+                  this.state.tooltipNode = evt.target
+               }
+            }
          },
 
          onKeyUp(evt){
@@ -243,8 +275,18 @@
             return this.state.markupChildrenPaths.lastIndexOf(elementPath) + 1
          },
 
-         getElementMarkupHTML(elementPath, value=""){
-            return `<span name="${elementPath}" class="markupNode" markup_number="${this.getMarkupNumber(elementPath)}" style="--bullet-background-color:${this.nvhStore.getElementColor(elementPath)}">${value}</span>`
+         getElementMarkupHTML(elementPath, value="", element){
+            let childValues = []
+            let hasAttributes = this.nvhStore.getElementConfig(elementPath).children.length > 0
+            let color = this.nvhStore.getElementColor(elementPath)
+            if(element){
+               childValues = element.children.filter(element => element.value !== "")
+                     .map(element => `child_${element.path}="${window.escapeHTML(element.value)}"`)
+            }
+            return `<span path="${elementPath}"`
+                  + ` class="markupNode ${hasAttributes ? 'hasAttributes' : ''}"`
+                  + ` ${childValues.join(" ")}`
+                  + ` style="background-color:${color}20;--bullet-background-color:${color}"><span class="markupNumber" markup_number="${this.getMarkupNumber(elementPath)}"></span>${value}</span>`
          },
 
          getElementUnderCaret(){
@@ -297,7 +339,8 @@
          },
 
          handleMouseDownOutside(evt){
-            if(!this.root.contains(evt.target)){
+            if(!this.root.contains(evt.target)
+                  && !$(evt.target).closest('div[is="nvh-markup-dialog"]').length){
                if(this.state.showEditor){
                   this.changeValue()
                } else {
@@ -335,8 +378,8 @@
             this.state.markupChildrenPaths.forEach(elementPath => {
                // delete all markup children
                this.props.element.children = this.props.element.children.filter(child => child.path != elementPath)
-               const markupElements = $(".nvh-editable-div").find(`span[name="${elementPath}"]`)
-               markupElements.each((idx, el) => {
+               const markupNodes = $(".nvh-editable-div", this.root).find(`span[path="${elementPath}"]`)
+               markupNodes.each((idx, el) => {
                   let markupValue = el.textContent
                   let preceedingText = window.getElementPreceedingText(el)
                   // searchText = text before node and all but last character of
@@ -344,13 +387,31 @@
                   // For examples if markupValue is "aa" and preceeding text is "aaa"
                   // correct index of markupValue is 3 (counting from 0)
                   let searchText = preceedingText + markupValue.substring(0, markupValue.length - 1)
-                  let childElement = this.nvhStore._addChildElement(this.props.element, elementPath)
-                  childElement.value = markupValue
+                  let markupElement = this.nvhStore._addChildElement(this.props.element, elementPath)
+                  markupElement.value = markupValue
                   preceedingValueCount = window.countAllSubstrings(searchText, markupValue)
                   if(preceedingValueCount){
-                     childElement.value += `#${preceedingValueCount + 1}`
+                     markupElement.value += `#${preceedingValueCount + 1}`
                   }
+                  [...el.attributes].filter(attr => attr.name.startsWith("child_"))
+                        .forEach(attr => {
+                           let childPath = attr.name.substring(6)  //remove prefix child_
+                           let childElement = this.nvhStore._addChildElement(markupElement, childPath)
+                              childElement.value = window.unescapeHTML(attr.value)
+                        })
                })
+            })
+         },
+
+         openMarkupDialog(title, dialogProps){
+            window.modal.open({
+               title: window.shortenText(title, 30),
+               tag: "nvh-markup-dialog",
+               props: dialogProps,
+               showCloseButton: false,
+               onClose: function(markupNode){
+                  document.querySelector(".nvh-editable-div").focus()
+               }.bind(this, dialogProps.markupNode)
             })
          },
 
@@ -432,37 +493,48 @@
             }
             .markupNode{
                position: relative;
-               padding-left: 16px;
                padding-right: 2px;
+               border-radius: 5px;
+               &.hasAttributes{
+                  .markupNumber{
+                     cursor: pointer;
+                  }
+               }
                &:hover{
-                  border-bottom: 1px solid var(--bullet-background-color);
+                  &::after{
+                     content: '';
+                     position: absolute;
+                     left: 15px;
+                     right: 0px;
+                     bottom: 0px;
+                     border-bottom: 1px solid var(--bullet-background-color);
+                     pointer-events:none;
+                  }
                }
-               &::before{
-                  content: attr(markup_number);
-                  position: absolute;
-                  left: 0px;
-                  top: 3px;
-                  display: inline-block;
-                  background-color: var(--bullet-background-color);
+               .markupNumber{
                   color: #fff;
-                  border-radius: 5px;
-                  height: 14px;
-                  width: 14px;
-                  text-align: center;
-                  line-height: 14px;
-                  font-size: 12px;
-               }
-               &::after{
-                  content: '';
-                  position: absolute;
-                  left: 0px;
-                  right: 0px;
-                  top: 2px;
-                  bottom: 2px;
-                  background-color: var(--bullet-background-color);
-                  opacity: 0.1;
-                  border-radius: 5px;
-                  pointer-events:none;
+                  min-width: 19px;
+                  display: inline-block;
+                  min-height: 19px;
+                  display: in;
+                  vertical-align: middle;
+                  display: inline-block;
+                  position: relative;
+                  &:before{
+                     content: attr(markup_number);
+                     position: absolute;
+                     left: 2px;
+                     top: 1px;
+                     display: inline-block;
+                     background-color: var(--bullet-background-color);
+                     color: #fff;
+                     border-radius: 5px;
+                     height: 15px;
+                     width: 15px;
+                     text-align: center;
+                     line-height: 15px;
+                     font-size: 12px;
+                  }
                }
             }
          }

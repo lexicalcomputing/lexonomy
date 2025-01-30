@@ -38,7 +38,7 @@
                   class="nvh-readonly-value-wrapper">
                <span class="nvh-readonly-value pointer"
                      onmousedown={!props.readOnly && onValueMouseDown}>
-                  <raw-html content={store.stringifyElementValue(props.element.value, state.config.type)}/>
+                  <raw-html content={getReadOnlyValue()}/>
                </span>
             </span>
             <nvh-item-value-editor if={props.element.edit}
@@ -162,6 +162,18 @@
             setTimeout(() => {
                this.nvhStore.startElementEditing(this.props.element)
             }, 0)
+         },
+
+         getReadOnlyValue(){
+            let createReplaceString = (childPath, find, child) => {
+               let tooltip = child.children.filter(element => element.value !== "")
+                     .map(element => `${window.store.getElementDisplayedName(element.path)}: ${element.value}`)
+                     .join("<br>")
+               let color = this.nvhStore.getElementColor(childPath)
+               return `<span class="${tooltip ? 'tooltipped': ''}" data-tooltip="${tooltip}" style="border-bottom: 1px solid ${color}; background-color: ${color}20;">${find}</span>`
+            }
+            let value = this.store.stringifyElementValue(this.props.element.value, this.state.config.type)
+            return this.nvhStore.replaceMarkupOccurrences(value, this.props.element, createReplaceString)
          },
 
          getCollapsedValue(){
