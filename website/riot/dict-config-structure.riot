@@ -393,6 +393,7 @@
             } else if(this.state.tab == "advanced"){
                return !!this.structureStore.data.structure.root
                            && !this.structureStore.data.editedElement
+                           && this.structureStore.data.isValid
             } else if(this.state.tab == "custom"){
                return !!this.state.schemaNvh
                      && this.state.isCustomNvhSchemaValid

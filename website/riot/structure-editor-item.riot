@@ -6,7 +6,8 @@
    <div if={props.element}
          class="structure-item-wrapper"
          style="padding-left: {props.element.indent * 30}px;">
-      <div class="structure-new-element-wrapper"
+      <div if={!structureStore.isParentMarkupElement(props.element.path)}
+            class="structure-new-element-wrapper"
             onclick={window.stopEvtPropagation}
             style="width: {props.element.indent * 30 + 45}px">
          <i class="material-icons tiny"
@@ -81,10 +82,14 @@
          },
 
          onAddElementClick(evt){
-            this.structureStore.startElementEditing({
+            let element = {
                type: "string",
                parentElement: this.props.element
-            })
+            }
+            if(this.props.element.type == "markup"){
+               element.max = 1
+            }
+            this.structureStore.startElementEditing(element)
          },
 
          onEditClick(){
@@ -121,7 +126,6 @@
             }
             return ""
          }
-
       }
    </script>
 

@@ -1,6 +1,13 @@
 <structure-editor class="positionRelative">
    <div>
       <h3 class="mt-0">Entry elements</h3>
+      <div if={structureStore.data.error}
+            class="structureError red lighten-4 mb-4">
+         <i class="material-icons red-text tiny mr-2 verticalMiddle">
+            warning
+         </i>
+         {structureStore.data.error}
+      </div>
       <div class="structure-items ml-6">
          <template each={(element, idx) in getElementList()}>
             <structure-editor-item element={element}
@@ -65,6 +72,7 @@
                </template>
                <template if={structureStore.data.editedElement != structureStore.getRootElement()}>
                   <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
+                        if={isTypeOptionAvailable(obj[0])}
                         selected={obj[0] == structureStore.data.editedElement.type}
                         value={obj[0]}>{obj[1]}</option>
                </template>
@@ -333,6 +341,13 @@
             return list
          },
 
+         isTypeOptionAvailable(type){
+            if(this.structureStore.data.editedElement?.parentElement?.type == "markup"){
+               return !["markup", "empty"].includes(type)
+            }
+            return true
+         },
+
          initStructureForm(){
             if(this.structureStore.data.editedElement){
                window.makeElementDraggable($(".structureForm", this.root), $(".structureForm h3", this.root))
@@ -375,6 +390,9 @@
                background-color: #fff;
             }
          }
+      }
+      .structureError{
+         padding: 10px 20px;
       }
       #elementValues{
          margin-bottom: 0;
