@@ -785,8 +785,8 @@ def attachDict(dictDB, dictID, users, dict_config):
 
     for email, access_rights in users.items():
         conn.execute("insert into user_dict (dict_id, user_email, can_view, can_edit, can_config, can_download, can_upload) values (?,?,?,?,?,?,?)",
-                     (dictID, email.lower(), access_rights['canView'], access_rights['canEdit'], access_rights['canConfig'],
-                      access_rights['canDownload'], access_rights['canUpload']))
+                     (dictID, email.lower(), access_rights.get('canView', False), access_rights.get('canEdit', False), access_rights.get('canConfig', False),
+                      access_rights.get('canDownload', False), access_rights.get('canUpload', False)))
     conn.commit()
 
 def listDictUsers(dictID):
