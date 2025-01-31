@@ -1285,7 +1285,22 @@ class NVHStoreClass {
                }
 
                if(!this.parseNvhSchemaOptionsValue(element.value)){
-                  throw `Element "${element.name}"" has invalid options: ${element.value}.`
+                  throw `Element "${element.name}" has invalid options: ${element.value}.`
+               }
+               if(element.parent && this.getElementConfig(element.parent.path)?.type == "markup"){
+                  let options = this.parseNvhSchemaOptionsValue(element.value)
+                  if(element.children.length){
+                     throw `Element "${element.name}" should not have any children, because its parent type is "Text markup".`
+                  }
+                  if(options.max != 1){
+                     throw `Element "${element.name}" must have Max set to 1, because its parent type is "Text markup".`
+                  }
+                  if(options.max > 1){
+                     throw `Element "${element.name}" must have Min set to 0 or 1, because its parent type is "Text markup".`
+                  }
+                  if(["markup", "empty"].includes(options.type)){
+                     throw `Element "${element.name}" must not have type ${window.store.const.ENTRY_TYPES[options.type]}, because its parent type is "Text markup".`
+                  }
                }
             })
          } catch (e){
@@ -1318,9 +1333,7 @@ class NVHStoreClass {
          } else if(parsed.groups.count == "+"){
             min = 1
          } else if(parsed.groups.count.indexOf("-") != -1){
-            let tmp = parsed.groups.count.split("-")
-            min = tmp[0]
-            max = tmp[2]
+            [min, max] = parsed.groups.count.split("-")
          } else{
             let num = parseInt(parsed.groups.count)
             if(!isNaN(num)){

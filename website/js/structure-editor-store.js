@@ -83,6 +83,7 @@ class StructureEditorStoreClass {
       }
       this.data.structure.elements[element.path] = element
       this.trigger("elementChanged")
+      this.validateSchema()
    }
 
    updateElement(element){
@@ -100,7 +101,9 @@ class StructureEditorStoreClass {
             parent.children[parent.children.indexOf(oldElementPath)] = element.path
          }
       }
+      Object.assign(this.data.structure.elements[element.path], element)
       this.trigger("elementChanged")
+      this.validateSchema()
    }
 
    removeElement(element){
@@ -121,6 +124,7 @@ class StructureEditorStoreClass {
       }
 
       this.trigger("elementChanged")
+      this.validateSchema()
    }
 
    changeElementPath(element, newPath){
@@ -154,6 +158,7 @@ class StructureEditorStoreClass {
          newParentElement.children.splice(position, 0, childElement.path)
       }
       this.trigger("elementChanged")
+      this.validateSchema()
    }
 
    startElementEditing(element){
@@ -235,6 +240,28 @@ class StructureEditorStoreClass {
       return ancestorNames.map((ancestorName, idx) => {
          return ancestorNames.slice(0, idx + 1).join(".")
       })
+   }
+
+   isParentMarkupElement(elementPath){
+      let idx = elementPath.lastIndexOf(".")
+      if(idx != -1){
+         let parentPath = elementPath.substr(0, idx)
+         let parent = this.getElementByPath(parentPath)
+         if(parent && parent.type == "markup"){
+            return true
+         }
+      }
+      return false
+   }
+
+   validateSchema(){
+      let wasValid = this.data.isValid
+      let res = window.nvhStore.validateNVHSchema(this.getNvh())
+      this.data.isValid = res.isValid
+      this.data.error = res.error || null
+      if(wasValid != this.data.isValid){
+         this.trigger("isValidChanged")
+      }
    }
 
    validateElementName(elementName){

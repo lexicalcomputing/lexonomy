@@ -49,9 +49,9 @@
             let draggedElement = this.structureStore.data.draggedElement
             while(element){
                if(!element.path.startsWith(draggedElement.path)  // do not allow to drop to child of dragged element
-                  && (!element.children.find(childPath => childPath.split(".").pop() == draggedElement.name)  // dropzone element does not already has element of this name
-                           || element.path == draggedElement.parent)  // allow to drop to the same parent
-                  ){
+                  && ((!element.children.find(childPath => childPath.split(".").pop() == draggedElement.name)  // dropzone element does not already has element of this name
+                           || element.path == draggedElement.parent))  // allow to drop to the same parent
+                  && !this.structureStore.isParentMarkupElement(element.path)){
                   indents.unshift(element.indent + 1)
                }
                element = this.structureStore.getElementByPath(element.parent)
