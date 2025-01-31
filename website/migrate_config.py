@@ -26,10 +26,6 @@ def migrate_to_3_0(config, titling_element='', entry_element='', structure_eleme
     if 'ident' in config:
         config['ident']['direction'] = 'ltr'
 
-    if 'users' in config:
-        for user_config in config['users'].values():
-            user_config['canView'] = True
-
     if 'xemplate' in config:
         _rename_keys(config, [('xemplate', 'formatting')])
         if config['formatting'].get('_css'):
@@ -63,7 +59,7 @@ def migrate_to_3_0(config, titling_element='', entry_element='', structure_eleme
     ]:
         if source in config and 'container' in config[source]:
             config['ske'][dest] = config[source]['container']
-    _delete_keys(config, ['kex', 'xampl', 'thes', 'defo', 'collx', 'xema'])
+    _delete_keys(config, ['kex', 'xampl', 'thes', 'defo', 'collx', 'xema', 'users'])
 
     # Setting defaults
     if titling_element:
@@ -126,8 +122,6 @@ def migrate_to_3_0(config, titling_element='', entry_element='', structure_eleme
                 for key in re.findall(r'%\(([^\)]+)\)', config['ske']['concquery']):
                     new_key = re.sub('%\('+key+'\)', '%('+key2path(key)+')', new_key)
                 config['ske']['concquery'] = new_key
-
-    return config
 
 
 def migrate_config(config, version):
