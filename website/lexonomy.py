@@ -498,9 +498,11 @@ def send_signup():
 
 @post(siteconfig["rootPath"] + "createaccount.json")
 def do_create_account():
-    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
-    res = ops.createAccount(request.forms.token, request.forms.password, client_ip)
-    return {"success": res}
+    if siteconfig.get('allow_registration', None) != False :
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
+        res = ops.createAccount(request.forms.token, request.forms.password, client_ip)
+        return {"success": res}
+    return {"success": False}
 
 @post(siteconfig["rootPath"] + "forgotpwd.json")
 def forgotpwd(): # OK
