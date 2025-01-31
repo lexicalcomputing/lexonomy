@@ -312,13 +312,13 @@
             <div class="grey-text mb-4">Choose entry structure from predefined modules or use your own schema. You can change this later.<i class="tooltipped material-icons tiny" data-tooltip="The entry structure can be edited in Configuration - Entry settings - Structure.">help_outline</i></div>
             <ui class="tabs mb-0">
                <li class="tab {state.structureTab == "dmlex" ? "active" : ""}">
-                  <a onclick={onStructureTabClick.bind(this, "dmlex")}>Simple settings</a>
+                  <a onclick={onStructureTabClick.bind(this, "dmlex")}>Standardised elements</a>
                </li>
                <li class="tab {state.structureTab == "advanced" ? "active" : ""}">
                   <a onclick={onStructureTabClick.bind(this, "advanced")}>Custom structure</a>
                </li>
                <li class="tab {state.structureTab == "custom" ? "active" : ""}">
-                  <a onclick={onStructureTabClick.bind(this, "custom")}>Expert settings</a>
+                  <a onclick={onStructureTabClick.bind(this, "custom")}>Edit in NVH</a>
                </li>
             </ui>
             <div class="grey lighten-5 p-6">
