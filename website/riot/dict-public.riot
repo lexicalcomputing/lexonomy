@@ -266,8 +266,7 @@
 
          getEntryUrl(){
             let editorMode = this.dictData.userAccess
-                  && this.dictData.userAccess.canEdit
-                  && window.nvhStore.data.customEditor ? "edit" : "view"
+                  && this.dictData.userAccess.canEdit ? "edit" : "view"
             return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${this.state.displayedEntryId}/${editorMode}`
          },
 
