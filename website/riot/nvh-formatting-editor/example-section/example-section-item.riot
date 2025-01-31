@@ -1,0 +1,43 @@
+<example-section-item>
+  <div class="element-holder element-holder-{props.schema.orientation}">
+    <div if={props.schema.children.length === 0}
+        class="element-holder-content-wrapper">
+      <div if={props.schema.content.name === props.entry.name}
+          class="element-holder-content">
+        {props.entry.value}
+      </div>
+    </div>
+    <div if={props.schema.children.length !== 0}
+        each={childSchema in props.schema.children}
+        class="element-holder element-holder-{childSchema.orientation}">
+      <example-section-item if={childSchema.content.name === "" /*empty placeholder*/}
+                            schema={childSchema}
+                            entry={props.entry}/>
+      <example-section-item if={props.schema.content.area === childSchema.content.area
+                                && childSchema.content.name !== "" /*render parent label*/}
+                            schema={childSchema}
+                            entry={props.entry}/>
+      <template if={props.schema.content.area !== childSchema.content.area
+                    && childSchema.content.name !== ""}
+                each={childEntry in props.entry.children}>
+        <example-section-item if={childSchema.content.name === childEntry.name}
+                              schema={childSchema}
+                              entry={childEntry}/>
+      </template>
+    </div>
+  </div>
+
+  <script>
+  </script>
+
+  <style>
+    .element-holder {
+      display: flex;
+      border: 2px solid var(--color-row);
+    }
+    .element-holder-column {
+      flex-direction: column;
+      border: 2px solid var(--color-column);
+    }
+  </style>
+</example-section-item>

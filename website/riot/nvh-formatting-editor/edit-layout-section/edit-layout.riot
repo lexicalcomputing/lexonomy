@@ -3,17 +3,17 @@
     <div class="scrollable-div">
       <template each={(child, index) in props.schema.children}>
         <placeholder-component onclick={() => deleteElement(index, global.parent, props.schema, props.editing, global, true)}
-                              ondragenter={(event) => onDragEnter(event, child.orientation)}
                               ondragover={onDragOver}
                               ondrop={(event) => onDrop(event, child)}
                               ondragleave={onDragLeave}
                               class="placeholder placeholder-{child.orientation}"
-                              state={child}
+                              state={childWithInheritedArea(child, null)}
                               editing={props.editing}
                               global={global}
                               isBaseLevel={true}
                               delete-element={deleteElement}
-                              add-element={addElement}/>
+                              add-element={addElement}
+                              child-with-inherited-area={childWithInheritedArea}/>
       </template>
     </div>
   </div>
@@ -46,6 +46,7 @@
         const data = JSON.parse(rawData);
         if (this.global.canBeDropped) {
           state.content.name = data.name;
+          state.content.area = data.name;
           state.content.color = data.color;
         }
         this.global.parent.update();
@@ -57,6 +58,7 @@
           orientation: editingMode,
           content: {
             name: "",
+            area: "",
             color: ""
           },
           children: []
@@ -82,7 +84,14 @@
         }
         Array.from(state.children).map(child => this.removeDeletedElements(child));
         state.children = Array.from(state.children).filter(child => !child.isDeleted);
-      }
+      },
+      childWithInheritedArea(child, state) {
+        if (state === null) {
+          return child;
+        }
+        child.content.area = child.content.name === "" ? state.content.area : child.content.name;
+        return child;
+      },
     }
   </script>
 
@@ -93,16 +102,6 @@
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      width: fit-content;
-      height: 100%;
-      overflow: auto;
-      min-width: 100%;
-    }
-    .scrollable-div {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      min-width: 450px;
       width: fit-content;
       height: 100%;
       overflow: auto;

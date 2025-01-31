@@ -111,6 +111,7 @@
             orientation: "column", /*default placeholder is of type "column"*/
             content: {
               name: "",
+              area: "",
               color: ""
             },
             contentColor: "",
@@ -155,6 +156,16 @@
     }
 
 
+    .scrollable-div {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 450px;
+      width: fit-content;
+      height: 100%;
+      overflow: auto;
+      min-width: 100%;
+    }
     .icon-svg {
       height: 20px;
       width: 20px;
