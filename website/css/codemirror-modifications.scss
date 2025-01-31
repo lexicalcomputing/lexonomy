@@ -5,3 +5,18 @@ body .cm-content,
 body .cm-gutters {
    min-height: 200px!important;
 }
+body .cm-search{
+   .cm-button{
+      background: #231f20;
+      color: #fff;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      padding: 5px 15px;
+   }
+   input[type="checkbox"]{
+      position: static;
+      opacity: 1;
+      pointer-events: default;
+   }
+}
