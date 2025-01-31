@@ -1,9 +1,22 @@
 <app-footer>
-   <div class="dictionaryExpress">
+   <div class="dictionaryExpressBar">
       <a href="https://dictionary.express/"
             target="_blank">
-         <img class="skelogo"
-               src="img/dictionary_express_footer.png"/>
+         <div class="dictionaryExpressContainer">
+            <div class="dictionaryExpress_logo">
+               <img src="img/dictionary_express_footer.png"/>
+            </div>
+            <div class="dictionaryExpress_build">
+               <img src="img/dictionary_express_footer.png"/>
+            </div>
+            <div class="dictionaryExpressSeparator"></div>
+            <div class="dictionaryExpress_ai">
+               <img src="img/dictionary_express_footer.png"/>
+            </div>
+            <div class="dictionaryExpress_more">
+               <img src="img/dictionary_express_footer.png"/>
+            </div>
+         </div>
       </a>
    </div>
    <div class="footer-logos">
@@ -52,22 +65,63 @@
       }
    </script>
 
-   <style>
+   <style type="scss">
       :host{
          margin-top: auto;
       }
-      .dictionaryExpress{
-         min-height: 76px;
+      .dictionaryExpressBar{
          background-color: #7a6f9b;
-         &:hover{
-            opacity: 0.9
+      }
+      .dictionaryExpressContainer{
+         display: flex;
+         max-width: 950px;
+         justify-content: space-between;
+         margin: auto;
+         & >div{
+            height: 70px;
+            overflow: hidden;
+            position: relative;
+            img{
+               height: 100%;
+               position: absolute;
+               top: 0;
+            }
          }
-         a{
-            display: block;
-            text-align: center;
+         .dictionaryExpressSeparator{
+            height: 0;
+            width: 100%;
+            display: none;
          }
-         img{
-            max-width: 100vw;
+         .dictionaryExpress_logo {
+            width: 168px;
+         }
+         .dictionaryExpress_build{
+            width: 344px;
+            img{
+               left: -194px;
+            }
+         }
+         .dictionaryExpress_ai{
+            width: 215px;
+            img{
+               left: -585px;
+            }
+         }
+         .dictionaryExpress_more{
+            width: 65px;
+            img{
+               left: -858px;
+            }
+         }
+      }
+      @media screen and (max-width: 800px) {
+         .dictionaryExpressContainer{
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            .dictionaryExpressSeparator{
+               display: block;
+            }
          }
       }
       .footer-logos{
