@@ -10,8 +10,8 @@
               {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-inside-wrapper-deletable" : ""}">
     <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
                     onclick={() => props.addElement(0, props.global.parent, props.state, props.editing.mode)}
-                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
-                          {props.state.children.length === 0 ? "adder-first" : ""}"/>
+                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}"
+                    orientation={props.state.children.length === 0 ? "column": props.state.orientation}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => props.deleteElement(index, props.global.parent, props.state, props.editing, props.global, false)}
                             ondragover={onDragOver}
@@ -28,7 +28,8 @@
                             />
       <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
                       onclick={() => props.addElement(index + 1, props.global.parent, props.state, props.editing.mode)}
-                      class="adder adder-{props.state.orientation}"/>
+                      class="adder adder-{props.state.orientation}"
+                      orientation={props.state.orientation}/>
     </template>
   </div>
 
