@@ -11,7 +11,8 @@
   </div>
   <template each={child in props.state.children}>
     <elements-choice-item state={child}
-                          indentationLevel={props.indentationLevel + 15}/>
+                          indentationLevel={props.indentationLevel + 15}
+                          parent={props.parent}/>
   </template>
 
   <script>
@@ -21,6 +22,9 @@
         const data = JSON.stringify(this.props.state.data);
         event.dataTransfer.setData("text/plain", data);
       },
+      onDragEnd(event) {
+        this.props.parent.update();
+      }
     }
   </script>
 

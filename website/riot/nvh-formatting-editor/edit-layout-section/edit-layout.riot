@@ -2,17 +2,20 @@
   <div class="edit-layout-container">
     <div class="scrollable-div">
       <template each={(child, index) in props.schema.children}>
-        <placeholder-component onclick={() => deleteElement(index, global.parent, props.schema, props.editing, global, true)}
+        <placeholder-component onclick={openActionPanel}
                               ondragover={onDragOver}
                               ondrop={(event) => onDrop(event, child)}
-                              ondragleave={onDragLeave}
                               class="placeholder placeholder-{child.orientation}"
                               state={childWithInheritedArea(child, null)}
+                              parentState={props.schema}
                               editing={props.editing}
+                              status={child.status}
                               global={global}
                               isBaseLevel={true}
+                              index={0}
                               delete-element={deleteElement}
                               add-element={addElement}
+                              close-action-panel={closeActionPanel}
                               child-with-inherited-area={childWithInheritedArea}/>
       </template>
     </div>
@@ -26,6 +29,9 @@
         this.global = {
           canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
           canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
+          canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
+          wasDropSuccessful: false,
+          canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
           parent: props.parent,
         };
       },
@@ -33,6 +39,9 @@
         this.global = {
           canBeRemovedIfHovered: true,
           canBeDropped: true,
+          canBeDragged: true,
+          wasDropSuccessful: false,
+          canOpenActionPanel: true,
           parent: props.parent,
         };
         this.removeDeletedElements(this.props.schema);
@@ -45,17 +54,22 @@
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
         if (this.global.canBeDropped) {
-          state.content.name = data.name;
-          state.content.area = data.name;
-          state.content.color = data.color;
+          if (data.type === "choice-item") {
+            state.content.name = data.name;
+            state.content.area = data.name;
+            state.content.color = data.color;
+          }
         }
-        this.global.parent.update();
       },
 
       addElement(index, component, state, editingMode) {
         let newElement = {
           isDeleted: false,
+          status: {
+            isActive: false,
+          },
           orientation: editingMode,
+          type: "placeholder",
           content: {
             name: "",
             area: "",
@@ -65,11 +79,9 @@
         };
         state.children.splice(index, 0, newElement);
         component.update();
+        this.global.canOpenActionPanel = false;
       },
-      deleteElement(index, component, state, editing, global, isBaseLevel) {
-        if (!editing.enabled || editing.mode !== "delete") {
-          return;
-        }
+      deleteElement(index, component, state, global, isBaseLevel) {
         if (global.canBeRemovedIfHovered && !isBaseLevel) {
           state.children[index].isDeleted = true;
         }
@@ -85,12 +97,25 @@
         Array.from(state.children).map(child => this.removeDeletedElements(child));
         state.children = Array.from(state.children).filter(child => !child.isDeleted);
       },
+      closeActionPanel() {
+        this.closeActionPanelRec(this.props.schema);
+      },
+      closeActionPanelRec(state) {
+        if (state === null) {
+          return null;
+        }
+        Array.from(state.children).map(child => this.closeActionPanelRec(child));
+        state.children.map(child => child.status.isActive = false);
+      },
       childWithInheritedArea(child, state) {
         if (state === null) {
           return child;
         }
         child.content.area = child.content.name === "" ? state.content.area : child.content.name;
         return child;
+      },
+      openActionPanel() {
+        this.global.parent.update();
       },
     }
   </script>

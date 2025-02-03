@@ -27,7 +27,8 @@
         <h2>Elements</h2>
       </div>
       <div class="elements-choice-section-wrapper">
-        <elements-choice-section class="elements-choice-section"/>
+        <elements-choice-section class="elements-choice-section"
+                                parent={this}/>
       </div>
     </div>
     <div if={state.showStyle}
@@ -47,7 +48,7 @@
           <img class="icon-svg" src="img/logo_ske_round.png"/>
           <h2>Editing</h2>
         </div>
-        <div onclick={onToggleEditing}
+        <div onclick={/*TODO: decide if keeping edit mode makes sense*/ () => {}}
             id="toggle-edit-mode"
             class="{state.editing.enabled ? "toggle-edit-mode-active" : "toggle-edit-mode-inactive"}">
           Edit mode
@@ -62,7 +63,7 @@
             class="edit-option-mode {state.editing.mode == "row" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
           Add Row mode
         </div>
-        <div if={state.editing.enabled}
+        <div if={state.editing.enabled && false}
             onclick={onEditModeChange.bind(this, "delete")}
             class="edit-option-mode {state.editing.mode == "delete" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
           Delete mode
@@ -99,7 +100,7 @@
         showEditing: true,
         showExample: true,
         editing: {
-          enabled: false,
+          enabled: true,
           mode: "column" /*types: "column", "row", "delete" */
         },
       },
@@ -108,7 +109,11 @@
         children: [
           {
             isDeleted: false,
+            status: {
+              isActive: false, /*action panel is displayed*/
+            },
             orientation: "column", /*default placeholder is of type "column"*/
+            type: "placeholder",
             content: {
               name: "",
               area: "",
@@ -121,7 +126,6 @@
       },
 
       onLayoutClick(sectionName) {
-        console.log(sectionName);
         switch (sectionName) {
           case "showElements":
             this.update({showElements: !this.state.showElements});
@@ -165,6 +169,7 @@
       height: 100%;
       overflow: auto;
       min-width: 100%;
+      padding: 5px;
     }
     .icon-svg {
       height: 20px;
