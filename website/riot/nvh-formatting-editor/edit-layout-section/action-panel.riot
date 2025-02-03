@@ -1,0 +1,144 @@
+<action-panel>
+  <div class="action-panel-wrapper">
+    <div class="action"
+        id="action-drag"
+        title="Drag"
+        draggable="true"
+        ondragstart={(event) => onDragStart(event, props.state)}
+        ondragend={(event) => onDragEnd(props.state)}>
+      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+    <div class="action"
+        id="action-duplicate"
+        title="Duplicate"
+        onclick={duplicateElement}>
+      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+    <div class="action"
+        id="action-delete"
+        title="Delete"
+        onclick={() => props.deleteElement(props.index, props.global.parent, props.parentState, props.global, false)}>
+      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+    <div id="action-move">
+      <div class="action-move"
+          id="action-move-up"
+          title={props.parentState.orientation === "column" ? "Move up" : "Move left"}
+          onclick={decreaseElementIndex}>
+        <img class="action-move-icon-svg" src="img/logo_ske_round.png"/>
+      </div>
+      <div class="action-move"
+          id="action-move-down"
+          title={props.parentState.orientation === "column" ? "Move down" : "Move right"}
+          onclick={increaseElementIndex}>
+        <img class="action-move-icon-svg" src="img/logo_ske_round.png"/>
+      </div>
+    </div>
+    <div class="action"
+        id="action-close"
+        title="Close"
+        onclick={closeActionPanel}>
+      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+    </div>
+  </div>
+
+<script>
+  export default {
+    onDragStart(event, state) {
+      if (this.props.global.canBeDragged) {
+        event.dataTransfer.clearData();
+        const data = JSON.stringify(state);
+        event.dataTransfer.setData("text/plain", data);
+
+        let adders = document.getElementsByClassName("adder");
+        for (let adder of adders) {
+          adder.classList.add("adder-highligth");
+        }
+        this.props.element.root.classList.add("item-dragged");
+      }
+      this.props.global.canBeDragged = false;
+    },
+    onDragEnd(state) {
+      if (this.props.global.wasDropSuccessful) {
+        state.isDeleted = true;
+      }
+
+      let adders = document.getElementsByClassName("adder");
+      for (let adder of adders) {
+        adder.classList.remove("adder-highligth");
+      }
+      this.props.element.root.classList.remove("item-dragged");
+
+      this.props.global.parent.update();
+    },
+
+    closeActionPanel() {
+      this.props.global.canOpenActionPanel = false;
+    },
+    duplicateElement() {
+      let copiedElement = JSON.parse(JSON.stringify(this.props.state)); /*deep copy*/
+      this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
+      this.props.global.parent.update();
+    },
+    decreaseElementIndex() {
+      if (this.props.index === 0) {
+        return;
+      }
+      this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
+      this.props.parentState.children.splice(this.props.index - 1, 0, this.props.state);
+    },
+    increaseElementIndex() {
+      if (this.props.index === this.props.parentState.children.length - 1) {
+        return;
+      }
+      this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
+      this.props.parentState.children.splice(this.props.index + 1, 0, this.props.state);
+    },
+  }
+</script>
+
+<style>
+  .action-panel-wrapper {
+    display: flex;
+    width: 129px;
+    height: 34px;
+    border: 2px solid black;
+    background-color: white;
+  }
+
+  .action {
+    height: 30px;
+    width: 25px;
+    cursor: pointer;
+  }
+
+  .action-move {
+    height: 15px;
+    width: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .action:hover, .action-move:hover {
+    background-color:rgb(208, 232, 246);
+  }
+
+  #action-move {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .action-icon-svg {
+    height: 100%;
+    width: 100%;
+  }
+
+  .action-move-icon-svg {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+
+</action-panel>

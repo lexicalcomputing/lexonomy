@@ -1,4 +1,13 @@
 <placeholder-component>
+  <action-panel if={!props.isBaseLevel && props.status.isActive}
+                class="action-panel"
+                global={props.global}
+                index={props.index}
+                parentState={props.parentState}
+                state={props.state}
+                delete-element={props.deleteElement}
+                element={this}
+                />
   <div if={props.state.content.name !== ""}
       class="placeholder-content-box {props.editing.enabled ? "placeholder-content-box-edit" : ""}"
       style="border: 1px solid {props.state.content.color};
@@ -10,24 +19,35 @@
               {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-inside-wrapper-deletable" : ""}">
     <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
                     onclick={() => props.addElement(0, props.global.parent, props.state, props.editing.mode)}
+                    ondragover={onAdderDragOver}
+                    ondragenter={onAdderDragEnter}
+                    ondragleave={onAdderDragLeave}
+                    ondrop={(event) => onAdderDrop(event, props.state, 0)}
                     class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => props.deleteElement(index, props.global.parent, props.state, props.editing, props.global, false)}
+      <placeholder-component onclick={() => openActionPanel(child.status)}
                             ondragover={onDragOver}
                             ondrop={(event) => onDrop(event, child)}
-                            ondragleave={onDragLeave}
                             class="placeholder placeholder-{child.orientation}
                                   {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}"
                             state={props.childWithInheritedArea(child, props.state)}
+                            parentState={props.state}
                             editing={props.editing}
+                            isActive={child.isActive}
+                            status={child.status}
                             global={props.global}
+                            index={index}
                             delete-element={props.deleteElement}
                             add-element={props.addElement}
-                            child-with-inherited-area={props.childWithInheritedArea}
-                            />
+                            close-action-panel={props.closeActionPanel}
+                            child-with-inherited-area={props.childWithInheritedArea}/>
       <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
                       onclick={() => props.addElement(index + 1, props.global.parent, props.state, props.editing.mode)}
+                      ondragover={onAdderDragOver}
+                      ondragenter={onAdderDragEnter}
+                      ondragleave={onAdderDragLeave}
+                      ondrop={(event) => onAdderDrop(event, props.state, index + 1)}
                       class="adder adder-{props.state.orientation}"
                       orientation={props.state.orientation}/>
     </template>
@@ -42,12 +62,54 @@
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
-          state.content.name = data.name;
-          state.content.area = data.name;
-          state.content.color = data.color;
+          if (data.type === "choice-item") {
+            state.content.name = data.name;
+            state.content.area = data.name;
+            state.content.color = data.color;
+          }
         }
         this.props.global.canBeDropped = false;
       },
+      onAdderDragOver(event) {
+        event.preventDefault();
+      },
+      onAdderDragEnter(event) {
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (data.type === "placeholder") {
+          event.target.classList.add("adder-highligth-dragged");
+        }
+      },
+      onAdderDragLeave(event) {
+        event.target.classList.remove("adder-highligth-dragged");
+      },
+      onAdderDrop(event, state, index) {
+        const rawData = event.dataTransfer.getData("text/plain");
+        /*TODO: exception handling for invalid objects*/
+        const data = JSON.parse(rawData);
+        if (this.props.global.canBeDropped) {
+          if (data.type === "placeholder") {
+            state.children.splice(index, 0, data);
+            this.props.global.wasDropSuccessful = true;
+            event.target.classList.remove("adder-highligth-dragged");
+          } else if (data.type === "choice-item") {
+            state.content.name = data.name;
+            state.content.area = data.name;
+            state.content.color = data.color;
+          }
+        }
+        this.props.global.canBeDropped = false;
+      },
+
+      openActionPanel(status) {
+        if (this.props.global.canOpenActionPanel) {
+          this.props.closeActionPanel(); /*close actionPanel if any was opened*/
+          status.isActive = true;
+        } else {
+          status.isActive = false;
+        }
+        this.props.global.canOpenActionPanel = false;
+      }
     }
   </script>
 
@@ -90,6 +152,28 @@
     */
     .placeholder-deletable:has(.placeholder-deletable:hover) {
       background-color: white !important;
+    }
+
+
+    .item-dragged {
+      background-color: rgb(212, 210, 203);
+    }
+    .item-dragged * {
+      display: none;
+    }
+    .adder-highligth {
+      background-color: rgb(237, 205, 116);
+    }
+    .adder-highligth-dragged {
+      background-color: rgb(162, 127, 31) !important;
+    }
+
+
+    .action-panel {
+      position: absolute;
+      top: -40px;
+      left: -4px;
+      z-index: 100;
     }
   </style>
 </placeholder-component>
