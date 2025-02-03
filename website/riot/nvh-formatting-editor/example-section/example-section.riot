@@ -1,11 +1,10 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div">
-      <template each={child in props.schema.children}>
-        <example-section-item
-          schema={child}
-          entry={exampleEntry[0]}/>
-      </template>
+      <example-section-item
+        each={child in props.schema.children}
+        schema={child}
+        entry={exampleEntry[0]}/>
     <div>
   </div>
 

@@ -7,8 +7,7 @@
         {props.entry.value}
       </div>
     </div>
-    <div if={props.schema.children.length !== 0}
-        each={childSchema in props.schema.children}
+    <div each={childSchema in props.schema.children}
         class="element-holder element-holder-{childSchema.orientation}">
       <example-section-item if={childSchema.content.name === "" /*empty placeholder*/}
                             schema={childSchema}
