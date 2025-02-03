@@ -126,19 +126,7 @@
       },
 
       onLayoutClick(sectionName) {
-        switch (sectionName) {
-          case "showElements":
-            this.update({showElements: !this.state.showElements});
-            break;
-          case "showStyle":
-            this.update({showStyle: !this.state.showStyle});
-            break;
-          case "showEditing":
-            this.update({showEditing: !this.state.showEditing});
-            break;
-          case "showExample":
-            this.update({showExample: !this.state.showExample});
-        }
+        this.update({[sectionName]: !this.state[sectionName]});
       },
 
       onToggleEditing() {
