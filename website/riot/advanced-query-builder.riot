@@ -82,25 +82,6 @@
             this.onChange()
          },
 
-         addGroup(group){
-            let childGroup = {
-               type: "group",
-               operator: "and",
-               parent: group,
-               children: []
-            }
-            childGroup.children.push({
-               type: "rule",
-               parent: childGroup
-            })
-            childGroup.children.push({
-               type: "rule",
-               parent: childGroup
-            })
-            group.children.push(childGroup)
-            this.onChange()
-         },
-
          removeRule(rule){
             let group = rule.parent
             group.children = group.children.filter(c => c != rule)
