@@ -28,6 +28,7 @@ class StructureEditorStoreClass {
          element.children = element.children || []
          element.parent = element.path.split(".").slice(0, -1).join(".") || null
       })
+      this.validateSchema()
    }
 
    setNewEntryTemplate(newEntryTemplate){
