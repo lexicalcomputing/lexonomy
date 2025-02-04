@@ -210,7 +210,7 @@ class StructureEditorStoreClass {
                if(element.min == element.max){
                   count = ` ${element.min}`
                } else {
-                  count = ` ${element.min}-${element.max}`
+                  count = ` ${element.min || 0}-${element.max}`
                }
             }
          }
