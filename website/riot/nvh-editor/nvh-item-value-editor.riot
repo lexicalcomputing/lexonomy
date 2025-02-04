@@ -388,7 +388,7 @@
                   // correct index of markupValue is 3 (counting from 0)
                   let searchText = preceedingText + markupValue.substring(0, markupValue.length - 1)
                   let markupElement = this.nvhStore._addChildElement(this.props.element, elementPath)
-                  markupElement.value = markupValue
+                  markupElement.value = markupValue.replaceAll("#", "##")
                   preceedingValueCount = window.countAllSubstrings(searchText, markupValue)
                   if(preceedingValueCount){
                      markupElement.value += `#${preceedingValueCount + 1}`
