@@ -256,7 +256,7 @@ textarea.materialize-textarea:focus:not([readonly])+label{
       box-sizing: border-box;
       display: flex;
       gap: 20px;
-      padding: 10px 16px;;
+      padding: 10px 16px;
       & > span{
          padding: 0!important;
          display: flex;
@@ -404,7 +404,10 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    margin-top: 1.5rem;
    .helper-text{
       top: -5px;
-      font-size: 0.7rem;
+      font-size: 0.8rem;
+      &:hover{
+         color: rgba(0, 0, 0, 0.8);
+      }
    }
    &>label:not(.label-icon){
       -webkit-transform: translateY(-1.1rem) scale(1)!important;
