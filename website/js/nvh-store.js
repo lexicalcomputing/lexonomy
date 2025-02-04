@@ -909,7 +909,7 @@ class NVHStoreClass {
 
    startElementEditing(element){
       let config = this.getElementConfig(element.path)
-      if(config && config.type != "empty"){  // element with value
+      if(config && !["empty", "markup"].includes(config.type)){
          let elements = this.findElements(e => e.focused || e.edit)
          elements.forEach(e => {
             e.focused = e == element,
@@ -1176,9 +1176,15 @@ class NVHStoreClass {
       }
    }
 
+   isElementEditAllowed(element){
+      let type = this.getElementConfig(element.path)?.type
+      return !["empty", "markup"].includes(type)
+   }
+
    isElementDuplicationAllowed(element){
       return element.name != this.data.rootElement
             && !!element.parent
+            && this.getElementConfig(element.path)?.type != "markup"
             && this.getAvailableChildElementPaths(element.parent).includes(element.path)
    }
 
@@ -1419,7 +1425,14 @@ class NVHStoreClass {
       let replaceList = []
       element.children.filter(child => this.getElementConfig(child.path)?.type == "markup")
             .forEach(child => {
-               let [find, occurrenceIndex] = child.value.split("#")
+               let hashIndex = child.value.lastIndexOf("#")
+               let find = child.value
+               let occurrenceIndex = 1
+               if(hashIndex != -1 && child.value.charAt(hashIndex - 1) != "#"){
+                  find = child.value.substr(0, hashIndex)
+                  occurrenceIndex = child.value.substr(hashIndex + 1)
+               }
+               find = find.replaceAll("##", "#")
                if(find.trim()){
                   let index = window.getNthSubstringIndex(value, find, occurrenceIndex || 1)
                   if(index !== -1){
