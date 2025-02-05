@@ -276,12 +276,10 @@
                      onclick={onBackClick}>
                   back
                </button>
-               <button class="btn btn-primary waves-effect waves-light"
-                     name="makeDict"
-                     id="makeDictButton"
-                     onclick={onCreateDictionaryFromFileClick}>Create dictionary
-                  <i class="material-icons left">add</i>
-               </button>
+               <primary-button id="makeDictButton"
+                     on-click={onCreateDictionaryFromFileClick}
+                     label="Create dictionary"
+                     icon="add"/>
             </div>
             <div class="borderTop mt-12">
                <small class="grey-text">
@@ -366,12 +364,10 @@
                      onclick={onBackClick}>
                   back
                </button>
-               <button class="btn btn-primary waves-effect waves-light"
-                     name="makeDict"
-                     id="makeDictButton"
-                     onclick={onCreateEmptyDictionaryClick}>Create dictionary
-                  <i class="material-icons left">add</i>
-               </button>
+               <primary-button id="makeDictButton"
+                     on-click={onCreateEmptyDictionaryClick}
+                     label="Create dictionary"
+                     icon="add"/>
             </div>
          </div>
          <div class="borderTop mt-12">
@@ -610,7 +606,7 @@
                      }
                   }
                }
-               $("#makeDictButton", this.root).toggleClass("disabled", disabled)
+               $("#makeDictButton .submitButton", this.root).toggleClass("disabled", disabled)
             }
          }
       }

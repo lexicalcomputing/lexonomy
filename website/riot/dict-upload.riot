@@ -75,12 +75,11 @@
          </label>
       </div-->
       <div class="mt-12">
-         <button id="startImportBtn"
-               class="waves-effect waves-light btn btn-primary disabled"
-               onclick={onImportClick}
-               id="startButton">
-            <i class="material-icons left">file_upload</i>Start import
-         </button>
+         <primary-button id="startImportBtn"
+               disabled={true}
+               on-click={onImportClick}
+               label="Start import"
+               icon="file_upload"/>
       </div>
    </div>
 
@@ -243,7 +242,7 @@
             let disabled = !this.state.file
                   || !this.state.headwordElement
                   || this.state.isImporting
-            $("#startImportBtn").toggleClass("disabled", disabled)
+            $("#startImportBtn .submitButton").toggleClass("disabled", disabled)
          }
       }
    </script>
