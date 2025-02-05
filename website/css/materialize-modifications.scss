@@ -302,9 +302,15 @@ textarea.materialize-textarea:focus:not([readonly])+label{
       box-shadow: none;
       background-color: #231f20;
    }
+   &:hover{
+      background-color: #000;
+   }
    &.btn-primary{
       box-shadow: none;
       background-color: #c62132;
+      &:hover{
+         background-color: #a61423;
+      }
    }
    &.btn-secondary{
       color: #000;
@@ -335,6 +341,21 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    &:focus,
    &:hover{
       box-shadow: none;
+   }
+   .btn:focus,
+   .btn-large:focus,
+   .btn-small:focus,
+   .btn-floating:focus{
+      background-color: #a61423;
+   }
+}
+.fixed-action-btn{
+   button{
+      background-color: #c62132;
+      &:hover,
+      &:focus{
+         background-color: #a61423;
+      }
    }
 }
 

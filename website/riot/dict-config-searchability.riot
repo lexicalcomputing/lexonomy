@@ -88,8 +88,7 @@
 
    <br><br>
    <dict-config-buttons save-data={saveData}
-         show-save={state.hasElements}
-         btn-class={state.isBtnSaveDisabled ? 'disabled' : ''}/>
+         disabled={state.isBtnSaveDisabled ? 'disabled' : ''}/>
 
    <script>
       export default {
@@ -116,7 +115,8 @@
          },
 
          onBeforeUpdate(){
-            this.state.isBtnSaveDisabled = this.state.data && Object.values(this.state.data.templates).filter(t => t.error).length > 0
+            this.state.isBtnSaveDisabled = !this.state.hasElements
+                  || this.state.data && Object.values(this.state.data.templates).filter(t => t.error).length > 0
          },
 
          onAddTemplateClick(evt) {
