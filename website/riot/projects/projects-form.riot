@@ -264,11 +264,10 @@
                class="btn btn-secondary ml-auto">
             back
          </a>
-         <button id="btnSaveProject"
-               class="btn btn-primary disabled mr-auto"
-               onclick={onSaveProjectClick}>
-            {props.projectID ? "update" : "create"}
-         </button>
+         <primary-button id="btnSaveProject"
+               class="mr-auto"
+               on-click={onSaveProjectClick}
+               label={props.projectID ? "Update project" : "Create project"}/>
       </div>
    </div>
 
@@ -339,6 +338,7 @@
             }
 
             this.initLanguages()
+            this.refreshSaveBtnDisabled()
             $("#name", this.root).focus()
          },
 
@@ -349,6 +349,7 @@
          onWorkflowListLoadingChanged(){
             this.update()
             this.initLanguages()
+            this.refreshSaveBtnDisabled()
             $("#name", this.root).focus()
          },
 
@@ -604,7 +605,7 @@
                         })
                   || !this.state.project.source_dict
                   || !this.state.project.workflow_id
-            $("#btnSaveProject").toggleClass("disabled", disabled)
+            $("#btnSaveProject .submitButton").toggleClass("disabled", disabled)
          }
       }
    </script>

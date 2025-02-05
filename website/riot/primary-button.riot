@@ -3,15 +3,16 @@
          class="submitButton btn btn-primary waves-effect waves-light {props.btnClass || ''} {props.disabled ? 'disabled' : ''}"
          onclick={props.onClick}>
       {props.label || "Save"}
-      <i class="material-icons right">save</i>
+      <i class="material-icons right">{props.icon || "save"}</i>
    </button>
 
    <div id="fixedActionButton"
          class="fixed-action-btn scale-transition scale-out">
       <button class="submitButton btn-floating btn-large waves-effect waves-light tooltipped {props.disabled ? 'disabled' : ''}"
             data-tooltip={props.label || "Save"}
+            data-position="left"
             onclick={props.onClick}>
-         <i class="large material-icons">save</i>
+         <i class="large material-icons">{props.icon || "save"}</i>
       </button>
    </div>
 
