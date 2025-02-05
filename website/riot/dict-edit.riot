@@ -105,7 +105,15 @@
          },
 
          onToggleQueryBuilder(show){
-            this.update({showQueryBuilder: typeof show == "undefined" ? !this.state.showQueryBuilder : show})
+            this.update({showQueryBuilder: show ?? !this.state.showQueryBuilder})
+            if(this.state.isMobile){
+               let sidenav = M.Sidenav.getInstance($('#entryListSidenav')[0])
+               if(this.state.showQueryBuilder){
+                  sidenav.close()
+               } else {
+                  sidenav.open()
+               }
+            }
          },
 
          doChangeDoctype(newdoctype) {
