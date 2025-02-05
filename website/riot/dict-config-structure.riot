@@ -401,7 +401,7 @@
          },
 
          refreshBtnSaveDisabled(){
-            $("#submit_button", this.root).toggleClass("disabled", !this.isSchemaValid())
+            $("primary-button .submitButton", this.root).toggleClass("disabled", !this.isSchemaValid())
          },
 
          refreshCustomTextFields(){

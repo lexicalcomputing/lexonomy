@@ -1,0 +1,39 @@
+<primary-button>
+   <button id="submit_button"
+         class="submitButton btn btn-primary waves-effect waves-light {props.btnClass || ''} {props.disabled ? 'disabled' : ''}"
+         onclick={props.onClick}>
+      {props.label || "Save"}
+      <i class="material-icons right">save</i>
+   </button>
+
+   <div id="fixedActionButton"
+         class="fixed-action-btn scale-transition scale-out">
+      <button class="submitButton btn-floating btn-large waves-effect waves-light tooltipped {props.disabled ? 'disabled' : ''}"
+            data-tooltip={props.label || "Save"}
+            onclick={props.onClick}>
+         <i class="large material-icons">save</i>
+      </button>
+   </div>
+
+   <script>
+      export default{
+         onMounted(){
+            this.submitButton = document.getElementById("submit_button")
+            this.observer = new IntersectionObserver(this.refresh.bind(this), {
+               threshold: 1,
+            })
+            this.observer.observe(this.submitButton)
+         },
+
+         onBeforeUnmount(){
+            this.observer.unobserve(this.submitButton)
+         },
+
+         refresh(entries){
+            let hide = entries[0].intersectionRatio == 1 // whole button is not displayed
+            let floatingButton = document.getElementById('fixedActionButton')
+            floatingButton.classList.toggle('scale-out', hide)
+         }
+      }
+   </script>
+</primary-button>

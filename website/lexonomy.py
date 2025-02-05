@@ -566,7 +566,7 @@ def movedict(dictID, user, dictDB, configs):
 @auth
 def movedict(user):
     res = ops.checkDictExists(request.forms.url)
-    return {"success": res}
+    return {"success": True, "exists": res}
 
 @post(siteconfig["rootPath"] + "changepwd.json")
 @auth

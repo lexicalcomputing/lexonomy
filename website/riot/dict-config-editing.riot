@@ -38,7 +38,7 @@
             class="mt-8">CSS</h2>
       <div id="editorCSS"
             onkeydown={onKeyDown}></div>
-      <div class="fixed-action-btn buttons mb-4 mr-2">
+      <div class="fixed-action-btn buttons mr-16">
          <a class="btn-floating btn-large grey"
                onclick={onScrollToClick.bind(this, "js")}>
             <span class="white-text">JS</span>
@@ -297,7 +297,7 @@
             } else {
                $("#codeStatus .codeStatusMessage").empty()
             }
-            $("#submit_button").toggleClass("disabled", !isValid)
+            $("primary-button .submitButton").toggleClass("disabled", !isValid)
          },
 
          saveData() {

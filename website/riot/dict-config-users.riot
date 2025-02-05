@@ -13,10 +13,8 @@
             Add new user
          </button>
          <br><br><br><br>
-         <div class="buttons"
-               style="justify-content: center;">
-            <dict-config-buttons save-data={saveData}></dict-config-buttons>
-         </div>
+         <dict-config-buttons save-data={saveData}
+               center={true}/>
       </div>
       <div>
 
@@ -117,10 +115,7 @@
             </button>
          </div>
          <br><br>
-         <dict-config-buttons save-data={saveData}></dict-config-buttons>
-         <div if={state.errorMessage} class="message messageError mt-4">
-            <raw-html content={state.errorMessage}></raw-html>
-         </div>
+         <dict-config-buttons save-data={saveData}/>
       </div>
    </template>
 
@@ -129,7 +124,6 @@
          state: {
             isLoading: true,
             isSaving: false,
-            errorMessage: '',
             data: {users: []}
          },
 
@@ -181,13 +175,13 @@
 
          saveData() {
             if (!this.state.data.users.length) {
-               this.update({errorMessage: 'Please, add at least one user.'})
+               window.showToast('Please, add at least one user.')
             } else if (this.state.data.users.find(row => row.canConfig) == undefined) {
-               this.update({errorMessage: 'At least one user must have <i>Configure</i> permission.'})
+               window.showToast('At least one user must have <i>Configure</i> permission.')
             } else if(this.state.data.users.find(row => row.email == "")) {
-               this.update({errorMessage: 'Email must not be empty.'})
+               window.showToast('Email must not be empty.')
             } else if (this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
-               this.update({errorMessage: 'User should have assigned at least one privilege.'})
+               window.showToast('User should have assigned at least one privilege.')
             } else {
                let data = {}
                this.state.data.users.forEach(u => {
@@ -199,10 +193,7 @@
                      canUpload: u.canUpload
                   }
                })
-               this.update({
-                  isSaving: true,
-                  errorMessage: ''
-               })
+               this.update({isSaving: true})
                this.store.updateDictionaryAccess(data)
                      .done(response => {
                         if(!response.error){
