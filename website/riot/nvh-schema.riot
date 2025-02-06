@@ -1,5 +1,5 @@
 <nvh-schema class="displayFlex">
-   <div class="pb-8">
+   <div class="pb-8 pr-6">
       <h3>Entry components</h3>
       <div class="pl-4"
             style="min-width: 350px;">
@@ -82,7 +82,7 @@
                      onkeyup={onEtymologyLanguageKeyUp}>
                <label>Add etymon language</label>
                <span if={!state.isEtymologyLanguageValid}
-                     class="helper-text red-text">Invalid language. Allowed characters: a-z, A-Z, 0-9, -</span>
+                     class="helper-text red-text">Invalid language. Allowed characters: a-z, A-Z, 0-9, -, _</span>
                <span class="helper-text">Add language and hit enter.</span>
             </div>
          </div>
@@ -220,7 +220,7 @@
                   }
                } else {
                   let wasValid = this.state.isEtymologyLanguageValid
-                  this.state.isEtymologyLanguageValid = !!language.match(/^[a-zA-Z0-9-]+$/)
+                  this.state.isEtymologyLanguageValid = !!language.match(/^[a-zA-Z0-9-_]+$/)
                   if(wasValid != this.state.isEtymologyLanguageValid){
                      this.update()
                   }
