@@ -180,6 +180,8 @@
                window.showToast('At least one user must have <i>Configure</i> permission.')
             } else if(this.state.data.users.find(row => row.email == "")) {
                window.showToast('Email must not be empty.')
+            } else if(this.state.data.users.find(row => !window.isEmail(row.email))) {
+               window.showToast('Email is not valid.')
             } else if (this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
                window.showToast('User should have assigned at least one privilege.')
             } else {
