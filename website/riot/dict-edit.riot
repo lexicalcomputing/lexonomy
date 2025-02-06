@@ -84,6 +84,7 @@
             document.addEventListener('keydown', this.onDocumentKeyDown)
             document.addEventListener('mouseup', this.onDocumentMouseUp)
             window.addEventListener('resize', this.onResizeDebounced)
+            window.addEventListener('scroll', this.refreshEntryListMenuHeight)
             this.refreshEntryListMenu()
             setTimeout(() => {$(".sidenav-trigger").removeClass("pulse")}, 3000)
          },
@@ -92,12 +93,14 @@
             if($('#entryListSidenav')[0] && !M.Sidenav.getInstance($('#entryListSidenav')[0])){
                this.refreshEntryListMenu()
             }
+            this.refreshEntryListMenuHeight()
          },
 
          onBeforeUnmount(){
             document.removeEventListener('keydown', this.onDocumentKeyDown)
             document.removeEventListener('mousedown', this.onDocumentMouseUp)
             window.removeEventListener('resize', this.onResizeDebounced)
+            window.removeEventListener('scroll', this.refreshEntryListMenuHeight)
          },
 
          onEntryIdChanged(){
@@ -253,6 +256,21 @@
                }
             } else {
                sidenav.css("transform", "unset")
+            }
+            this.refreshEntryListMenuHeight()
+         },
+
+         refreshEntryListMenuHeight(){
+            let entryList = document.querySelector(".entry-list")
+            if(entryList){
+               let filterFormHeight = Math.round(document.querySelector("dict-entry-filter").clientHeight)
+               if(this.state.isMobile){
+                  entryList.style.maxHeight = `calc(100vh - ${filterFormHeight}px)`
+               } else {
+                  let entryListTop = document.querySelector("entry-list").getBoundingClientRect().top
+                  let offset = filterFormHeight + Math.max(0, entryListTop)
+                  entryList.style.maxHeight = `calc(100vh - ${offset}px)`
+               }
             }
          }
       }
