@@ -1,5 +1,6 @@
 <element-select>
    <select onchange={onChange}
+         disabled={props.disabled}
          multiple={props.multiple}>
       <option if={props.showEmptyValue}
             selected={props.riotValue == ""}
