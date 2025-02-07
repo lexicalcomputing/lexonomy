@@ -1,0 +1,1465 @@
+openapi: "3.0.0"
+info:
+  version: "1.0.0"
+  title: "Lexonomy API"
+
+scheme: https
+
+tags:
+- name: Account
+- name: Dictionaries
+- name: Entries
+- name: Links
+- name: Other
+
+
+paths:
+
+  #######################
+  #     DICTIONARIES    #
+  #######################
+
+  /exists.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Check if dictionary exists
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+              required:
+                - url
+      responses:
+        '200':
+          description: Existence check completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /userdicts.json:
+    get:
+      tags:
+      - Dictionaries
+      summary: Get user dictionaries
+      responses:
+        '200':
+          description: User dictionaries retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                  success:
+                    type: boolean
+
+  /publicdicts.json:
+    get:
+      tags:
+      - Dictionaries
+      summary: Get public dictionaries
+      responses:
+        '200':
+          description: Public dictionaries retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                  success:
+                    type: boolean
+
+  /make.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Create a new dictionary
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  format: binary
+                url:
+                  type: string
+                title:
+                  type: string
+                language:
+                  type: string
+                dmlex:
+                  type: string
+                deduplicate:
+                  type: string
+                hwNode:
+                  type: string
+              required:
+                - url
+                - title
+                - language
+      responses:
+        '200':
+          description: Dictionary created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+                  url:
+                    type: string
+
+  /{dictID}/clone.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Clone the dictionary
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dictionary cloned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  dicts:
+                    type: array
+                    items:
+                      type: object
+
+  /{dictID}/destroy.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Delete the dictionary
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dictionary deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  dicts:
+                    type: array
+                    items:
+                      type: object
+
+  /{dictID}/move.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Move dictionary
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+              required:
+                - url
+      responses:
+        '200':
+          description: Dictionary moved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /{dictID}/config.json:
+    get:
+      tags:
+      - Dictionaries
+      summary: Get dictionary configuration
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dictionary configuration retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  publicInfo:
+                    type: object
+                  userAccess:
+                    type: string
+                  configs:
+                    type: object
+                  doctype:
+                    type: string
+                  doctypes:
+                    type: array
+                    items:
+                      type: string
+
+  /{dictID}/doctype.json:
+    get:
+      tags:
+      - Dictionaries
+      summary: Get dictionary doctype
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dictionary doctype retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  doctype:
+                    type: string
+                  doctypes:
+                    type: array
+                    items:
+                      type: string
+                  userAccess:
+                    type: string
+
+  /{dictID}/exportconfigs.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Export dictionary configurations
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                configs:
+                  type: string
+              required:
+                - configs
+      responses:
+        '200':
+          description: Dictionary configurations exported
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /{dictID}/importconfigs.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Import dictionary configurations
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                json:
+                  type: string
+                myfile:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Dictionary configurations imported
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+
+  /{dictID}/download.json:
+    get:
+      tags:
+      - Dictionaries
+      summary: Download dictionary
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [xml, nvh]
+      responses:
+        '200':
+          description: Dictionary downloaded
+          content:
+            text/xml:
+              schema:
+                type: string
+
+  /{dictID}/import.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Import dictionary JSON
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  format: binary
+                deduplicate:
+                  type: string
+                purge:
+                  type: string
+                purge_all:
+                  type: string
+              required:
+                - filename
+      responses:
+        '200':
+          description: Dictionary imported
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  msg:
+                    type: string
+                  upload_file_path:
+                    type: string
+
+  /{dictID}/getImportProgress.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Get import progress
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                upload_file_path:
+                  type: string
+              required:
+                - upload_file_path
+      responses:
+        '200':
+          description: Import progress retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  finished:
+                    type: boolean
+                  progress:
+                    type: integer
+                  error:
+                    type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                  upload_file_path:
+                    type: string
+
+  /{dictID}/configread.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Read dictionary configuration
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+              required:
+                - id
+      responses:
+        '200':
+          description: Dictionary configuration read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+                  content:
+                    type: object
+
+  /{dictID}/dmlexschemaupdate.json:
+    get:
+      tags:
+      - Dictionaries
+      summary: Update DMLex schema
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: modules
+          in: query
+          schema:
+            type: string
+        - name: xlingual_langs
+          in: query
+          schema:
+            type: string
+        - name: linking_relations
+          in: query
+          schema:
+            type: string
+        - name: etymology_langs
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: DMLex schema updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  elements:
+                    type: object
+                  desc_dict:
+                    type: object
+                  modules:
+                    type: array
+                    items:
+                      type: string
+                  removed_nodes:
+                    type: object
+                  root:
+                    type: string
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+
+  /{dictID}/dictconfigupdate.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Update dictionary configuration
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                content:
+                  type: string
+              required:
+                - id
+                - content
+      responses:
+        '200':
+          description: Dictionary configuration updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+                  content:
+                    type: object
+
+  /{dictID}/dictaccessupdate.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Update dictionary access
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                users:
+                  type: string
+              required:
+                - users
+      responses:
+        '200':
+          description: Dictionary access updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /changefavdict.json:
+    post:
+      tags:
+      - Dictionaries
+      summary: Change favorite dictionary
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                dictId:
+                  type: string
+                status:
+                  type: string
+              required:
+                - dictId
+                - status
+      responses:
+        '200':
+          description: Favorite dictionary changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+
+
+  #######################
+  #       ENTRIES       #
+  #######################
+
+  /{dictID}/search.json:
+    post:
+      tags:
+      - Entries
+      summary: Public search
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                searchtext:
+                  type: string
+                modifier:
+                  type: string
+                howmany:
+                  type: integer
+                offset:
+                  type: integer
+              required:
+                - searchtext
+      responses:
+        '200':
+          description: Public search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+
+  /{dictID}/{doctype}/entrylist.json:
+    post:
+      tags:
+      - Entries
+      summary: List entries
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: doctype
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                advanced_query:
+                  type: string
+                searchtext:
+                  type: string
+                modifier:
+                  type: string
+                howmany:
+                  type: integer
+                offset:
+                  type: integer
+                sortdesc:
+                  type: boolean
+              required:
+                - id
+      responses:
+        '200':
+          description: Entries listed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                  entryID:
+                    type: string
+                  total:
+                    type: integer
+                  firstRun:
+                    type: boolean
+                  error:
+                    type: string
+
+  /{dictID}/random.json:
+    post:
+      tags:
+      - Entries
+      summary: Get random entries
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Random entries retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /{dictID}/entrycreate.json:
+    post:
+      tags:
+      - Entries
+      summary: Create an entry
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                nvh:
+                  type: string
+              required:
+                - nvh
+      responses:
+        '200':
+          description: Entry created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: integer
+                  content:
+                    type: string
+                  feedback:
+                    type: string
+
+  /{dictID}/entryread.json:
+    post:
+      tags:
+      - Entries
+      summary: Read an entry
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+              required:
+                - id
+      responses:
+        '200':
+          description: Entry read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: integer
+                  nvh:
+                    type: string
+                  json:
+                    type: string
+
+  /{dictID}/entryupdate.json:
+    post:
+      tags:
+      - Entries
+      summary: Update an entry
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                nvh:
+                  type: string
+              required:
+                - id
+                - nvh
+      responses:
+        '200':
+          description: Entry updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: integer
+                  content:
+                    type: string
+                  feedback:
+                    type: string
+
+  /{dictID}/entrydelete.json:
+    post:
+      tags:
+      - Entries
+      summary: Delete an entry
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+              required:
+                - id
+      responses:
+        '200':
+          description: Entry deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+
+  /{dictID}/entryflag.json:
+    post:
+      tags:
+      - Entries
+      summary: Flag an entry
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                flags:
+                  type: string
+              required:
+                - id
+                - flags
+      responses:
+        '200':
+          description: Entry flagged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: string
+                  error:
+                    type: string
+
+  /{dictID}/history.json:
+    post:
+      tags:
+      - Entries
+      summary: Get entry history
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+              required:
+                - id
+      responses:
+        '200':
+          description: Entry history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    items:
+                      type: object
+
+
+
+  #######################
+  #        LINKS        #
+  #######################
+
+  /{dictID}/links.json:
+    get:
+      tags:
+      - Links
+      summary: Get all dictionary links
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dictionary links retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: object
+                    properties:
+                      to:
+                        type: array
+                        items:
+                          type: object
+                      from:
+                        type: array
+                        items:
+                          type: object
+
+  /{dictID}/linkablelist.json:
+    get:
+      tags:
+      - Links
+      summary: Get linkable list
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Linkable list retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+
+  /{dictID}/links/add:
+    get:
+      tags:
+      - Links
+      summary: Add a link
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: source_el
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: source_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: target_dict
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: target_el
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: target_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: confidence
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Link added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+                  links:
+                    type: array
+                    items:
+                      type: object
+
+  /{dictID}/links/delete/{linkID}:
+    get:
+      tags:
+      - Links
+      summary: Delete a link
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: linkID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Link deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /{dictID}/links/from:
+    get:
+      tags:
+      - Links
+      summary: Get source links
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: source_el
+          in: query
+          schema:
+            type: string
+        - name: source_id
+          in: query
+          schema:
+            type: string
+        - name: target_dict
+          in: query
+          schema:
+            type: string
+        - name: target_el
+          in: query
+          schema:
+            type: string
+        - name: target_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Source links retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+
+  /{dictID}/links/to:
+    get:
+      tags:
+      - Links
+      summary: Get target links
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: source_dict
+          in: query
+          schema:
+            type: string
+        - name: source_el
+          in: query
+          schema:
+            type: string
+        - name: source_id
+          in: query
+          schema:
+            type: string
+        - name: target_el
+          in: query
+          schema:
+            type: string
+        - name: target_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Target links retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+
+
+  /{dictID}/linking.json:
+    get:
+      tags:
+      - Links
+      summary: Check if linking
+      parameters:
+        - name: dictID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Linking status
+          content:
+            application/json:
+              schema:
+                type: object
+
+
+
+  #######################
+  #        ACCOUNT      #
+  #######################
+
+  /login.json:
+    post:
+      tags:
+      - Account
+      summary: User login
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  email:
+                    type: string
+                  sessionkey:
+                    type: string
+                  ske_username:
+                    type: string
+                  ske_apiKey:
+                    type: string
+                  apiKey:
+                    type: string
+                  consent:
+                    type: string
+                  isAdmin:
+                    type: boolean
+                  isProjectManager:
+                    type: boolean
+
+  /logout.json:
+    post:
+      tags:
+      - Account
+      summary: User logout
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Logout response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+
+
+  #######################
+  #         OTHER       #
+  #######################
+  /siteconfigread.json:
+    get:
+      tags:
+      - Other
+      summary: Read site configuration
+      responses:
+        '200':
+          description: Site configuration retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  licences:
+                    type: array
+                    items:
+                      type: string
+                  baseUrl:
+                    type: string
+                  ske_url:
+                    type: string
+                  api_url:
+                    type: string
+                  langs:
+                    type: array
+                    items:
+                      type: string
+                  version:
+                    type: string
+                  customStyle:
+                    type: string
+                  disableRegistration:
+                    type: boolean
+                  sketchengineLoginPage:
+                    type: string
+                  showDictionaryNameInPageTitle:
+                    type: boolean
+                  limitPublicDictionarySize:
+                    type: boolean
+                  notification:
+                    type: string
+                  homepage:
+                    type: string
+                  consent:
+                    type: object
+
+  /dmlex_schema.json:
+    get:
+      tags:
+      - Other
+      summary: Get DMLex schema
+      parameters:
+        - name: modules
+          in: query
+          schema:
+            type: string
+        - name: xlingual_langs
+          in: query
+          schema:
+            type: string
+        - name: linking_relations
+          in: query
+          schema:
+            type: string
+        - name: etymology_langs
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: DMLex schema retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  elements:
+                    type: object
+                  desc_dict:
+                    type: object
+                  modules:
+                    type: array
+                    items:
+                      type: string
+                  root:
+                    type: string
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+
+  /schema_to_json.json:
+    post:
+      tags:
+      - Other
+      summary: Convert DMLex schema to JSON
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                schema:
+                  type: string
+              required:
+                - schema
+      responses:
+        '200':
+          description: Schema conversion response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schemajson:
+                    type: string
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+
+# components:
+#   securitySchemes:
+#     email:
+#       type: apiKey
+#       in: query
+#       name: email
+#     apiKey:
+#       type: apiKey
+#       in: query
+#       name: apiKey
+# security:
+# - email: []
+#   apiKey: []

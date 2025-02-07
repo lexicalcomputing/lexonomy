@@ -375,29 +375,67 @@ window.debounce = (func, timeout = 300) => {
    return f
 }
 
-window.loadScript = (src, onLoad) => {
-   let id = window.idEscape(src)
-   let script = document.getElementById(id)
-   if(!script){
-      script = document.createElement("script")
-      script.onload = () => {
-         script.attributes.loaded = 1
-         window.dispatcher.trigger(`SCRIPT_LOADED_${id}`)
+window.loadScript = (src) => {
+   return new Promise((resolve, reject) => {
+      onScriptLoaded = success => {
+         if(!success){
+            window.showToast(`Could not load script "${src}".`)
+         }
+         script.setAttribute("loaded", success * 1)
+         window.dispatcher.trigger(`SCRIPT_LOADED_${id}`, {
+            script: src,
+            success: success
+         })
       }
-      script.onerror = () => {
-         window.showToast(`Could not load script "${src}".`)
+
+      let id = window.idEscape(src)
+      let script = document.getElementById(id)
+      window.dispatcher.one(`SCRIPT_LOADED_${id}`, result => {
+         result.success ? resolve(result) : reject(result)
+      })
+      if(!script){
+         script = document.createElement("script")
+         script.onload = onScriptLoaded.bind(null, true)
+         script.onerror = onScriptLoaded.bind(null, false)
+         script.id = id
+         script.src = `${src}?ver=${window.LEXONOMY_VERSION}`
+         document.head.appendChild(script)
+      } else if (script.attributes.loaded){
+         onScriptLoaded(script.attributes.loaded == 1)
       }
-      window.dispatcher.one(`SCRIPT_LOADED_${id}`, onLoad)
-      script.id = id
-      script.src = `${src}?ver=${window.LEXONOMY_VERSION}`
-      document.head.appendChild(script)
-   } else {
-      if(script.attributes.loaded){
-         onLoad()
-      } else {
-         window.dispatcher.one(`SCRIPT_LOADED_${id}`, onLoad)
+   })
+}
+
+window.loadStylesheet = (href) => {
+   return new Promise((resolve, reject) => {
+      onLinkLoaded = success => {
+         if(!success){
+            window.showToast(`Could not load stylesheet "${href}".`)
+         }
+         link.setAttribute("loaded", success * 1)
+         window.dispatcher.trigger(`STYLESHEET_LOADED_${id}`, {
+            link: href,
+            success: success
+         })
       }
-   }
+      let id = window.idEscape(href)
+      let link = document.getElementById(id)
+      window.dispatcher.one(`STYLESHEET_LOADED_${id}`, result => {
+         result.success ? resolve(result) : reject(result)
+      })
+      if(!link){
+         link = document.createElement("link")
+         link.rel = 'stylesheet'
+         link.type = 'text/css'
+         link.onload = onLinkLoaded.bind(null, true)
+         link.onerror = onLinkLoaded.bind(null, false)
+         link.id = id
+         link.href = `${href}?ver=${window.LEXONOMY_VERSION}`
+         document.head.appendChild(link)
+      } else if(link.attributes.loaded){
+         onLinkLoaded(link.attributes.loaded == 1)
+      }
+   })
 }
 
 window.openConfirmDialog = (params) => {
