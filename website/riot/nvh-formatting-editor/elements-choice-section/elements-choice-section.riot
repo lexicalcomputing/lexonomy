@@ -1,69 +1,17 @@
 <elements-choice-section>
   <div class="elements-choice-section-container">
-    <template each={child in state.children}>
+    <template each={child in props.elementsSchema}>
       <elements-choice-item state={child}
-                            indentationLevel={5}
+                            indentationLevel={getIndentationLevel(child)}
                             parent={props.parent}/>
     </template>
   </div>
 
   <script>
     export default {
-      /*just example of elements for testing*/
-      state: {
-        children: [
-          {
-            data: {
-              type: "choice-item",
-              name: "entry",
-              color: "blue"
-            },
-            children: [
-              {
-                data: {
-                  type: "choice-item",
-                  name: "pos",
-                  color: "orange"
-                },
-                children: []
-              },
-              {
-                data: {
-                  type: "choice-item",
-                  name: "pronunciation",
-                  color: "purple"
-                },
-                children: [
-                  {
-                    data: {
-                      type: "choice-item",
-                      name: "transcription",
-                      color: "blue"
-                    },
-                    children: []
-                  },
-                  {
-                    data: {
-                      type: "choice-item",
-                      name: "label",
-                      color: "green"
-                    },
-                    children: []
-                  },
-                ]
-              },
-              {
-                data: {
-                  type: "choice-item",
-                  name: "label",
-                  color: "green"
-                },
-                children: []
-              }
-            ]
-          }
-        ]
-      },
+      getIndentationLevel(element) {
+        return element.data.fullName.split('.').length - 1;
+      }
     }
   </script>
 

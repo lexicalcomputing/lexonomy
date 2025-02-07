@@ -5,40 +5,54 @@
         title="Drag"
         draggable="true"
         ondragstart={(event) => onDragStart(event, props.state)}
-        ondragend={(event) => onDragEnd(props.state)}>
-      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+        ondragend={(event) => onDragEnd(props.index, props.parentState)}>
+      <i class="small material-icons">drag_handle</i>
     </div>
     <div class="action"
         id="action-duplicate"
         title="Duplicate"
         onclick={duplicateElement}>
-      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+      <i class="small material-icons">control_point_duplicate</i>
     </div>
     <div class="action"
         id="action-delete"
         title="Delete"
-        onclick={() => props.deleteElement(props.index, props.global.parent, props.parentState, props.global, false)}>
-      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+        onclick={() => props.deleteElement(props.index, props.parentState)}>
+      <i class="small material-icons">delete</i>
     </div>
-    <div id="action-move">
-      <div class="action-move"
-          id="action-move-up"
-          title={props.parentState.orientation === "column" ? "Move up" : "Move left"}
-          onclick={decreaseElementIndex}>
-        <img class="action-move-icon-svg" src="img/logo_ske_round.png"/>
-      </div>
-      <div class="action-move"
-          id="action-move-down"
-          title={props.parentState.orientation === "column" ? "Move down" : "Move right"}
-          onclick={increaseElementIndex}>
-        <img class="action-move-icon-svg" src="img/logo_ske_round.png"/>
-      </div>
+    <div if={props.parentState.orientation === "column"} 
+        class="action"
+        id="action-moveup"
+        title="Move up"
+        onclick={decreaseElementIndex}>
+      <i class="small material-icons">arrow_upward</i>
+    </div>
+    <div if={props.parentState.orientation === "column"} 
+        class="action"
+        id="action-movedown"
+        title="Move down"
+        onclick={increaseElementIndex}>
+      <i class="small material-icons">arrow_downward</i>
+    </div>
+    <div if={props.parentState.orientation === "row"} 
+        class="action"
+        id="action-moveleft"
+        title="Move left"
+        onclick={decreaseElementIndex}>
+      <i class="small material-icons">arrow_back</i>
+    </div>
+    <div if={props.parentState.orientation === "row"} 
+        class="action"
+        id="action-moveright"
+        title="Move right"
+        onclick={increaseElementIndex}>
+      <i class="small material-icons">arrow_forward</i>
     </div>
     <div class="action"
         id="action-close"
         title="Close"
         onclick={closeActionPanel}>
-      <img class="action-icon-svg" src="img/logo_ske_round.png"/>
+      <i class="small material-icons">close</i>
     </div>
   </div>
 
@@ -58,9 +72,9 @@
       }
       this.props.global.canBeDragged = false;
     },
-    onDragEnd(state) {
+    onDragEnd(indexToDelete, parentState) {
       if (this.props.global.wasDropSuccessful) {
-        state.isDeleted = true;
+        parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
       }
 
       let adders = document.getElementsByClassName("adder");
@@ -100,44 +114,22 @@
 <style>
   .action-panel-wrapper {
     display: flex;
-    width: 129px;
-    height: 34px;
-    border: 2px solid black;
+    height: 36px;
+    border: 1px solid black;
     background-color: white;
   }
-
   .action {
-    height: 30px;
-    width: 25px;
     cursor: pointer;
+    border: 1px solid black;
   }
-
-  .action-move {
-    height: 15px;
-    width: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-
-  .action:hover, .action-move:hover {
+  .action:hover {
     background-color:rgb(208, 232, 246);
   }
-
-  #action-move {
-    display: flex;
-    flex-direction: column;
+  #action-delete {
+    background-color: red;
   }
-
-  .action-icon-svg {
-    height: 100%;
-    width: 100%;
-  }
-
-  .action-move-icon-svg {
-    height: 100%;
-    width: 100%;
+  #action-delete:hover {
+    background-color: rgb(218, 71, 51);
   }
 </style>
 

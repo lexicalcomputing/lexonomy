@@ -1,6 +1,6 @@
 <elements-choice-item>
   <div class="elements-choice-item-wrapper"
-      style="padding-left: {props.indentationLevel}px"
+      style="padding-left: {5 + props.indentationLevel * 15}px"
       draggable="true"
       ondragstart={onDragStart}
       ondragend={onDragEnd}>
@@ -9,11 +9,6 @@
     </div>
     <div style="color: {props.state.data.color}">{props.state.data.name}</div>
   </div>
-  <template each={child in props.state.children}>
-    <elements-choice-item state={child}
-                          indentationLevel={props.indentationLevel + 15}
-                          parent={props.parent}/>
-  </template>
 
   <script>
     export default {
