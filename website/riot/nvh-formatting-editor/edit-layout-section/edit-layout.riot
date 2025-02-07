@@ -44,7 +44,6 @@
           canOpenActionPanel: true,
           parent: props.parent,
         };
-        this.removeDeletedElements(this.props.schema);
       },
 
       onDragOver(event) {
@@ -64,7 +63,6 @@
 
       addElement(index, component, state, editingMode) {
         let newElement = {
-          isDeleted: false,
           status: {
             isActive: false,
           },
@@ -81,21 +79,9 @@
         component.update();
         this.global.canOpenActionPanel = false;
       },
-      deleteElement(index, component, state, global, isBaseLevel) {
-        if (global.canBeRemovedIfHovered && !isBaseLevel) {
-          state.children[index].isDeleted = true;
-        }
-        global.canBeRemovedIfHovered = false;
-        if (isBaseLevel) {
-          component.update();
-        }
-      },
-      removeDeletedElements(state) {
-        if (state === null) {
-          return null;
-        }
-        Array.from(state.children).map(child => this.removeDeletedElements(child));
-        state.children = Array.from(state.children).filter(child => !child.isDeleted);
+      deleteElement(indexToDelete, parentState) {
+        parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
+        this.update();
       },
       closeActionPanel() {
         this.closeActionPanelRec(this.props.schema);
