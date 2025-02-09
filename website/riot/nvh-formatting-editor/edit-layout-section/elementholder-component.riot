@@ -1,0 +1,126 @@
+<elementholder-component>
+  <div class="content-box-wrapper"
+      style="border: 1px solid {props.color};
+            color: {props.isAreaHolder ? "white" : props.color};
+            background-color: {props.isAreaHolder ? props.color : "white"}">
+    <div class="inside-adder inside-adder-horizontal"
+        ondragenter={onDragEnter}
+        ondragleave={onDragLeave}
+        ondrop={(event) => onDrop(event, 1)}>
+    </div>
+    <div class="content-box-wrapper-2">
+      <div class="inside-adder inside-adder-vertical"
+          ondragenter={onDragEnter}
+          ondragleave={onDragLeave}
+          ondrop={(event) => onDrop(event, 2)}>
+      </div>
+      <div class="placeholder-content-box">
+        {props.name}
+      </div>
+      <div class="inside-adder inside-adder-vertical"
+          ondragenter={onDragEnter}
+          ondragleave={onDragLeave}
+          ondrop={(event) => onDrop(event, 3)}>
+      </div>
+    </div>
+    <div class="inside-adder inside-adder-horizontal"
+        ondragenter={onDragEnter}
+        ondragleave={onDragLeave}
+        ondrop={(event) => onDrop(event, 4)}>
+    </div>
+  </div>
+
+<script>
+  export default {
+    onDragEnter(event) {
+      const rawData = event.dataTransfer.getData("text/plain");
+      const data = JSON.parse(rawData);
+      if (data.type === "choice-item") {
+        event.target.classList.add("inside-adder-highligth-dragged");
+      }
+    },
+    onDragLeave(event) {
+      event.target.classList.remove("inside-adder-highligth-dragged");
+    },
+    onDrop(event, adderIndex) {
+      const rawData = event.dataTransfer.getData("text/plain");
+      const data = JSON.parse(rawData);
+      if (data.type === "choice-item") {
+        let newContent = {
+          name: data.name,
+          area: data.name,
+          color: data.color,
+        }
+
+        switch (adderIndex) {
+          case 1:
+            // top
+            this.addElementInside("row", newContent, this.props.state.content);
+            break;
+          case 2:
+            // left
+            this.addElementInside("column", newContent, this.props.state.content);
+            break;
+          case 3:
+            // right
+            this.addElementInside("column", this.props.state.content, newContent);
+            break;
+          case 4:
+            // bottom
+            this.addElementInside("row", this.props.state.content, newContent);
+        }
+      }
+      event.target.classList.remove("inside-adder-highligth-dragged");
+      this.props.global.canBeDropped = false;
+    },
+
+    addElementInside(undesiredOrientation, firstLabel, secondLabel) {
+      if (this.props.state.orientation === undesiredOrientation) {
+        let desiredOrientation = undesiredOrientation == "column" ? "row" : "column";
+        this.props.addElement(0, this.props.global.parent, this.props.state, desiredOrientation, null);
+        let newWrapperPlaceholder = this.props.state.children[0];
+        this.props.addElement(0, this.props.global.parent, newWrapperPlaceholder, "column", firstLabel);
+        this.props.addElement(1, this.props.global.parent, newWrapperPlaceholder, "column", secondLabel);
+      } else {
+        this.props.addElement(0, this.props.global.parent, this.props.state, "column", firstLabel);
+        this.props.addElement(1, this.props.global.parent, this.props.state, "column", secondLabel);
+      }
+    }
+  }
+</script>
+
+<style>
+  .placeholder-content-box {
+    padding: 0 5px;
+    margin: 2px;
+  }
+  .content-box-wrapper {
+    background-color: green;
+    padding: 2px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .content-box-wrapper-2 {
+    display: flex;
+    flex-direction: row;
+  }
+  .inside-adder-horizontal {
+    padding: 5px 0;
+    background-color: transparent;
+    width: calc(100% - 20px);
+  }
+  .inside-adder-vertical {
+    padding: 0 5px;
+    background-color: transparent;
+  }
+  .inside-adder-highligth {
+    background-color: rgb(237, 205, 116);
+  }
+  .inside-adder-highligth-dragged {
+    background-color: rgb(162, 127, 31) !important;
+  }
+</style>
+
+</elementholder-component>

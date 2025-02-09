@@ -8,17 +8,17 @@
                 delete-element={props.deleteElement}
                 element={this}
                 />
-  <div if={props.state.content.name !== ""}
-      class="placeholder-content-box {props.editing.enabled ? "placeholder-content-box-edit" : ""}"
-      style="border: 1px solid {props.state.content.color};
-            color: {props.state.children.length === 0 ? "white" : props.state.content.color};
-            background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}">
-    {props.state.content.name}
-  </div>
+  <elementholder-component if={props.state.content.name !== ""}
+                          name={props.state.content.name}
+                          color={props.state.content.color}
+                          isAreaHolder={props.state.children.length === 0}
+                          state={props.state}
+                          add-element={props.addElement}
+                          global={props.global}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}
               {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-inside-wrapper-deletable" : ""}">
     <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
-                    onclick={() => props.addElement(0, props.global.parent, props.state, props.editing.mode)}
+                    onclick={() => props.addElement(0, props.global.parent, props.state, props.editing.mode, null)}
                     ondragover={onAdderDragOver}
                     ondragenter={onAdderDragEnter}
                     ondragleave={onAdderDragLeave}
@@ -43,7 +43,7 @@
                             close-action-panel={props.closeActionPanel}
                             child-with-inherited-area={props.childWithInheritedArea}/>
       <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
-                      onclick={() => props.addElement(index + 1, props.global.parent, props.state, props.editing.mode)}
+                      onclick={() => props.addElement(index + 1, props.global.parent, props.state, props.editing.mode, null)}
                       ondragover={onAdderDragOver}
                       ondragenter={onAdderDragEnter}
                       ondragleave={onAdderDragLeave}
@@ -114,12 +114,6 @@
   </script>
 
   <style>
-    .placeholder-content-box {
-      padding: 5px 10px;
-    }
-    .placeholder-content-box-edit {
-      margin-bottom: 10px;
-    }
     .placeholder-inside-wrapper {
       background-color: white;
       display: flex;
