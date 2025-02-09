@@ -72,6 +72,7 @@ import e404 from "./riot/e404.riot"
 import edit_layout from "./riot/nvh-formatting-editor/edit-layout-section/edit-layout.riot"
 import element_select from "./riot/element-select.riot"
 import element_style_options from "./riot/element-style-options.riot"
+import elementholder_component from "./riot/nvh-formatting-editor/edit-layout-section/elementholder-component.riot"
 import elements_choice_item from "./riot/nvh-formatting-editor/elements-choice-section/elements-choice-item.riot"
 import elements_choice_section from "./riot/nvh-formatting-editor/elements-choice-section/elements-choice-section.riot"
 import entry_dropdown from "./riot/entry-dropdown.riot"
@@ -176,6 +177,7 @@ riot_register("e404", e404)
 riot_register("edit-layout", edit_layout)
 riot_register("element-select", element_select)
 riot_register("element-style-options", element_style_options)
+riot_register("elementholder-component", elementholder_component)
 riot_register("elements-choice-item", elements_choice_item)
 riot_register("elements-choice-section", elements_choice_section)
 riot_register("entry-dropdown", entry_dropdown)

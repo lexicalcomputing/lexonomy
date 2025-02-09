@@ -16,8 +16,18 @@
         event.dataTransfer.clearData();
         const data = JSON.stringify(this.props.state.data);
         event.dataTransfer.setData("text/plain", data);
+
+        let insideAdders = document.getElementsByClassName("inside-adder");
+        for (let insideAdder of insideAdders) {
+          insideAdder.classList.add("inside-adder-highligth");
+        }
       },
       onDragEnd(event) {
+        let insideAdders = document.getElementsByClassName("inside-adder");
+        for (let insideAdder of insideAdders) {
+          insideAdder.classList.remove("inside-adder-highligth");
+        }
+
         this.props.parent.update();
       }
     }

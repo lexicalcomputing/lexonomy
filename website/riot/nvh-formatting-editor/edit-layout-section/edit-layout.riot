@@ -5,7 +5,7 @@
         <placeholder-component onclick={openActionPanel}
                               ondragover={onDragOver}
                               ondrop={(event) => onDrop(event, child)}
-                              class="placeholder placeholder-{child.orientation}"
+                              class="placeholder placeholder-{child.orientation} placeholder-first"
                               state={childWithInheritedArea(child, null)}
                               parentState={props.schema}
                               editing={props.editing}
@@ -61,7 +61,7 @@
         }
       },
 
-      addElement(index, component, state, editingMode) {
+      addElement(index, component, state, editingMode, label) {
         let newElement = {
           status: {
             isActive: false,
@@ -69,9 +69,9 @@
           orientation: editingMode,
           type: "placeholder",
           content: {
-            name: "",
-            area: "",
-            color: ""
+            name: label == null ? "" : label.name,
+            area: label == null ? "" : label.area,
+            color: label == null ? "": label.color,
           },
           children: []
         };
@@ -130,7 +130,12 @@
       min-width: fit-content;
       width: calc(100% - 20px);
       margin: 10px;
+      cursor: pointer;
     }
+    .placeholder-first {
+      cursor: default; /*action-panel can not be displayed on the base placeholder*/
+    }
+
     /*
     ensure that all "placeholder" children will have same height
     */
