@@ -48,20 +48,30 @@ def readDictConfigs(dictDB):
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Export config of specified dict')
-    parser.add_argument('dictID', type=str,
-                        help='Dict ID')
-    parser.add_argument('-p', '--path', type=str,
+    parser.add_argument('-d', '--dicts', type=str,
                         required=True,
                         help="Path do dict's sqlite dir")
+    parser.add_argument('-i', '--input', type=argparse.FileType('r'),
+                        required=False, default=sys.stdin,
+                        help='Input')
+    parser.add_argument('-o', '--output', type=str,
+                        required=True,
+                        help='Output dir')
     args = parser.parse_args()
 
-    try:
-        conn = getDB(args.path, args.dictID)
-        config = readDictConfigs(conn)
-        print(json.dumps(config))
-    except Exception as e:
-        sys.stderr.write(f'Error: {args.dictID}: {e}\n')
+
+    for dictID in args.input:
+        dictID = dictID.strip()
+        try:
+            conn = getDB(args.dicts, dictID)
+            config = readDictConfigs(conn)
+            with open(os.path.join(args.output, dictID+'.json.orig'), 'w') as j_out:
+                json.dump(config, j_out, indent = 4)
+
+        except Exception as e:
+            sys.stderr.write(f'Error: {dictID}: {e}\n')
 
 
 if __name__ == '__main__':
     main()
+

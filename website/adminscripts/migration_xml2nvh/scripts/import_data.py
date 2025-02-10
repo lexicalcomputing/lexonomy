@@ -38,7 +38,7 @@ def main():
     args = parser.parse_args()
 
     for line in args.input:
-        xml_file, dict_id, titling_element, locale, note = line.strip().split('\t')
+        _, dict_id, titling_element, locale, note = line.strip().split('\t')
         title = dict_id
         lang = locale[:2]
 
