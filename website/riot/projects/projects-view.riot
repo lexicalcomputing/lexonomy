@@ -444,10 +444,10 @@
                            })
                         }
                         workflow.inputDicts.forEach(dict => {
-                           dict.remaining = typeof dict.remaining == "undefined" ? dict.total : dict.remaining
+                           dict.remaining = dict.remaining ?? dict.total
                         })
 
-                        workflow.outputDict.remaining = typeof workflow.outputDict.remaining == "undefined" ? workflow.outputDict.total : workflow.outputDict.remaining
+                        workflow.outputDict.remaining = workflow.outputDict.remaining ?? workflow.outputDict.total
                      })
                   } else {
                      this.state.error = response.error || "unknown error"
