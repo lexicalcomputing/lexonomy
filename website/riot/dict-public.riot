@@ -211,7 +211,7 @@
          },
 
          onToggleQueryBuilder(show){
-            this.update({showQueryBuilder: typeof show == "undefined" ? !this.state.showQueryBuilder : show})
+            this.update({showQueryBuilder: show ?? !this.state.showQueryBuilder})
          },
 
          onClone(){
