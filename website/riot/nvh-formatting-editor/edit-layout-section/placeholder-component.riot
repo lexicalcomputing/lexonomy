@@ -85,7 +85,6 @@
       },
       onAdderDrop(event, state, index) {
         const rawData = event.dataTransfer.getData("text/plain");
-        /*TODO: exception handling for invalid objects*/
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
           if (data.type === "placeholder") {
