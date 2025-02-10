@@ -13,6 +13,7 @@ import fileinput
 import xml.sax
 import xml.dom.minidom
 from nvh import nvh
+from unidecode import unidecode
 from log_subprocess import log_err, log_info, log_warning, log_end, log_start
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -67,6 +68,7 @@ def xml_entry2nvh_entry(dom, fd, main_node_value, first=False, indent=0):
     """
     Transforming the XML entry into NVH entry
     """
+    translit = False
     for ch in dom.childNodes:
         if isinstance(ch, xml.dom.minidom.Element):
             ch_value = ''
@@ -84,23 +86,28 @@ def xml_entry2nvh_entry(dom, fd, main_node_value, first=False, indent=0):
                         ch_attrs[re.sub(':', '~', attr_name)] = ''
 
             tag_name = re.sub('\.', '_', ch.tagName)
+            trans_tag_name = unidecode(tag_name)
+            if tag_name != trans_tag_name:
+                translit = True
+
             if first:
                 if not ch_value:
-                    fd.write('{}{}: {}\n'.format('  '*indent if indent else '', tag_name, main_node_value))
+                    fd.write('{}{}: {}\n'.format('  '*indent if indent else '', trans_tag_name, main_node_value))
                 else:
-                    fd.write('{}{}: {}\n'.format('  '*indent if indent else '', tag_name, ch_value))
+                    fd.write('{}{}: {}\n'.format('  '*indent if indent else '', trans_tag_name, ch_value))
             else:
-                fd.write('{}{}: {}\n'.format('  '*indent if indent else '', tag_name, ch_value))
+                fd.write('{}{}: {}\n'.format('  '*indent if indent else '', trans_tag_name, ch_value))
 
             for n, v in ch_attrs.items():
                 fd.write('{}_xattr_{}: {}\n'.format('  '*(indent+1) if indent else '  ', re.sub('\.', '_', n), v))
 
-        xml_entry2nvh_entry(ch, fd, main_node_value, indent=indent + 1)
+        translit = translit or xml_entry2nvh_entry(ch, fd, main_node_value, indent=indent + 1)
+    return translit
 
 
 def get_titling_element_value(dom, fd, xml_main_node_name):
     for ch in dom.childNodes:
-        if isinstance(ch, xml.dom.minidom.Element) and ch.tagName == xml_main_node_name:
+        if isinstance(ch, xml.dom.minidom.Element) and unidecode(ch.tagName) == unidecode(xml_main_node_name):
             ch_value = ''
             for sub_ch in ch.childNodes:
                 if isinstance(sub_ch, xml.dom.minidom.Text) and sub_ch.nodeValue.strip():
@@ -144,6 +151,7 @@ def xml2nvh(input_xml , fd, titling_element='', entry_element=''):
             xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata
         except xml.sax._exceptions.SAXParseException as e:
             try:
+                log_err(f'SAX Error: {e}\n')
                 xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n<fakeroot>"+xmldata+"</fakeroot>"
                 rootTag = ""
                 entryTag = ""
@@ -154,6 +162,8 @@ def xml2nvh(input_xml , fd, titling_element='', entry_element=''):
                     log_err("Not possible to detect element name for entry, please fix errors")
 
     re_entry = re.compile(r'<'+entryTag+'[^>]*>.*?</'+entryTag+'>', re.MULTILINE|re.DOTALL|re.UNICODE)
+    is_translit = False
+    log_info(f'Titling element: {titling_element}')
     for entry in re.findall(re_entry, xmldata):
         if entry_processed % 100 == 0:
             log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
@@ -167,11 +177,14 @@ def xml2nvh(input_xml , fd, titling_element='', entry_element=''):
             continue
 
         main_node_value = get_titling_element_value(entry_dom, fd, titling_element)
-        xml_entry2nvh_entry(entry_dom, fd, main_node_value, first=True)
+        is_translit = xml_entry2nvh_entry(entry_dom, fd, main_node_value, first=True)
 
         entry_processed += 1
 
     log_info("XML2NVHi_done: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
+    if is_translit:
+        log_warning("Transliteration triggered!")
+
     return entryTag
 
 

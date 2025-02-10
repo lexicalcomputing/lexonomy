@@ -18,7 +18,18 @@ def main():
                         required=True,
                         help='Path to data folder')
 
+    parser.add_argument('-f', '--fix', type=str,
+                        required=False, default=None,
+                        help='Path to csv with fixes')
+
     args = parser.parse_args()
+
+    fixes = {}
+    if args.fix:
+        with open(args.fix, 'r') as f:
+            for line in f:
+                dictID, hw_node = line.strip().split('\t')
+                fixes[dictID] = hw_node
 
     for dbname in args.input:
         dbname = dbname.strip()
@@ -33,9 +44,15 @@ def main():
                 locale = titling_json.get('locale', 'en_FALLBACK')
                 if haeadword_node.strip() == '':
                     haeadword_node = 'headword'
-                args.output.write(f'{dbname}\t{haeadword_node}\t{locale}\t-\n')
+                if fixes.get(dbname, False):
+                    args.output.write(f'{dbname}.xml\t{dbname}\t{fixes[dbname]}\t{locale}\tFIX\n')
+                else:
+                    args.output.write(f'{dbname}.xml\t{dbname}\t{haeadword_node}\t{locale}\t-\n')
             else:
-                args.output.write(f'{dbname}\theadword\ten_FALLBACK\tFALLBACK\n')
+                if fixes.get(dbname, False):
+                    args.output.write(f'{dbname}.xml\t{dbname}\t{fixes[dbname]}\t{locale}\tFIX\n')
+                else:
+                    args.output.write(f'{dbname}.xml\t{dbname}\theadword\ten_FALLBACK\tFALLBACK\n')
 
         except sqlite3.OperationalError:
             sys.stderr.write(f'No configs for {dbname}\n')
