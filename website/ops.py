@@ -1223,7 +1223,7 @@ def createUser(email, user, manager=0):
     mailText += "Your new credentials:\n";
     mailText += "user: "+email+"\n";
     mailText += "password: "+passwd+"\n";
-    mailText += "Please visit the lexonomy.eu and change the generated password in your account settings.\n\n"
+    mailText += "Please visit the " + siteconfig["baseUrl"] + " and change the generated password in your account settings.\n\n"
     mailText += "Yours,\nThe Lexonomy team"
     sendmail(email, mailSubject, mailText)
 

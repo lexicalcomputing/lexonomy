@@ -69,7 +69,7 @@ def main():
             cat = '0-100'
         elif size > 100 and size <= 1000:
             cat = '100-1000'
-        if size > 100:
+        if size > 1000:
             cat = '>1000'
         args.output.write(f'{did}\t{size}\t{cat}\n')
 
