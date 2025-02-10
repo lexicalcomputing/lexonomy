@@ -2,7 +2,10 @@
   <div class="content-box-wrapper"
       style="border: 1px solid {props.color};
             color: {props.isAreaHolder ? "white" : props.color};
-            background-color: {props.isAreaHolder ? props.color : "white"}">
+            background-color: {props.isAreaHolder ? props.color : "white"}"
+      draggable="true"
+      ondragstart={onDragStart}
+      ondragend={onDragEnd}>
     <div class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnter}
         ondragleave={onDragLeave}
@@ -32,8 +35,26 @@
 
 <script>
   export default {
+    onDragStart(event) {
+      this.props.global.wasDropSuccessful = false;
+      let trash = document.getElementById("trash-icon");
+      trash.classList.add("trash-enabled");
+      trash.classList.remove("trash-disabled");
+    },
+    onDragEnd(event) {
+      if (this.props.global.wasDropSuccessful) {
+        this.props.state.content.name = "";
+        this.props.state.content.area = "";
+        this.props.state.content.color = "";
+      }
+      let trash = document.getElementById("trash-icon");
+      trash.classList.add("trash-disabled");
+      trash.classList.remove("trash-enabled");
+      this.props.global.parent.update();
+    },
     onDragEnter(event) {
       const rawData = event.dataTransfer.getData("text/plain");
+      // TODO: add some exception handling
       const data = JSON.parse(rawData);
       if (data.type === "choice-item") {
         event.target.classList.add("inside-adder-highligth-dragged");
@@ -101,6 +122,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    cursor: grab;
   }
   .content-box-wrapper-2 {
     display: flex;

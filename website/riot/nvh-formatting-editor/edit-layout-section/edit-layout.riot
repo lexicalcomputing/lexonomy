@@ -10,7 +10,7 @@
                               parentState={props.schema}
                               editing={props.editing}
                               status={child.status}
-                              global={global}
+                              global={props.global}
                               isBaseLevel={true}
                               index={0}
                               delete-element={deleteElement}
@@ -23,27 +23,11 @@
 
   <script>
     export default {
-      global: null,
-
       onBeforeMount(props) {
-        this.global = {
-          canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
-          canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
-          canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
-          wasDropSuccessful: false,
-          canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
-          parent: props.parent,
-        };
+        props.global.parent = props.parent
       },
       onBeforeUpdate(props) {
-        this.global = {
-          canBeRemovedIfHovered: true,
-          canBeDropped: true,
-          canBeDragged: true,
-          wasDropSuccessful: false,
-          canOpenActionPanel: true,
-          parent: props.parent,
-        };
+        props.global.parent = props.parent
       },
 
       onDragOver(event) {
@@ -52,7 +36,7 @@
       onDrop(event, state) {
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
-        if (this.global.canBeDropped) {
+        if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
             state.content.name = data.name;
             state.content.area = data.name;
@@ -77,7 +61,7 @@
         };
         state.children.splice(index, 0, newElement);
         component.update();
-        this.global.canOpenActionPanel = false;
+        this.props.global.canOpenActionPanel = false;
       },
       deleteElement(indexToDelete, parentState) {
         parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
@@ -101,7 +85,7 @@
         return child;
       },
       openActionPanel() {
-        this.global.parent.update();
+        this.props.global.parent.update();
       },
     }
   </script>
