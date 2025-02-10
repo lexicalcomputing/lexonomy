@@ -54,7 +54,8 @@ dump_xml: lexonomy_public_dicts.csv
 	cat dump_xml/gsldict.xml | ./scripts/replace.py '<sense></sense>\n\s*</cit>' '<sense>' > /tmp/gsldict.xml; mv /tmp/gsldict.xml dump_xml/gsldict.xml
 	cat dump_xml/ztxs64ixt.xml | ./scripts/replace.py '<Origins><origin></Origins>' '' > /tmp/ztxs64ixt.xml; mv /tmp/ztxs64ixt.xml dump_xml/ztxs64ixt.xml
 	cat dump_xml/2eb8hmh5.xml | ./scripts/replace.py '< licence' '<image licence' | ./scripts/replace.py '</>' '</image>' > /tmp/2eb8hmh5.xml; mv /tmp/2eb8hmh5.xml dump_xml/2eb8hmh5.xml
-	cat dump_xml/ztxs64ixt.xml | ./scripts/replace.py '<entry' '<Entry' > /tmp/ztxs64ixt.xml; mv /tmp/ztxs64ixt.xml dump_xml/ztxs64ixt.xml
+	cat dump_xml/ztxs64ixt.xml | ./scripts/replace.py '<entry' '<Entry' | ./scripts/replace.py '</entry>' '</Entry>' > /tmp/ztxs64ixt.xml; mv /tmp/ztxs64ixt.xml dump_xml/ztxs64ixt.xml
+	cat dump_xml/archaeo-term.xml | ./scripts/replace.py '"<definition' '<definition' | ./scripts/replace.py '</definition>"' '</definition>' | ./scripts/replace.py '"<source>' '<source>' | ./scripts/replace.py '</source>"' '</source>' > /tmp/archaeo-term.xml; mv /tmp/archaeo-term.xml dump_xml/archaeo-term.xml
 	sed -i 's/&amp;/\&/g' $@/elexis_dutch.xml
 	cat dump_xml/marketing237ML2.xml | grep -v "^<office:meta>" > /tmp/marketing237ML2.xml; mv /tmp/marketing237ML2.xml dump_xml/marketing237ML2.xml
 	cat dump_xml/gije7wrt.xml | grep -v "^<office:meta>" > /tmp/gije7wrt.xml; mv /tmp/gije7wrt.xml dump_xml/gije7wrt.xml
