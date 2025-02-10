@@ -25,6 +25,13 @@
       <div class="header-box">
         <i class="small material-icons">sort</i>
         <h2>Elements</h2>
+        <div id="trash-icon-wrapper"
+            ondragenter={onDragEnter}
+            ondragleave={onDragLeave}
+            ondragover={onDragOver}
+            ondrop={onDrop}>
+          <i class="small material-icons trash-disabled" id="trash-icon">delete</i>
+        </div>
       </div>
       <div class="elements-choice-section-wrapper">
         <elements-choice-section class="elements-choice-section"
@@ -76,7 +83,8 @@
         <edit-layout class="edit-layout"
                     editing={state.editing}
                     schema={schema}
-                    parent={this}/>
+                    parent={this}
+                    global={global}/>
       </div>
     </div>
     <div if={state.showExample} 
@@ -105,6 +113,7 @@
           mode: "column" /*types: "column", "row", "delete" */
         },
       },
+      global: null,
       schema: {
         orientation: "column", /*orientation of scrollable-div is always "column"*/
         children: [
@@ -128,9 +137,42 @@
 
       onBeforeMount() {
         this.elementsSchema = this.createElementsSchema(Object.entries(window.store.data.config.structure.elements));
+        this.global = {
+          canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
+          canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
+          canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
+          wasDropSuccessful: false,
+          canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
+          parent: null,
+        };
       },
       onBeforeUpdate() {
         this.elementsSchema = this.createElementsSchema(Object.entries(window.store.data.config.structure.elements));
+        this.global = {
+          canBeRemovedIfHovered: true,
+          canBeDropped: true,
+          canBeDragged: true,
+          wasDropSuccessful: false,
+          canOpenActionPanel: true,
+          parent: null,
+        };
+      },
+
+      onDragEnter() {
+        let trashIcon = document.getElementById("trash-icon");
+        trashIcon.classList.add("trash-dragged-over");
+      },
+      onDragLeave() {
+        let trashIcon = document.getElementById("trash-icon");
+        trashIcon.classList.remove("trash-dragged-over");
+      },
+      onDragOver(event) {
+        event.preventDefault();
+      },
+      onDrop() {
+        this.global.wasDropSuccessful = true;
+        let trashIcon = document.getElementById("trash-icon");
+        trashIcon.classList.remove("trash-dragged-over");
       },
 
       onLayoutClick(sectionName) {
@@ -193,6 +235,22 @@
       display: flex;
       align-items: center;
       gap: 5px;
+    }
+    #trash-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .trash-disabled {
+      color: rgb(176, 192, 205);
+      cursor: not-allowed;
+    }
+    .trash-enabled {
+      color: black;
+    }
+    .trash-dragged-over {
+      transform: scale(1.1);
+      color: red;
     }
 
 
