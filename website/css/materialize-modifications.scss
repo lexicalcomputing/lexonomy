@@ -479,7 +479,7 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    display: flex;
    margin-bottom: 15px;
    border-bottom: none;
-   background-color: #eee;
+   background-color: #ebebeb;
    .tab a{
       color: #767676;
       cursor: pointer;
@@ -492,6 +492,9 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    }
    li.active a{
       text-decoration: none;
-      background-color: #fafafa;
+      background-color: #f5f5f5;
    }
+}
+.tabContent{
+   background-color: #f5f5f5;
 }
