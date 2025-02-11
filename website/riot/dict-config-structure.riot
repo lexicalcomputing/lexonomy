@@ -3,7 +3,7 @@
    <h1 class="pageTitle">Entry structure</h1>
    <dict-configuration-issues config-id="structure"/>
 
-   <div if={state.tab == "dmlex" && state.brokenConfig}
+   <div if={state.mode == "dmlex" && state.brokenConfig}
          class="message messageError">
       Structure is broken. Empty structure is used instead.
       <a href="javascript:void(0);"
@@ -11,95 +11,100 @@
    </div>
 
    <template if={!state.isLoading}>
-      <div class="tabsWrapper displayFlex">
-         <div class="settingsRadio borderRight pr-4">
-            <label >
+      <div class="modeWrapper displayFlex pt-4 pb-4">
+         <div class="settingsRadio">
+            <label>
               <input name="structure"
                   value="dmlex"
-                  onclick={onTabRadioMouseDown}
+                  onclick={onModeRadioMouseDown}
                   type="radio"
-                  checked={state.tab == "dmlex"}
-                  onchange={onTabChange}/>
-              <span>Simple settings</span>
+                  checked={state.mode == "dmlex"}
+                  onchange={onModeChange}/>
+              <span>Standard components</span>
             </label>
             <label>
-              <input name="structure"
-                  value="advanced"
-                  onclick={onTabRadioMouseDown}
-                  type="radio"
-                  checked={state.tab == "advanced"}
-                  onchange={onTabChange}/>
-              <span>Custom structure</span>
-            </label>
-            <label >
               <input name="structure"
                   value="custom"
-                  onclick={onTabRadioMouseDown}
+                  onclick={onModeRadioMouseDown}
                   type="radio"
-                  checked={state.tab == "custom"}
-                  onchange={onTabChange}/>
-              <span>Expert settings</span>
+                  checked={state.mode == "custom"}
+                  onchange={onModeChange}/>
+              <span>Custom structure</span>
             </label>
          </div>
+      </div>
 
-         <div class="tabsContent">
-            <div if={state.tab == "dmlex"}>
-               <nvh-schema {...state.DMLexSettings}
-                     {...structureStore.data.structure}
-                     on-change={onNvhSchemaChange}/>
-            </div>
-
-            <div if={state.tab == "advanced"} class="mb-8">
-               <structure-editor/>
-            </div>
-
-            <div if={state.tab == "custom"}
-                  class="tabCustom mb-8">
-               <div class="tabCustomForm">
-                  <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
-                     Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
-                  </p>
-                  <div class="mb-16">
-                     <div class="input-field">
-                        <nvh-schema-textarea riot-value={state.schemaNvh}
-                              on-valid-change={onNvhSchemaValidChange}
-                              on-input={onNvhSchemaInput}/>
-                        <label>Your NVH schema</label>
-                     </div>
-                     <div class="buttons">
-                        <button class="btn btn-secondary"
-                              onclick={onLoadSampleNvhSchemaClick}>Load sample NVH schema</button>
-                     </div>
+      <div class="mainColumnsWrapper">
+         <div class="structureWrapper pt-4 pb-4">
+            <div class="modeContent">
+               <ui if={state.mode == "custom"}
+                     class="tabs mb-0">
+                  <li class="tab {state.tab == "visual" ? "active" : ""}">
+                     <a onclick={onTabClick.bind(this, "visual")}>Visual editor</a>
+                  </li>
+                  <li class="tab {state.tab == "code" ? "active" : ""}">
+                     <a onclick={onTabClick.bind(this, "code")}>Code editor</a>
+                  </li>
+               </ui>
+               <div class="tabContent p-6">
+                  <div if={state.mode == "dmlex"}>
+                     <nvh-schema {...state.DMLexSettings}
+                           {...structureStore.data.structure}
+                           on-change={onNvhSchemaChange}/>
                   </div>
+                  <template if={state.mode == "custom"}>
+                     <div if={state.tab == "visual"}>
+                        <structure-editor/>
+                     </div>
+                     <div if={state.tab == "code"}>
+                        <div class="modeCustomForm">
+                           <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
+                              Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
+                           </p>
+                           <div class="mb-16">
+                              <div class="input-field">
+                                 <nvh-schema-textarea riot-value={state.schemaNvh}
+                                       on-valid-change={onNvhSchemaValidChange}
+                                       on-input={onNvhSchemaInput}/>
+                                 <label>Your NVH schema</label>
+                              </div>
+                              <div class="buttons">
+                                 <button class="btn btn-secondary"
+                                       onclick={onLoadSampleNvhSchemaClick}>Load sample NVH schema</button>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </template>
                </div>
             </div>
-
          </div>
-      </div>
-      <div class="borderTop pt-4">
-         <div class="switch">
-            <label>
-               <input name="new_entry_template"
-                  type="checkbox"
-                  checked={state.hasNewEntryTemplate}
-                  onchange={onHasNewEntryTemplateChange} >
-               <span class="lever"></span>
-               Set new entry template
-            </label>
-         </div>
-         <div if={state.hasNewEntryTemplate}
-               class="newEntryTemplateSettings">
-            <div class="grey-text mb-4">
-               Select elements to be automatically added when creating a new entry.
-               <br>
-               You can also set a default values for newly added elements.
+         <div class="pt-4">
+            <div class="switch">
+               <label>
+                  <input name="new_entry_template"
+                     type="checkbox"
+                     checked={state.hasNewEntryTemplate}
+                     onchange={onHasNewEntryTemplateChange} >
+                  <span class="lever"></span>
+                  Set new entry template
+               </label>
             </div>
-            <new-entry-template elements={structureStore.data.structure.elements}
-                  root={structureStore.data.structure.root}
-                  new-entry-template={structureStore.data.newEntryTemplate}
-                  on-change={structureStore.setNewEntryTemplate.bind(structureStore)}/>
+            <div if={state.hasNewEntryTemplate}
+                  class="newEntryTemplateSettings">
+               <div class="grey-text mb-4">
+                  Select elements to be automatically added when creating a new entry.
+                  <br>
+                  You can also set a default values for newly added elements.
+               </div>
+               <new-entry-template elements={structureStore.data.structure.elements}
+                     root={structureStore.data.structure.root}
+                     new-entry-template={structureStore.data.newEntryTemplate}
+                     on-change={structureStore.setNewEntryTemplate.bind(structureStore)}/>
+            </div>
          </div>
       </div>
+
       <div class="mt-16">
          <dict-config-buttons save-data={save}/>
       </div>
@@ -113,7 +118,8 @@
          state: {
             isLoading: true,
             isBusy: false,
-            tab: "dmlex",
+            mode: "dmlex",
+            tab: "visual",
             data: null,
             brokenConfig: null,
             isCustomNvhSchemaValid: null,
@@ -129,7 +135,8 @@
             this.store.loadDictionaryConfig("structure")
                   .done(response => {
                      if(response.success){
-                        this.state.tab = response.content.tab || "dmlex"
+                        this.state.mode = response.content.mode || "dmlex"
+                        this.state.tab = ["visual", "code"].includes(response.content.tab) ? response.content.tab : "visual"
                         this.state.DMLexSettings = response.content.DMLexSettings
                               || {
                                     modules: [],
@@ -146,10 +153,10 @@
                         this.state.hasNewEntryTemplate = response.content.hasNewEntryTemplate
                         this.state.originalStructure = window.deepCopy(this.structureStore.data.structure)
                         this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
-                        if(this.state.tab == "custom"){
+                        if(this.state.mode == "custom" && this.state.tab == "code"){
                            this.state.schemaNvh = this.structureStore.getNvh()
                         }
-                        if(this.state.tab == "dmlex"){
+                        if(this.state.mode == "dmlex"){
                            if(!this.store.isStructureValid()){
                               this.state.brokenConfig = this.state.data
                               this.state.data = {
@@ -167,41 +174,52 @@
                   })
                   .always(() => {
                      this.update({isLoading: false})
-                     if(this.state.tab == "custom"){
+                     if(this.state.mode == "custom" && this.state.tab == "code"){
                         this.refreshCustomTextFields()
                      }
                      this.refreshBtnSaveDisabled()
                   })
          },
 
-         onTabChange(evt){
-            this.changeTab(evt.target.value)
+         onTabClick(tab){
+            if(tab == "code"){
+               this.state.schemaNvh = this.structureStore.getNvh()
+            } else {
+               this.structureStore.setConfigStructure(this.structureStore.nvhToStructure(this.state.schemaNvh))
+            }
+            this.update({tab: tab})
          },
 
-         changeTab(newTab, updateStructure=true){
+         onModeChange(evt){
+            this.changeMode(evt.target.value)
+         },
+
+         changeMode(newMode, updateStructure=true){
             if(updateStructure){
-               if(this.state.tab == "dmlex"){
+               if(this.state.mode == "dmlex"){
                   this.structureStore.setConfigStructure(this.state.DMLexStructure)
-               } else if(this.state.tab == "custom"){
-                  this.structureStore.setConfigStructure(this.structureStore.nvhToStructure(this.state.schemaNvh))
+               } else {
+                  if(this.state.tab == "code"){
+                     this.structureStore.setConfigStructure(this.structureStore.nvhToStructure(this.state.schemaNvh))
+                  }
                }
             }
-            if(newTab == "custom"){
+            if(newMode == "custom" && this.state.tab == "code"){
                this.state.schemaNvh = this.structureStore.getNvh()
             }
             this.update({
-               tab: newTab,
+               mode: newMode,
                changed: false,
             })
             this.refreshBtnSaveDisabled()
-            if(newTab == "custom"){
+            if(newMode == "custom" && this.state.tab == "code"){
                this.refreshCustomTextFields()
             }
          },
 
-         onTabRadioMouseDown(evt){
-            let tab = evt.target.value
-            if(tab != this.state.tab){
+         onModeRadioMouseDown(evt){
+            let mode = evt.target.value
+            if(mode != this.state.mode){
                if(this.state.changed){
                   if(this.isSchemaValid()){
                      window.modal.open({
@@ -219,16 +237,16 @@
                            }
                         }, {
                            label: "discard changes",
-                           onClick: this.discardChanges.bind(this, tab)
+                           onClick: this.discardChanges.bind(this, mode)
                         }, {
                            label: "save changes",
-                           onClick: function(tab, dialog, modal){
+                           onClick: function(mode, dialog, modal){
                               this.save()
-                                    .done(function(tab){
-                                       this.changeTab(tab)
+                                    .done(function(mode){
+                                       this.changeMode(mode)
                                        modal.close()
-                                    }.bind(this, tab))
-                           }.bind(this, tab)
+                                    }.bind(this, mode))
+                           }.bind(this, mode)
                         }]
                      })
                   } else {
@@ -247,7 +265,7 @@
                            }
                         }, {
                            label: "discard changes",
-                           onClick: this.discardChanges.bind(this, tab)
+                           onClick: this.discardChanges.bind(this, mode)
                         }]
                      })
                   }
@@ -259,10 +277,12 @@
 
          onHasNewEntryTemplateChange(){
             if(!this.state.hasNewEntryTemplate){ // now hasNewEntryTemplat=false, so it will be changed to true in this function
-               if(this.state.tab == "dmlex"){
+               if(this.state.mode == "dmlex"){
                   this.structureStore.setConfigStructure(this.state.DMLexStructure)
-               } else if(this.state.tab == "custom"){
-                  this.updateStructureFromNvhSchema()
+               } else {
+                  if(this.state.tab == "code"){
+                     this.updateStructureFromNvhSchema()
+                  }
                }
                if(!this.structureStore.data.newEntryTemplate){
                   this.structureStore.setNewEntryTemplate({
@@ -322,13 +342,13 @@
             })
          },
 
-         discardChanges(tab, dialog, modal){
-            if(this.state.tab == "dmlex"){
+         discardChanges(mode, dialog, modal){
+            if(this.state.mode == "dmlex"){
                this.state.DMLexSettings =  window.deepCopy(this.state.originalDmlexSettings)
                this.state.DMLexStructure =  window.deepCopy(this.state.DMLexStructure)
             }
             this.structureStore.setConfigStructure(this.state.originalStructure)
-            this.changeTab(tab, false)
+            this.changeMode(mode, false)
             modal.close()
          },
 
@@ -343,15 +363,18 @@
          save() {
             this.update({isBusy: true})
             let structure
-            if(this.state.tab == "dmlex"){
+            if(this.state.mode == "dmlex"){
                structure = this.state.DMLexStructure
-            } else if(this.state.tab == "advanced"){
-               structure = this.structureStore.data.structure
-            } else if(this.state.tab == "custom"){
-               structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
+            } else {
+               if(this.state.tab == "visual"){
+                  structure = this.structureStore.data.structure
+               } else {
+                  structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
+               }
             }
             let data = {
                jsonSchema: Object.assign({
+                  mode: this.state.mode,
                   tab: this.state.tab,
                   DMLexSettings: this.state.DMLexSettings,
                   hasNewEntryTemplate: this.state.hasNewEntryTemplate,
@@ -388,15 +411,17 @@
          },
 
          isSchemaValid(){
-            if(this.state.tab == "dmlex"){
+            if(this.state.mode == "dmlex"){
                return true
-            } else if(this.state.tab == "advanced"){
-               return !!this.structureStore.data.structure.root
-                           && !this.structureStore.data.editedElement
-                           && this.structureStore.data.isValid
-            } else if(this.state.tab == "custom"){
-               return !!this.state.schemaNvh
-                     && this.state.isCustomNvhSchemaValid
+            } else {
+               if(this.state.tab == "visual"){
+                  return !!this.structureStore.data.structure.root
+                              && !this.structureStore.data.editedElement
+                              && this.structureStore.data.isValid
+               } else {
+                  return !!this.state.schemaNvh
+                        && this.state.isCustomNvhSchemaValid
+               }
             }
          },
 
@@ -411,19 +436,27 @@
    </script>
 
    <style type="scss">
-      .tabsWrapper{
+      .modeWrapper{
          gap: 40px;
          @media screen and (max-width: 900px) {
             flex-wrap: wrap;
          }
       }
       .settingsRadio{
+         display: flex;
+         gap: 40px;
          width: 250px;
          span{
             white-space: nowrap;
          }
       }
-      .tabsContent{
+      .mainColumnsWrapper{
+         gap: 40px;
+         @media screen and (max-width: 1100px){
+            flex-direction: column;
+         }
+      }
+      .modeContent{
          width: 100%;
       }
       textarea{
@@ -435,8 +468,8 @@
             background-color: #fafafa;
          }
       }
-      .tabCustom{
-         .tabCustomForm{
+      .modeCustom{
+         .modeCustomForm{
             max-width: 760px;
             flex: 1
          }
