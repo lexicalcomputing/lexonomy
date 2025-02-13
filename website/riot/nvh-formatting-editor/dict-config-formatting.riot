@@ -141,7 +141,10 @@
           canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
           canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
           canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
-          wasDropSuccessful: false,
+          dropInfo: {
+            wasSuccessful: false,
+            index: null,
+          },
           canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
           parent: null,
         };
@@ -152,7 +155,10 @@
           canBeRemovedIfHovered: true,
           canBeDropped: true,
           canBeDragged: true,
-          wasDropSuccessful: false,
+          dropInfo: {
+            wasSuccessful: false,
+            index: null,
+          },
           canOpenActionPanel: true,
           parent: null,
         };
@@ -170,7 +176,7 @@
         event.preventDefault();
       },
       onDrop() {
-        this.global.wasDropSuccessful = true;
+        this.global.dropInfo.wasSuccessful = true;
         let trashIcon = document.getElementById("trash-icon");
         trashIcon.classList.remove("trash-dragged-over");
       },

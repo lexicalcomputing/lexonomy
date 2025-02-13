@@ -50,10 +50,10 @@
       let trash = document.getElementById("trash-icon");
       trash.classList.add("trash-enabled");
       trash.classList.remove("trash-disabled");
-      this.props.global.wasDropSuccessful = false;
+      this.props.global.dropInfo.wasSuccessful = false;
     },
     onDragEnd(event) {
-      if (this.props.global.wasDropSuccessful) {
+      if (this.props.global.dropInfo.wasSuccessful) {
         this.props.state.content.name = "";
         this.props.state.content.area = "";
         this.props.state.content.color = "";

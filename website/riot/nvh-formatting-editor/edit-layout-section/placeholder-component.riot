@@ -92,7 +92,9 @@
         if (this.props.global.canBeDropped) {
           if (data.type === "placeholder") {
             state.children.splice(index, 0, data);
-            this.props.global.wasDropSuccessful = true;
+            this.props.global.dropInfo.wasSuccessful = true;
+            this.props.global.dropInfo.index = index
+
             event.target.classList.remove("adder-highligth-dragged");
           } else if (data.type === "choice-item") {
             state.content.name = data.name;
