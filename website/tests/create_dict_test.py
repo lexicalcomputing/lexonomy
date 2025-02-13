@@ -37,7 +37,7 @@ class DmLex(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], False)
+        self.assertEqual(r.json()["exists"], False)
 
     # DmLex schema create
     def test_2(self):
@@ -115,7 +115,7 @@ class DmLex(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], True)
+        self.assertEqual(r.json()["exists"], True)
 
     # UPDATE SCHEMA
     def test_5(self):
@@ -193,7 +193,7 @@ class DmLex(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], False)
+        self.assertEqual(r.json()["exists"], False)
 
 
 class SchemaJson(unittest.TestCase):
@@ -271,7 +271,7 @@ class SchemaJson(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], False)
+        self.assertEqual(r.json()["exists"], False)
 
     # DICT CREATE
     def test_2(self):
@@ -301,7 +301,7 @@ class SchemaJson(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], True)
+        self.assertEqual(r.json()["exists"], True)
 
     # UPDATE SCHEMA
     def test_4(self):
@@ -380,7 +380,7 @@ class SchemaJson(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], False)
+        self.assertEqual(r.json()["exists"], False)
 
 
 class SchemaNVH(unittest.TestCase):
@@ -416,7 +416,7 @@ class SchemaNVH(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], False)
+        self.assertEqual(r.json()["exists"], False)
 
     # DICT CREATE
     def test_2(self):
@@ -446,7 +446,7 @@ class SchemaNVH(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], True)
+        self.assertEqual(r.json()["exists"], True)
 
     # UPDATE SCHEMA
     def test_4(self):
@@ -530,7 +530,7 @@ class SchemaNVH(unittest.TestCase):
             headers=self.headers,
             cookies=self.cookies,
         )
-        self.assertEqual(r.json()["success"], False)
+        self.assertEqual(r.json()["exists"], False)
 
 
 if __name__ == "__main__":
