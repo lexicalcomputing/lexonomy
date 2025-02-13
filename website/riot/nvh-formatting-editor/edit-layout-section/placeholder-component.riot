@@ -22,7 +22,8 @@
                     ondragenter={onAdderDragEnter}
                     ondragleave={onAdderDragLeave}
                     ondrop={(event) => onAdderDrop(event, props.state, 0)}
-                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}"
+                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
+                          {props.state.children.length === 0 ? "adder-alone" : ""}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => openActionPanel(child.status)}
@@ -163,6 +164,7 @@
     }
     .adder-highligth {
       background-color: var(--color-can-be-dropped);
+      padding: 5px !important;
     }
     .adder-highligth-dragged {
       background-color: var(--color-is-dragged-over) !important;
@@ -174,6 +176,11 @@
       top: -40px;
       left: -4px;
       z-index: 100;
+    }
+
+
+    .adder-alone {
+      padding: 0;
     }
   </style>
 </placeholder-component>
