@@ -23,7 +23,7 @@
                     ondragleave={onAdderDragLeave}
                     ondrop={(event) => onAdderDrop(event, props.state, 0)}
                     class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
-                          {props.state.children.length === 0 ? "adder-alone" : ""}"
+                          {props.state.children.length === 0 && props.state.content.name === "" ? "adder-alone" : ""}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => openActionPanel(child.status)}
