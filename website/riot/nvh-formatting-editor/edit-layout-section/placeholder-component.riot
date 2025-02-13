@@ -22,7 +22,8 @@
                     ondragenter={onAdderDragEnter}
                     ondragleave={onAdderDragLeave}
                     ondrop={(event) => onAdderDrop(event, props.state, 0)}
-                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}"
+                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
+                          {props.state.children.length === 0 && props.state.content.name === "" ? "adder-alone" : ""}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => openActionPanel(child.status)}
@@ -30,7 +31,9 @@
                             ondrop={(event) => onDrop(event, child)}
                             class="placeholder placeholder-{child.orientation}
                                   {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}
-                                  {child.status.isActive ? "placeholder-selected" : ""}"
+                                  {child.status.isActive ? "placeholder-selected" : ""}
+                                  {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
+                                  {child.children.length === 0 ? "placeholder-no-children" : ""}"
                             state={props.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             editing={props.editing}
@@ -89,12 +92,16 @@
         if (this.props.global.canBeDropped) {
           if (data.type === "placeholder") {
             state.children.splice(index, 0, data);
-            this.props.global.wasDropSuccessful = true;
+            this.props.global.dropInfo.wasSuccessful = true;
+            this.props.global.dropInfo.index = index
             event.target.classList.remove("adder-highligth-dragged");
           } else if (data.type === "choice-item") {
-            state.content.name = data.name;
-            state.content.area = data.name;
-            state.content.color = data.color;
+            let content = {
+              name: data.name,
+              area: data.name,
+              color: data.color,
+            }
+            this.props.addElement(index, this.props.global.parent, this.props.state, "column", content)
           }
         }
         this.props.global.canBeDropped = false;
@@ -148,6 +155,11 @@
     }
 
 
+    .placeholder-wrapping-content {
+      border: 4px solid black !important; /*NOTE: highligth placeholder that defines some content area, makes this sense ?*/
+    }
+
+
     .item-dragged {
       background-color: rgb(212, 210, 203);
     }
@@ -155,10 +167,11 @@
       display: none;
     }
     .adder-highligth {
-      background-color: rgb(237, 205, 116);
+      background-color: var(--color-can-be-dropped);
+      padding: 5px !important;
     }
     .adder-highligth-dragged {
-      background-color: rgb(162, 127, 31) !important;
+      background-color: var(--color-is-dragged-over) !important;
     }
 
 
@@ -167,6 +180,11 @@
       top: -40px;
       left: -4px;
       z-index: 100;
+    }
+
+
+    .adder-alone {
+      padding: 0;
     }
   </style>
 </placeholder-component>

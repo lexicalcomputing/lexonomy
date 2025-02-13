@@ -6,14 +6,15 @@
                               ondragover={onDragOver}
                               ondrop={(event) => onDrop(event, child)}
                               class="placeholder placeholder-{child.orientation} placeholder-first
-                                    {child.status.isActive ? "placeholder-selected" : ""}"
+                                    {child.status.isActive ? "placeholder-selected" : ""}
+                                    {child.children.length === 0 ? "placeholder-no-children" : ""}"
                               state={childWithInheritedArea(child, null)}
                               parentState={props.schema}
                               editing={props.editing}
                               status={child.status}
                               global={props.global}
                               isBaseLevel={true}
-                              index={0}
+                              index={index}
                               delete-element={deleteElement}
                               add-element={addElement}
                               close-action-panel={closeActionPanel}
@@ -113,7 +114,7 @@
       justify-content: center;
       flex-grow: 1;
       min-width: fit-content;
-      width: calc(100% - 20px);
+      width: calc(100% - 28px);
       margin: 10px;
       cursor: pointer;
     }
@@ -126,7 +127,7 @@
     ensure that all "placeholder" children will have same height
     */
     .placeholder > .placeholder-inside-wrapper > .placeholder {
-      height: calc(100% - 20px);
+      height: calc(100% - 28px);
     }
     /*
     both "placeholder-row" and "placeholder-column" have same flex-direction,
@@ -135,11 +136,11 @@
     */
     .placeholder-row {
       flex-direction: column;
-      padding: 10px;
+      padding: 14px;
     }
     .placeholder-column {
       flex-direction: column;
-      padding: 10px;
+      padding: 14px;
     }
 
     .placeholder:hover {
@@ -162,7 +163,7 @@
     */
     .adder-column {
       padding: 5px;
-      width: calc(100% - 10px);
+      width: calc(100% - 18px);
       margin: 0 10px;
       min-width: 100px;
     }
@@ -170,7 +171,7 @@
     "adder-row" is present in rows
     */
     .adder-row {
-      height: calc(100% - 10px);
+      height: calc(100% - 18px);
       padding: 5px;
       margin: 10px 0;
     }
@@ -180,6 +181,41 @@
       justify-content: center;
       height: 100%;
       width: 100%;
+    }
+
+
+    .adder-highligth-plus .plus-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+    }
+    .adder-highligth-plus .plus-icon-wrapper .adder-line {
+      width: 0;
+      height: 0;
+    }
+    .adder-highligth-plus .plus-icon-wrapper .adder-line .adder-icon-wrapper {
+      color: var(--color-can-be-dropped);
+    }
+
+
+    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+    }
+    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line {
+      width: 0;
+      height: 0;
+    }
+    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper {
+      color: grey;
+    }
+    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper:hover {
+      color: black;
     }
   </style>
 </edit-layout>
