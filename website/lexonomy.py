@@ -848,7 +848,7 @@ def exportconfigs(dictID, user, dictDB, configs):
         elif configid == 'users':
             output['users'] = ops.listDictUsers(dictID)
         else:
-            output[configid] = configs[configid]
+            output[configid] = configs.get(configid, None)
     response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
     return output
 
