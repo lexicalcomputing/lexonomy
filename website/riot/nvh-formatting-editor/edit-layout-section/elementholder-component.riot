@@ -6,13 +6,15 @@
       draggable="true"
       ondragstart={onDragStart}
       ondragend={onDragEnd}>
-    <div class="inside-adder inside-adder-horizontal"
+    <div if={props.isAreaHolder} 
+        class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnter}
         ondragleave={onDragLeave}
         ondrop={(event) => onDrop(event, 1)}>
     </div>
     <div class="content-box-wrapper-2">
-      <div class="inside-adder inside-adder-vertical"
+      <div if={props.isAreaHolder}
+          class="inside-adder inside-adder-vertical"
           ondragenter={onDragEnter}
           ondragleave={onDragLeave}
           ondrop={(event) => onDrop(event, 2)}>
@@ -20,13 +22,15 @@
       <div class="placeholder-content-box">
         {props.name}
       </div>
-      <div class="inside-adder inside-adder-vertical"
+      <div if={props.isAreaHolder}
+          class="inside-adder inside-adder-vertical"
           ondragenter={onDragEnter}
           ondragleave={onDragLeave}
           ondrop={(event) => onDrop(event, 3)}>
       </div>
     </div>
-    <div class="inside-adder inside-adder-horizontal"
+    <div if={props.isAreaHolder}
+        class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnter}
         ondragleave={onDragLeave}
         ondrop={(event) => onDrop(event, 4)}>
@@ -38,7 +42,7 @@
     onDragStart(event) {
       event.dataTransfer.clearData();
       transferObject = {
-        type: null
+        type: "elementholder-label"
       };
       const data = JSON.stringify(transferObject);
       event.dataTransfer.setData("text/plain", data);
@@ -144,10 +148,11 @@
     background-color: transparent;
   }
   .inside-adder-highligth {
-    background-color: rgb(237, 205, 116);
+    background-color: var(--color-can-be-dropped);
   }
   .inside-adder-highligth-dragged {
-    background-color: rgb(162, 127, 31) !important;
+    background-color: var(--color-is-dragged-over) !important;
+    transform: scale(1.2);
   }
 </style>
 

@@ -30,7 +30,8 @@
                             ondrop={(event) => onDrop(event, child)}
                             class="placeholder placeholder-{child.orientation}
                                   {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}
-                                  {child.status.isActive ? "placeholder-selected" : ""}"
+                                  {child.status.isActive ? "placeholder-selected" : ""}
+                                  {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}"
                             state={props.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             editing={props.editing}
@@ -148,6 +149,11 @@
     }
 
 
+    .placeholder-wrapping-content {
+      border: 4px solid black !important; /*NOTE: highligth placeholder that defines some content area, makes this sense ?*/
+    }
+
+
     .item-dragged {
       background-color: rgb(212, 210, 203);
     }
@@ -155,10 +161,10 @@
       display: none;
     }
     .adder-highligth {
-      background-color: rgb(237, 205, 116);
+      background-color: var(--color-can-be-dropped);
     }
     .adder-highligth-dragged {
-      background-color: rgb(162, 127, 31) !important;
+      background-color: var(--color-is-dragged-over) !important;
     }
 
 

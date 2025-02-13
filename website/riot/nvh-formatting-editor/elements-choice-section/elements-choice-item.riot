@@ -21,11 +21,26 @@
         for (let insideAdder of insideAdders) {
           insideAdder.classList.add("inside-adder-highligth");
         }
+        let adders = document.getElementsByClassName("adder");
+        for (let adder of adders) {
+          adder.classList.add("adder-highligth-plus");
+        }
       },
       onDragEnd(event) {
         let insideAdders = document.getElementsByClassName("inside-adder");
         for (let insideAdder of insideAdders) {
           insideAdder.classList.remove("inside-adder-highligth");
+        }
+        let adders = document.getElementsByClassName("adder");
+        for (let adder of adders) {
+          adder.classList.remove("adder-highligth-plus");
+          /*
+          This is how I get the "adderIcon" and change its css.
+          It is not possible via getElementsByClassName, because the element
+          is not present in the markup anymore.
+          */
+          let adderIcon = adder.children[0].children[0].children[0].children[0];
+          adderIcon.classList.remove("adder-icon-wrapper-highligth-dragged");
         }
 
         this.props.parent.update();
