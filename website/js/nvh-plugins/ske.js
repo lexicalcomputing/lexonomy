@@ -1,7 +1,10 @@
 window.nvhPlugins.ske = {
    isActive: function(element){
+      let config = window.store.data.config
       return this.hasSkeConnectionSettings()
-            && (this.hasExamples(element)
+            && (element.name == config.structure.root
+               || config.ske.searchElements.includes(element.path)
+               || this.hasExamples(element)
                || this.hasCollocations(element)
                || this.hasThesaurus(element)
                || this.hasDefinitions(element))
