@@ -680,7 +680,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
 
 
 def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
-             bottle_file_object=None, hwNode=None, titling_node=None):
+             bottle_files={}, hwNode=None, titling_node=None):
     if title == "":
         title = "?"
     if blurb == "":
@@ -692,7 +692,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     #init db schema
     dictDB = initDict(dictID, title, lang, blurb, email, dmlex)
 
-    if not bottle_file_object:
+    if not bottle_files:
         if nvh_schema_string:
             # DICTIONARY STRUCTURE
             elements = {'tab': 'advanced'}
@@ -733,13 +733,13 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
     attachDict(dictDB, dictID, users, dict_config)
 
-    if bottle_file_object:
+    if bottle_files:
         err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate,
-                                                           bottle_upload_obj=bottle_file_object, titling_node=titling_node)
-        return {'url': dictID, 'success':True, 'upload_error': err, 
+                                                           bottle_files=bottle_files, titling_node=titling_node)
+        return {'url': dictID, 'success': True if not err else False, 'upload_error': err,
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
-    return {'url': dictID, 'success':True, 'error': ''}
+    return {'url': dictID, 'success': True, 'error': ''}
 
 
 def recur_filter(node, structure_nodes):
@@ -1476,12 +1476,12 @@ def getImportProgress(file_path):
     done_re = re.compile(r'^INFO \[.*\]:\s*IMPORTED \(.*\):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
     waring_re = re.compile(r'^WARNING(:|\s\[.*\]:)\s*(.+)$')
     err_re = re.compile(r'^ERROR(:|\s\[.*\]:)\s*(.*?)$')
-    if os.path.isfile(file_path + ".log"):
+    if os.path.isfile(os.path.join(file_path, "import_progress.log")):
         errors = []
         warnings = []
         progress = {}
         finished = False
-        with open(file_path + ".log", "r") as log_f:
+        with open(os.path.join(file_path, "import_progress.log"), "r") as log_f:
             for line in log_f:
                 prg = done_re.match(line)
                 warn = waring_re.match(line)
@@ -1501,13 +1501,13 @@ def getImportProgress(file_path):
         return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], ['No log file found'], file_path
 
 
-def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_upload_obj=None, titling_node=None):
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_files={}, titling_node=None):
     """
     return progress, finished status, error messages
     """
     supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
     # XML file transforamtion
-    if not supported_formats.match(bottle_upload_obj.filename):
+    if not supported_formats.match(bottle_files.get("import_entires").filename):
         return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
 
     save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
@@ -1516,11 +1516,45 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
 
     os.makedirs(save_path)
 
-    file_path =os.path.join(save_path, bottle_upload_obj.filename)
-    bottle_upload_obj.save(file_path)
-
-    logfile_f = open(file_path + ".log", "w")
     dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
+
+    # ====================================
+    # CONFIG
+    # ====================================
+    # safe all files as received
+    for key, value in bottle_files.items():
+        value.save(os.path.join(save_path, value.filename))
+
+    entries_path = None
+    if bottle_files.get('import_entires'):
+        entries_path = os.path.join(save_path, bottle_files.get('import_entires').filename)
+        logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
+
+    config = {'styles': {},
+              'editting': {},
+              'structure': {}}
+    # if config.json received rewrite the default one
+    if bottle_files.get('config'): # Must be first !!!
+        config = json.loads(bottle_files.get('config').file.read())
+        if not config.get('styles', False):
+            config['styles'] = {}
+        if not config.get('editting', False):
+            config['editting'] = {}
+        if not config.get('structure', False):
+            config['structure'] = {}
+
+    if bottle_files.get('ce_css'):
+        config['editting']['css'] =  bottle_files.get('ce_css').file.read().decode('utf-8')
+
+    if bottle_files.get('ce_js'):
+        config['editting']['js'] =  bottle_files.get('ce_js').file.read().decode('utf-8')
+
+    if bottle_files.get('structure'):
+        config['structure']['nvhSchema'] = bottle_files.get('structure').file.read().decode('utf-8')
+
+    if bottle_files.get('styles'):
+        config['styles']['css']= bottle_files.get('styles').file.read().decode('utf-8')
+    # ====================================
 
     params = []
     if deduplicate:
@@ -1530,11 +1564,21 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     if purge_all:
         params.append('-pp')
     if titling_node:
-        params.append(f'-t {titling_node}')
+        params.append('-t')
+        params.append(titling_node)
+    if config:
+        with open(os.path.join(save_path, "merged_config.json"), 'w') as f:
+            json.dump(config, f, indent=4)
+        params.append('--config')
+        params.append(os.path.join(save_path, "merged_config.json"))
 
-    subprocess.Popen([currdir + "/import2dict.py", dbpath, file_path, email, hwNode] + params,
-                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
-    return '', "Import started. You may close the window, import will run in the background. Please wait...", file_path
+    if entries_path:
+        subprocess.Popen([currdir + "/import2dict.py", dbpath, entries_path, email, hwNode] + params,
+                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    else:
+        return 'No entries', "", ""
+
+    return '', "Import started. You may close the window, import will run in the background. Please wait...", save_path
 
 def readDoctypesUsed(dictDB):
     c = dictDB.execute("select doctype from entries group by doctype order by count(*) desc")
@@ -1713,11 +1757,14 @@ def updateDictConfig(dictDB, dictID, configID, content):
             elements = {}
             nvh_structure = nvh.parse_string(content['nvhSchema'])
             nvh_structure.build_json(elements)
-            value = {"root": nvh_structure.children[0].name, "elements": elements}
+            value = {"root": nvh_structure.children[0].name, "elements": elements, "tab": "custom", 'nvhSchema': content['nvhSchema']}
         elif content.get('jsonSchema', False):
             value = content['jsonSchema']
         elif content.get('elements', False):
             value = content
+        else:
+            value = content
+
     else:
         value = content
 

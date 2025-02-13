@@ -524,15 +524,14 @@ def makedict(user):
 @post(siteconfig["rootPath"] + "make.json")
 @auth
 def makedictjson(user):
-    if request.files.get('filename'):
-        upload = request.files.get("filename")
+    if len(request.files) > 0:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        if supported_formats.match(upload.filename):
+        if supported_formats.match(request.files.get("import_entires").filename):
             res = ops.makeDict(request.forms.url, None, None, request.forms.title,
                                request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
                                deduplicate=True if request.forms.deduplicate=='true' else False,
-                               bottle_file_object=upload, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
+                               bottle_files=request.files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
         else:
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
@@ -540,7 +539,7 @@ def makedictjson(user):
         res = ops.makeDict(request.forms.url, request.forms.nvhSchema, request.forms.jsonSchema,
                            request.forms.title, request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=request.forms.addExamples=="true",
-                           deduplicate=False, bottle_file_object=None, hwNode=None, titling_node=None)
+                           deduplicate=False, bottle_files={}, hwNode=None, titling_node=None)
     return res
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
