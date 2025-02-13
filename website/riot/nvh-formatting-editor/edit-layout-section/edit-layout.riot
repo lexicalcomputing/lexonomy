@@ -6,7 +6,8 @@
                               ondragover={onDragOver}
                               ondrop={(event) => onDrop(event, child)}
                               class="placeholder placeholder-{child.orientation} placeholder-first
-                                    {child.status.isActive ? "placeholder-selected" : ""}"
+                                    {child.status.isActive ? "placeholder-selected" : ""}
+                                    {child.children.length === 0 ? "placeholder-no-children" : ""}"
                               state={childWithInheritedArea(child, null)}
                               parentState={props.schema}
                               editing={props.editing}
@@ -183,7 +184,6 @@
     }
 
 
-    
     .adder-highligth-plus .plus-icon-wrapper {
       display: flex;
       align-items: center;
@@ -197,6 +197,25 @@
     }
     .adder-highligth-plus .plus-icon-wrapper .adder-line .adder-icon-wrapper {
       color: var(--color-can-be-dropped);
+    }
+
+
+    .placeholder-no-children:hover .plus-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      width: 100%;
+    }
+    .placeholder-no-children:hover .plus-icon-wrapper .adder-line {
+      width: 0;
+      height: 0;
+    }
+    .placeholder-no-children:hover .plus-icon-wrapper .adder-line .adder-icon-wrapper {
+      color: grey;
+    }
+    .placeholder-no-children:hover .plus-icon-wrapper .adder-line .adder-icon-wrapper:hover {
+      color: black;
     }
   </style>
 </edit-layout>
