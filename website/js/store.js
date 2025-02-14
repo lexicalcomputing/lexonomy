@@ -17,15 +17,15 @@ class StoreClass {
          ],
          ENTRY_TYPES: {
             string: "Text",
-            markup: "Text markup",
+            list: "List",
             int: "Number",
+            markup: "Text markup",
             image: "Image",
             audio: "Audio",
             video: "Video",
             url: "URL",
             empty: "Empty", // no value, just child elements
-            bool: "Yes/No",
-            list: "List"
+            bool: "Yes/No"
          }
       }
       this.data = {
