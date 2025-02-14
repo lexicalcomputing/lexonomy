@@ -1522,7 +1522,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     # CONFIG
     # ====================================
     # safe all files as received
-    for key, value in bottle_files.items():
+    for _, value in bottle_files.items():
         value.save(os.path.join(save_path, value.filename))
 
     entries_path = None

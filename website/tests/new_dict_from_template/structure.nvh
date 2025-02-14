@@ -1,0 +1,24 @@
+entry: 1 string
+  homograph: ? string ~.+
+  pos: * string ~.+
+  label: * string ~.+
+  pronunciation: * string
+    transcription: * string ~.+
+      scheme: ? string ~.+
+    label: * string ~.+
+  form: * string ~.+
+    tag: ? string ~.+
+    label: * string ~.+
+    pronunciation: * string
+      transcription: * string ~.+
+        scheme: ? string ~.+
+      label: * string ~.+
+  sense: * string
+    label: * string ~.+
+    definition: * string ~.+
+      definitionType: ? string ~.+
+    example: * string ~.+
+      sourceIdentity: ? string ~.+
+      sourceElaboration: ? string ~.+
+      soundFile: ? string ~.+
+      label: * string ~.+
