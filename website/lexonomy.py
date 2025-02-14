@@ -195,10 +195,22 @@ def dmlex_schema():
 
 @post(siteconfig["rootPath"] + "schema_to_json.json") # OK
 def schema_to_json():
-    schema = nvh.parse_string(json.loads(request.forms.schema))
-    schema_dict: dict = {}
-    schema.build_json(schema_dict)
-    return {"schemajson": json.dumps(schema_dict)}
+    schema = nvh.parse_string(request.forms.schema)
+    schema_dict = {}
+    schema.schema_nvh2json(schema_dict)
+    return {"success": True, "schemajson": json.dumps(schema_dict)}
+
+@post(siteconfig["rootPath"] + "schema_json_to_nvh.json") # OK
+def schema_to_json():
+    schema_json = json.loads(request.forms.json_schema)
+    sorted_keys = list(schema_json.keys())
+    sorted_keys.sort(key=lambda x: x.count('.'))
+    root = sorted_keys[0]
+
+    schema_nvh = []
+    nvh.schema_json2nvh(schema_json, root, schema_nvh)
+
+    return {"success": True, "schema_nvh": '\n'.join(schema_nvh)}
 
 @get(siteconfig["rootPath"] + "userdicts.json")
 @auth
