@@ -565,7 +565,7 @@ class nvh:
             last_indent = indent
         return dictionary
 
-    def build_json(self, schema_dict: dict) -> None:
+    def schema_nvh2json(self, schema_dict: dict) -> None:
         # build json for each nvh node recursively
         p = self.parent
         curr_path = [self.name]
@@ -585,7 +585,42 @@ class nvh:
             schema_dict[curr_name] = item
 
         for c in self.children:
-            c.build_json(schema_dict)
+            c.schema_nvh2json(schema_dict)
+
+    @staticmethod
+    def schema_json2nvh(schema_json, node_key, result_schema_nvh, indent=0):
+        name = indent*'  ' + schema_json[node_key]['name']
+        if schema_json[node_key]['min'] == 0 and schema_json[node_key]['max'] == None:
+            count = '*'
+        elif schema_json[node_key]['min'] == 1 and schema_json[node_key]['max'] == None:
+            count = '+'
+        elif schema_json[node_key]['min'] == 0 and schema_json[node_key]['max'] == 1:
+            count = '?'
+        elif schema_json[node_key]['min'] > 0 and schema_json[node_key]['max'] == None:
+            count = f"{schema_json[node_key]['min']}+"
+        elif schema_json[node_key]['min'] == 1 and schema_json[node_key]['max'] == 1: 
+            count = ''
+        elif schema_json[node_key]['min'] != None and schema_json[node_key]['max'] != None:
+            count = f"{schema_json[node_key]['min']}-{schema_json[node_key]['max']}"
+
+        node_type = schema_json[node_key].get('type', '')
+        node_re = schema_json[node_key].get('re', '')
+        node_values = schema_json[node_key].get('values', '')
+
+        value = []
+        if count:
+            value.append(count)
+        if node_type:
+            value.append(node_type)
+        if node_re:
+            value.append(f'~{node_re}')
+        if node_values:
+            value.append(node_values)
+
+        result_schema_nvh.append(name + ": " + " ".join(value))
+
+        for ch in schema_json[node_key].get('children', []):
+            nvh.schema_json2nvh(schema_json, ch, result_schema_nvh, indent+1)
 
     def dump_xml(self, result_xml):
         def get_xml_atts(node_children):
@@ -746,7 +781,7 @@ if __name__ == "__main__":
             if len(sys.argv) < 3:
                 usage()
             schema_json: dict = {}
-            dictionary.build_json(schema_json)
+            dictionary.schema_nvh2json(schema_json)
             print(json.dumps(schema_json, indent=2))
         else:
             usage()

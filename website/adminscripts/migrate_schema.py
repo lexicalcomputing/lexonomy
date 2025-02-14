@@ -39,7 +39,7 @@ def main():
     try:
         nvh_schema = nvh.parse_string(structure_json['custom_NVHSchema'])
         elements = {}
-        nvh_schema.build_json(elements)
+        nvh_schema.schema_nvh2json(elements)
         structure_json['elements'] = elements
 
         db.execute('UPDATE configs SET json=? WHERE id="structure"', (json.dumps(structure_json),))

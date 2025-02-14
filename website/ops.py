@@ -240,7 +240,7 @@ def getDmlLexSchemaItems(modules, xlingual_langs, linking_relations, etymology_l
         dmlex2schema.final_schema2str(result, schema, used_modules)
         schema_json = {}
         nvh_structure = nvh.parse_string(''.join(schema))
-        nvh_structure.build_json(schema_json)
+        nvh_structure.schema_nvh2json(schema_json)
 
         return schema_json, desc_dict, list(used_modules)
 
@@ -697,7 +697,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
             # DICTIONARY STRUCTURE
             elements = {'tab': 'advanced'}
             nvh_structure = nvh.parse_string(nvh_schema_string)
-            nvh_structure.build_json(elements)
+            nvh_structure.schema_nvh2json(elements)
             structure = {"root": nvh_structure.children[0].name, "elements": elements}
         elif json_schema:
             structure = json.loads(json_schema)
@@ -1756,7 +1756,7 @@ def updateDictConfig(dictDB, dictID, configID, content):
         if content.get('nvhSchema', False):
             elements = {}
             nvh_structure = nvh.parse_string(content['nvhSchema'])
-            nvh_structure.build_json(elements)
+            nvh_structure.schema_nvh2json(elements)
             value = {"root": nvh_structure.children[0].name, "elements": elements, "tab": "custom", 'nvhSchema': content['nvhSchema']}
         elif content.get('jsonSchema', False):
             value = content['jsonSchema']
