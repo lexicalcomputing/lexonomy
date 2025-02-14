@@ -122,12 +122,11 @@
       cursor: default; /*action-panel can not be displayed on the base placeholder*/
       border: 4px solid #f7f6ed !important;
     }
+    
 
-    /*
-    ensure that all "placeholder" children will have same height
-    */
     .placeholder > .placeholder-inside-wrapper > .placeholder {
-      height: calc(100% - 28px);
+      height: calc(100% - 28px); /*ensure that all "placeholders" children will have correct height*/
+      width: calc(100% - 14px); /*ensure that all "placeholders" children will have correct width*/
     }
     /*
     both "placeholder-row" and "placeholder-column" have same flex-direction,
@@ -163,7 +162,7 @@
     */
     .adder-column {
       padding: 5px;
-      width: calc(100% - 18px);
+      width: calc(100% - 5px);
       margin: 0 10px;
       min-width: 100px;
     }

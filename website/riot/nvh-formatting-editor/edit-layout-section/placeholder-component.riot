@@ -156,7 +156,10 @@
 
 
     .placeholder-wrapping-content {
-      border: 4px solid black !important; /*NOTE: highligth placeholder that defines some content area, makes this sense ?*/
+      border: 4px dashed rgb(234, 231, 200);
+    }
+    .placeholder-wrapping-content:has(.placeholder:hover) {
+      border: 4px dashed rgb(234, 231, 200);
     }
 
 
