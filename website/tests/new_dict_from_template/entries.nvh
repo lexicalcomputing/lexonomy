@@ -1,0 +1,149 @@
+entry: lens
+  pos: N
+  label: label
+  pronunciation: lens-n.mp3
+    transcription: lenz
+      scheme: IPA
+  form: lenses
+    tag: pl
+    pronunciation: lenses-n.mp3
+      transcription: lenziz
+        scheme: IPA
+  sense: in photography
+    definition: an assembly of optical lenses used to direct light on a camera sensor
+      definitionType: type1
+    example: For portrait shooting I bought a new 50mm camera lens for my Sony camera.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      label: label
+
+entry: tear
+  homograph: 1
+  pos: N
+  label: label
+  pronunciation: tear1-n-br.mp3
+    transcription: tɪə
+      scheme: IPA
+    label: British
+  pronunciation: tear1-n-am.mp3
+    transcription: tɪr
+      scheme: IPA
+    label: American
+  form: tears
+    tag: pl
+    label: google
+    pronunciation: tears-n.mp3
+      transcription: tɪəz
+        scheme: IPA
+  sense: 
+    definition: drops of salty liquid coming out of your eyes when you are sad or crying
+      definitionType: full
+    definition: drops of liquid coming from your eyes
+      definitionType: abbreviated
+    example: The tears were rolling down her cheeks.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      label: x
+    label: human body
+
+entry: tear
+  homograph: 2
+  pos: V
+  label: label
+  pronunciation: tear2-v-br.mp3
+    transcription: teə
+      scheme: IPA
+    label: British
+  pronunciation: tear2-v-am.mp3
+    transcription: ter
+      scheme: IPA
+    label: American
+  form: tear
+    tag: inf
+    pronunciation: tear2-v-br.mp3
+      transcription: teə
+        scheme: IPA
+    label: British
+  form: tears
+    tag: 3pers
+    pronunciation: tears2-v-br.mp3
+      transcription: teəz
+        scheme: IPA
+    label: British
+  form: teared
+    tag: past
+    pronunciation: teared2-v-br.mp3
+      transcription: teəd
+        scheme: IPA
+    label: British
+  form: teared
+    tag: participle
+    pronunciation: teared-v-br.mp3
+      transcription: teəd
+        scheme: IPA
+    label: British
+  form: tearing
+    tag: gerund
+    pronunciation: tearing2-v-br.mp3
+      transcription: teərɪŋ
+        scheme: IPA
+    label: British
+  sense: camera lens
+    definition: assembly of optical lenses used to direct light on camera sensor
+      definitionType: full
+    example: For portrait shooting I bought new 50mm camera lens for my Sony camera.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+      label: label
+    label: technology
+
+entry: car
+  pos: N
+  label: label
+  pronunciation: car-br.mp3
+    transcription: kɑː
+      scheme: IPA
+    label: British
+  pronunciation: car-am.mp3
+    transcription: kɑːr
+      scheme: IPA
+    label: American
+  form: cars
+    tag: pl
+    pronunciation: cars-br.mp3
+      transcription: kɑːz
+        scheme: IPA
+    pronunciation: cars-am.mp3
+      transcription: kɑːrz
+        scheme: IPA
+    label: British
+    label: American
+  sense: motor vehicle
+    definition: a road vehicle powered by an engine, typically used for transporting passengers
+      definitionType: full
+    example: After I explained to him that I hadn't heard the car, he realized how the situation could have come about.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file.mp3
+  sense: train
+    definition: a train carriage
+      definitionType: full
+    example: Nothing was damaged and they pulled the cars back onto the rails.
+      sourceIdentity: sketchengine
+      sourceElaboration: GDEX examples
+      soundFile: audio_file1.mp3
+
+entry: reduce somebody to tears
+  label: label
+  sense: sense
+    definition: to make somebody cry
+      definitionType: def type
+    example: The documentary about animal cruelty was so distressing that it reduced me to tears.
+      sourceIdentity: x
+      sourceElaboration: x
+      soundFile: x
+      label: x
+

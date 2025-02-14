@@ -542,6 +542,45 @@ def makedictjson(user):
                            deduplicate=False, bottle_files={}, hwNode=None, titling_node=None)
     return res
 
+
+@post(siteconfig["rootPath"] + "make_templated.json")
+@auth
+def makedictjson(user):
+    files = {}
+    template_dir = os.path.join(currdir, 'dictTemplates', 'template_' + request.forms.template_id)
+
+    for file_name in os.listdir(template_dir):
+        if file_name == 'configs.json':
+            f1 = open(os.path.join(template_dir, file_name), 'rb')
+            files['config'] = bottle.FileUpload(f1, '', file_name)
+        elif file_name == 'entries.nvh':
+            f2 = open(os.path.join(template_dir, file_name), 'rb')
+            files['import_entires'] = bottle.FileUpload(f2, '', file_name)
+        elif file_name == 'custom_editor.css':
+            f3 = open(os.path.join(template_dir, file_name), 'rb')
+            files['ce_css'] = bottle.FileUpload(f3, '', file_name)
+        elif file_name == 'custom_editor.js':
+            f4 = open(os.path.join(template_dir, file_name), 'rb')
+            files['ce_js'] = bottle.FileUpload(f4, '', file_name)
+        elif file_name == 'structure.nvh':
+            f5 = open(os.path.join(template_dir, file_name), 'rb')
+            files['structure'] = bottle.FileUpload(f5, '', file_name)
+        elif file_name == 'styles.css':
+            f6 = open(os.path.join(template_dir, file_name), 'rb')
+            files['styles'] = bottle.FileUpload(f6, '', file_name)
+
+    res = ops.makeDict(request.forms.url, None, None, request.forms.title,
+                       request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
+                       addExamples=False,
+                       deduplicate=True if request.forms.deduplicate=='true' else False,
+                       bottle_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
+
+    for i in [f1,f2,f3,f4,f5,f6]:
+        i.close()
+
+    return res
+
+
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
 @authDict(["canView"])
 def clonedict(dictID, user, dictDB, configs):
