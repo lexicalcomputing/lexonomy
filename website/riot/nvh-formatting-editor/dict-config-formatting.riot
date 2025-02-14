@@ -55,29 +55,11 @@
         <div class="header-box">
           <i class="small material-icons">edit</i>
           <h2>Editing</h2>
+          <div id="reset-icon-wrapper"
+              onclick={resetSchema}>
+            RESET
+          </div>
         </div>
-        <div onclick={/*TODO: decide if keeping edit mode makes sense*/ () => {}}
-            id="toggle-edit-mode"
-            class="{state.editing.enabled ? "toggle-edit-mode-active" : "toggle-edit-mode-inactive"}">
-          Edit mode
-        </div>
-        <div if={state.editing.enabled}
-            onclick={onEditModeChange.bind(this, "column")}
-            class="edit-option-mode {state.editing.mode == "column" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
-          Add Column mode
-        </div>
-        <div if={state.editing.enabled}
-            onclick={onEditModeChange.bind(this, "row")}
-            class="edit-option-mode {state.editing.mode == "row" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
-          Add Row mode
-        </div>
-        <div if={state.editing.enabled && false}
-            onclick={onEditModeChange.bind(this, "delete")}
-            class="edit-option-mode {state.editing.mode == "delete" ? "edit-option-mode-active" : "edit-option-mode-inactive"}">
-          Delete mode
-        </div>
-        <div id="columns-color">Columns</div>
-        <div id="rows-color">Rows</div>
       </div>
       <div class="editing-layout-wrapper">
         <edit-layout class="edit-layout"
@@ -105,7 +87,7 @@
     export default {
       state: {
         showElements: true,
-        showStyle: true,
+        showStyle: false,
         showEditing: true,
         showExample: true,
         editing: {
@@ -212,6 +194,29 @@
         }
         return stateStructure;
       },
+      resetSchema() {
+        this.schema = {
+          orientation: "column",
+          children: [
+            {
+              status: {
+                isActive: false,
+              },
+              orientation: "column",
+              type: "placeholder",
+              content: {
+                name: "",
+                area: "",
+                color: ""
+              },
+              contentColor: "",
+              children: [],
+            }
+          ]
+        },
+
+        this.update();
+      }
     }
   </script>
 
@@ -260,6 +265,23 @@
       transform: scale(1.1);
       color: red;
     }
+    #reset-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid black;
+      padding: 2px 4px;
+      margin-left: 5px;
+      background-color: rgb(232, 108, 102);
+    }
+    #reset-icon-wrapper:hover {
+      transform: scale(1.05);
+      background-color: rgb(240, 94, 87);
+      cursor: pointer;
+    }
+    #reset-icon-wrapper:active {
+      transform: scale(1.1);
+    }
 
 
     .formatting-page-title {
@@ -294,7 +316,7 @@
       min-width: 100%;
     }
     .example-section-wrapper {
-      width: 100%;
+      min-width: 600px;
       height: 600px;
     }
 
@@ -347,7 +369,7 @@
       padding-left: 1.5em;
       padding-right: 1.5em;
       flex: auto;
-      min-width: 450px;
+      width: auto;
     }
 
 
@@ -355,7 +377,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      min-width: 450px;
+      min-width: 600px;
     }
     .editing-layout-wrapper {
       width: 100%;
@@ -366,58 +388,6 @@
       display: block;
       height: 100%;
       min-width: 100%;
-    }
-
-
-    #rows-color {
-      background-color: var(--color-row);
-    }
-    #columns-color {
-      background-color: var(--color-column);
-    }
-
-
-    #toggle-edit-mode {
-      padding: 5px;
-      cursor: pointer;
-      text-wrap: nowrap;
-    }
-    #toggle-edit-mode:hover {
-      transform: scale(1.05);
-      background-color:rgb(72, 120, 249);
-    }
-    #toggle-edit-mode:active {
-      transform: scale(1.1);
-    }
-    .toggle-edit-mode-active {
-      padding: 5px;
-      background-color: rgb(87, 129, 244);
-      font-weight: bold;
-    }
-    .toggle-edit-mode-inactive {
-      background-color: rgb(175, 193, 243);;
-    }
-
-
-    .edit-option-mode {
-      padding: 5px;
-      cursor: pointer;
-      text-wrap: nowrap;
-    }
-    .edit-option-mode:hover {
-      transform: scale(1.05);
-      background-color:rgb(53, 242, 204);
-    }
-    .edit-option-mode:active {
-      transform: scale(1.1);
-    }
-    .edit-option-mode-active {
-      padding: 5px;
-      background-color:rgb(97, 246, 216);
-      font-weight: bold;
-    }
-    .edit-option-mode-inactive {
-      background-color: rgb(176, 249, 235);
     }
   </style>
 </dict-config-formatting>
