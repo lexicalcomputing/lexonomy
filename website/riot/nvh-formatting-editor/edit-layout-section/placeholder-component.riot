@@ -94,12 +94,14 @@
             state.children.splice(index, 0, data);
             this.props.global.dropInfo.wasSuccessful = true;
             this.props.global.dropInfo.index = index
-
             event.target.classList.remove("adder-highligth-dragged");
           } else if (data.type === "choice-item") {
-            state.content.name = data.name;
-            state.content.area = data.name;
-            state.content.color = data.color;
+            let content = {
+              name: data.name,
+              area: data.name,
+              color: data.color,
+            }
+            this.props.addElement(index, this.props.global.parent, this.props.state, "column", content)
           }
         }
         this.props.global.canBeDropped = false;
