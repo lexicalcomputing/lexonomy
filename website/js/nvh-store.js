@@ -1410,7 +1410,7 @@ class NVHStoreClass {
 
    updateUrl(){
       let dictData = window.store.data
-      let newUrl = `${window.location.href.split("#")[0]}#/${dictData.dictId}/edit/${dictData.doctype}/`
+      let newUrl = `${window.location.href.split("#")[0]}#/${dictData.dictId}/edit/`
       if(dictData.entryId != null){
          newUrl += `${dictData.entryId}/${window.store.data.editorMode}${window.store.getEntrySearchUrlQueryString()}`
       }
