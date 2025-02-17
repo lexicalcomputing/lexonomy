@@ -59,9 +59,8 @@ class StoreClass {
       return this.data.dictionaryList.find(d => d.id == dictId)
    }
 
-   open(dictId, doctype, entryId, editorMode){
+   open(dictId, entryId, editorMode){
       this.changeDictionary(dictId)
-      this.changeDoctype(doctype)
       entryId && this.changeEntryId(entryId)
       this.data.editorMode = editorMode || "edit"
    }
@@ -75,19 +74,6 @@ class StoreClass {
             this.loadActualDictionary()
          } else {
             this.trigger("dictionaryChanged")
-         }
-      }
-   }
-
-   changeDoctype(doctype){
-      if(this.data.isDictionaryLoading){
-         this.one("dictionaryChanged", this.changeDoctype.bind(this, doctype))
-      } else if(this.data.config){  // is dictionary loaded
-         doctype = doctype || this.data.doctypes[0]
-         if(doctype != this.data.doctype){
-            this.data.doctype = doctype
-            this.data.config.structure.root = doctype
-            this.trigger("doctypeChanged")
          }
       }
    }
@@ -244,8 +230,6 @@ class StoreClass {
          isEntryLoaded: false,
          isDictionaryExamplesLoading: false,
          config: null,
-         doctype: null,
-         doctypes: null,
          entryList: null,
          entry: null,
          dictId: null,
@@ -386,9 +370,7 @@ class StoreClass {
                   }
                   Object.assign(this.data, {
                         config: response.configs,
-                        userAccess: response.userAccess,
-                        doctype: response.doctype,
-                        doctypes: response.doctypes
+                        userAccess: response.userAccess
                      },
                      response.publicInfo
                   )
@@ -409,12 +391,7 @@ class StoreClass {
                this.data.isDictionaryLoading = false
                this.trigger("isDictionaryLoadingChanged")
                if(response.userAccess && !["dict-config-structure", "unauthorized"].includes(this.data.actualPage)
-                     && (!this.data.doctypes
-                              || !this.data.doctypes.length
-                              || !this.data.doctypes[0]
-                              || !this.isStructureValid()
-                        )
-               ){
+                     && !this.isStructureValid()){
                   this.showBrokenStructureDialog()
                }
             })
@@ -459,7 +436,7 @@ class StoreClass {
    }
 
    loadEntryList(howmany){
-      if(!this.data.dictId || (window.auth.data.authorized && !this.data.doctype)){
+      if(!this.data.dictId || window.auth.data.authorized){
          return
       }
       this.data.isEntryListLoading = true
@@ -486,7 +463,7 @@ class StoreClass {
    loadEntries(data){
       let url
       if(window.auth.data.authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
-         url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
+         url = `${window.API_URL}${this.data.dictId}/entrylist.json`
       } else {
          url = `${window.API_URL}${this.data.dictId}/search.json`
       }

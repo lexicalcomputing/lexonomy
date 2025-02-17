@@ -267,7 +267,7 @@
          getEntryUrl(){
             let editorMode = this.dictData.userAccess
                   && this.dictData.userAccess.canEdit ? "edit" : "view"
-            return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${this.state.displayedEntryId}/${editorMode}`
+            return `#/${this.dictData.dictId}/edit/${this.state.displayedEntryId}/${editorMode}`
          },
 
          initializeDropdown(){
