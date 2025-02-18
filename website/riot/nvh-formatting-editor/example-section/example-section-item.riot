@@ -2,7 +2,7 @@
   <div class="element-holder element-holder-{props.schema.orientation}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
-      <div if={props.schema.content.name === props.entry.name}
+      <div if={props.schema.content.fullName === props.entry.fullName}
           class="element-holder-content">
         {props.entry.value}
       </div>
@@ -19,7 +19,7 @@
       <template if={props.schema.content.area !== childSchema.content.area
                     && childSchema.content.name !== ""}
                 each={childEntry in props.entry.children}>
-        <example-section-item if={childSchema.content.name === childEntry.name}
+        <example-section-item if={childSchema.content.fullName === childEntry.fullName}
                               schema={childSchema}
                               entry={childEntry}/>
       </template>
