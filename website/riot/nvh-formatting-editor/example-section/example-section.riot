@@ -1,83 +1,14 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div">
-      <example-section-item
+      <example-section-item if={props.exampleEntry !== null}
         each={child in props.schema.children}
         schema={child}
-        entry={exampleEntry[0]}/>
+        entry={props.exampleEntry}/>
     <div>
   </div>
 
   <script>
-    export default {
-      exampleEntry: [
-        {
-          name: "entry",
-          value: "car",
-          children: [
-            {
-              name: "pos",
-              value: "N",
-              children: [],
-            },
-            {
-              name: "pos",
-              value: "V",
-              children: [],
-            },
-            {
-              name: "label",
-              value: "example car",
-              children: [],
-            },
-            {
-              name: "pronunciation",
-              value: "car-br.mp3",
-              children: [
-                {
-                  name: "transcription",
-                  value: "ka:",
-                  children: [
-                    {
-                      name: "scheme",
-                      value: "IPA",
-                      children: []
-                    }
-                  ]
-                },
-                {
-                  name: "label",
-                  value: "British",
-                  children: []
-                }
-              ]
-            },
-            {
-              name: "pronunciation",
-              value: "car-am.mp3",
-              children: [
-                {
-                  name: "transcription",
-                  value: "ka:r",
-                  children: [
-                    {
-                      name: "scheme",
-                      value: "IPA",
-                      children: []
-                    }
-                  ]
-                },
-                {
-                  name: "label",
-                  value: "American",
-                  children: []
-                }
-              ]
-            }
-          ]
-        }
-      ],
-    }
   </script>
 
   <style>

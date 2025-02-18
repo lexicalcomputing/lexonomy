@@ -41,6 +41,7 @@
         if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
             state.content.name = data.name;
+            state.content.fullName = data.fullName;
             state.content.area = data.name;
             state.content.color = data.color;
           }
@@ -56,6 +57,7 @@
           type: "placeholder",
           content: {
             name: label == null ? "" : label.name,
+            fullName: label == null ? "" : label.fullName,
             area: label == null ? "" : label.area,
             color: label == null ? "": label.color,
           },

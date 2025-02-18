@@ -17,7 +17,7 @@
                           global={props.global}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}">
     <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
-                    onclick={() => props.addElement(0, props.global.parent, props.state, props.editing.mode, null)}
+                    onclick={() => props.addElement(0, props.global.parent, props.state, "row", null)}
                     ondragover={onAdderDragOver}
                     ondragenter={onAdderDragEnter}
                     ondragleave={onAdderDragLeave}
@@ -46,7 +46,7 @@
                             close-action-panel={props.closeActionPanel}
                             child-with-inherited-area={props.childWithInheritedArea}/>
       <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
-                      onclick={() => props.addElement(index + 1, props.global.parent, props.state, props.editing.mode, null)}
+                      onclick={() => props.addElement(index + 1, props.global.parent, props.state, "row", null)}
                       ondragover={onAdderDragOver}
                       ondragenter={onAdderDragEnter}
                       ondragleave={onAdderDragLeave}
@@ -67,6 +67,7 @@
         if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
             state.content.name = data.name;
+            state.content.fullName = data.fullName;
             state.content.area = data.name;
             state.content.color = data.color;
           }
@@ -98,6 +99,7 @@
           } else if (data.type === "choice-item") {
             let content = {
               name: data.name,
+              fullName: data.fullName,
               area: data.name,
               color: data.color,
             }

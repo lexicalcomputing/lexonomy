@@ -78,13 +78,16 @@
       </div>
       <div class="example-section-wrapper">
         <example-section class="example-section"
-                        schema={schema}/>
+                        schema={schema}
+                        exampleEntry={entryInfo}/>
       </div>
     </div>
   </div>
   
   <script>
     export default {
+      entryInfoRaw: null,
+      entryInfo: null,
       state: {
         showElements: true,
         showStyle: false,
@@ -107,6 +110,7 @@
             type: "placeholder",
             content: {
               name: "",
+              fullName: "",
               area: "",
               color: ""
             },
@@ -130,6 +134,7 @@
           canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
           parent: null,
         };
+        this.loadEntry();
       },
       onBeforeUpdate() {
         this.elementsSchema = this.createElementsSchema(Object.entries(window.store.data.config.structure.elements));
@@ -144,6 +149,7 @@
           canOpenActionPanel: true,
           parent: null,
         };
+        this.entryInfo = this.createEntryStructure(Object.entries(JSON.parse(entryInfoRaw.json).entry[0]));
       },
 
       onDragEnter() {
@@ -206,6 +212,7 @@
               type: "placeholder",
               content: {
                 name: "",
+                fullName: "",
                 area: "",
                 color: ""
               },
@@ -216,7 +223,36 @@
         },
 
         this.update();
-      }
+      },
+      loadEntry() {
+        /*Just loading example entry for testing*/
+        window.store.changeEntryId(4);
+        let entryPromise = window.store.loadEntry();
+        entryPromise.then(result => {entryInfoRaw = result});
+      },
+      createEntryStructure(entry) {
+        let objectHolder = {
+          name: null,
+          fullName: "entry",
+          value: null,
+          children: []
+        };
+        
+        for (let element of entry) {
+          if (element[0] === "_name") {
+            objectHolder.name = element[1];
+          } else if (element[0] === "_value") {
+            objectHolder.value = element[1];
+          } else {
+            for (let childHolder of element[1]) {
+              let child = this.createEntryStructure(Object.entries(childHolder));
+              child.fullName = element[0];
+              objectHolder.children.push(child);
+            }
+          }
+        }
+        return objectHolder;
+      },
     }
   </script>
 

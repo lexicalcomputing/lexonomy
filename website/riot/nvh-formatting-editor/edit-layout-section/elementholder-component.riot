@@ -55,6 +55,7 @@
     onDragEnd(event) {
       if (this.props.global.dropInfo.wasSuccessful) {
         this.props.state.content.name = "";
+        this.props.state.content.fullName = "";
         this.props.state.content.area = "";
         this.props.state.content.color = "";
       }
@@ -79,6 +80,7 @@
       if (data.type === "choice-item") {
         let newContent = {
           name: data.name,
+          fullName: data.fullName,
           area: data.name,
           color: data.color,
         }
