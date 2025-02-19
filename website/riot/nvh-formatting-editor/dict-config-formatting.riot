@@ -122,7 +122,7 @@
       elementsSchema: null,
 
       onBeforeMount() {
-        this.elementsSchema = this.createElementsSchema(Object.entries(window.store.data.config.structure.elements));
+        this.elementsSchema = this.createElementsSchema(window.store.schema.schema);
         this.global = {
           canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
           canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
@@ -137,7 +137,7 @@
         this.loadEntry();
       },
       onBeforeUpdate() {
-        this.elementsSchema = this.createElementsSchema(Object.entries(window.store.data.config.structure.elements));
+        this.elementsSchema = this.createElementsSchema(window.store.schema.schema);
         this.global = {
           canBeRemovedIfHovered: true,
           canBeDropped: true,
@@ -185,20 +185,21 @@
       The problem is that I need to refresh "edit" and "example" section, but "elements"
       section should remain the same.
       */
-      createElementsSchema(elements) {
-        let stateStructure = [];
-        for (let element of elements) {
-          let newElement = {
-            data: {
-              type: "choice-item",
-              name: element[1].name,
-              fullName: element[0],
-              color: window.nvhStore.getElementColor(element[0]),
-            }
-          }
-          stateStructure.push(newElement)
+      createElementsSchema(element) {
+        let objectStructure = {
+          data: {
+            type: "choice-item",
+            name: element.name,
+            fullName: element.path,
+            color: window.nvhStore.getElementColor(element.path),
+          },
+          children: []
+        };
+        for (let child of element.children) {
+          let newElement = this.createElementsSchema(child);
+          objectStructure.children.push(newElement)
         }
-        return stateStructure;
+        return objectStructure;
       },
       resetSchema() {
         this.schema = {
@@ -262,6 +263,7 @@
       --color-column:rgb(121, 195, 245);
       --color-can-be-dropped: rgb(237, 205, 116);
       --color-is-dragged-over: rgb(162, 127, 31);
+      --color-is-dragged-over-light: rgb(255, 245, 217);
     }
 
 

@@ -5,6 +5,8 @@
         <placeholder-component onclick={openActionPanel}
                               ondragover={onDragOver}
                               ondrop={(event) => onDrop(event, child)}
+                              ondragenter={onPlaceholderDragEnter}
+                              ondragleave={onPlaceholderDragLeave}
                               class="placeholder placeholder-{child.orientation} placeholder-first
                                     {child.status.isActive ? "placeholder-selected" : ""}
                                     {child.children.length === 0 ? "placeholder-no-children" : ""}"
@@ -45,6 +47,25 @@
             state.content.area = data.name;
             state.content.color = data.color;
           }
+        }
+        event.target.classList.remove("placeholder-highligth");
+        event.target.classList.remove("placeholder-inside-wrapper-highligth");
+        event.target.classList.remove("placeholder-adder-highligth");
+      },
+      onPlaceholderDragEnter(event) {
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (data.type === "choice-item") {
+          const classList = Array.from(event.target.classList);
+          if (classList.includes("placeholder")) {
+            event.target.classList.add("placeholder-highligth");
+          }
+        }
+      },
+      onPlaceholderDragLeave(event) {
+        const classList = Array.from(event.target.classList);
+        if (classList.includes("placeholder")) {
+          event.target.classList.remove("placeholder-highligth");
         }
       },
 
@@ -217,6 +238,37 @@
     }
     .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper:hover {
       color: black;
+    }
+
+
+    .placeholder-highligth {
+      background-color: var(--color-is-dragged-over-light) !important;
+    }
+    .placeholder-inside-wrapper-highligth {
+      background-color: var(--color-is-dragged-over-light) !important;
+    }
+    .placeholder-adder-highligth {
+      background-color: var(--color-is-dragged-over-light) !important;
+    }
+    .placeholder-highligth .placeholder {
+      background-color: white;
+    }
+    .placeholder-inside-wrapper-highligth .placeholder {
+      background-color: white;
+    }
+    .placeholder-adder-highligth .placeholder {
+      background-color: white;
+    }
+
+
+    .placeholder-highligth > .placeholder-inside-wrapper {
+      background-color: var(--color-is-dragged-over-light) !important;
+    }
+    .placeholder-inside-wrapper-highligth > .placeholder-inside-wrapper {
+      background-color: var(--color-is-dragged-over-light) !important;
+    }
+    .placeholder-adder-highligth > .placeholder-inside-wrapper {
+      background-color: var(--color-is-dragged-over-light) !important;
     }
   </style>
 </edit-layout>

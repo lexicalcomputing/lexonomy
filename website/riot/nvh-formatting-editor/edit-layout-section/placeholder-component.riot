@@ -15,7 +15,11 @@
                           state={props.state}
                           add-element={props.addElement}
                           global={props.global}/>
-  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}">
+  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}"
+      ondragover={onPlaceholderWrapperDragOver}
+      ondragenter={onPlaceholderWrapperDragEnter}
+      ondragleave={onPlaceholderWrapperDragLeave}
+      ondrop={onPlaceholderWrapperDrop}>
     <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
                     onclick={() => props.addElement(0, props.global.parent, props.state, "row", null)}
                     ondragover={onAdderDragOver}
@@ -24,11 +28,17 @@
                     ondrop={(event) => onAdderDrop(event, props.state, 0)}
                     class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
                           {props.state.children.length === 0 && props.state.content.name === "" ? "adder-alone" : ""}"
-                    orientation={props.state.children.length === 0 ? "column": props.state.orientation}/>
+                    orientation={props.state.children.length === 0 ? "column": props.state.orientation}
+                    index={0}
+                    global={props.global}
+                    state={props.state}
+                    add-element={props.addElement}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => openActionPanel(child.status)}
                             ondragover={onDragOver}
                             ondrop={(event) => onDrop(event, child)}
+                            ondragenter={onPlaceholderDragEnter}
+                            ondragleave={onPlaceholderDragLeave}
                             class="placeholder placeholder-{child.orientation}
                                   {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}
                                   {child.status.isActive ? "placeholder-selected" : ""}
@@ -52,7 +62,11 @@
                       ondragleave={onAdderDragLeave}
                       ondrop={(event) => onAdderDrop(event, props.state, index + 1)}
                       class="adder adder-{props.state.orientation}"
-                      orientation={props.state.orientation}/>
+                      orientation={props.state.orientation}
+                      index={index + 1}
+                      global={props.global}
+                      state={props.state}
+                      add-element={props.addElement}/>
     </template>
   </div>
 
@@ -72,7 +86,53 @@
             state.content.color = data.color;
           }
         }
+        event.target.classList.remove("placeholder-highligth");
+        event.target.classList.remove("placeholder-inside-wrapper-highligth");
+        event.target.classList.remove("placeholder-adder-highligth");
         this.props.global.canBeDropped = false;
+      },
+      onPlaceholderDragEnter(event) {
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (data.type === "choice-item") {
+          const classList = Array.from(event.target.classList);
+          if (classList.includes("placeholder")) {
+            event.target.classList.add("placeholder-highligth");
+          }
+        }
+      },
+      onPlaceholderDragLeave(event) {
+        const classList = Array.from(event.target.classList);
+        if (classList.includes("placeholder")) {
+          event.target.classList.remove("placeholder-highligth");
+        }
+      },
+      onPlaceholderWrapperDragEnter(event) {
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (data.type === "choice-item") {
+          const classList = Array.from(event.target.classList);
+          if (classList.includes("placeholder-inside-wrapper")) {
+            event.target.parentElement.classList.add("placeholder-inside-wrapper-highligth");
+          }
+        }
+      },
+      onPlaceholderWrapperDragLeave(event) {
+        const classList = Array.from(event.target.classList);
+        if (classList.includes("placeholder-inside-wrapper")) {
+          event.target.parentElement.classList.remove("placeholder-inside-wrapper-highligth");
+        }
+      },
+      onPlaceholderWrapperDragOver(event) {
+        event.preventDefault();
+      },
+      onPlaceholderWrapperDrop(event) {
+        const classList = Array.from(event.target.classList);
+        if (classList.includes("placeholder-inside-wrapper")) {
+          event.target.parentElement.classList.remove("placeholder-highligth");
+          event.target.parentElement.classList.remove("placeholder-inside-wrapper-highligth");
+          event.target.parentElement.classList.remove("placeholder-adder-highligth");
+        }
       },
       onAdderDragOver(event) {
         event.preventDefault();
@@ -82,10 +142,21 @@
         const data = JSON.parse(rawData);
         if (data.type === "placeholder") {
           event.target.classList.add("adder-highligth-dragged");
+        } else if (data.type === "choice-item") {
+          const classList = Array.from(event.target.classList);
+          if (classList.includes("adder")) {
+            event.target.parentElement.parentElement.classList.add("placeholder-adder-highligth");
+          }
         }
       },
       onAdderDragLeave(event) {
-        event.target.classList.remove("adder-highligth-dragged");
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (data.type === "placeholder") {
+          event.target.classList.remove("adder-highligth-dragged");
+        } else if (data.type === "choice-item") {
+          event.target.parentElement.parentElement.classList.remove("placeholder-adder-highligth");
+        } 
       },
       onAdderDrop(event, state, index) {
         const rawData = event.dataTransfer.getData("text/plain");
@@ -96,17 +167,13 @@
             this.props.global.dropInfo.wasSuccessful = true;
             this.props.global.dropInfo.index = index
             event.target.classList.remove("adder-highligth-dragged");
+            this.props.global.canBeDropped = false;
           } else if (data.type === "choice-item") {
-            let content = {
-              name: data.name,
-              fullName: data.fullName,
-              area: data.name,
-              color: data.color,
-            }
-            this.props.addElement(index, this.props.global.parent, this.props.state, "column", content)
+            event.target.parentElement.parentElement.classList.remove("placeholder-highligth");
+            event.target.parentElement.parentElement.classList.remove("placeholder-inside-wrapper-highligth");
+            event.target.parentElement.parentElement.classList.remove("placeholder-adder-highligth");
           }
         }
-        this.props.global.canBeDropped = false;
       },
 
       openActionPanel(status) {
@@ -127,7 +194,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: white;
       width: 100%;
       height: 100%;
     }
