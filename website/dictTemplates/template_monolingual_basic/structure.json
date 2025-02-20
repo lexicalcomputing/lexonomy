@@ -1,0 +1,6 @@
+entry: 1 string
+  pos: * list ["noun","verb","go to Dictionary>Configure>Structure to add more"]
+  transcription: * string ~.+
+  sense: * string
+    definition: * string ~.+
+    example: * string ~.+

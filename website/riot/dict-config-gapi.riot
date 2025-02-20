@@ -185,9 +185,8 @@
          },
 
          onBeforeMount(){
-            this.state.imageElementList = Object.entries(this.dictData.config.structure.elements)
-                  .filter(obj => obj[1].type == "image")
-                  .map(obj => this.store.getElementDisplayedName(obj[0]))
+            this.state.imageElementList = window.store.schema.findElements(element => element.type == "image")
+                  .map(element => this.store.getElementDisplayedName(element.path))
          },
 
          onMounted() {
@@ -202,7 +201,7 @@
          },
 
          onUpdated() {
-            if (this.dictData.config.structure && this.dictData.config.structure.elements) {
+            if (!this.store.schema.isEmpty()) {
                if (this.state.data.image_licence) {
                   $(`#img_licence option[value="${this.state.data.image_licence}"]` ).attr("selected", "selected")
                }

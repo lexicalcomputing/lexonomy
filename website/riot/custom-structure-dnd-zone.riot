@@ -1,4 +1,4 @@
-<structure-dnd-zone>
+<custom-structure-dnd-zone>
    <div class="structure-dnd-wrapper">
       <div class="structure-zone"
             ondragenter={onDragEnter}
@@ -31,7 +31,9 @@
                if(this.state.availableIndents.length){
                   if(this.state.availableIndents.length >= 2) {
                      for (let i = 0; i < this.state.availableIndents.length - 1; i++) {
-                        this.state.axisXIndentThresholds.push((this.state.availableIndents[i] + this.state.availableIndents[i + 1]) / 2 * 30 + 24 /* left margin of item */)
+                        /* added left margin of structure editor and left drag handle icon size */
+                        let threshold = (this.state.availableIndents[i] + this.state.availableIndents[i + 1]) / 2 * 30 + 24 + 24
+                        this.state.axisXIndentThresholds.push(threshold)
                      }
                   } else {
                      this.state.axisXIndentThresholds = [Infinity]
@@ -49,12 +51,12 @@
             let draggedElement = this.structureStore.data.draggedElement
             while(element){
                if(!element.path.startsWith(draggedElement.path)  // do not allow to drop to child of dragged element
-                  && ((!element.children.find(childPath => childPath.split(".").pop() == draggedElement.name)  // dropzone element does not already has element of this name
-                           || element.path == draggedElement.parent))  // allow to drop to the same parent
-                  && !this.structureStore.isParentMarkupElement(element.path)){
+                  && ((!element.children.find(child => child.name == draggedElement.name)  // dropzone element does not already has element of this name
+                           || element == draggedElement.parent))  // allow to drop to the same parent
+                  && element.type != "markup"){
                   indents.unshift(element.indent + 1)
                }
-               element = this.structureStore.getElementByPath(element.parent)
+               element = element.parent
             }
             return indents
          },
@@ -88,11 +90,11 @@
          },
 
          onDrop(evt){
-            let ancestors = this.structureStore.getAllAncestors(this.props.element.path)
+            let ancestors = [this.props.element, ...this.structureStore.data.schema.getAllElementAncestors(this.props.element)]
             let parentElement = ancestors.find(e => e.indent == this.state.indent - 1)
             let previousSiblingElement = ancestors.find(e => e.indent == this.state.indent)
-            let position = previousSiblingElement ? parentElement.children.indexOf(previousSiblingElement.path) + 1 : 0
-            this.structureStore.moveElementToAnotherParent(this.structureStore.data.draggedElement, parentElement, position)
+            let position = previousSiblingElement ? parentElement.children.indexOf(previousSiblingElement) + 1 : 0
+            this.structureStore.data.schema.moveElementToAnotherParent(this.structureStore.data.draggedElement, parentElement, position)
             this.structureStore.stopElementDragging()
             $(this.root).removeClass("structure-hover")
          }
@@ -143,4 +145,4 @@
          }
       }
    </style>
-</structure-dnd-zone>
+</custom-structure-dnd-zone>

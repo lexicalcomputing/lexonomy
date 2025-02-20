@@ -1,6 +1,6 @@
 <new-entry-template>
-   <div each={(element, idx) in getElementList()}>
-      <i if={state.mandatoryElements.includes(element.path)}
+   <div each={(element, idx) in schema.getElementList()}>
+      <i if={state.mandatoryElements.includes(element)}
             class="material-icons positionAbsolute blue-text tooltipped help"
             data-tooltip="This element is defined as compulsory in the entry structure and cannot be removed from the template.">
          info
@@ -8,24 +8,24 @@
       <div class="entryRow elementWithCheckbox displayInlineFlex alignCenter">
          <label style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
             <input type="checkbox"
-                  checked={state.defaultElements[element.path] || element.name == props.root}
-                  disabled={element.name == props.root || state.mandatoryElements.includes(element.path)}
-                  onclick={onCheckboxChanged.bind(this, element.path)} />
-            <span style="color: {window.nvhStore.getColorByIndex(idx)};">
+                  checked={state.defaultElements[element.path] || schema.isElementRoot(element)}
+                  disabled={schema.isElementRoot(element) || state.mandatoryElements.includes(element)}
+                  onclick={onCheckboxChanged.bind(this, element)} />
+            <span style="color: {schema.getElementColor(element)};">
                {element.name}
             </span>
          </label>
          <div if={["string", "int", "url", "bool", "list"].includes(element.type)}
                class="defaultValueWrapper">
-            <template if={state.editedElementPath != element.path}>
+            <template if={state.editedElement != element}>
                <span if={state.defaultValues[element.path]}
                      class="elementDefaultValue grey-text ml-2">
                   {store.stringifyElementValue(state.defaultValues[element.path], element.type)}
                </span>
                <i class="material-icons grey-text tiny pointer ml-2"
-                     onclick={onEditClick.bind(this, element.path)}>edit</i>
+                     onclick={onEditClick.bind(this, element)}>edit</i>
             </template>
-            <div if={state.editedElementPath == element.path}
+            <div if={state.editedElement == element}
                   class="displayFlex gap10 ml-2">
                <span class="grey-text">Default value</span>
                <div class="input-field mb-0 mt-0">
@@ -58,8 +58,6 @@
 
    <script>
       export default{
-         bindings: [["structureStore", "elementChanged", "update"]],
-
          state: {
             defaultElements: {},
             defaultValues: {},
@@ -69,10 +67,11 @@
          TEXT_ELEMENT_TYPES: ["string", "int", "url"],
 
          onBeforeMount(){
-            this.structureStore = window.structureEditorStore
-            this.state.elementList = this.getElementList()
+            this.schema = this.props.schema
             this.state.defaultValues = this.props.newEntryTemplate?.defaultValues || {}
             this.state.defaultElements = this.props.newEntryTemplate?.defaultElements || {}
+            this.bindings = [["schema", "schemaChanged", "update"]]
+
             this.refreshMandatoryElements()
          },
 
@@ -81,7 +80,6 @@
          },
 
          onBeforeUpdate(){
-            this.state.elementList = this.getElementList()
             this.refreshMandatoryElements()
          },
 
@@ -89,22 +87,20 @@
             window.initFormSelects(this.root)
          },
 
-         onCheckboxChanged(elementPath, evt){
-            if(this.state.defaultElements[elementPath]){
-               delete this.state.defaultElements[elementPath]
+         onCheckboxChanged(element, evt){
+            if(this.state.defaultElements[element.path]){
+               delete this.state.defaultElements[element.path]
                Object.keys(this.state.defaultElements).forEach(path => {
                   // uncheck all child elements
-                  if(path.startsWith(elementPath)){
+                  if(path.startsWith(element.path)){
                      delete this.state.defaultElements[path]
                   }
                })
             } else {
-               this.state.defaultElements[elementPath] = true
-               let path = elementPath
-               while(path){
+               while(element){
                   // check all parent elements
-                  this.state.defaultElements[path] = true
-                  path = path.split(".").slice(0,-1).join(".")
+                  this.state.defaultElements[element.path] = true
+                  element = element.parent
                }
             }
             this.update()
@@ -113,9 +109,9 @@
 
          onSelectChange(evt){
             if(evt.value === ""){
-               delete this.state.defaultValues[this.state.editedElementPath]
+               delete this.state.defaultValues[this.state.editedElement.path]
             } else {
-               this.state.defaultValues[this.state.editedElementPath] = evt.target.value
+               this.state.defaultValues[this.state.editedElement.path] = evt.target.value
             }
             this.stopElementValueEditing()
          },
@@ -129,11 +125,10 @@
             }
          },
 
-         onEditClick(elementPath){
-            this.state.editedElementPath = elementPath
+         onEditClick(element){
+            this.state.editedElement = element
             this.update()
             setTimeout(() => {
-               let element = this.getElement(elementPath)
                document.addEventListener("mousedown", this.handleDocumentMouseDown)
                if(this.TEXT_ELEMENT_TYPES.includes(element.type)) {
                   $(".elementDefaultValueInput").focus()
@@ -146,7 +141,7 @@
          },
 
          stopElementValueEditing(){
-            this.state.editedElementPath = null
+            this.state.editedElement = null
             document.removeEventListener("mousedown", this.handleDocumentMouseDown)
             this.update()
          },
@@ -155,30 +150,15 @@
             let node = $(evt.target)
             if(!this.root.contains(evt.target)
                   || !node.closest(".defaultValueWrapper").length){
-               if(this.TEXT_ELEMENT_TYPES.includes(this.getElement(this.state.editedElementPath)?.type)) {
+               if(this.TEXT_ELEMENT_TYPES.includes(this.state.editedElement.type)) {
                   this.updateElementValue()
                }
                this.stopElementValueEditing()
             }
          },
 
-         getElement(elementPath){
-            return this.props.elements[elementPath]
-         },
-
-         getElementList(elementPath, list=[]){
-            let element = this.getElement(elementPath || this.props.root)
-            if(element){
-               list.push(element)
-               element.children.forEach(child => {
-                  this.getElementList(child, list)
-               }, this)
-            }
-            return list
-         },
-
          updateElementValue(){
-            let elementPath = this.state.editedElementPath
+            let elementPath = this.state.editedElement.path
             let value = $(".elementDefaultValueInput").val().trim()
             if(value !== ""){
                this.state.defaultValues[elementPath] = value
@@ -190,11 +170,11 @@
 
          refreshMandatoryElements(){
             this.state.mandatoryElements = []
-            Object.values(this.props.elements).forEach(element => {
-               if(element.path != this.props.root
+            this.schema.forEach(element => {
+               if(!this.schema.isElementRoot(element)
                      && element.min
                      && element.min >= 1){
-                  this.state.mandatoryElements.push(element.path)
+                  this.state.mandatoryElements.push(element)
                   this.state.defaultElements[element.path] = true
                }
             })

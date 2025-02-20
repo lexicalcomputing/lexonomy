@@ -1,0 +1,7 @@
+entry: 1 string
+  transcription: * string ~.+
+  translation: * string ~.+
+    transcription: * string ~.+
+    example: * string ~.+
+      exampleTranslation: * string ~.+
+  note: * string ~.+

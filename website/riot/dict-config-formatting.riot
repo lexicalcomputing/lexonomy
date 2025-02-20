@@ -12,7 +12,7 @@
                   onclick={onElementClick.bind(this, element.path)}
                   onmouseenter={onElementMouseEnter.bind(this, element.path)}
                   onmouseleave={onElementMouseLeave.bind(this, element.path)}
-                  style="{element.style}">
+                  style="color: {element.color}; padding-left: {element.indent * 15 + 25}px">
                {store.getElementDisplayedName(element.path)}
                <i if={element.path == state.elementPath}
                      class="selectedElementArrow grey-text material-icons">chevron_right</i>
@@ -101,12 +101,7 @@
             this.state.savedConfig = JSON.stringify(formatting.elements)
             this.state.useCustomCss = formatting.useCustomCss
             this.state.customCss = formatting.customCss
-            this.elementOptionList = window.nvhStore.getElementTreeList().map(element => {
-               return {
-                  path: element.path,
-                  style: `color: ${element.color}; padding-left: ${element.indent * 15 + 25}px`
-               }
-            })
+            this.elementOptionList = window.nvhStore.getElementTreeList()
             this.state.elementPath = this.elementOptionList[0]?.path
             const changeEntryId = () => {
                if(this.dictData.entryList.length){

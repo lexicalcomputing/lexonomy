@@ -110,7 +110,7 @@
          },
 
          onDragStart(evt){
-            if ($(".nvh-drag-handle", this.root).first()[0].contains(this.state.target)) {
+            if ($(".nvh-drag-handle", this.root).first()[0]?.contains(this.state.target)) {
                setTimeout(() => {
                   // prevent DOM manipulation to fire ondragend event immediately after ondragstart
                   $(this.root).addClass("nvh-dragged-element")
@@ -191,7 +191,6 @@
    <style type="scss">
       :host{
          display: block;
-         padding-right: 80px; // make sure there is space for icons
          &.nvh-dragged-element{
             opacity: 0.3
          }

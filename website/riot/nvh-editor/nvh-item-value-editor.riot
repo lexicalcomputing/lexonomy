@@ -80,10 +80,7 @@
             this.state.style = this.nvhStore.getElementStyle(this.props.element.path) || {}
             this.state.showEditor = ["string", "markup", "image", "audio", "video", "url"].includes(this.state.config.type)
             this.state.markupChildrenPaths = this.state.config.children
-                  .filter(childPath => {
-                     let config = this.nvhStore.getElementConfig(childPath)
-                     return config && config.type == "markup"
-               })
+                  .filter(childConfig => childConfig.type == "markup")
          },
 
          onMounted(){
