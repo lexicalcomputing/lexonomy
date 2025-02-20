@@ -41,7 +41,7 @@ with open(os.path.join(currdir, 'version.txt')) as v_f:
 DEFAULT_ENTRY_LIMIT = 5000
 defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
-                     "structure": {"elements": {}},
+                     "structure": {"nvhSchema": "", 'root': ''},
                      "titling": {"headwordAnnotations": []},
                      "flagging": {"flag_element": "", "flags": []},
                      "entry_count": 0}
@@ -232,17 +232,13 @@ def verifyLoginAndProjectAccess(email, sessionkey):
             configs['annotator_of'].append(r['project_id'])
     return ret, configs
 
-def getDmlLexSchemaItems(modules, xlingual_langs, linking_relations, etymology_langs):
+def getDmlLexSchemaItems(modules, xlingual_langs=[], linking_relations=[], etymology_langs=[]):
     with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r') as f:
         result, desc_dict = dmlex2schema.get_dmlex_schema(f, "entry", modules, xlingual_langs, linking_relations, etymology_langs)
         schema = []
         used_modules = set()
         dmlex2schema.final_schema2str(result, schema, used_modules)
-        schema_json = {}
-        nvh_structure = nvh.parse_string(''.join(schema))
-        nvh_structure.schema_nvh2json(schema_json)
-
-        return schema_json, desc_dict, list(used_modules)
+        return ''.join(schema), desc_dict, list(used_modules)
 
 
 def deleteEntry(db, entryID, email):
@@ -679,7 +675,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
     return dictDB
 
 
-def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
+def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
              bottle_files={}, hwNode=None, titling_node=None):
     if title == "":
         title = "?"
@@ -693,24 +689,22 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     dictDB = initDict(dictID, title, lang, blurb, email, dmlex)
 
     if not bottle_files:
-        if nvh_schema_string:
+        if structure_json.get('nvhSchema', False):
             # DICTIONARY STRUCTURE
-            elements = {'tab': 'advanced'}
-            nvh_structure = nvh.parse_string(nvh_schema_string)
-            nvh_structure.schema_nvh2json(elements)
-            structure = {"root": nvh_structure.children[0].name, "elements": elements}
-        elif json_schema:
-            structure = json.loads(json_schema)
+            if not structure_json.get('root', False):
+                structure_json['root'] = nvh.schema_get_root_name(structure_json['nvhSchema'])
+            structure = structure_json
         else:
             raise Exception('No schema provided')
 
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
+        schema_keys = nvh.schema_keys(structure_json['nvhSchema'])
         # DICTIONARY FORMATTING
         formatting = {}
         with open(currdir + "/dictTemplates/styles.json", 'r') as f:
             styles = json.loads(f.read())
-            for key in structure['elements'].keys():
+            for key in schema_keys:
                 if styles.get(key):
                     formatting[key] = styles[key]
                 else:
@@ -720,7 +714,7 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
         # ADD EXAMPLES
         if dmlex and addExamples:
             with open("dictTemplates/dmlex.entry.example.nvh", 'r') as f:
-                examples = filter_nodes(nvh2json(f.read()), structure['elements'].keys())
+                examples = filter_nodes(nvh2json(f.read()), schema_keys)
             for idx, example in enumerate(examples):
                 dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, 'entry', example["nvh"], json.dumps(example['json']), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
@@ -1723,47 +1717,44 @@ def getDictStats(dictDB):
     res["needResave"] = r["needResave"]
     return res
 
-def combine_dmlex_schemas(old_sch_json, new_sch_json, xlingual_langs, linking_relations, etymology_langs):
+def combine_dmlex_schemas(old_sch_nvh, new_sch_nvh):
     """Find all custom nodes in old dmlex schema and add it to new dmlex schema if perents exists"""
-    stadard_dmlex_nodes, _, _ = getDmlLexSchemaItems(['all'], xlingual_langs, linking_relations, etymology_langs)
+    stadard_dmlex_schema, _, _ = getDmlLexSchemaItems(['all'])
     removed_nodes = {}
+    stadard_dmlex_nodes_keys = nvh.schema_keys(stadard_dmlex_schema)
+    old_sch_json = nvh.schema_nvh2json(old_sch_nvh)
+    new_sch_json = nvh.schema_nvh2json(new_sch_nvh)
+
     for old_node, old_value in old_sch_json.items():
         if old_node not in new_sch_json.keys():
-            if old_node in stadard_dmlex_nodes.keys():
+            if True in [True if re.fullmatch(x, old_node) else False for x in stadard_dmlex_nodes_keys]:
                 removed_nodes[old_node] = old_value
             elif old_value['parent'] in new_sch_json.keys():
                 new_sch_json[old_node] = old_value
-                new_sch_json[old_value['parent']]['children'].append(old_node)
+                if old_node not in new_sch_json[old_value['parent']]['children']:
+                    new_sch_json[old_value['parent']]['children'].append(old_node)
             else:
                 removed_nodes[old_node] = old_value
-    return removed_nodes
+
+    return removed_nodes, nvh.schema_json2nvh(new_sch_json)
 
 
 def updateDmLexSchema(current_schema, requested_modules, xlingual_langs, linking_relations, etymology_langs):
-    requested_schema_json, desc_dict, used_modules = getDmlLexSchemaItems(requested_modules, xlingual_langs, linking_relations, etymology_langs)
+    new_schema, desc_dict, used_modules = getDmlLexSchemaItems(requested_modules, xlingual_langs, linking_relations, etymology_langs)
 
     if sorted(current_schema.get('modules', [])) != sorted(requested_modules):
-        removed_nodes = combine_dmlex_schemas(current_schema['elements'], requested_schema_json, xlingual_langs, linking_relations, etymology_langs)
-        final_schema = requested_schema_json
+        removed_nodes, final_schema = combine_dmlex_schemas(current_schema['nvhSchema'], new_schema)
     else:
-        final_schema = current_schema['elements']
+        final_schema = current_schema['nvhSchema']
 
     return final_schema, desc_dict, used_modules, removed_nodes
 
 
 def updateDictConfig(dictDB, dictID, configID, content):
     if configID == 'structure':
-        if content.get('nvhSchema', False):
-            elements = {}
-            nvh_structure = nvh.parse_string(content['nvhSchema'])
-            nvh_structure.schema_nvh2json(elements)
-            value = {"root": nvh_structure.children[0].name, "elements": elements, "tab": "custom", 'nvhSchema': content['nvhSchema']}
-        elif content.get('jsonSchema', False):
-            value = content['jsonSchema']
-        elif content.get('elements', False):
-            value = content
-        else:
-            value = content
+        value = content
+        if value.get('root', False):
+            value['root'] = nvh.schema_get_root_name(content['nvhSchema'])
 
     else:
         value = content
@@ -2095,8 +2086,10 @@ def flagEntry(dictDB, configs, entryID, flags, email, historiography):
         pass
     success = True
     error = ""
+
+    schema_json = nvh.schema_nvh2json(configs["structure"]["nvhSchema"])
     for flag in flags:
-        s, error = addNode(nvhParsed, flag, configs["flagging"]["flag_element"], configs["structure"]["elements"])
+        s, error = addNode(nvhParsed, flag, configs["flagging"]["flag_element"], schema_json)
         success = success and s
     dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
                                                                                                                                                   nvhParsed.dump_string(),
