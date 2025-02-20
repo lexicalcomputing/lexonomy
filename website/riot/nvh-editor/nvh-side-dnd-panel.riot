@@ -246,9 +246,14 @@
                opacity: 0.5
             }
          }
-         &:not(.nvh-open):hover{
-            -webkit-box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14),0 3px 14px 2px rgba(0,0,0,0.12),0 5px 5px -3px rgba(0,0,0,0.2)!important;
-            box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14),0 3px 14px 2px rgba(0,0,0,0.12),0 5px 5px -3px rgba(0,0,0,0.2)!important;
+         &:not(.nvh-open){
+            &:hover{
+               -webkit-box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14),0 3px 14px 2px rgba(0,0,0,0.12),0 5px 5px -3px rgba(0,0,0,0.2)!important;
+               box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14),0 3px 14px 2px rgba(0,0,0,0.12),0 5px 5px -3px rgba(0,0,0,0.2)!important;
+            }
+            .nvh-panel{
+               background-color: #fff9c4;
+            }
          }
       }
       .nvh-pin-button.btn{
@@ -267,6 +272,7 @@
          max-height: 100vh;
          overflow-x: hidden;
          overflow-y: auto;
+         transition: background-color 0.2s ease-in-out;
       }
       .nvh-element-count{
          position: absolute;
