@@ -8,6 +8,7 @@ class NVHStoreClass {
          entry: null,
          // used to store droped items into side panel
          detachedEntry: {
+            path: "",
             children: []
          },
          isContextMenuOpen: false,
@@ -17,6 +18,7 @@ class NVHStoreClass {
          collapsedElements: new Set() //  to collapse same elements after changing the entry
       }
       observable(this)
+      this.schema = window.store.schema
       this.history = new window.HistoryClass()
       this.history.on("stateChange", this.onHistoryStateChange.bind(this))
       window.store.on("dictionaryChanged", this.onDictionaryChanged.bind(this))
@@ -123,7 +125,7 @@ class NVHStoreClass {
       this.data.structure = window.store.data.config.structure
       this.data.formatting = window.store.data.config.formatting
       this.data.editing = window.store.data.config.editing
-      this.data.rootElement = this.data.structure.root
+      this.data.rootElement = this.schema.getRoot()?.path
       this.data.customEditor = null
       this.data.legacyCustomEditor = false
       this.data.collapsedElements.clear()
@@ -292,9 +294,43 @@ class NVHStoreClass {
       this.trigger("entryContentChanged")
    }
 
-   parseNvhLine(line, idx, lastIndent, indentSize=2){
+   guessNvhIndentSize(nvh){
+      const DEFAULT_INDENT = 2
+      let indentLevels = nvh.split('\n')
+               .map(line => line.replaceAll("\t", "  "))
+               .filter(line => line.trim() != "")
+               .map(line => line.match(/^ */)[0].length)
+      if(!indentLevels.length){
+         return DEFAULT_INDENT
+      }
+      // Calculate differences between consecutive indent levels
+      let diffCounts = {}
+      for (let i = 1; i < indentLevels.length; i++) {
+         let indentDiff = Math.abs(indentLevels[i] - indentLevels[i - 1])
+         if(indentDiff > 0){
+            diffCounts[indentDiff] = (diffCounts[indentDiff] || 0) + 1
+         }
+      }
+      let mostCommonDiff = Object.entries(diffCounts).sort((a,b) => b[1] - a[1])[0]
+      return mostCommonDiff ? parseInt(mostCommonDiff[0]) : DEFAULT_INDENT
+   }
+
+   parseNvh(nvh){
+      let indentSize = this.guessNvhIndentSize(nvh)
+      return nvh.split('\n')
+            .map(line => line.replaceAll("\t", "  "))
+            .map((line, idx) => {
+               if(line.trim() === ""){
+                  return null
+               }
+               return this.parseNvhLine(line, idx, indentSize)
+            })
+            .filter(line => line != null)
+   }
+
+   parseNvhLine(line, idx, indentSize=2){
       if(!line.match(new RegExp(`^(([ ]{${indentSize}})*)([a-zA-Z0-9-_.]+):(.*)$`))){
-         if(line.match(new RegExp(`^( {${indentSize}})* [^ ]`))){
+         if(!line.match(new RegExp(`^([ ]{${indentSize}})*[^\\s].*`))){
             throw `Invalid indent on line ${idx + 1}: '${line.trim()}'.`
          } else if(line.match(/^[^:]*$/)){
             throw `Missing colon on line ${idx + 1}: '${line.trim()}.`
@@ -310,8 +346,7 @@ class NVHStoreClass {
       let incorrectSpaceNum = match && parts[0].match(new RegExp(/ /g)).length % indentSize
       let indent = match ? match.length : 0
       if((idx == 0 && startsWithSpace)
-         || (idx != 0 && (!startsWithSpace || incorrectSpaceNum || !match))
-         || (indent > lastIndent + 1)){
+         || (idx != 0 && (!startsWithSpace || incorrectSpaceNum || !match))){
          throw `Incorrect indent on line ${idx + 1}: '${line.trim()}'`
       }
       return {
@@ -359,39 +394,34 @@ class NVHStoreClass {
          }
       }
       let json
-      let line
       let el
-      let rows = nvh.split('\n')
-      let indentSize = 2
-      if(rows.length > 1){
-         indentSize = rows[1].replaceAll("\t", "  ")
-               .match(/^ */)[0].length || 2
-      }
-      rows.forEach((row, idx) => {
-         row = row.replaceAll("\t", "  ")
-         if(row.trim() != ""){
-            line = this.parseNvhLine(row, idx, el ? el.indent : 0, indentSize)
-            let parent = getParent(line.indent)
-            let name = line.name.split(".").pop()
-            el = {
-               id: this._getNewElementId(),
-               name: name,
-               value: line.value.replaceAll(this.const.nvhNewLine, "\n"),
-               indent: line.indent,
-               parent: parent,
-               children: [],
-               warnings: [],
-               path: parent ? `${parent.path}.${name}` : name
-            }
-            if(idx == 0){
-               json = el
-            } else {
-               el.parent.children.push(el)
-            }
+      let elements = this.parseNvh(nvh)
+      let lastIndent = 0
+      elements.forEach((element, idx) => {
+         if(element.indent > lastIndent + 1){
+            throw `Incorrect indent on line ${idx + 1}: '${element.name}: ${element.value}'`
          }
-      }, this)
+         lastIndent = element?.indent || 0
+         let parent = getParent(element.indent)
+         let name = element.name.split(".").pop()
+         el = {
+            id: this._getNewElementId(),
+            name: name,
+            value: element.value.replaceAll(this.const.nvhNewLine, "\n"),
+            indent: element.indent,
+            parent: parent,
+            children: [],
+            warnings: [],
+            path: parent ? `${parent.path}.${name}` : name
+         }
+         if(idx == 0){
+            json = el
+         } else {
+            el.parent?.children.push(el)
+         }
+      })
 
-     return json
+      return json
    }
 
    nvhToXML(nvh){
@@ -442,14 +472,6 @@ class NVHStoreClass {
       }
       let entryNode = $($.parseXML(xml)).children().first()
       let json = processNodeAndItsChildren(entryNode, null)
-      return json
-   }
-
-   nvhSchemaToJSON(nvhSchema){
-      let json = this.nvhToJson(nvhSchema)
-      this.getElementList(json).forEach(el => {
-         Object.assign(el, this.parseNvhSchemaOptionsValue(el.value))
-      })
       return json
    }
 
@@ -657,7 +679,7 @@ class NVHStoreClass {
             children: []
          }
       }
-      return this.data.structure.elements[elementPath]
+      return this.schema.getElementByPath(elementPath)
    }
 
    getElementStyle(elementPath){
@@ -665,41 +687,27 @@ class NVHStoreClass {
    }
 
    getAvailableChildElementPaths(element){
-      let config = this.data.structure.elements[element.path]
-      let elements = []
+      let config = this.getElementConfig(element.path)
       if(config){
-         elements = config.children.filter(childPath => {
-            return this.canHaveAnotherChild(element, childPath)
-         })
+         return config.children.filter(childConfig => {
+            return this.canHaveAnotherChild(element, childConfig.path)
+         }).map(childConfig => childConfig.path)
       }
-      return elements
+      return []
    }
 
    canHaveAnotherChild(element, childPath){
       if(this.isServiceElement(childPath)){
          return true
       } else {
-         let childConfig = this.data.structure.elements[childPath]
+         let childConfig = this.getElementConfig(childPath)
          return !childConfig.max || childConfig.max > element.children.filter(c => c.path == childPath).length
       }
    }
 
-   getAvailableParentElementPaths(elementPath){
-      let elements = this.data.structure.elements
-      if(this.isServiceElement(elementPath)){
-         return Object.keys(elements)
-      } else {
-         return Object.keys(elements).filter(parentPath => {
-            return elements[parentPath].children.some(child => child == elementPath)
-         })
-      }
-   }
-
    getAvailableParentElements(elementPath){
-      let availableParentPaths = this.getAvailableParentElementPaths(elementPath)
-      return this.findElements(parent => {
-         return availableParentPaths.includes(parent.path)
-      })
+      let parentPath = this.getElementConfig(elementPath)?.parent?.path || ""
+      return this.findElements(parent => parent.path == parentPath)
    }
 
    getNextAvailableParentInDirection(element, direction){
@@ -739,10 +747,8 @@ class NVHStoreClass {
          let elements = this.findElements(e => e.path == elementPath)
          let config = this.getElementConfig(elementPath)
          if(config && config.type == "markup"){
-            elements = elements.map(e => {
-               // markup element style changed - parent element must be updated
-               return [e, ...this.getAvailableParentElements(e.path)]
-            }).flat()
+            // markup element style changed - parent element must be updated
+            config.parent && elements.push(config.parent.path)
          }
 
          this.trigger("updateElements", elements)
@@ -759,7 +765,7 @@ class NVHStoreClass {
 
    isElementViewable(element){
       let specialElements = ["relation"]
-      return this.data.structure.tab != "dmlex"
+      return this.data.structure.mode != "dmlex"
             || (!specialElements.includes(element.name)
                   && !this.getElementAncestors(element)
                      .some(el => {return specialElements.includes(el.name)})
@@ -926,6 +932,7 @@ class NVHStoreClass {
    startElementOrChildEditing(element){
       let firstEditableElement = this.findElement(el => {
          let config = this.getElementConfig(el.path)
+         // TODO exclude markup elemnets and its children
          return config && config.type != "empty"
       }, element)
       firstEditableElement && this.startElementEditing(firstEditableElement)
@@ -1046,12 +1053,10 @@ class NVHStoreClass {
    }
 
    addRequiredChildren(element){
-      let config = this.getElementConfig(element.path)
-      config && config.children.forEach(childPath => {
-         let childConfig = this.getElementConfig(childPath)
+      this.getElementConfig(element.path)?.children.forEach(childConfig => {
          if(childConfig.min > 0){
             Array.from({length: childConfig.min}).forEach(empty => {
-               let childElement = this._addChildElement(element, childPath)
+               let childElement = this._addChildElement(element, childConfig.path)
                this.addRequiredChildren(childElement)
             })
          }
@@ -1061,18 +1066,17 @@ class NVHStoreClass {
    addAllChildren(element){
       let structure = this.data.structure
       let config = this.getElementConfig(element.path)
-      config && config.children.forEach(childPath => {
+      config && config.children.forEach(childConfig => {
          if(structure.hasNewEntryTemplate){
             // add child elements acording to settings in new entry emplate
-            if(structure.newEntryTemplate.defaultElements[childPath]){
-               let childElement = this._addChildElement(element, childPath)
+            if(structure.newEntryTemplate.defaultElements[childConfig.path]){
+               let childElement = this._addChildElement(element, childConfig.path)
                this.addAllChildren(childElement)
             }
          } else {
             // add child elements to meet minimum child elements of given type
-            let childConfig = this.getElementConfig(childPath)
             Array.from({length: childConfig.min}).forEach(empty => {
-               let childElement = this._addChildElement(element, childPath)
+               let childElement = this._addChildElement(element, childConfig.path)
                this.addAllChildren(childElement)
             })
          }
@@ -1170,7 +1174,6 @@ class NVHStoreClass {
                $("html, body").animate({scrollTop: scrollTop}, 200)
             } else {
                document.documentElement.scrollTop = scrollTop
-               console.log(scrollTop)
             }
          }
       }
@@ -1185,7 +1188,7 @@ class NVHStoreClass {
       return element.name != this.data.rootElement
             && !!element.parent
             && this.getElementConfig(element.path)?.type != "markup"
-            && this.getAvailableChildElementPaths(element.parent).includes(element.path)
+            && this.canHaveAnotherChild(element.parent, element.path)
    }
 
    isElementRemovalAllowed(element){
@@ -1239,10 +1242,10 @@ class NVHStoreClass {
                counts[e.path] = counts[e.path] ? counts[e.path] + 1 : 1
                return counts
             }, {})
-            config.children.forEach(childPath => {
-               let childConfig = this.getElementConfig(childPath)
+            config.children.forEach(childConfig => {
                if(childConfig){
-                  if (childConfig.max && (counts[childPath] || 0) > childConfig.max){
+                  let childPath = childConfig.path
+                  if (childConfig.max && (counts[childConfig] || 0) > childConfig.max){
                      warnings.push(`Element "${element.name}" should have at most ${childConfig.max} "${childPath}"`)
                   }
                   if (childConfig.min && (counts[childPath] || 0) < childConfig.min){
@@ -1252,9 +1255,9 @@ class NVHStoreClass {
             })
             element.children.forEach(child => {
                if(!this.isServiceElement(child.path)){
-                  if(!this.data.structure.elements[child.path]){
+                  if(!this.schema.getElementByPath(child.path)){
                      warnings.push(`'${element.path}' has unknown child element '${child.path}'.`)
-                  } else if(!config.children.includes(child.path)){
+                  } else if(!config.children.find(childConfig => childConfig.path == child.path)){
                      warnings.push(`'${element.path}' must not have '${child.path}' as child element.`)
                   }
                }
@@ -1277,88 +1280,6 @@ class NVHStoreClass {
 
    validateAllElements(){
       this.forEachElement(this.validateElement.bind(this))
-   }
-
-   validateNVHSchema(schema){
-      if(schema && schema.trim()){
-         try{
-            let entry = this.nvhToJson(schema)
-            let elementList = this.getElementList(entry)
-            elementList.forEach(element => {
-               window.structureEditorStore.validateElementName(element.name)
-               if(elementList.filter(element2 => element.path == element2.path).length > 1){
-                  throw `Element "${element.parent}" has two "${element.name}" elements.`
-               }
-
-               if(!this.parseNvhSchemaOptionsValue(element.value)){
-                  throw `Element "${element.name}" has invalid options: ${element.value}.`
-               }
-               if(element.parent && this.getElementConfig(element.parent.path)?.type == "markup"){
-                  let options = this.parseNvhSchemaOptionsValue(element.value)
-                  if(element.children.length){
-                     throw `Element "${element.name}" should not have any children, because its parent type is "Text markup".`
-                  }
-                  if(options.max != 1){
-                     throw `Element "${element.name}" must have Max set to 1, because its parent type is "Text markup".`
-                  }
-                  if(options.max > 1){
-                     throw `Element "${element.name}" must have Min set to 0 or 1, because its parent type is "Text markup".`
-                  }
-                  if(["markup", "empty"].includes(options.type)){
-                     throw `Element "${element.name}" must not have type ${window.store.const.ENTRY_TYPES[options.type]}, because its parent type is "Text markup".`
-                  }
-               }
-            })
-         } catch (e){
-            return {
-               isValid: false,
-               error: e
-            }
-         }
-      }
-      return {isValid: true}
-   }
-
-   parseNvhSchemaOptionsValue(value){
-      //let re = new RegExp(/^(?<count>([\*\?\+]|\d+\+|\d+-\d+|\d+)?)\s*(?<type>(int|image|bool|audio|empty|url|string|list)?)\s*(?<values>(\[\s*"[^"]*"(\s*,\s*"[^"]*")*\s*\])?)\s*(?<regex>(~.*?)?)$/gm)
-      let num = "\\d+"
-      let space = "\\s*"
-      let types = Object.keys(window.store.const.ENTRY_TYPES).join("|")
-      let re = new RegExp(`^${space}(?<count>([\\*\\?\\+]|${num}\\+|${num}-${num}|${num})?)${space}`
-                   + `(?<type>(${types})?)${space}`
-                   + `(?<values>(\\[${space}"[^"]*"(${space},${space}"[^"]*")*${space}\\])?)${space}`
-                   + `(?<re>(~.*?)?)${space}$`)
-      let parsed = re.exec(value)
-      if(!parsed){
-         return null
-      } else {
-         let min = 0
-         let max = null
-         if(parsed.groups.count == "?"){
-            max = 1
-         } else if(parsed.groups.count == "+"){
-            min = 1
-         } else if(parsed.groups.count.indexOf("-") != -1){
-            [min, max] = parsed.groups.count.split("-")
-         } else{
-            let num = parseInt(parsed.groups.count)
-            if(!isNaN(num)){
-               min = num
-               max = num
-            }
-         }
-         return {
-            min: min,
-            max: max,
-            type: parsed.groups.type,
-            values: parsed.groups.values.length
-                        ? parsed.groups.values.slice(1,-1) // remove [ and  ]
-                              .split(",")
-                              .map(v => v.slice(1,-1))  // remove quotes
-                        : null,
-            re: parsed.groups.re ? parsed.groups.re.slice(1) : ""  // remove ~
-         }
-      }
    }
 
    _getNewElementId(){
@@ -1456,62 +1377,16 @@ class NVHStoreClass {
    }
 
    getElementTreeList(elementPath, indent=0){
-      let list = []
-      elementPath = elementPath || this.data.rootElement
-      let elementConfig = this.data.structure.elements[elementPath]
-      if(elementConfig){
-         list.push({
-            path: elementPath,
-            elementName: elementConfig.name,
-            color: this.getElementColor(elementPath),
-            indent: indent
-         })
-         elementConfig && elementConfig.children.forEach(childPath => {
-            list.push(...this.getElementTreeList(childPath, indent + 1))
-         })
-      }
-      return list
+      let element = this.schema.getElementByPath(elementPath || this.schema.getRoot()?.path)
+      return this.schema.jsonToList(element).map(element => ({
+         path: element.path,
+         indent: element.indent,
+         color: this.getElementColor(element.path)
+      }))
    }
 
    getElementColor(elementPath){
-      let elIdx = Object.keys(this.data.structure.elements).indexOf(elementPath)
-      return this.getColorByIndex(elIdx)
-   }
-
-   getColorByIndex(idx){
-      return [
-         "#3366cc",
-         "#dc3912",
-         "#ff9900",
-         "#109618",
-         "#990099",
-         "#0099c6",
-         "#dd4477",
-         "#66aa00",
-         "#b82e2e",
-         "#316395",
-         "#994499",
-         "#22aa99",
-         "#aaaa11",
-         "#6633cc",
-         "#e67300",
-         "#8b0707",
-         "#651067",
-         "#329262",
-         "#5574a6",
-         "#3b3eac",
-         "#b77322",
-         "#16d620",
-         "#b91383",
-         "#f4359e",
-         "#9c5935",
-         "#a9c413",
-         "#2a778d",
-         "#668d1c",
-         "#bea413",
-         "#0c5922",
-         "#743411"
-      ][idx % 30] || "#000"
+      return this.schema.getPathColor(elementPath)
    }
 }
 

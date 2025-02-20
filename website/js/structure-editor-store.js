@@ -1,165 +1,37 @@
 class StructureEditorStoreClass {
    constructor(){
-      this.reset()
-      observable(this)
-   }
-
-   reset(){
       this.data = {
-         structure: {
-            elements: {},
-            root: null
-         },
-         newEntryTemplate: {
-            defaultElements: [],
-            defaultValues: {}
-         },
+         schema: null,
+         tab: null,
+         mode: null,
+         originalSchema: null,
+         originalDmlexSettings: null,
          draggedElement: null,
          editedElement: null
       }
+      observable(this)
    }
 
-   setConfigStructure(structure){
-      this.data.structure = structure
-      // TODO mabye do on backend
-      Object.entries(structure.elements).forEach(([path, element]) => {
-         element.path = path
-         element.indent = path.split(".").length - 1
-         element.children = element.children || []
-         element.parent = element.path.split(".").slice(0, -1).join(".") || null
-      })
-      this.validateSchema()
-   }
-
-   setNewEntryTemplate(newEntryTemplate){
-      this.data.newEntryTemplate = newEntryTemplate
-   }
-
-   nvhToStructure(nvh){
-      let jsonSchema = window.nvhStore.nvhSchemaToJSON(nvh)
-      let elements = {}
-      let addElement = element => {
-         elements[element.path] = {
-            name: element.name,
-            path: element.path,
-            children: element.children.map(childElement => childElement.path),
-            indent: element.indent,
-            type: element.type || "string",
-            max: element.max,
-            min: element.min,
-            re: element.re,
-            values: element.values
-         }
-         element.children.forEach(addElement)
-      }
-      addElement(jsonSchema)
-
-      return {
-         elements: elements,
-         root: jsonSchema.name
-      }
-   }
-
-   getElementByPath(elementPath){
-      return this.data.structure.elements[elementPath] || null
-   }
-
-   getRootElement(){
-      return this.getElementByPath(this.data.structure.root)
+   setSchema(schema){
+      this.data.schema = schema
    }
 
    addElement(element){
-      let parentElement = element.parentElement || this.getRootElement()
-      let parentElementPath = parentElement ? parentElement.path : ""
-      Object.assign(element, {
-         indent: parentElementPath ? parentElementPath.split(".").length : 0,
-         parent: parentElementPath,
-         path: parentElementPath ? `${parentElementPath}.${element.name}` : element.name,
-         children: []
-      })
-      if(parentElement){
-         parentElement.children.unshift(element.path)
-      } else {
-         this.data.structure.root = element.name
-      }
-      this.data.structure.elements[element.path] = element
+      this.data.schema.addChildElement(element.parent, element)
+      this.stopElementEditing()
       this.trigger("elementChanged")
-      this.validateSchema()
    }
 
-   updateElement(element){
-      let ancestorNames = element.path.split(".")
-      let oldElementName = ancestorNames.pop()  // element name could be changed, but path is still original
-      if(oldElementName != element.name){
-         let oldElementPath = element.path
-         let newElementPath = [...ancestorNames, element.name].join(".")
-         this.changeElementPath(element, newElementPath)
-         let parent = this.getElementByPath(element.parent)
-         if(oldElementPath == this.data.structure.root){
-            this.data.structure.root = element.name
-         }
-         if(parent){
-            parent.children[parent.children.indexOf(oldElementPath)] = element.path
-         }
-      }
-      Object.assign(this.data.structure.elements[element.path], element)
+   deleteElement(element){
+      this.data.schema.removeElement(element)
+      this.stopElementEditing()
       this.trigger("elementChanged")
-      this.validateSchema()
    }
 
-   removeElement(element){
-      let parent = this.getElementByPath(element.parent)
-      if(parent){
-         parent.children = parent.children.filter(child => child != element.path)
-      }
-      let deleteElementAndItsChildren = (element) => {
-         element.children && element.children.forEach(childPath => {
-            deleteElementAndItsChildren(this.getElementByPath(childPath))
-         })
-         delete this.data.structure.elements[element.path]
-      }
-      deleteElementAndItsChildren(element)
-
-      if(element.path == this.data.structure.root){
-         this.data.structure.root = null
-      }
-
+   updateElement(element, changes){
+      this.data.schema.updateElement(element, changes)
+      this.stopElementEditing()
       this.trigger("elementChanged")
-      this.validateSchema()
-   }
-
-   changeElementPath(element, newPath){
-      if(newPath == element.path){
-         return
-      }
-      let oldElementPath = element.path
-      let childPaths = []
-      element.children.forEach(childPath => {
-         let newChildPath = `${newPath}.${childPath.split(".").pop()}`
-         this.changeElementPath(this.getElementByPath(childPath), newChildPath)
-         childPaths.push(newChildPath)
-      })
-      Object.assign(element, {
-         path: newPath,
-         parent: newPath.split(".").slice(0, -1).join("."),
-         indent: newPath.split(".").length - 1,
-         children: childPaths
-      })
-      this.data.structure.elements[newPath] = element
-      delete this.data.structure.elements[oldElementPath]
-   }
-
-   moveElementToAnotherParent(childElement, newParentElement, position=0){
-      let actualParent = this.getElementByPath(childElement.parent)
-      actualParent.children = actualParent.children.filter(childPath => childPath != childElement.path)
-      this.changeElementPath(childElement, `${newParentElement.path}.${childElement.name}`)
-      if(position === null){
-         newParentElement.children.push(childElement.path)
-      } else {
-         newParentElement.children.splice(position, 0, childElement.path)
-      }
-      this.trigger("elementChanged")
-      this.validateSchema()
    }
 
    startElementEditing(element){
@@ -182,97 +54,6 @@ class StructureEditorStoreClass {
    stopElementDragging(){
       this.data.draggedElement = null
       this.trigger("onDndStop")
-   }
-
-   getNvh(){
-      return this.jsonToNvh(this.data.structure.elements)
-   }
-
-   jsonToNvh(elements){
-      let ret = ""
-      let elementToNvh = (elementPath, indent=0) => {
-         let element = elements[elementPath]
-         let count = ""
-         let regex = ""
-         let values = ""
-         if(!element.max){
-            if(element.min == 1){
-               count = " +"
-            } else if (element.min > 1){
-               count = ` ${element.min}+`
-            } else {
-               count = " *"
-            }
-         } else {
-            if(element.max == 1 && !element.min){
-               count = " ?"
-            } else {
-               if(element.min == element.max){
-                  count = ` ${element.min}`
-               } else {
-                  count = ` ${element.min || 0}-${element.max}`
-               }
-            }
-         }
-         if(element.re){
-            regex = ` ~${element.re}`
-         }
-         if(element.type == "list" && element.values && element.values.length){
-            values = ` [${element.values.map(value => `"${value}"`).join(",")}]`
-         }
-
-         let rows = []
-         rows.push(`${" ".repeat(indent * 2)}${element.name}:${count} ${element.type}${values}${regex}`)
-            element.children && element.children.forEach(childPath => {
-            rows.push(elementToNvh(childPath, indent + 1))
-         }, this)
-         return rows.join("\n")
-      }
-      let rootElement = Object.keys(elements).find(elementPath => !elementPath.includes("."))
-      return rootElement ? elementToNvh(rootElement) : ""
-   }
-
-   getAllAncestors(elementPath){
-      return this.getAllAncestorPaths(elementPath).map(this.getElementByPath.bind(this))
-   }
-
-   getAllAncestorPaths(elementPath){
-      let ancestorNames = elementPath.split(".")
-      return ancestorNames.map((ancestorName, idx) => {
-         return ancestorNames.slice(0, idx + 1).join(".")
-      })
-   }
-
-   isParentMarkupElement(elementPath){
-      let idx = elementPath.lastIndexOf(".")
-      if(idx != -1){
-         let parentPath = elementPath.substr(0, idx)
-         let parent = this.getElementByPath(parentPath)
-         if(parent && parent.type == "markup"){
-            return true
-         }
-      }
-      return false
-   }
-
-   validateSchema(){
-      let wasValid = this.data.isValid
-      let res = window.nvhStore.validateNVHSchema(this.getNvh())
-      this.data.isValid = res.isValid
-      this.data.error = res.error || null
-      if(wasValid != this.data.isValid){
-         this.trigger("isValidChanged")
-      }
-   }
-
-   validateElementName(elementName){
-      if(!elementName){
-         throw "Please, enter element name."
-      } else if(!/^[a-zA-Z10-9_-]+$/.test(elementName)){
-         throw `Invalid element name '${elementName}'. Allowed characters: a-Z, A-Z, 0-9, _ and -.`
-      } else if(["and", "or"].includes(elementName.toLowerCase())){
-         throw "'AND' and 'OR' are not allowed element names."
-      }
    }
 }
 

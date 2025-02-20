@@ -119,7 +119,7 @@ let tooltipExtension = {
    old_animateOut: M.Tooltip.prototype._animateOut,
 
    open: function(params){
-      if(this.el.getAttribute('data-tooltip')?.trim() || this.options.html.trim()){
+      if(this.el.getAttribute('data-tooltip')?.trim() || this.options.html?.trim()){
          this.old_open(params)
       }
    },
@@ -133,3 +133,15 @@ let tooltipExtension = {
    }
 }
 $.extend(M.Tooltip.prototype, tooltipExtension)
+
+
+let old_textareaAutoResize = M.textareaAutoResize
+M.textareaAutoResize = function($textarea){
+   if($textarea && $textarea.length){
+      let minHeight = $textarea.css("min-height")
+      if(minHeight && minHeight.endsWith("px")){
+         $textarea.data("original-height", minHeight.substr(0, minHeight.length - 2))
+      }
+   }
+   old_textareaAutoResize($textarea)
+}

@@ -62,7 +62,7 @@
             </div>
             <div class="cardOptions">
                <div class="cardOption"
-                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "simple_monolingual")}>
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "monolingual_basic")}>
                   <i class="material-icons">format_align_justify</i>
                   <div class="cardOptionTitle">
                      Monolingual basic
@@ -71,7 +71,7 @@
                      A simple monolingual dictionary. Entries contain pronunciation, word senses, definition and example sentences.
                   </div>
                </div>
-               <div class="cardOption"
+               <!--div class="cardOption"
                      onclick={onCreateDictionaryFromTemplateClick.bind(this, "simple_bilingual")}>
                   <span class="positionRelative">
                      <i class="material-icons">format_align_justify</i>
@@ -83,7 +83,7 @@
                   <div class="cardOptionDescription grey-text">
                      A monolingual dictionary with rich entries: pronunciation, pronunciation recording, word senses with disambiguating gloss, definitions, collocations, thesaurus, example sentences, usage labels and image.
                   </div>
-               </div>
+               </div-->
             </div>
          </div>
 
@@ -93,7 +93,7 @@
             </div>
             <div class="cardOptions">
                <div class="cardOption"
-                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "bilingual_basic")}>
                   <i class="material-icons">format_align_justify</i>
                   <i class="material-icons">format_align_justify</i>
                   <div class="cardOptionTitle">
@@ -103,7 +103,7 @@
                      A simple bilingual dictionary. Entries contain pronunciation, translation and example sentences.
                   </div>
                </div>
-               <div class="cardOption"
+               <!--div class="cardOption"
                      onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
                   <i class="material-icons">format_align_justify</i>
                   <span class="positionRelative">
@@ -117,7 +117,7 @@
                      A bilingual dictionary with additional information such as example sentences, collocations, thesaurus, usage labels.
 
                   </div>
-               </div>
+               </div-->
             </div>
          </div>
 
@@ -127,7 +127,7 @@
             </div>
             <div class="cardOptions">
                <div class="cardOption"
-                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "glossary_monolingual_simple")}>
                   <span class="glossaryIcon">A-Z</span>
                   <i class="material-icons">format_align_justify</i>
                   <div class="cardOptionTitle">
@@ -137,7 +137,7 @@
                      A template for a simple list of words and phrases with explanations.
                   </div>
                </div>
-               <div class="cardOption"
+               <!--div class="cardOption"
                      onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
                   <span class="glossaryIcon">A-Z</span>
                   <span class="positionRelative">
@@ -150,9 +150,9 @@
                   <div class="cardOptionDescription grey-text">
                      A template for a glossary of terms with additional information such as example sentences or pronunciation.
                   </div>
-               </div>
+               </div-->
                <div class="cardOption"
-                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
+                     onclick={onCreateDictionaryFromTemplateClick.bind(this, "glossary_bilingual_simple")}>
                   <span class="glossaryIcon">A-Z</span>
                   <i class="material-icons">format_align_justify</i>
                   <i class="material-icons">format_align_justify</i>
@@ -163,7 +163,7 @@
                      A template for a simple list of words and phrases with translations.
                   </div>
                </div>
-               <div class="cardOption"
+               <!--div class="cardOption"
                      onclick={onCreateDictionaryFromTemplateClick.bind(this, "other")}>
                   <span class="glossaryIcon">A-Z</span>
                   <i class="material-icons">format_align_justify</i>
@@ -191,7 +191,7 @@
                   <div class="cardOptionDescription grey-text">
                      A simple bilingual dictionary. Entries contain pronunciation, translation and example sentences.
                   </div>
-               </div>
+               </div-->
             </div>
          </div>
 
@@ -308,49 +308,22 @@
                Entry structure
             </h2>
             <div class="grey-text mb-4">Choose entry structure from predefined modules or use your own schema. You can change this later.<i class="tooltipped material-icons tiny" data-tooltip="The entry structure can be edited in Configuration - Entry settings - Structure.">help_outline</i></div>
-            <ui class="tabs mb-0">
-               <li class="tab {state.structureTab == "dmlex" ? "active" : ""}">
-                  <a onclick={onStructureTabClick.bind(this, "dmlex")}>Standardised elements</a>
-               </li>
-               <li class="tab {state.structureTab == "advanced" ? "active" : ""}">
-                  <a onclick={onStructureTabClick.bind(this, "advanced")}>Custom structure</a>
-               </li>
-               <li class="tab {state.structureTab == "custom" ? "active" : ""}">
-                  <a onclick={onStructureTabClick.bind(this, "custom")}>Edit in NVH</a>
-               </li>
-            </ui>
-            <div class="grey lighten-5 p-6">
-               <div if={state.structureTab == "dmlex"}>
-                  <nvh-schema on-change={onNvhSchemaChange}/>
-                  <div class="row pt-4 mt-8 borderTop">
-                     <div class="input-field mb-0">
-                        <label class="checkbox">
-                           <input id="addExamples"
-                                 type="checkbox"
-                                 checked="checked">
-                           <span>
-                              Add example entries
-                           </span>
-                        </label>
-                     </div>
-                  </div>
-               </div>
 
-               <div if={state.structureTab == "advanced"}>
-                  <structure-editor/>
-               </div>
+            <structure-editor on-mode-change={onStructureEditorModeChange}/>
 
-               <div if={state.structureTab == "custom"}>
-                  <div class="input-field"
-                        style="max-width: 500px;">
-                     <nvh-schema-textarea riot-value={state.customNvhSchema}
-                           on-input={onCustomNvhSchemaInput}
-                           on-valid-change={onCustomNvhSchemaValidChange}/>
-                     <label>your NVH schema</label>
-                  </div>
+            <div if={structureStore.data.mode == "dmlex"}
+                  class="row pt-4 mt-8 borderTop">
+               <div class="input-field mb-0">
+                  <label class="checkbox">
+                     <input id="addExamples"
+                           type="checkbox"
+                           checked="checked">
+                     <span>
+                        Add example entries
+                     </span>
+                  </label>
                </div>
             </div>
-
          </div>
          <div class="mt-12">
             <div if={state.errorMessage != ""}
@@ -382,7 +355,8 @@
    <script>
       export default {
          bindings: [["store", "dictionaryListLoadingChanged", "onDictionaryListChanged"],
-                    ["structureStore", "elementChanged", "refreshMakeDictButtonDisabled"]],
+                    ["schema", "schemaChanged", "onSchemaChanged"],
+                    ["schema", "isValidChanged", "update"]],
 
          state: {
             step: "start",
@@ -390,24 +364,21 @@
             url: "",
             isLoading: false,
             errorMessage: "",
-            DMLexStructure: null,
-            DMLexSettings: null,
             file: null,
             headword: null,
-            isNextBtnEnable: false,
             language: {
                value: "",
                label: ""
             },
-            structureTab: "dmlex",
-            customNvhSchema: "",
-            isCustomNvhSchemaValid: null,
             fileReader: null
          },
 
          onBeforeMount(){
+            this.schema = new window.NvhSchemaClass()
             this.structureStore = window.structureEditorStore
-            this.structureStore.reset()
+            this.structureStore.setSchema(this.schema)
+            this.structureStore.data.mode = "dmlex"
+            this.structureStore.data.tab = "visual"
             this.state.fileReader = new FileReader
             this.state.fileReader.onload = function(e) {
                this.update({headwordElement: this.store.guessEntryElementFromFile(this.state.fileReader.result)})
@@ -431,31 +402,13 @@
             this.state.timeoutHandle && clearTimeout(this.state.timeoutHandle)
          },
 
+         onSchemaChanged(){
+            this.refreshMakeDictButtonDisabled()
+         },
+
          onDictionaryListChanged(){
             this.refreshDictionaryTitle()
             this.update()
-         },
-
-         onStructureTabClick(structureTab){
-            this.update({structureTab: structureTab})
-            this.refreshMakeDictButtonDisabled()
-         },
-
-         onNvhSchemaChange(DMLexStructure, DMLexSettings){
-            this.update({
-               DMLexStructure: DMLexStructure,
-               DMLexSettings: DMLexSettings
-            })
-         },
-
-         onCustomNvhSchemaInput(nvhSchema){
-            this.state.customNvhSchema = nvhSchema
-            this.refreshMakeDictButtonDisabled()
-         },
-
-         onCustomNvhSchemaValidChange(isValid){
-            this.state.isCustomNvhSchemaValid = isValid
-            this.refreshMakeDictButtonDisabled()
          },
 
          onBackClick(){
@@ -483,30 +436,51 @@
             this.refreshMakeDictButtonDisabled()
          },
 
-         onCreateDictionaryFromTemplateClick(template){
-            // TODO
+         onStructureEditorModeChange(){
+            if(this.structureStore.data.brokenConfig){
+               this.schema.update("")
+            }
+            this.update()
+         },
 
+         onCreateDictionaryFromTemplateClick(template_id){
+            let data = {
+               url: this.state.url,
+               hwNode: 'Entry',
+               title: this.state.title,
+               addExamples: false,
+               deduplicate: false,
+               language: this.state.language.value,
+               clean: 'on',
+               template_id: template_id
+            }
+            this.store.createDictionaryFromTemplate(data)
+                  .done(response => {
+                     if (response.success) {
+                        route("/" + response.url)
+                     }
+                  })
+                  .always(response => {
+                     if(!response || !response.success){
+                        this.state.errorMessage = response.error || "Unknown error"
+                        this.update({isLoading: false})
+                     }
+                  })
          },
 
          onCreateEmptyDictionaryClick(event) {
             this.update({isLoading: true})
-            let structure
-            if(this.state.structureTab == "dmlex"){
-               structure = this.state.DMLexStructure
-            } else if(this.state.structureTab == "advanced"){
-               structure = this.structureStore.data.structure
-            } else {
-               structure = this.structureStore.nvhToStructure(this.state.customNvhSchema)
-            }
             let data = {
                title: this.state.title,
                url: this.state.url,
                language: this.state.language.value,
-               jsonSchema: JSON.stringify({
-                  tab: this.state.structureTab,
-                  root: structure.root,
-                  elements: structure.elements,
-                  DMLexSettings: this.state.DMLexSettings
+               addExamples: $("#addExamples").is(":checked"),
+               dmlex: this.structureStore.data.mode == "dmlex",
+               structure: JSON.stringify({
+                  mode: this.structureStore.data.mode,
+                  tab: this.structureStore.data.tab,
+                  nvhSchema: this.schema.getNvh(),
+                  DMLexSettings: this.structureStore.data.DMLexSettings
                })
             }
             this.store.createDictionary(data)
@@ -527,12 +501,12 @@
             if(this.state.title){
                this.update({isLoading: true})
                var fd = new FormData()
-               fd.append("filename", this.state.file)
                fd.append("deduplicate", $("#deduplicate").is(":checked"))
                fd.append("title", this.state.title)
                fd.append("url", this.state.url)
                fd.append("hwNode", this.state.headwordElement)
                fd.append("addExamples", false)
+               fd.append("import_entires", this.state.file)
                this.store.createDictionary(fd, {
                   processData: false,
                   contentType: false
@@ -582,7 +556,7 @@
          refreshDictionaryTitle(){
             let lastNum = this.dictData.dictionaryList.filter(dictionary => dictionary.title.startsWith("New dictionary"))
                   .map(dictionary => parseInt(dictionary.title.split("New dictionary")[1] || "1", 10))
-                  .sort()
+                  .sort((a,b) => a - b)
                   .pop()
             let title = `New dictionary${lastNum ? ' ' + (lastNum + 1) : ''}`
             this.state.title = title
@@ -597,13 +571,8 @@
                            || this.state.fileReader.readyState == 1
                            || !this.state.headwordElement
                   } else if(this.props.step == "empty"){
-                     if(this.state.structureTab == "advanced"){
-                        disabled = !this.structureStore.data.structure.root
-                     } else if(this.state.structureTab == "custom"){
-                        disabled = !this.state.customNvhSchema
-                           || (this.state.customNvhSchema + "").trim() == ""
-                           || !this.state.isCustomNvhSchemaValid
-                     }
+                     disabled = this.schema.isEmpty()
+                           || !this.schema.isValid
                   }
                }
                $("#makeDictButton .submitButton", this.root).toggleClass("disabled", disabled)
@@ -647,16 +616,23 @@
          right: 8px;
          top: 8px;
       }
-      .cardOptions .cardOption i.iconExtended{
-         position: absolute;
-         right: -10px;
-         top: -38px;
-         font-size: 25px;
-         z-index: 99;
-         opacity: 1;
-         color: #b5b5b5;
-         background: #f5f5f5;
-         border-radius: 50%;
+      .cardOptions .cardOption {
+         &:hover{
+            i.iconExtended{
+               background: #e6e6e6
+            }
+         }
+         i.iconExtended{
+            position: absolute;
+            right: -10px;
+            top: -38px;
+            font-size: 24px;
+            z-index: 99;
+            opacity: 1;
+            color: #b5b5b5;
+            background: #f5f5f5;
+            border-radius: 50%;
+         }
       }
       .glossaryIcon{
          opacity: 0.3;

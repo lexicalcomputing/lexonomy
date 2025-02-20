@@ -1,0 +1,375 @@
+<custom-structure-editor class="positionRelative">
+   <div>
+      <h3 class="mt-0">Entry elements</h3>
+      <div if={schema.error}
+            class="structureError red lighten-4 mb-4">
+         <i class="material-icons red-text tiny mr-2 verticalMiddle">
+            warning
+         </i>
+         {schema.error}
+      </div>
+      <div class="structure-items ml-6">
+         <template each={(element, idx) in schema.getElementList()}>
+            <custom-structure-editor-item element={element}
+                  indent={element.indent}/>
+            <custom-structure-dnd-zone element={element}/>
+         </template>
+      </div>
+      <button if={schema.isEmpty()}
+            class="btn btn-primary btn-floating tooltipped ml-8 pulse mt-6 {structureStore.data.editedElement ? 'disabled' : ''}"
+            data-tooltip="Add new element"
+            onclick={onAddClick}>
+         <i class="material-icons">add</i>
+      </button>
+
+      <div class="structure-delete-zone ml-auto mt-6 grey-text"
+            ondragenter={onDeleteZoneDragEnter}
+            ondragleave={onDeleteZoneDragLeave}
+            ondragover={onDragOver}
+            ondrop={onDeleteZoneDrop}
+            style="display: none;">
+         <i class="material-icons">delete</i>
+         <span class="structure-delete-zone-text">
+            drag here to delete
+         </span>
+      </div>
+   </div>
+
+
+   <div if={structureStore.data.editedElement}
+      class="grey lighten-4 p-6 structureForm z-depth-2"
+         style="min-width: 400px;">
+      <div class="displayFlex alignCenter">
+         <h3 class="mt-0">
+            {structureStore.data.editedElement.name ? "Update element" : "Create new element"}
+         </h3>
+         <button class="btn btn-floating btn-flat ml-auto"
+               onclick={onEditCancelClick}>
+            <i class="material-icons grey-text">close</i>
+         </button>
+      </div>
+      <div class="input-field">
+         <input id="name"
+               class={state.errors.name ? "invalid" : ""}
+               oninput={onNameInput}
+               onkeyup={onNameKeyUp}
+               value={structureStore.data.editedElement.name}
+               type="text">
+         <label for="name">Element name</label>
+         <span class="helper-text"
+               data-error={state.errors.name}></span>
+
+      </div>
+
+      <div class="displayFlex" style="gap: 20px;">
+         <div class="input-field"
+               style="max-width: 130px;">
+            <select id="type"
+                  onchange={onTypeChange}>
+               <template if={schema.isElementRoot(structureStore.data.editedElement)}>
+                  <option selected="selected"
+                        value="string">{store.const.ENTRY_TYPES.string}</option>
+               </template>
+               <template if={!schema.isElementRoot(structureStore.data.editedElement)}>
+                  <option each={obj in Object.entries(store.const.ENTRY_TYPES)}
+                        if={isTypeOptionAvailable(obj[0])}
+                        selected={obj[0] == structureStore.data.editedElement.type}
+                        value={obj[0]}>{obj[1]}</option>
+               </template>
+            </select>
+            <label>Type</label>
+         </div>
+         <div class="input-field inlineBlock"
+               style="max-width: 60px;">
+            <input id="min"
+                  value={structureStore.data.editedElement.min}
+                  min=0
+                  type="number">
+            <label for="min">
+               Min
+               <span class="hint tooltipped"
+                     data-tooltip="The minimum number of elements that each entry must contain.">
+                  <i class="material-icons">help</i>
+               </span>
+            </label>
+         </div>
+
+         <div class="input-field"
+               style="max-width: 60px;">
+            <input id="max"
+                  value={structureStore.data.editedElement.max}
+                  min=1
+                  type="number">
+            <label for="max">
+               Max
+               <span class="hint tooltipped"
+                     data-tooltip="The maximum number of elements that each entry must contain.">
+                  <i class="material-icons">help</i>
+               </span>
+            </label>
+         </div>
+      </div>
+
+      <div if={structureStore.data.editedElement.type == "string"}
+            class="input-field">
+         <input id="re"
+               class={state.errors.re ? "invalid" : ""}
+               value={structureStore.data.editedElement.re}
+               oninput={onReInput}
+               type="text">
+         <label for="re">
+            Regular expression
+            <span class="hint tooltipped"
+                  data-tooltip="Entry editor will allow to save only values matching the regular expression.">
+               <i class="material-icons">help</i>
+            </span>
+         </label>
+         <span class="helper-text"
+               data-error={state.errors.re}></span>
+      </div>
+
+      <div if={structureStore.data.editedElement.type == "list"}>
+         <div class="input-field">
+            <label>
+               Values
+               <span class="hint tooltipped"
+                     data-tooltip="User will only be able to select values from this list.">
+                  <i class="material-icons">help</i>
+               </span>
+            </label>
+         </div>
+         <div class="input-field">
+            <textarea id="elementValues"
+                  class="materialize-textarea"
+                  oninput={onValueValueInput}>{state.values.join("\n")}</textarea>
+            <span class="helper-text">One value per line.</span>
+         </div>
+      </div>
+      <div class="center-align">
+         <button class="btn {state.errors.name || state.errors.re ? 'disabled' : ''}"
+               onclick={onEditOkClick}>ok</button>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         state:{
+            errors: {}
+         },
+
+         onBeforeMount(){
+            this.structureStore = window.structureEditorStore
+            this.schema = this.structureStore.data.schema
+            this.bindings = [["structureStore", "elementChanged", "onElementChange"],
+                    ["structureStore", "onDndStart", "onDndStart"],
+                    ["structureStore", "onDndStop", "onDndStop"],
+                    ["schema", "schemaChanged", "update"],
+                    ["schema", "isValidChanged", "update"]]
+         },
+
+         onMounted(){
+            document.addEventListener("mousedown", this.onDocumentMouseDown)
+            $("select", this.root).formSelect()
+            $("input", this.root).first().focus()
+            this.initStructureForm()
+         },
+
+         onBeforeUnmount(){
+            document.removeEventListener("mousedown", this.onDocumentMouseDown)
+         },
+
+         onUpdated(){
+            $("select", this.root).formSelect()
+            this.initStructureForm()
+         },
+
+         onElementChange(){
+            this.state.errors = {}
+            this.state.values = this.structureStore.data.editedElement ? [...this.structureStore.data.editedElement.values || []] : []
+            this.update()
+            $("input", this.root).first().focus()
+         },
+
+         onNameInput(evt){
+            let oldError = this.state.errors.name
+            this.state.errors.name = ""
+            try{
+               this.schema.validateElementName(evt.target.value)
+            } catch(e){
+               this.state.errors.name = e
+            }
+            if(oldError != this.state.errors.name){
+               this.update()
+            }
+         },
+
+         onNameKeyUp(evt){
+            if(evt.keyCode == 13 && Object.values(this.state.errors).every(e => !e)){
+               this.saveElement()
+            } else if(evt.keyCode == 27){
+               this.structureStore.stopElementEditing()
+            }
+         },
+
+         onReInput(evt){
+            let oldError = this.state.errors.re
+            this.state.errors.re = ""
+            if(re){
+               try{
+                  new RegExp(evt.target.value)
+               } catch(e){
+                  this.state.errors.re = "Regular expression is not valid"
+               }
+            }
+            if(oldError != this.state.errors.re){
+               this.update()
+            }
+         },
+
+         onTypeChange(evt){
+            let type = evt.target.value
+            this.structureStore.data.editedElement.type = type
+            this.update()
+            if(type == "list"){
+               document.getElementById("elementValues").focus()
+            }
+         },
+
+         onValueValueInput(evt){
+            this.state.values = [... new Set(evt.target.value.split("\n")
+                  .map(value => value.trim())
+                  .filter(value => value != ""))]
+         },
+
+         onDocumentMouseDown(evt){
+            if(!$(".structureForm, .structure-item-wrapper", this.root).find(evt.target)[0]
+                && $(".structureForm", this.root)[0] != evt.target){
+               this.structureStore.stopElementEditing()
+            }
+         },
+
+         onAddClick(evt){
+            evt.stopPropagation()
+            this.structureStore.startElementEditing({
+               type: "string"
+            })
+         },
+
+         onEditCancelClick(){
+            this.structureStore.stopElementEditing()
+         },
+
+         onEditOkClick(){
+            this.saveElement()
+         },
+
+         saveElement(){
+            let element = {
+               name: $("#name", this.root).val(),
+               type: $("#type", this.root).val(),
+               min: $("#min", this.root).val() * 1,
+               max: $("#max", this.root).val() * 1,
+               re: $("#re", this.root).val(),
+               values: this.state.values
+            }
+            if(!element.name){
+               window.showToast("Please, enter element name.")
+            } else if(element.type == "list" && !element.values.filter(v => !!v).length){
+               window.showToast("Please, enter at least one element value.")
+            } else {
+               let parent = this.structureStore.data.editedElement.parent
+               if(parent && parent.children.indexOf(this.structureStore.data.editedElement) != -1){
+                  this.structureStore.updateElement(this.structureStore.data.editedElement, element)
+               } else {
+                  this.structureStore.addElement(Object.assign(this.structureStore.data.editedElement, element))
+               }
+            }
+         },
+
+         onDeleteZoneDragEnter(){
+            $(".structure-delete-zone", this.root).addClass("structure-delete-zone-hover")
+         },
+
+         onDeleteZoneDragLeave(){
+            $(".structure-delete-zone", this.root).removeClass("structure-delete-zone-hover")
+         },
+
+         onDeleteZoneDrop(){
+            $(".structure-delete-zone", this.root).removeClass("structure-delete-zone-hover")
+            this.schema.removeElement(this.structureStore.data.draggedElement)
+            this.structureStore.stopElementDragging()
+         },
+
+         onDndStart(){
+            $(".structure-delete-zone").show()
+         },
+
+         onDndStop(){
+            $(".structure-delete-zone").hide()
+            this.update()
+         },
+
+         onDragOver(evt){
+            evt.preventDefault()
+         },
+
+         isTypeOptionAvailable(type){
+            if(this.structureStore.data.editedElement?.parent?.type == "markup"){
+               return !["markup", "empty"].includes(type)
+            }
+            return true
+         },
+
+         initStructureForm(){
+            if(this.structureStore.data.editedElement){
+               window.makeElementDraggable($(".structureForm", this.root), $(".structureForm h3", this.root))
+            }
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         min-height: 200px;
+         display: block;
+      }
+      .editButtons{
+         justify-content: center;
+      }
+      .structure-delete-zone{
+         display: flex;
+         align-items: center;
+         border: 3px dashed #c9c9c9;
+         padding: 4px 10px;
+         opacity: 0.5;
+         &>*{
+            pointer-events: none; // so ondragleave is not fired on children
+         }
+         &.structure-delete-zone-hover{
+            opacity: 1;
+         }
+         .structure-delete-zone-text{
+            margin-left: 5px;
+         }
+      }
+      .structureForm{
+         z-index: 100;
+         top: max(5vh, calc(40vh - 250px));
+         left: calc(50vw - 200px);
+         .input-field {
+            input,
+            textarea {
+               background-color: #fff;
+            }
+         }
+      }
+      .structureError{
+         padding: 10px 20px;
+      }
+      #elementValues{
+         margin-bottom: 0;
+         max-height: calc(100vh - 450px);
+         overflow: auto;
+      }
+   </style>
+</custom-structure-editor>

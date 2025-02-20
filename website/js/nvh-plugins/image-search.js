@@ -1,8 +1,9 @@
 window.nvhPlugins.imageSearch = {
    isActive: function(element){
       let config = window.store.data.config
+      let elementType = window.store.schema.getElementByPath(element.path)?.type
       return ((config.gapi.apikey && config.gapi.cx) || config.gapi.pixabaykey)
-            && (config.structure.elements[element.path] && config.structure.elements[element.path].type == 'med')
+            && elementType == 'med'
    },
 
    onPluginButtonClick: function(element, evt){

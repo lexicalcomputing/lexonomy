@@ -1,4 +1,4 @@
-<structure-editor-item class={structureStore.data.editedElement == props.element ? "selected" : ""}
+<custom-structure-editor-item class={structureStore.data.editedElement == props.element ? "selected" : ""}
       draggable="true"
       ondragstart={onDragStart}
       ondragend={onDragEnd}
@@ -6,7 +6,7 @@
    <div if={props.element}
          class="structure-item-wrapper"
          style="padding-left: {props.element.indent * 30}px;">
-      <div if={!structureStore.isParentMarkupElement(props.element.path)}
+      <div if={structureStore.data.editedElement?.parent?.type != "markup"}
             class="structure-new-element-wrapper"
             onclick={window.stopEvtPropagation}
             style="width: {props.element.indent * 30 + 45}px">
@@ -14,12 +14,12 @@
                onclick={onAddElementClick}>add</i>
          <span></span>
       </div>
-      <i if={props.element.name != structureStore.data.root}
+      <i if={!structureStore.data.schema.isElementRoot(props.element)}
                class="structure-drag-handle material-icons grey-text">drag_handle</i>
       <div class="valueWrapper positionRelative pr-2 {structureStore.data.editedElement == props.element ? "yellow lighten-3" : ""}"
             onclick={onEditClick}>
          <span class="structure-item-name"
-               style="color: {getElementColor()};">
+               style="color: {structureStore.data.schema.getElementColor(props.element)};">
             {props.element.name}
          </span>
          <span class="pl-2 grey-text">
@@ -27,7 +27,7 @@
          </span>
          <span if={props.element.min || props.element.max}
                class="pl-2">
-            {getElementCountString()}
+            {structureStore.data.schema.getElementCountString(props.element)}
          </span>
          <span if={props.element.type == "string" && props.element.re}
                class="pl-2 monospace">
@@ -84,7 +84,7 @@
          onAddElementClick(evt){
             let element = {
                type: "string",
-               parentElement: this.props.element
+               parent: this.props.element
             }
             if(this.props.element.type == "markup"){
                element.max = 1
@@ -98,33 +98,7 @@
 
          onDeleteClick(evt){
             evt.stopPropagation()
-            this.structureStore.removeElement(this.props.element)
-            this.structureStore.stopElementEditing()
-         },
-
-         getElementColor(){
-            let idx = Object.keys(this.structureStore.data.structure.elements).indexOf(this.props.element.path)
-            return window.nvhStore.getColorByIndex(idx)
-         },
-
-         getElementCountString(){
-            let min = this.props.element.min
-            let max = this.props.element.max
-            let str
-            if(min > 0){
-               if(max > 0){
-                  if(min == max){
-                     return `${min}×`
-                  } else {
-                     return `${min}–${max}×`
-                  }
-               } else {
-                  return `at least ${min}×`
-               }
-            } else if(max > 0){
-               return `at most ${max}×`
-            }
-            return ""
+            this.structureStore.deleteElement(this.props.element)
          }
       }
    </script>
@@ -176,6 +150,7 @@
       .structure-drag-handle{
          cursor: move;
          opacity: 0.5;
+         z-index: 110; /* above add new element div */
          &:hover{
             opacity: 1;
          }
@@ -230,4 +205,4 @@
       }
    </style>
 
-</structure-editor-item>
+</custom-structure-editor-item>

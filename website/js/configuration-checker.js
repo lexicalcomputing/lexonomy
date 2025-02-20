@@ -3,55 +3,56 @@ class ConfigurationCheckerClass {
       observable(this)
       this.store = window.store
       this.store.on("dictionaryChanged", this.checkAll.bind(this))
+      this.schema = this.store.schema
       this.issues = []
       this.configs = {
-         dict_settings: {
+         ident: {
+            name: "Basic settings",
+            url: "ident"
+         },
+         structure: {
+            name: "Structure",
+            url: "structure"
+         },
+         searchability: {
+            name: "Searching",
+            url: "searchability"
+         },
+         titling: {
+            name: "Headword list",
+            url: "titling"
+         },
+         formatting: {
+            name: "Formatting",
+            url: "formatting"
+         },
+         flagging: {
+            name: "Flags",
+            url: "flagging"
+         },
+         ske: {
             name: "Sketch Engine",
+            url: "ske"
+         },
+         dict_settings: {
+            name: "Admin",
             url: "admin"
          },
          editing: {
             name: "Custom entry editor",
             url: "editing"
          },
-         flagging: {
-            name: "Flags",
-            url: "flagging"
-         },
-         formatting: {
-            name: "Formatting",
-            url: "formatting"
-         },
          gapi: {
             name: "Multimedia API",
             url: "gapi"
          },
-         ident: {
-            name: "Basic settings",
-            url: "ident"
-         },
          publico: {
-            name: "Publishing",
+            name: "Publish",
             url: "publico"
-         },
-         searchability: {
-            name: "Searching",
-            url: "searchability"
-         },
-         ske: {
-            name: "Sketch Engine",
-            url: "ske"
-         },
-         structure: {
-            name: "Structure",
-            url: "structure"
          },
          styles: {
             name: "Custom styles",
             url: "styles"
-         },
-         titling: {
-            name: "Headword list",
-            url: "titling"
          }
       }
    }
@@ -64,25 +65,24 @@ class ConfigurationCheckerClass {
       return this.issues.filter(issue => issue.configId == configId)
    }
 
-   checkAll(config){
-      config = config || window.store.data.config
+   checkAll(){
       let order = ["error", "warning", "info"]
       let issues = Object.keys(this.configs)
-            .map(configId => this.checkConfiguration(configId, config))
+            .map(configId => this.checkConfiguration(configId))
             .flat()
             .map(issue => {
-               let config = this.configs[issue[0]]
+               let configdDef = this.configs[issue[0]]
                return {
                   severity: issue[1],
                   message: issue[2],
                   configId: issue[0],
-                  configName: config.name,
-                  configUrl: config.url
+                  configName: configdDef.name,
+                  configUrl: configdDef.url
                }
             })
             .sort((a, b) => {
                if(a.severity == b.severity){
-                  return a.configName.localeCompare(b.configNamen)
+                  return a.configName.localeCompare(b.configName)
                }
                return order.indexOf(a.severity) - order.indexOf(b.severity)
             })
@@ -121,51 +121,52 @@ class ConfigurationCheckerClass {
       return ""
    }
 
-   checkConfiguration(configId, config){
-      config = config || window.store.data.config
+   checkConfiguration(configId){
       let checkFunction = this[`check_${configId}`]
       if(typeof checkFunction == "function"){
-         return checkFunction.call(this, config)
+         return checkFunction.call(this)
       }
       return []
    }
 
-   check_ident(config){
+   check_ident(){
+      let ident = this.store.data.config.ident
       let result =[]
-      if(!config.ident.title){
+      if(!ident.title){
          result.push(["ident", "error", `Missing dictionary name.`])
       }
-      if(!config.ident.blurb){
+      if(!ident.blurb){
          result.push(["ident", "info", `Dictionary description is empty.`])
       }
       return result
    }
 
-   check_titling(config){
+   check_titling(){
+      let titling = this.store.data.config.titling
       let result = []
-      if(config.titling){
-         if(config.titling.headword && !this.isElementInStructure(config.titling.headword, config)){
-            result.push(["titling", "error", `Headword element "${config.titling.headword}" not found in entry structure.`])
+      if(titling){
+         if(titling.headword && !this.isElementInStructure(titling.headword)){
+            result.push(["titling", "error", `Headword element "${titling.headword}" not found in entry structure.`])
          }
-         if(config.titling.headwordSorting && !this.isElementInStructure(config.titling.headwordSorting, config)){
-            result.push(["titling", "error", `Headword sorting element "${config.titling.headwordSorting}" not found in entry structure.`])
+         if(titling.headwordSorting && !this.isElementInStructure(titling.headwordSorting)){
+            result.push(["titling", "error", `Headword sorting element "${titling.headwordSorting}" not found in entry structure.`])
          }
-         if(config.titling.headwordAnnotationType == "simple" && this.isNonEmptyArray(config.titling.headwordAnnotations)){
-            config.titling.headwordAnnotations.forEach(elementPath => {
-               if(!this.isElementInStructure(elementPath, config)){
+         if(titling.headwordAnnotationType == "simple" && this.isNonEmptyArray(titling.headwordAnnotations)){
+            titling.headwordAnnotations.forEach(elementPath => {
+               if(!this.isElementInStructure(elementPath)){
                   result.push(["titling", "warning", `Headword annotation element "${elementPath}" not found in entry structure.`])
                }
             })
          }
-         if(config.titling.headwordAnnotationsType == "advanced"){
+         if(titling.headwordAnnotationsType == "advanced"){
             let regex = /%\((.*?)\)/g
-            if(!regex.test(config.titling.headwordAnnotationsAdvanced)){
+            if(!regex.test(titling.headwordAnnotationsAdvanced)){
                result.push(["titling", "warning", "Headword annotation template does not contain %(ELEMENT)."])
             } else{
-               config.titling.headwordAnnotationsAdvanced.match(regex)
+               titling.headwordAnnotationsAdvanced.match(regex)
                      .map(x => x.slice(2, -1))
                      .forEach(elementPath => {
-                        if(!this.isElementInStructure(elementPath, config)){
+                        if(!this.isElementInStructure(elementPath)){
                            result.push(["titling", "error", `Element "${elementPath}" in Headword annotation template not found in entry structre.`])
                         }
                      })
@@ -175,18 +176,19 @@ class ConfigurationCheckerClass {
       return result
    }
 
-   check_searchability(config){
+   check_searchability(){
+      let searchability = this.store.data.config.searchability
       let result = []
-      if(config.searchability){
-         if(this.isNonEmptyArray(config.searchability.searchElements)){
-            config.searchability.searchElements.forEach(elementPath => {
-               if(!this.isElementInStructure(elementPath, config)){
+      if(searchability){
+         if(this.isNonEmptyArray(searchability.searchElements)){
+            searchability.searchElements.forEach(elementPath => {
+               if(!this.isElementInStructure(elementPath)){
                   result.push(["searchability", "warning", `Searchable element "${elementPath}" not found in entry structure.`])
                }
             })
          }
-         if(this.isNonEmptyArray(config.searchability.templates)){
-            config.searchability.templates.forEach(searchTemplate => {
+         if(this.isNonEmptyArray(searchability.templates)){
+            searchability.templates.forEach(searchTemplate => {
                let error = ""
                try{
                   this.store.advancedSearchParseQuery(searchTemplate.template)
@@ -205,70 +207,68 @@ class ConfigurationCheckerClass {
       return result
    }
 
-   check_ske(config){
+   check_ske(){
+      let ske = this.store.data.config.ske
       let result = []
-      if(config.ske){
-         if(config.ske.concquery){
+      if(ske){
+         if(ske.concquery){
             let regex = /%\((.*?)\)/g
-            if(!regex.test(config.ske.concquery)){
+            if(!regex.test(ske.concquery)){
                result.push(["ske", "warning", `Concordance query does not contain %(ELEMENT).`])
             }
-            let match = config.ske.concquery.match(regex)
+            let match = ske.concquery.match(regex)
             match && match.map(x => x.slice(2, -1))
                   .forEach(elementPath => {
-                     if(!this.isElementInStructure(elementPath, config)){
+                     if(!this.isElementInStructure(elementPath)){
                         result.push(["ske", "error", `Element "${elementPath}" in Concordance query not found in entry structre.`])
                      }
                })
          }
 
-         if(config.ske.collocationContainer && !this.isElementInStructure(config.ske.collocationContainer, config)){
-            result.push(["ske", "error", `Collocation container "${config.ske.collocationContainer}" not found in entry structure.`])
+         if(ske.collocationContainer && !this.isElementInStructure(ske.collocationContainer)){
+            result.push(["ske", "error", `Collocation container "${ske.collocationContainer}" not found in entry structure.`])
          }
-         if(config.ske.definitionContainer && !this.isElementInStructure(config.ske.definitionContainer, config)){
-            result.push(["ske", "error", `Definition container "${config.ske.definitionContainer}" not found in entry structure.`])
+         if(ske.definitionContainer && !this.isElementInStructure(ske.definitionContainer)){
+            result.push(["ske", "error", `Definition container "${ske.definitionContainer}" not found in entry structure.`])
          }
-         if(this.isNonEmptyArray(config.ske.searchElements)){
-            config.ske.searchElements.forEach(elementPath => {
-               if(!this.isElementInStructure(elementPath, config)){
+         if(this.isNonEmptyArray(ske.searchElements)){
+            ske.searchElements.forEach(elementPath => {
+               if(!this.isElementInStructure(elementPath)){
                   result.push(["ske", "warning", `Additional search element "${elementPath}" not found in entry structure.`])
                }
             })
          }
-         if(config.ske.exampleContainer && !this.isElementInStructure(config.ske.exampleContainer, config)){
-            result.push(["ske", "error", `Example container "${config.ske.exampleContainer}" not found in entry structure.`])
+         if(ske.exampleContainer && !this.isElementInStructure(ske.exampleContainer)){
+            result.push(["ske", "error", `Example container "${ske.exampleContainer}" not found in entry structure.`])
          }
-         if(config.ske.thesaurusContainer && !this.isElementInStructure(config.ske.thesaurusContainer, config)){
-            result.push(["ske", "error", `Thesaurus container "${config.ske.thesaurusContainer}" not found in entry structure.`])
+         if(ske.thesaurusContainer && !this.isElementInStructure(ske.thesaurusContainer)){
+            result.push(["ske", "error", `Thesaurus container "${ske.thesaurusContainer}" not found in entry structure.`])
          }
       }
       return result
    }
 
-   check_structure(config){
+   check_structure(){
+      let structure = this.store.data.config.structure
       let result = []
-      if(!config.structure){
+      if(!structure || this.store.schema.isEmpty()){
          result.push(["structure", "error", `Missing structure definition.`])
       } else {
-         if(!config.structure.root){
-            result.push(["structure", "error", `Root element is not defined in entry structure.`])
-         } else if(!this.isElementInStructure(config.structure.root, config)){
-            result.push(["structure", "error", `Root element not found in structure definition.`])
-         }
-         if(!config.structure.elements){
-            result.push(["structure", "error", `No element defined in entry structure.`])
+         if(this.store.schema.error){
+            result.push(["structure", "error", store.schema.error])
          }
       }
       return result
    }
 
-   check_flagging(config){
+   check_flagging(){
+      let flagging = this.store.data.config.flagging
       let result = []
-      if(config.flagging.flag_element){
-         if(!this.isElementInStructure(config.flagging.flag_element, config)){
-            result.push(["flagging", "error", `Flag element "${config.flagging.flag_element}" not found in entry structure.`])
+      if(flagging?.flag_element){
+         if(!this.isElementInStructure(flagging.flag_element)){
+            result.push(["flagging", "error", `Flag element "${flagging.flag_element}" not found in entry structure.`])
          }
-         let flags = config.flagging.flags
+         let flags = flagging.flags
          if(this.isNonEmptyArray(flags)){
             if(flags.filter(flag => !flag.key).length){
                result.push(["flagging", "warning", `Flag keyboard shortcut is empty.`])
@@ -291,11 +291,11 @@ class ConfigurationCheckerClass {
             if(labels.length != (new Set(labels)).size){
                result.push(["flagging", "info", `Two or more flags have the same label.`])
             }
-            if(config.flagging.all_additive_key){
-               if(flags.find(flag => flag.key == config.flagging.all_additive_key)){
+            if(flagging.all_additive_key){
+               if(flags.find(flag => flag.key == flagging.all_additive_key)){
                   result.push(["flagging", "error", `Keyboard shortcut for adding all additive flags should be different from flag keyboard shortcuts.`])
                }
-               if(!config.flagging.all_additive_label){
+               if(!flagging.all_additive_label){
                   result.push(["flagging", "info", `Missing Label for adding all additive flags keyboard shortcut.`])
                }
             }
@@ -306,8 +306,8 @@ class ConfigurationCheckerClass {
    }
 
 
-   isElementInStructure(elementPath, config){
-      return (config.structure && config.structure.elements && !!config.structure.elements[elementPath])
+   isElementInStructure(elementPath){
+      return this.schema.getElementByPath(elementPath)
             || window.nvhStore.isServiceElement(elementPath)
    }
 
