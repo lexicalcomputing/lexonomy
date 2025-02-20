@@ -189,27 +189,19 @@ def dmlex_schema():
                                                                    json.loads(request.query.xlingual_langs) if request.query.xlingual_langs else [],
                                                                    json.loads(request.query.linking_relations) if request.query.linking_relations else [],
                                                                    json.loads(request.query.etymology_langs) if request.query.etymology_langs else [])
-        return {"elements": schema, "desc_dict": desc_dict, 'modules': used_modules, "root": "entry", "success": True}
+        schema_root = nvh.schema_get_root_name(schema)
+        return {"nvhSchema": schema, "desc_dict": desc_dict, 'modules': used_modules, "root": schema_root, "success": True}
     except Exception as e:
-        return {"elements": "", "desc_dict": "", 'modules': [], "root": "", "success": False, "error": e}
+        return {"nvhSchema": "", "desc_dict": "", 'modules': [], "root": "", "success": False, "error": e}
 
 @post(siteconfig["rootPath"] + "schema_to_json.json") # OK
 def schema_to_json():
-    schema = nvh.parse_string(request.forms.schema)
-    schema_dict = {}
-    schema.schema_nvh2json(schema_dict)
+    schema_dict = nvh.schema_nvh2json(request.forms.schema)
     return {"success": True, "schemajson": json.dumps(schema_dict)}
 
 @post(siteconfig["rootPath"] + "schema_json_to_nvh.json") # OK
 def schema_to_json():
-    schema_json = json.loads(request.forms.json_schema)
-    sorted_keys = list(schema_json.keys())
-    sorted_keys.sort(key=lambda x: x.count('.'))
-    root = sorted_keys[0]
-
-    schema_nvh = []
-    nvh.schema_json2nvh(schema_json, root, schema_nvh)
-
+    schema_nvh = nvh.schema_json2nvh(json.loads(request.forms.json_schema))
     return {"success": True, "schema_nvh": '\n'.join(schema_nvh)}
 
 @get(siteconfig["rootPath"] + "userdicts.json")
@@ -539,7 +531,7 @@ def makedictjson(user):
     if len(request.files) > 0:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
         if supported_formats.match(request.files.get("import_entires").filename):
-            res = ops.makeDict(request.forms.url, None, None, request.forms.title,
+            res = ops.makeDict(request.forms.url, None, request.forms.title,
                                request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
                                deduplicate=True if request.forms.deduplicate=='true' else False,
@@ -548,7 +540,7 @@ def makedictjson(user):
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
     else:
-        res = ops.makeDict(request.forms.url, request.forms.nvhSchema, request.forms.jsonSchema,
+        res = ops.makeDict(request.forms.url, json.loads(request.forms.structure),
                            request.forms.title, request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=request.forms.addExamples=="true",
                            deduplicate=False, bottle_files={}, hwNode=None, titling_node=None)
@@ -581,7 +573,7 @@ def makedictjson(user):
             f6 = open(os.path.join(template_dir, file_name), 'rb')
             files['styles'] = bottle.FileUpload(f6, '', file_name)
 
-    res = ops.makeDict(request.forms.url, None, None, request.forms.title,
+    res = ops.makeDict(request.forms.url, None, request.forms.title,
                        request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                        addExamples=False,
                        deduplicate=True if request.forms.deduplicate=='true' else False,
@@ -1020,13 +1012,15 @@ def configread(dictID, user, dictDB, configs):
 @authDict(["canConfig"])
 def dmlexschemaupdate(dictID, user, dictDB, configs):
     try:
-        final_schema, desc_dict, used_modules, removed_nodes = ops.updateDmLexSchema(configs['structure'], json.loads(request.query.modules),
+        final_schema, desc_dict, used_modules, removed_nodes = ops.updateDmLexSchema(configs['structure'],
+                                                                                     json.loads(request.query.modules),
                                                                                      json.loads(request.query.xlingual_langs) if request.query.xlingual_langs else [],
                                                                                      json.loads(request.query.linking_relations) if request.query.linking_relations else [],
                                                                                      json.loads(request.query.etymology_langs) if request.query.etymology_langs else [])
-        return {"elements": final_schema, "desc_dict": desc_dict, 'modules': used_modules, 'removed_nodes': removed_nodes, 'root': 'entry', "success": True}
+        schema_root = nvh.schema_get_root_name(final_schema)
+        return {"nvhSchema": final_schema, "desc_dict": desc_dict, 'modules': used_modules, 'removed_nodes': removed_nodes, 'root': schema_root, "success": True}
     except Exception as e:
-        return {"success": False, "elements": {}, "desc_dict": '', 'modules': [], 'removed_nodes':{}, 'root': 'entry', "error": str(e)}
+        return {"success": False, "nvhSchema": {}, "desc_dict": '', 'modules': [], 'removed_nodes':{}, 'root': '', "error": str(e)}
 
 @post(siteconfig["rootPath"]+"<dictID>/dictconfigupdate.json")
 @authDict(["canConfig"])

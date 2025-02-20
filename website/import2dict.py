@@ -278,8 +278,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         log_info('Generating schema')
         schema = {}
         import_nvh.generate_schema(schema, tln=True)
-        with open(filename + ".schema", 'w') as schema_f:
-            nvh.print_schema(schema, outfile=schema_f)
+        schema_list = []
+        nvh.dump_schema(schema, schema_list)
+        schema_string = '\n'.join(schema_list)
 
         #import_nvh.check_schema(schema, outfile=sys.stderr)
 
@@ -309,9 +310,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         # =============
         # Structure
         # =============
-        elements = {}
-        get_gen_schema_elements(schema, elements)
-        structure = {"root": entry_element, "elements": elements, 'tab': 'advanced', 'dmlex_modules': []}
+        structure = {"root": entry_element, "nvhSchema": schema_string}
         if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
@@ -319,7 +318,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             c0 = db.execute("SELECT json FROM configs WHERE id=?", ("structure",))
             r0 = c0.fetchone()
             if r0:
-                if json.dumps(structure) != r0['json']:
+                if sorted(schema_list) != sorted(json.loads(r0['json'])["nvhSchema"].split('\n')):
                     log_warning('Old structure is not compatible with new data. Use "Purge All" option')
 
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
@@ -330,9 +329,10 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         # Formatting
         # =============
         formatting = {}
+        schema_keys = nvh.schema_keys(schema_string)
         with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
             styles = json.loads(f.read())
-            for key in elements.keys():
+            for key in schema_keys:
                 if styles.get(key):
                     formatting[key] = styles[key]
                 else:

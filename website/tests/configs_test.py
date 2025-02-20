@@ -49,7 +49,7 @@ class AdminTests(unittest.TestCase):
     # DICT CREATE
     def test_01(self):
         data = {'url': self.dict_name,
-                "nvhSchema": "\n".join(self.schema_nvh),
+                "structure": json.dumps({"nvhSchema": "\n".join(self.schema_nvh)}),
                 'title': 'title',
                 'addExamples': 'false'}
         r = requests.post(url=self.website + "/make.json", data=data,
@@ -210,7 +210,7 @@ class UserTests(unittest.TestCase):
     # DICT CREATE (ADMIN)
     def test_01(self):
         data = {'url': self.dict_name,
-                "nvhSchema": "\n".join(self.schema_nvh),
+                "structure": json.dumps({"nvhSchema": "\n".join(self.schema_nvh)}),
                 'title': 'title',
                 'addExamples': 'false'}
         r = requests.post(url=self.website + "/make.json", data=data,
