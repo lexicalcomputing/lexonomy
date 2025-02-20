@@ -247,12 +247,6 @@ def entryflag(dictID, user, dictDB, configs):
     success, error = ops.flagEntry(dictDB, configs, request.forms.id, json.loads(request.forms.flags), user["email"], {})
     return {"success": success, "id": request.forms.id, 'error': error}
 
-@get(siteconfig["rootPath"]+"<dictID>/subget")
-@authDict(["canEdit"])
-def subget(dictID, user, dictDB, configs):
-    total, entries, first = ops.listEntries(dictDB, dictID, configs, request.query.doctype, request.query.lemma, "wordstart", 100, 0, False, False, True)
-    return {"success": True, "total": total, "entries": entries}
-
 @post(siteconfig["rootPath"]+"<dictID>/history.json")
 def history(dictID):
     if not ops.dictExists(dictID):
@@ -840,8 +834,6 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        doctypes = [configs["structure"]["root"]]
-        doctypes = list(set(doctypes))
 
         # WARNING consider if new config item does show personal data, than add to this list
         hide_items = ["siteconfig", "download", "users"]
@@ -849,29 +841,10 @@ def dictconfig(dictID):
             configs.pop(item)
 
         res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]},
-               "userAccess": user["dictAccess"], "configs": configs,
-               "doctype": configs["structure"]["root"], "doctypes": doctypes}
+               "userAccess": user["dictAccess"], "configs": configs}
 
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
-
-@get(siteconfig["rootPath"]+"<dictID>/doctype.json")
-def dictconfig(dictID):
-    if not ops.dictExists(dictID):
-        return {"success": False}
-    else:
-        user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        doctypes = [configs["structure"]["root"]]
-        doctypes = list(set(doctypes))
-        res = {"success": True, "doctype": configs["structure"]["root"], "doctypes": doctypes, "userAccess": user["dictAccess"]}
-        return res
-
-@get(siteconfig["rootPath"]+"<dictID>/<entryID:re:\d+>/nabes.json")
-def publicentrynabes(dictID, entryID):
-    dictDB = ops.getDB(dictID)
-    user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, dictDB)
-    nabes = ops.readNabesByEntryID(dictDB, dictID, entryID, configs)
-    return {"nabes": nabes}
 
 
 @post(siteconfig["rootPath"]+"<dictID>/random.json") # OK
@@ -962,9 +935,9 @@ def getImportProgress(dictID, user, dictDB, configs):
     return{"finished": finished, "progress": progress, "error": err, "warnings": warns, 'upload_file_path': upload_file_path}
 
 
-@post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
+@post(siteconfig["rootPath"]+"<dictID>/entrylist.json") # OK
 @authDict(["canEdit"])
-def entrylist(dictID, doctype, user, dictDB, configs):
+def entrylist(dictID, user, dictDB, configs):
     if request.forms.id:
         if request.forms.id == "last":
             entryID = ops.getLastEditedEntry(dictDB, user["email"])
@@ -980,7 +953,7 @@ def entrylist(dictID, doctype, user, dictDB, configs):
 
         return {"success": True, "entries": entries, "total": total, "firstRun": first}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, doctype, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
+        total, entries, first = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
         return {"success": True, "entries": entries, "total": total, "firstRun": first}
 
 @post(siteconfig["rootPath"]+"<dictID>/search.json")
@@ -1076,27 +1049,6 @@ def resavejson(dictID, user, dictDB, configs):
         count += 1
     return {"todo": stats["needResave"]}
 
-@post(siteconfig["rootPath"] + "<dictID>/<doctype>/ontolex.api")
-def ontolex(dictID, doctype):
-    data = json.loads(request.body.getvalue().decode('utf-8'))
-    if not data.get("email") or not data.get("apikey"):
-        return {"success": False, "message": "missing email or api key"}
-    user = ops.verifyUserApiKey(data["email"], data["apikey"])
-    if not user["valid"]:
-        return {"success": False}
-    else:
-        if data.get("search"):
-            search = data["search"]
-        else:
-            search = ""
-        dictDB = ops.getDB(dictID)
-        configs = ops.readDictConfigs(dictDB)
-        dictAccess = configs["users"].get(user["email"]) or user["email"] in siteconfig["admins"]
-        if not dictAccess:
-            return {"success": False}
-        else:
-            response.headers['Content-Type'] = "text/plain; charset=utf-8"
-            return ops.listOntolexEntries(dictDB, dictID, configs, doctype, search)
 
 @get(siteconfig["rootPath"] + "api")
 def apitest():
@@ -1308,12 +1260,6 @@ def dictedit(dictID):
     else:
         return redirect("/")
 
-@get(siteconfig["rootPath"]+"<dictID>/edit/<doctype>")
-def dicteditdoc(dictID, doctype):
-    if ops.dictExists(dictID):
-        return redirect("/#" + dictID + '/edit/' + doctype)
-    else:
-        return redirect("/")
 
 @get(siteconfig["rootPath"]+"docs/intro")
 def docintro():

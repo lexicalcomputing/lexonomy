@@ -72,7 +72,7 @@ class TestDictFromFiles(unittest.TestCase):
 
     def test_3(self):
         data = {'howmany': 100}
-        r = requests.post(url=self.website + f"/{self.dicID}/entry/entrylist.json", data=data, cookies=self.cookies)
+        r = requests.post(url=self.website + f"/{self.dicID}/entrylist.json", data=data, cookies=self.cookies)
         self.assertEqual(r.json()['success'], True)
         self.assertEqual(r.json()['total'], 5)
 
@@ -126,7 +126,7 @@ class TestTemplatedDict(unittest.TestCase):
 
     def test_3(self):
         data = {'howmany': 100}
-        r = requests.post(url=self.website + f"/{self.dicID}/entry/entrylist.json", data=data, cookies=self.cookies)
+        r = requests.post(url=self.website + f"/{self.dicID}/entrylist.json", data=data, cookies=self.cookies)
         self.assertEqual(r.json()['success'], True)
         self.assertEqual(r.json()['total'], 5)
 
