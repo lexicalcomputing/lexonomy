@@ -407,7 +407,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
 
             if not r:
                 entryID += 1
-                entries_insert_payload.append((entryID, entry_str, entry_json, needs_refac, needs_resave, 0, tl_name, title, entry_key))
+                entries_insert_payload.append((entryID, entry_str, entry_json, needs_refac, needs_resave, 0, title, entry_key))
                 history_payload.append((entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_payload.append((entryID, searchTitle, 1))
                 if tl_node_contains_pos:
@@ -421,7 +421,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             # Updating existing
             else:
                 action = "update"
-                entries_update_payload.append((entry_str, entry_json, needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"]))
+                entries_update_payload.append((entry_str, entry_json, needs_refac, needs_resave, 0, title, entry_key, r["id"]))
                 history_payload.append((r["id"], action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_delete_payload.append((r['id'], 1))
                 searchables_payload.append((r["id"], searchTitle, 1))
@@ -443,8 +443,8 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         else:
             log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entry_inserted, entry_count))
 
-        db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?,?,?,?,?,?,?,?,?)", entries_insert_payload)
-        db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, doctype=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
+        db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, title, sortkey) VALUES (?,?,?,?,?,?,?,?)", entries_insert_payload)
+        db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
         db.executemany("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?,?,?,?,?,?)", history_payload)
         db.executemany("DELETE FROM searchables WHERE entry_id=? and level=?", searchables_delete_payload)
         db.executemany("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", searchables_payload)

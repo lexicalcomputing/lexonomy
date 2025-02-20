@@ -159,6 +159,10 @@ def update_dict_db():
 
         print(f'OK - {file}: updated structure')
 
+    def rm_doctype_3_1(file, conn):
+        conn.execute("ALTER TABLE entries DROP COLUMN doctype")
+        print(f'OK - {file}: removed doctype')
+
     print("Updating dicts ...")
     for file in os.listdir(dicts_path):
         if file.endswith('.sqlite'):
@@ -182,6 +186,12 @@ def update_dict_db():
                     update_schema_3_0(file, conn)
                 except Exception as e:
                     print(f'ERROR (3.0) - {file}: {e}')
+
+            if versiontuple(version) < versiontuple('3.1'):
+                try:
+                    rm_doctype_3_1(file, conn)
+                except Exception as e:
+                    print(f'ERROR (3.1) - {file}: {e}')
 
             conn.commit()
             conn.close()
