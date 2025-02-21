@@ -634,19 +634,52 @@ class nvh:
 
     @staticmethod
     def schema_transform_json2nvh(schema_json, node_key, result_schema_nvh, indent=0):
-        name = indent*'  ' + schema_json[node_key]['name']
-        if schema_json[node_key]['min'] == 0 and schema_json[node_key]['max'] == None:
+        try:
+            name = indent*'  ' + schema_json[node_key]['name']
+        except KeyError:
+            name = node_key
+
+        min_cout = 0
+        try:
+            if isinstance(schema_json[node_key]['min'], int):
+                min_cout = schema_json[node_key]['min']
+            elif isinstance(schema_json[node_key]['min'], str):
+                if schema_json[node_key]['min'] == '' or schema_json[node_key]['min'] == 'None':
+                    min_cout = 0
+                else:
+                    min_cout = int(schema_json[node_key]['min'])
+            elif schema_json[node_key]['min'] == None:
+                min_cout = 0
+        except KeyError:
+            pass
+
+        max_count = None
+        try:
+            if isinstance(schema_json[node_key]['max'], int):
+                max_count = schema_json[node_key]['max']
+            elif isinstance(schema_json[node_key]['max'], str):
+                if schema_json[node_key]['max'] == '' or schema_json[node_key]['max'] == 'None':
+                    max_count = None
+                else:
+                    max_count = int(schema_json[node_key]['max'])
+            elif schema_json[node_key]['max'] == None:
+                max_count = None
+        except KeyError:
+            pass
+
+        count = ''
+        if min_cout == 0 and max_count == None:
             count = '*'
-        elif schema_json[node_key]['min'] == 1 and schema_json[node_key]['max'] == None:
+        elif min_cout == 1 and max_count == None:
             count = '+'
-        elif schema_json[node_key]['min'] == 0 and schema_json[node_key]['max'] == 1:
+        elif min_cout == 0 and max_count == 1:
             count = '?'
-        elif schema_json[node_key]['min'] > 0 and schema_json[node_key]['max'] == None:
-            count = f"{schema_json[node_key]['min']}+"
-        elif schema_json[node_key]['min'] == 1 and schema_json[node_key]['max'] == 1: 
+        elif min_cout > 0 and max_count == None:
+            count = f"{min_cout}+"
+        elif min_cout == 1 and max_count == 1:
             count = ''
-        elif schema_json[node_key]['min'] != None and schema_json[node_key]['max'] != None:
-            count = f"{schema_json[node_key]['min']}-{schema_json[node_key]['max']}"
+        elif min_cout > 0 and max_count != None:
+            count = f"{min_cout}-{max_count}"
 
         node_type = schema_json[node_key].get('type', '')
         node_re = schema_json[node_key].get('re', '')
@@ -660,7 +693,7 @@ class nvh:
         if node_re:
             value.append(f'~{node_re}')
         if node_values:
-            value.append(node_values)
+            value.append('["' + '","'.join(node_values) + '"]')
 
         result_schema_nvh.append(name + ": " + " ".join(value))
 
