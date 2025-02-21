@@ -3,10 +3,6 @@
     <div class="scrollable-div">
       <template each={(child, index) in props.schema.children}>
         <placeholder-component onclick={openActionPanel}
-                              ondragover={onDragOver}
-                              ondrop={(event) => onDrop(event, child)}
-                              ondragenter={onPlaceholderDragEnter}
-                              ondragleave={onPlaceholderDragLeave}
                               class="placeholder placeholder-{child.orientation} placeholder-first
                                     {child.status.isActive ? "placeholder-selected" : ""}
                                     {child.children.length === 0 ? "placeholder-no-children" : ""}"
@@ -32,41 +28,6 @@
       },
       onBeforeUpdate(props) {
         props.global.parent = props.parent
-      },
-
-      onDragOver(event) {
-        event.preventDefault();
-      },
-      onDrop(event, state) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
-        if (this.props.global.canBeDropped) {
-          if (data.type === "choice-item") {
-            state.content.name = data.name;
-            state.content.fullName = data.fullName;
-            state.content.area = data.name;
-            state.content.color = data.color;
-          }
-        }
-        event.target.classList.remove("placeholder-highligth");
-        event.target.classList.remove("placeholder-inside-wrapper-highligth");
-        event.target.classList.remove("placeholder-adder-highligth");
-      },
-      onPlaceholderDragEnter(event) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
-        if (data.type === "choice-item") {
-          const classList = Array.from(event.target.classList);
-          if (classList.includes("placeholder")) {
-            event.target.classList.add("placeholder-highligth");
-          }
-        }
-      },
-      onPlaceholderDragLeave(event) {
-        const classList = Array.from(event.target.classList);
-        if (classList.includes("placeholder")) {
-          event.target.classList.remove("placeholder-highligth");
-        }
       },
 
       addElement(index, component, state, editingMode, label) {

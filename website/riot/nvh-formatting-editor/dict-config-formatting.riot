@@ -134,6 +134,12 @@
           canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
           parent: null,
         };
+        this.schema.children[0].content = {
+          name: "entry",
+          fullName: "entry",
+          area: "entry",
+          color: window.nvhStore.getElementColor("entry")
+        };
         this.loadEntry();
       },
       onBeforeUpdate() {
@@ -212,10 +218,10 @@
               orientation: "column",
               type: "placeholder",
               content: {
-                name: "",
-                fullName: "",
-                area: "",
-                color: ""
+                name: "entry",
+                fullName: "entry",
+                area: "entry",
+                color: window.nvhStore.getElementColor("entry")
               },
               contentColor: "",
               children: [],
@@ -229,7 +235,10 @@
         /*Just loading example entry for testing*/
         window.store.changeEntryId(4);
         let entryPromise = window.store.loadEntry();
-        entryPromise.then(result => {entryInfoRaw = result});
+        entryPromise.then(result => {
+          entryInfoRaw = result;
+          this.update();
+        });
       },
       createEntryStructure(entry) {
         let objectHolder = {
