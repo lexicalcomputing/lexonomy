@@ -148,8 +148,8 @@
     
 
     .placeholder > .placeholder-inside-wrapper > .placeholder {
-      height: calc(100% - 28px); /*ensure that all "placeholders" children will have correct height*/
-      width: calc(100% - 14px); /*ensure that all "placeholders" children will have correct width*/
+      height: calc(100% - 14px); /*ensure that all "placeholders" children will have correct height*/
+      width: calc(100% - 7px); /*ensure that all "placeholders" children will have correct width*/
     }
     /*
     both "placeholder-row" and "placeholder-column" have same flex-direction,
@@ -158,11 +158,11 @@
     */
     .placeholder-row {
       flex-direction: column;
-      padding: 14px;
+      padding: 7px;
     }
     .placeholder-column {
       flex-direction: column;
-      padding: 14px;
+      padding: 7px;
     }
 
     .placeholder:hover {
@@ -185,7 +185,7 @@
     */
     .adder-column {
       padding: 5px;
-      width: calc(100% - 5px);
+      width: calc(100% - 3px);
       margin: 0 10px;
       min-width: 100px;
     }
@@ -193,7 +193,7 @@
     "adder-row" is present in rows
     */
     .adder-row {
-      height: calc(100% - 18px);
+      height: calc(100% - 5px);
       padding: 5px;
       margin: 10px 0;
     }
@@ -221,7 +221,9 @@
       color: var(--color-can-be-dropped);
     }
 
-
+    .placeholder-no-children {
+      padding: 14px;
+    }
     .placeholder-no-children:hover .adder-alone .plus-icon-wrapper {
       display: flex;
       align-items: center;
