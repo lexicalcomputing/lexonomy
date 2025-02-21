@@ -21,7 +21,7 @@
           ondragover={onDragOver}
           ondrop={(event) => onDrop(event, 2)}>
       </div>
-      <div class="placeholder-content-box">
+      <div class="placeholder-content-box {props.isAreaHolder ? "" : "placeholder-content-box-left"}">
         {props.name}
       </div>
       <div if={props.isAreaHolder}
@@ -145,6 +145,10 @@
     padding: 0 5px;
     margin: 2px;
     width: 100%;
+    text-align: center;
+  }
+  .placeholder-content-box-left {
+    text-align: left;
   }
   .content-box-wrapper {
     background-color: green;
@@ -164,24 +168,27 @@
     width: 100%;
   }
   .inside-adder-horizontal {
-    padding: 5px 0;
+    padding: 2px 0;
     background-color: transparent;
     width: calc(100% - 20px);
   }
   .inside-adder-vertical {
-    padding: 0 5px;
+    padding: 0 2px;
     background-color: transparent;
   }
   .inside-adder-highligth {
     background-color: var(--color-can-be-dropped);
+    transition: all 500ms ease;
   }
   .inside-adder-horizontal-highligth-dragged {
     background-color: var(--color-is-dragged-over) !important;
-    transform: scaleY(1.2);
+    padding: 10px 0;
+    transition: all 500ms ease;
   }
   .inside-adder-vertical-highligth-dragged {
     background-color: var(--color-is-dragged-over) !important;
-    transform: scaleX(1.2);
+    padding: 0 15px;
+    transition: all 500ms ease;
   }
 </style>
 
