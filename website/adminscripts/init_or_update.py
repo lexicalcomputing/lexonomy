@@ -153,7 +153,7 @@ def update_dict_db():
     print("Updating dicts ...")
     for file in os.listdir(dicts_path):
         if file.endswith('.sqlite'):
-            conn = get_db(os.path.join(file))
+            conn = get_db(os.path.join(dicts_path, file))
 
             metadata = {}
             dict_meta = conn.execute("SELECT json FROM configs WHERE id='metadata'").fetchone()
@@ -188,7 +188,7 @@ def update_dict_db():
                 else:
                     print(f'Already updated: {file}')
             except Exception as e:
-                print(f'ERROR: {file}')
+                print(f'ERROR ({new_version}) {e}: {file}')
 
             conn.close()
 
