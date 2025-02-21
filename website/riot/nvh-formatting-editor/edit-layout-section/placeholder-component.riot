@@ -15,7 +15,8 @@
                           isAreaHolder={props.state.children.length === 0}
                           state={props.state}
                           add-element={props.addElement}
-                          global={props.global}/>
+                          global={props.global}
+                          isBaseLevel={props.isBaseLevel}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}"
       ondragover={onPlaceholderWrapperDragOver}
       ondragenter={onPlaceholderWrapperDragEnter}
@@ -28,7 +29,7 @@
                     ondragleave={onAdderDragLeave}
                     ondrop={(event) => onAdderDrop(event, props.state, 0)}
                     class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
-                          {props.state.children.length === 0 && props.state.content.name === "" ? "adder-alone" : ""}"
+                          {props.state.children.length === 0 ? "adder-alone" : ""}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}
                     index={0}
                     global={props.global}
@@ -51,6 +52,7 @@
                             isActive={child.isActive}
                             status={child.status}
                             global={props.global}
+                            isBaseLevel={false}
                             index={index}
                             delete-element={props.deleteElement}
                             add-element={props.addElement}
@@ -93,6 +95,9 @@
         this.props.global.canBeDropped = false;
       },
       onPlaceholderDragEnter(event) {
+        if (this.props.isBaseLevel) {
+          return;
+        }
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
         if (data.type === "choice-item") {
@@ -109,6 +114,9 @@
         }
       },
       onPlaceholderWrapperDragEnter(event) {
+        if (this.props.isBaseLevel) {
+          return;
+        }
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
         if (data.type === "choice-item") {
@@ -143,7 +151,7 @@
         const data = JSON.parse(rawData);
         if (data.type === "placeholder") {
           event.target.classList.add("adder-highligth-dragged");
-        } else if (data.type === "choice-item") {
+        } else if (data.type === "choice-item" && !this.props.isBaseLevel) {
           const classList = Array.from(event.target.classList);
           if (classList.includes("adder")) {
             event.target.parentElement.parentElement.classList.add("placeholder-adder-highligth");
@@ -262,6 +270,7 @@
 
     .adder-alone {
       padding: 0;
+      margin: 5px;
     }
   </style>
 </placeholder-component>
