@@ -8,15 +8,15 @@
       ondragend={onDragEnd}>
     <div if={props.isAreaHolder} 
         class="inside-adder inside-adder-horizontal"
-        ondragenter={onDragEnter}
-        ondragleave={onDragLeave}
+        ondragenter={onDragEnterHorizontal}
+        ondragleave={onDragLeaveHorizontal}
         ondrop={(event) => onDrop(event, 1)}>
     </div>
     <div class="content-box-wrapper-2">
       <div if={props.isAreaHolder}
           class="inside-adder inside-adder-vertical"
-          ondragenter={onDragEnter}
-          ondragleave={onDragLeave}
+          ondragenter={onDragEnterVertical}
+          ondragleave={onDragLeaveVertical}
           ondrop={(event) => onDrop(event, 2)}>
       </div>
       <div class="placeholder-content-box">
@@ -24,15 +24,15 @@
       </div>
       <div if={props.isAreaHolder}
           class="inside-adder inside-adder-vertical"
-          ondragenter={onDragEnter}
-          ondragleave={onDragLeave}
+          ondragenter={onDragEnterVertical}
+          ondragleave={onDragLeaveVertical}
           ondrop={(event) => onDrop(event, 3)}>
       </div>
     </div>
     <div if={props.isAreaHolder}
         class="inside-adder inside-adder-horizontal"
-        ondragenter={onDragEnter}
-        ondragleave={onDragLeave}
+        ondragenter={onDragEnterHorizontal}
+        ondragleave={onDragLeaveHorizontal}
         ondrop={(event) => onDrop(event, 4)}>
     </div>
   </div>
@@ -64,15 +64,25 @@
       trash.classList.remove("trash-enabled");
       this.props.global.parent.update();
     },
-    onDragEnter(event) {
+    onDragEnterHorizontal(event) {
       const rawData = event.dataTransfer.getData("text/plain");
       const data = JSON.parse(rawData);
       if (data.type === "choice-item") {
-        event.target.classList.add("inside-adder-highligth-dragged");
+        event.target.classList.add("inside-adder-horizontal-highligth-dragged");
       }
     },
-    onDragLeave(event) {
-      event.target.classList.remove("inside-adder-highligth-dragged");
+    onDragLeaveHorizontal(event) {
+      event.target.classList.remove("inside-adder-horizontal-highligth-dragged");
+    },
+    onDragEnterVertical(event) {
+      const rawData = event.dataTransfer.getData("text/plain");
+      const data = JSON.parse(rawData);
+      if (data.type === "choice-item") {
+        event.target.classList.add("inside-adder-vertical-highligth-dragged");
+      }
+    },
+    onDragLeaveVertical(event) {
+      event.target.classList.remove("inside-adder-vertical-highligth-dragged");
     },
     onDrop(event, adderIndex) {
       const rawData = event.dataTransfer.getData("text/plain");
@@ -103,7 +113,8 @@
             this.addElementInside("row", this.props.state.content, newContent);
         }
       }
-      event.target.classList.remove("inside-adder-highligth-dragged");
+      event.target.classList.remove("inside-adder-horizontal-highligth-dragged");
+      event.target.classList.remove("inside-adder-vertical-highligth-dragged");
       this.props.global.canBeDropped = false;
     },
 
@@ -126,6 +137,7 @@
   .placeholder-content-box {
     padding: 0 5px;
     margin: 2px;
+    width: 100%;
   }
   .content-box-wrapper {
     background-color: green;
@@ -139,6 +151,7 @@
   .content-box-wrapper-2 {
     display: flex;
     flex-direction: row;
+    width: 100%;
   }
   .inside-adder-horizontal {
     padding: 5px 0;
@@ -149,12 +162,13 @@
     padding: 0 5px;
     background-color: transparent;
   }
-  .inside-adder-highligth {
-    background-color: var(--color-can-be-dropped);
-  }
-  .inside-adder-highligth-dragged {
+  .inside-adder-horizontal-highligth-dragged {
     background-color: var(--color-is-dragged-over) !important;
-    transform: scale(1.2);
+    transform: scaleY(1.2);
+  }
+  .inside-adder-vertical-highligth-dragged {
+    background-color: var(--color-is-dragged-over) !important;
+    transform: scaleX(1.2);
   }
 </style>
 
