@@ -183,7 +183,7 @@ def update_dict_db():
                 if new_version:
                     # Update version
                     metadata['version'] = new_version
-                    conn.execute('UPDATE configs SET json=? WHERE id=?', (json.dumps(metadata), 'metadata'))
+                    conn.execute('INSERT OR REPLACE INTO configs (id, json) VALUES (?,?)', ('metadata', json.dumps(metadata)))
                     conn.commit()
                 else:
                     print(f'Already updated: {file}')

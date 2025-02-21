@@ -637,7 +637,7 @@ class nvh:
         try:
             name = indent*'  ' + schema_json[node_key]['name']
         except KeyError:
-            name = node_key
+            name = indent*'  ' + node_key
 
         min_cout = 0
         try:
