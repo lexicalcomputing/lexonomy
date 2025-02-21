@@ -1,18 +1,11 @@
 <elements-choice-section>
   <div class="elements-choice-section-container">
-    <template each={child in props.elementsSchema}>
-      <elements-choice-item state={child}
-                            indentationLevel={getIndentationLevel(child)}
-                            parent={props.parent}/>
-    </template>
+    <elements-choice-item state={props.elementsSchema}
+                          indentationLevel={5}
+                          parent={props.parent}/>
   </div>
 
   <script>
-    export default {
-      getIndentationLevel(element) {
-        return element.data.fullName.split('.').length - 1;
-      }
-    }
   </script>
 
   <style>

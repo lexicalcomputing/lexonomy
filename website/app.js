@@ -2,6 +2,7 @@ import {register as riot_register, component} from 'riot'
 
 import './js/dispatcher.js'
 import './js/connection.js'
+import './js/nvhschema.js'
 import './js/store.js'
 import './js/auth.js'
 import './js/extend-riot.js'
@@ -42,6 +43,9 @@ import app_footer from "./riot/app-footer.riot"
 import app_header from "./riot/app-header.riot"
 import config_issues_dialog from "./riot/config-issues-dialog.riot"
 import config_issues_icon from "./riot/config-issues-icon.riot"
+import custom_structure_dnd_zone from "./riot/custom-structure-dnd-zone.riot"
+import custom_structure_editor from "./riot/custom-structure-editor.riot"
+import custom_structure_editor_item from "./riot/custom-structure-editor-item.riot"
 import dict_config from "./riot/dict-config.riot"
 import dict_config_buttons from "./riot/dict-config-buttons.riot"
 import dict_config_editing from "./riot/dict-config-editing.riot"
@@ -101,6 +105,7 @@ import nvh_editor_view_item from "./riot/nvh-editor/nvh-editor-view-item.riot"
 import nvh_element_style_editor from "./riot/nvh-editor/nvh-element-style-editor.riot"
 import nvh_item_media from "./riot/nvh-editor/nvh-item-media.riot"
 import nvh_item_value_editor from "./riot/nvh-editor/nvh-item-value-editor.riot"
+import nvh_markup_dialog from "./riot/nvh-editor/nvh-markup-dialog.riot"
 import nvh_plugin_buttons from "./riot/nvh-editor/nvh-plugin-buttons.riot"
 import nvh_revisions from "./riot/nvh-editor/nvh-revisions.riot"
 import nvh_schema from "./riot/nvh-schema.riot"
@@ -112,6 +117,7 @@ import nvh_source_code from "./riot/nvh-editor/nvh-source-code.riot"
 import nvh_widget_panel from "./riot/nvh-editor/nvh-widget-panel.riot"
 import open_dictionaries from "./riot/open-dictionaries.riot"
 import placeholder_component from "./riot/nvh-formatting-editor/edit-layout-section/placeholder-component.riot"
+import primary_button from "./riot/primary-button.riot"
 import project_batches from "./riot/projects/project-batches.riot"
 import project_dict_name from "./riot/projects/project-dict-name.riot"
 import project_dictionary_status from "./riot/projects/project-dictionary-status.riot"
@@ -125,9 +131,7 @@ import raw_html from "./riot/raw-html.riot"
 import register from "./riot/register.riot"
 import register_password from "./riot/register-password.riot"
 import site_notification from "./riot/site-notification.riot"
-import structure_dnd_zone from "./riot/structure-dnd-zone.riot"
 import structure_editor from "./riot/structure-editor.riot"
-import structure_editor_item from "./riot/structure-editor-item.riot"
 import trim_text from "./riot/trim-text.riot"
 import unauthorized from "./riot/unauthorized.riot"
 import user_consent from "./riot/user-consent.riot"
@@ -147,6 +151,9 @@ riot_register("app-footer", app_footer)
 riot_register("app-header", app_header)
 riot_register("config-issues-dialog", config_issues_dialog)
 riot_register("config-issues-icon", config_issues_icon)
+riot_register("custom-structure-dnd-zone", custom_structure_dnd_zone)
+riot_register("custom-structure-editor", custom_structure_editor)
+riot_register("custom-structure-editor-item", custom_structure_editor_item)
 riot_register("dict-config", dict_config)
 riot_register("dict-config-buttons", dict_config_buttons)
 riot_register("dict-config-editing", dict_config_editing)
@@ -206,6 +213,7 @@ riot_register("nvh-editor-view-item", nvh_editor_view_item)
 riot_register("nvh-element-style-editor", nvh_element_style_editor)
 riot_register("nvh-item-media", nvh_item_media)
 riot_register("nvh-item-value-editor", nvh_item_value_editor)
+riot_register("nvh-markup-dialog", nvh_markup_dialog)
 riot_register("nvh-plugin-buttons", nvh_plugin_buttons)
 riot_register("nvh-revisions", nvh_revisions)
 riot_register("nvh-schema", nvh_schema)
@@ -217,6 +225,7 @@ riot_register("nvh-source-code", nvh_source_code)
 riot_register("nvh-widget-panel", nvh_widget_panel)
 riot_register("open-dictionaries", open_dictionaries)
 riot_register("placeholder-component", placeholder_component)
+riot_register("primary-button", primary_button)
 riot_register("project-batches", project_batches)
 riot_register("project-dict-name", project_dict_name)
 riot_register("project-dictionary-status", project_dictionary_status)
@@ -230,9 +239,7 @@ riot_register("raw-html", raw_html)
 riot_register("register", register)
 riot_register("register-password", register_password)
 riot_register("site-notification", site_notification)
-riot_register("structure-dnd-zone", structure_dnd_zone)
 riot_register("structure-editor", structure_editor)
-riot_register("structure-editor-item", structure_editor_item)
 riot_register("trim-text", trim_text)
 riot_register("unauthorized", unauthorized)
 riot_register("user-consent", user_consent)
