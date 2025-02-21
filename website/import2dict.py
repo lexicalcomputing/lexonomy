@@ -5,6 +5,7 @@ import os
 import re
 import ops
 import sys
+import html
 import json
 import sqlite3
 import datetime
@@ -12,6 +13,7 @@ import fileinput
 import xml.sax
 import xml.dom.minidom
 from nvh import nvh
+from unidecode import unidecode
 from log_subprocess import log_err, log_info, log_warning, log_end, log_start
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -61,95 +63,129 @@ class handlerFirst(xml.sax.ContentHandler):
         if name == entryTag:
             entryCount += 1
 
-def xml_entry2nvh_entry(dom, fd, indent=0, idx=0, reported=set()):
+
+def xml_entry2nvh_entry(dom, fd, main_node_value, first=False, indent=0):
     """
     Transforming the XML entry into NVH entry
     """
+    translit = False
     for ch in dom.childNodes:
-        nvh_element = ''
-        if not isinstance(ch, xml.dom.minidom.Text):
-            if isinstance(ch.firstChild, xml.dom.minidom.Text) and ch.firstChild.nodeValue.strip():
-                # content in tag value
-                nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n\r]+', ' ', ch.firstChild.nodeValue.strip()))
-            elif ch.attributes.length > 0:
-                # content in tag attribute
-                if entryTag == ch.tagName:
-                    if ch.attributes.length > 1 and (ch.tagName not in reported):
-                        log_warning(f'The XML tag <{ch.tagName}> should contain only one attribute. *ID* attribute will be provided as value, the rest will be as added children.')
-                        reported.add(ch.tagName)
-                    for attr_name, attr_val in ch.attributes.items():
-                        if re.search('id', attr_name, re.IGNORECASE):
-                            nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, attr_val)
+        if isinstance(ch, xml.dom.minidom.Element):
+            ch_value = ''
+            ch_attrs = {}
+            for sub_ch in ch.childNodes:
+                if isinstance(sub_ch, xml.dom.minidom.Text) and sub_ch.nodeValue.strip():
+                    ch_value += re.sub(r'[ \t]+',  ' ', re.sub(r'\n', ' ', html.unescape(sub_ch.nodeValue)))
+            ch_value = ch_value.strip()
 
-                    for attr_name, attr_val in ch.attributes.items():
-                        nvh_element += '{}xtag({}): {}\n'.format('  '*indent+1 if indent else '  ', re.sub(':', '~', attr_name), attr_val)
+            for attr_name, attr_val in ch.attributes.items():
+                if not re.match('^(xmlns|lxnm|xml):.*', attr_name):
+                    if attr_val:
+                        ch_attrs[re.sub(':', '~', attr_name)] = re.sub(r'[ \t]+',  ' ', re.sub(r'\n', ' ', html.unescape(attr_val)))
+                    else:
+                        ch_attrs[re.sub(':', '~', attr_name)] = ''
 
-                    if not nvh_element:
-                        if ch.attributes.length > 1 and (ch.tagName not in reported):
-                            log_warning(f'Only one attribute allowed in XML item. {str(ch.tagName)}. Processing the first one.')
-                            reported.add(ch.tagName)
-                        nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n\r]+', ' ', ch.attributes.items()[0][1].strip()))
+            tag_name = re.sub('\.', '_', ch.tagName)
+            trans_tag_name = unidecode(tag_name)
+            if tag_name != trans_tag_name:
+                translit = True
+
+            if first:
+                if not ch_value:
+                    fd.write('{}{}: {}\n'.format('  '*indent if indent else '', trans_tag_name, main_node_value))
                 else:
-                    if ch.attributes.length > 1 and (ch.tagName not in reported):
-                        log_warning(f'Only one attribute allowed in XML item. {str(ch.tagName)}. Processing the first one.')
-                        reported.add(ch.tagName)
-                    nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, re.sub('[ \n\r]+', ' ', ch.attributes.items()[0][1].strip()))
+                    fd.write('{}{}: {}\n'.format('  '*indent if indent else '', trans_tag_name, ch_value))
             else:
-                # wrapper without value
-                if entryTag == ch.tagName:
-                    nvh_element = '{}{}: {}\n'.format('  '*indent if indent else '', ch.tagName, idx)
-                    idx += 1
-                else:
-                    nvh_element = '{}{}:\n'.format('  '*indent if indent else '', ch.tagName)
-            fd.write(nvh_element)
+                fd.write('{}{}: {}\n'.format('  '*indent if indent else '', trans_tag_name, ch_value))
 
-        xml_entry2nvh_entry(ch, fd, indent + 1, idx, reported=reported)
+            for n, v in ch_attrs.items():
+                fd.write('{}_xattr_{}: {}\n'.format('  '*(indent+1) if indent else '  ', re.sub('\.', '_', n), v))
+
+        translit = translit or xml_entry2nvh_entry(ch, fd, main_node_value, indent=indent + 1)
+    return translit
 
 
-def xml2nvh(input_xml , fd):
+def get_titling_element_value(dom, fd, xml_main_node_name):
+    for ch in dom.childNodes:
+        if isinstance(ch, xml.dom.minidom.Element) and unidecode(ch.tagName) == unidecode(xml_main_node_name):
+            ch_value = ''
+            for sub_ch in ch.childNodes:
+                if isinstance(sub_ch, xml.dom.minidom.Text) and sub_ch.nodeValue.strip():
+                    ch_value += sub_ch.nodeValue
+            return re.sub(r'[ \t]+',  ' ', re.sub(r'\n', ' ', html.unescape(ch_value))).strip()
+        main_node_value = get_titling_element_value(ch, fd, xml_main_node_name)
+        if main_node_value:
+            return main_node_value
+    return None
+
+def xml2nvh(input_xml , fd, titling_element='', entry_element=''):
     global rootTag
     global entryTag
     global entryCount
+    rootTag = ''
+    entryTag = ''
+    entryCount = 0
+
     with open(input_xml, 'rb') as f:
         xmldata = f.read().decode('utf-8-sig')
     xmldata = re.sub(r'<\?xml[^?]*\?>', '', xmldata)
     xmldata = re.sub(r'<!DOCTYPE[^>]*>', '', xmldata)
-    xmldata = re.sub(r'</?b>', '', xmldata)
-    xmldata = re.sub(r'</?p>', '', xmldata)
-    xmldata = re.sub(r'</?i>', '', xmldata)
+    xmldata = re.sub(r'</?b( [^>]+)*>', '', xmldata)
+    xmldata = re.sub(r'</?p( [^>]+)*>', '', xmldata)
+    xmldata = re.sub(r'</?i( [^>]+)*>', '', xmldata)
+    xmldata = re.sub(r'</?h( [^>]+)*>', '', xmldata)
+    xmldata = re.sub(r"lxnm:[^=]+=['][^']*[']", '', xmldata)
+    xmldata = re.sub(r'lxnm:[^=]+=["][^"]*["]', '', xmldata)
+    xmldata = re.sub(r'&(?!amp;)', '&amp;', xmldata)
+
     entry_processed = 0
 
     # Parsing xml and finding the root tag and the entry tag
-    try:
+    if entry_element:
+        entryTag = entry_element
         xml.sax.parseString("<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata, handlerFirst())
         xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata
-    except xml.sax._exceptions.SAXParseException as e:
-        if "junk after document element" in str(e):
-            xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n<fakeroot>"+xmldata+"</fakeroot>"
-            rootTag = ""
-            entryTag = ""
-            entryCount = 0
-            xml.sax.parseString(xmldata, handlerFirst())
-        else:
-            if entryTag == "":
-                log_err("Not possible to detect element name for entry, please fix errors")
+    else:
+        try:
+            xml.sax.parseString("<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata, handlerFirst())
+            xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n"+xmldata
+        except xml.sax._exceptions.SAXParseException as e:
+            try:
+                log_err(f'SAX Error: {e}\n')
+                xmldata = "<!DOCTYPE foo SYSTEM 'x.dtd'>\n<fakeroot>"+xmldata+"</fakeroot>"
+                rootTag = ""
+                entryTag = ""
+                entryCount = 0
+                xml.sax.parseString(xmldata, handlerFirst())
+            except Exception:
+                if entryTag == "":
+                    log_err("Not possible to detect element name for entry, please fix errors")
 
     re_entry = re.compile(r'<'+entryTag+'[^>]*>.*?</'+entryTag+'>', re.MULTILINE|re.DOTALL|re.UNICODE)
+    is_translit = False
+    log_info(f'Titling element: {titling_element}')
     for entry in re.findall(re_entry, xmldata):
-        try:
-            # Check if the entry is ok
-            xml.sax.parseString(entry, xml.sax.handler.ContentHandler())
-        except xml.sax._exceptions.SAXParseException as e:
-            log_err("Skipping entry, XML parsing error: " + str(e))
-            log_err("Entry with error: " + entry)
-
-        xml_entry2nvh_entry(xml.dom.minidom.parseString(entry), fd)
-
-        entry_processed += 1
         if entry_processed % 100 == 0:
             log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
 
-    log_info("XML2NVH: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
+        try:
+            # Check if the entry is ok
+            entry_dom = xml.dom.minidom.parseString(entry)
+        except Exception as e:
+            log_err("Skipping entry, XML parsing error: " + str(e))
+            log_err("Entry with error: " + entry)
+            continue
+
+        main_node_value = get_titling_element_value(entry_dom, fd, titling_element)
+        is_translit = xml_entry2nvh_entry(entry_dom, fd, main_node_value, first=True)
+
+        entry_processed += 1
+
+    log_info("XML2NVHi_done: PER:%.2d, COUNT:%d/%d" % ((entry_processed/entryCount*100), entry_processed, entryCount))
+    if is_translit:
+        log_warning("Transliteration triggered!")
+
+    return entryTag
 
 
 def import_configs(db, dict_id, config_data):
@@ -182,7 +218,8 @@ def get_gen_schema_elements(schema, schema_elements, parent=''):
             get_gen_schema_elements(schema[k]["schema"], schema_elements, k)
 
 
-def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', purge=False, purge_all=False, deduplicate=False, clean=False, config_data=''):
+def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', titling_element='', 
+                purge=False, purge_all=False, deduplicate=False, clean=False, config_data=''):
     log_start('IMPORT')
     log_info(f'pid: {str(os.getpid())}')
 
@@ -197,11 +234,15 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         if filename.endswith('.xml'):
             log_info('XML to NVH processing')
             with open(filename + ".xml2nvh.nvh", 'w') as f:
-                xml2nvh(filename, f)
+                entry_tag = xml2nvh(filename, f, titling_element, entry_element)
+            if not entry_element:
+                entry_element = entry_tag
             import_nvh = nvh.parse_file(fileinput.input(filename + ".xml2nvh.nvh"))
 
         elif filename.endswith('.nvh') or filename.endswith('.in'):
             import_nvh = nvh.parse_file(fileinput.input(filename))
+            if not entry_element:
+                entry_element = import_nvh.children[0].name
 
         else:
             log_err(f'NOT a supported format: {filename}')
@@ -237,8 +278,9 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         log_info('Generating schema')
         schema = {}
         import_nvh.generate_schema(schema, tln=True)
-        with open(filename + ".schema", 'w') as schema_f:
-            nvh.print_schema(schema, outfile=schema_f)
+        schema_list = []
+        nvh.dump_schema(schema, schema_list)
+        schema_string = '\n'.join(schema_list)
 
         #import_nvh.check_schema(schema, outfile=sys.stderr)
 
@@ -268,9 +310,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # =============
         # Structure
         # =============
-        elements = {}
-        get_gen_schema_elements(schema, elements)
-        structure = {"root": main_node_name, "elements": elements, 'tab': 'advanced', 'dmlex_modules': []}
+        structure = {"root": entry_element, "nvhSchema": schema_string}
         if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
@@ -278,7 +318,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             c0 = db.execute("SELECT json FROM configs WHERE id=?", ("structure",))
             r0 = c0.fetchone()
             if r0:
-                if json.dumps(structure) != r0['json']:
+                if sorted(schema_list) != sorted(json.loads(r0['json'])["nvhSchema"].split('\n')):
                     log_warning('Old structure is not compatible with new data. Use "Purge All" option')
 
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
@@ -289,9 +329,10 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         # Formatting
         # =============
         formatting = {}
+        schema_keys = nvh.schema_keys(schema_string)
         with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
             styles = json.loads(f.read())
-            for key in elements.keys():
+            for key in schema_keys:
                 if styles.get(key):
                     formatting[key] = styles[key]
                 else:
@@ -354,7 +395,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
                 break
 
             action = "create"
-            entry_key = ops.getEntryHeadword(entry, main_node_name)
+            entry_key = ops.getEntryHeadword(entry, entry_element)
             searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
             title = "<span class='headword'>" + entry_key + "</span>"
 
@@ -366,7 +407,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
 
             if not r:
                 entryID += 1
-                entries_insert_payload.append((entryID, entry_str, entry_json, needs_refac, needs_resave, 0, tl_name, title, entry_key))
+                entries_insert_payload.append((entryID, entry_str, entry_json, needs_refac, needs_resave, 0, title, entry_key))
                 history_payload.append((entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_payload.append((entryID, searchTitle, 1))
                 if tl_node_contains_pos:
@@ -380,7 +421,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
             # Updating existing
             else:
                 action = "update"
-                entries_update_payload.append((entry_str, entry_json, needs_refac, needs_resave, 0, tl_name, title, entry_key, r["id"]))
+                entries_update_payload.append((entry_str, entry_json, needs_refac, needs_resave, 0, title, entry_key, r["id"]))
                 history_payload.append((r["id"], action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_delete_payload.append((r['id'], 1))
                 searchables_payload.append((r["id"], searchTitle, 1))
@@ -402,8 +443,8 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', main_node_name='', pu
         else:
             log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entry_inserted, entry_count))
 
-        db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, doctype, title, sortkey) VALUES (?,?,?,?,?,?,?,?,?)", entries_insert_payload)
-        db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, doctype=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
+        db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, title, sortkey) VALUES (?,?,?,?,?,?,?,?)", entries_insert_payload)
+        db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
         db.executemany("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?,?,?,?,?,?)", history_payload)
         db.executemany("DELETE FROM searchables WHERE entry_id=? and level=?", searchables_delete_payload)
         db.executemany("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", searchables_payload)
@@ -448,7 +489,9 @@ def main():
     parser.add_argument('email', type=str,
                         default='IMPORT@LEXONOMY', help='user email')
     parser.add_argument('main_node_name', type=str, default='',
-                        help='Name of the mani node of the entry (headword, entry, ...)')
+                        help='Name of the main node of the entry (headword, entry, ...)')
+    parser.add_argument('-t', '--titling_element', type=str, default='',
+                        help='Name of the titling element (headword, entry, ...)')
     parser.add_argument('-p', '--purge', action='store_true',
                         required=False, default=False,
                         help='Backup and purge dictionary history')
@@ -471,8 +514,7 @@ def main():
         with open(args.config) as f:
             config_json = json.load(f)
 
-    import_data(args.dbname, args.filename, args.email, args.main_node_name, args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)
-
+    import_data(args.dbname, args.filename, args.email, args.main_node_name, args.titling_element, args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)
 
 if __name__ == '__main__':
     main()

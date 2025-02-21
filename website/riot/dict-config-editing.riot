@@ -38,7 +38,7 @@
             class="mt-8">CSS</h2>
       <div id="editorCSS"
             onkeydown={onKeyDown}></div>
-      <div class="fixed-action-btn buttons mb-4 mr-2">
+      <div class="fixed-action-btn buttons mr-16">
          <a class="btn-floating btn-large grey"
                onclick={onScrollToClick.bind(this, "js")}>
             <span class="white-text">JS</span>
@@ -242,33 +242,34 @@
                return
             }
             this.update({isLoadingEditor: true})
-            window.loadScript("bundle.codemirror.js", () => {
-               this.update({
-                  isLoadingEditor: false,
-                  editorsInitialized: true,
-               })
-               this.editorJS = new window.CodeMirror.EditorView({
-                  extensions: [window.CodeMirror.basicSetup,
-                        window.CodeMirror.javascript(),
-                        window.CodeMirror.EditorView.updateListener.of((v) => {
-                           v.viewportChanged && this.onJSCodeUpdate()
-                        })],
-                  parent: document.getElementById("editorJS")
-               })
-               this.editorCSS = new window.CodeMirror.EditorView({
-                  extensions: [window.CodeMirror.basicSetup,
-                        window.CodeMirror.css(),
-                        window.CodeMirror.EditorView.updateListener.of((v) => {
-                           v.viewportChanged && this.onCSSCodeUpdate()
-                        })],
-                  parent: document.getElementById("editorCSS")
-               })
-               $("#editors").show()
-               this.editorJS.dispatch({changes: {from: 0,insert: this.state.data.js}})
-               this.editorCSS.dispatch({changes: {from: 0,insert: this.state.data.css}})
-               this.state.data.js && this.checkJSCode()
-               this.editorJS.focus()
-            })
+            window.loadScript("bundle.codemirror.js")
+                  .then(() => {
+                     this.update({
+                        isLoadingEditor: false,
+                        editorsInitialized: true,
+                     })
+                     this.editorJS = new window.CodeMirror.EditorView({
+                        extensions: [window.CodeMirror.basicSetup,
+                              window.CodeMirror.javascript(),
+                              window.CodeMirror.EditorView.updateListener.of((v) => {
+                                 v.viewportChanged && this.onJSCodeUpdate()
+                              })],
+                        parent: document.getElementById("editorJS")
+                     })
+                     this.editorCSS = new window.CodeMirror.EditorView({
+                        extensions: [window.CodeMirror.basicSetup,
+                              window.CodeMirror.css(),
+                              window.CodeMirror.EditorView.updateListener.of((v) => {
+                                 v.viewportChanged && this.onCSSCodeUpdate()
+                              })],
+                        parent: document.getElementById("editorCSS")
+                     })
+                     $("#editors").show()
+                     this.editorJS.dispatch({changes: {from: 0,insert: this.state.data.js}})
+                     this.editorCSS.dispatch({changes: {from: 0,insert: this.state.data.css}})
+                     this.state.data.js && this.checkJSCode()
+                     this.editorJS.focus()
+                  })
          },
 
          getConfigData() {
@@ -297,7 +298,7 @@
             } else {
                $("#codeStatus .codeStatusMessage").empty()
             }
-            $("#submit_button").toggleClass("disabled", !isValid)
+            $("primary-button .submitButton").toggleClass("disabled", !isValid)
          },
 
          saveData() {

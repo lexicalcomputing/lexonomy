@@ -1,15 +1,12 @@
-<dict-config-buttons class="buttons">
+<dict-config-buttons class="buttons {props.center ? 'justifyCenter' : ''}">
    <a href="javascript:window.history.back()"
          class="btn btn-secondary {!props.showSave ? '' : 'btn-flat'}">
       Back
    </a>
-   <button if={typeof props.showSave == "undefined" ? true : props.showSave}
-         class="btn btn-primary waves-effect waves-light {props.btnClass || ''}"
-         onclick={props.saveData}
-         id="submit_button">
-      {props.label || "Save"}
-      <i class="material-icons right">save</i>
-   </button>
+   <primary-button if={props.showSave ?? true}
+         on-click={props.saveData}
+         disabled={props.disabled}
+         label={props.label}/>
 
    <style>
       :host{

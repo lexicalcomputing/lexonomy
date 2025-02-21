@@ -35,8 +35,8 @@
       </div>
    </div>
    <dict-config-buttons save-data={saveData}
-         btn-class={state.isUrlInvalid || state.isCheckingUrl ? "disabled" : ""}
-         label="Change"></dict-config-buttons>
+         disabled={state.isUrlInvalid || state.isCheckingUrl}
+         label="Change"/>
 
    <script>
       export default {
@@ -44,6 +44,14 @@
             isCheckingUrl: false,
             isUrlInvalid: true,
             urlError: ""
+         },
+
+         onBeforeMount(){
+            this.checkUrlDebounced = window.debounce(this.checkUrl.bind(this), 200)
+         },
+
+         onBeforeUnmount(){
+            this.checkUrlDebounced.clearTimeout()
          },
 
          saveData() {
@@ -68,17 +76,21 @@
                this.state.isUrlInvalid = true
                this.state.urlError = "Invalid character in URL"
             } else {
-               this.state.isCheckingUrl = true
-               this.store.isDictionaryUrlTaken(evt.target.value)
-                     .done(response => {
-                        this.update({
-                           isUrlInvalid: response.success,
-                           isCheckingUrl: false,
-                           urlError: "URL already taken"
-                        })
-                     })
+               this.checkUrlDebounced()
             }
             this.update()
+         },
+
+         checkUrl(){
+            this.update({isCheckingUrl: true})
+            this.store.isDictionaryUrlTaken(document.getElementById("url").value)
+                  .done(response => {
+                     this.update({
+                        isUrlInvalid: response.exists,
+                        isCheckingUrl: false,
+                        urlError: "URL already taken"
+                     })
+                  })
          }
       }
    </script>

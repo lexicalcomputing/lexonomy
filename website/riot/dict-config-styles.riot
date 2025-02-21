@@ -1,6 +1,6 @@
 <dict-config-styles>
    <loading-overlay if={state.isBusy}/>
-   <h1 class="pageTitle">Custom styles</h1>
+   <h1 class="pageTitle">Lexonomy styling</h1>
    <dict-configuration-issues config-id="styles"/>
    <div class="helper-text mt-2 mb-12">
       You can change the appearance of Lexonomy for this dictionary. To change entry style, please, go to <a href="#/{dictData.dictId}/config/formatting">Entry formatting</a>.
@@ -27,19 +27,20 @@
          onMounted(){
             this.state.customCss = this.dictData.config.styles.css
             this.state.customCss && this.refreshCustomStyles()
-            window.loadScript("bundle.codemirror.js", () => {
-               this.update({isBusy: false})
-               this.editor = new window.CodeMirror.EditorView({
-                  extensions: [window.CodeMirror.basicSetup,
-                        window.CodeMirror.css(),
-                        window.CodeMirror.EditorView.updateListener.of((v) => {
-                           v.viewportChanged && this.onCustomCssUpdate()
-                        })],
-                  parent: document.getElementById("editorCSS")
-               })
-               this.editor.dispatch({changes: {from: 0, insert: this.state.customCss}})
-               this.editor.focus()
-            })
+            window.loadScript("bundle.codemirror.js")
+                  .then(() => {
+                     this.update({isBusy: false})
+                     this.editor = new window.CodeMirror.EditorView({
+                        extensions: [window.CodeMirror.basicSetup,
+                              window.CodeMirror.css(),
+                              window.CodeMirror.EditorView.updateListener.of((v) => {
+                                 v.viewportChanged && this.onCustomCssUpdate()
+                              })],
+                        parent: document.getElementById("editorCSS")
+                     })
+                     this.editor.dispatch({changes: {from: 0, insert: this.state.customCss}})
+                     this.editor.focus()
+                  })
          },
 
          onBeforeUnmount(){

@@ -1,0 +1,75 @@
+<nvh-markup-dialog>
+   <div class="grey-text">
+      You can set additional attributes of the selected text.
+   </div>
+   <div each={field in form}>
+      <div class="input-field">
+         <label>{field.label}</label>
+         <input type="text"
+               value={field.value || ""}
+               oninput={onFieldInput.bind(this, field)}
+               onkeyup={onFieldKeyUp}>
+      </div>
+   </div>
+   <div class="buttons">
+      <button onclick={onCloseClick}
+            class="btn ml-auto">cancel</button>
+      <button onclick={onSaveClick}
+            class="btn btn-primary">save</button>
+   </div>
+
+   <script>
+      export default{
+         onBeforeMount(){
+            this.nvhStore = window.nvhStore
+            let config = this.nvhStore.getElementConfig(this.props.elementPath)
+            let values = {}
+            ;[...this.props.markupNode.attributes].forEach(attribute => {
+               if(attribute.name.startsWith("child_")){
+                  values[attribute.name.substring(6)] = attribute.value
+               }
+            })
+            this.form = config.children.map(childPath => {
+               let field = {
+                  label: childPath.split(".").pop(),
+                  path: childPath
+               }
+               if(values && values[childPath]){
+                  field.value = values[childPath]
+               }
+               return field
+            })
+         },
+
+         onFieldInput(field, evt){
+            field.value = evt.target.value
+         },
+
+         onFieldKeyUp(evt){
+            if(evt.keyCode == 13){
+               this.saveAndClose()
+            }
+         },
+
+         onCloseClick(){
+            window.modal.close()
+         },
+
+         onSaveClick(){
+            this.saveAndClose()
+         },
+
+         saveAndClose(){
+            this.form.forEach(field => {
+               let attributeName = `child_${field.path}`
+               if(field.value){
+                  this.props.markupNode.setAttribute(attributeName, field.value)
+               } else {
+                  this.props.markupNode.removeAttribute(attributeName)
+               }
+            })
+            window.modal.close()
+         }
+      }
+   </script>
+</nvh-markup-dialog>

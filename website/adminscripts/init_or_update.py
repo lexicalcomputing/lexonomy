@@ -113,44 +113,85 @@ def update_main_db():
 
 
 def update_dict_db():
+    def versiontuple(v):
+        return tuple(map(int, (v.split("."))))
 
     #Updates all json entry parts to new format with paths in names -> tag 2.153
     def update_json_2_153(file, conn):
-        def versiontuple(v):
-            return tuple(map(int, (v.split("."))))
+        update_payload = []
+        update_counter = 0
+        for entry in conn.execute('SELECT id, nvh FROM entries').fetchall():
+            new_json = ops.nvh2jsonDump(entry['nvh'])
+            update_payload.append((new_json, entry['id']))
+            update_counter += 1
 
-        dict_meta = conn.execute("SELECT json FROM configs WHERE id='metadata'").fetchone()
-        if dict_meta:
-            metadata = json.loads(dict_meta['json'])
-            version = metadata.get('version', '0.0.0')
-            if versiontuple(version) < versiontuple('2.153'):
-                update_payload = []
-                update_counter = 0
-                for entry in conn.execute('SELECT id, nvh FROM entries').fetchall():
-                    new_json = ops.nvh2jsonDump(entry['nvh'])
-                    update_payload.append((new_json, entry['id']))
-                    update_counter += 1
+        conn.executemany('UPDATE entries SET json=? WHERE id=?', update_payload)
 
-                conn.executemany('UPDATE entries SET json=? WHERE id=?', update_payload)
+        # Update version
+        metadata['version'] = '2.153'
+        conn.execute('UPDATE configs SET json=? WHERE id=?', (json.dumps(metadata), 'metadata'))
 
-                # Update version
-                metadata['version'] = '2.153'
-                conn.execute('UPDATE configs SET json=? WHERE id=?', (json.dumps(metadata), 'metadata'))
+        print(f'OK - {file}: updated {update_counter} entries')
 
-                print(f'OK - {file}: updated {update_counter} entries')
+    # creates only nvh schema and removes json schema from db
+    def update_schema_3_0(file, conn):
+        from nvh import nvh
+        structure_data = json.load(conn.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
+
+        schema_json = structure_data['elements']
+        schema_nvh = nvh.schema_json2nvh(schema_json)
+        del structure_data['elements']
+        structure_data['nvhSchema'] = '\n'.join(schema_nvh)
+
+        if structure_data.get('tab', False):
+            tab = structure_data['tab']
+            structure_data['mode'] = 'dmlex' if tab == 'dmlex' else 'custom'
+            structure_data['tab'] = 'code' if tab == 'custom' else 'visual'
+        else:
+            structure_data['mode'] = "custom"
+            structure_data['tab'] = "visual"
+
+        conn.execute("UPDATE configs SET json=? WHERE id='structure'", json.dumps(structure_data))
+
+        # Update version
+        metadata['version'] = '2.170'
+        conn.execute('UPDATE configs SET json=? WHERE id=?', (json.dumps(metadata), 'metadata'))
+
+        print(f'OK - {file}: updated structure')
+
+    def rm_doctype_3_1(file, conn):
+        conn.execute("ALTER TABLE entries DROP COLUMN doctype")
+        print(f'OK - {file}: removed doctype')
 
     print("Updating dicts ...")
     for file in os.listdir(dicts_path):
         if file.endswith('.sqlite'):
             conn = get_db(os.path.join(dicts_path, file))
+            dict_meta = conn.execute("SELECT json FROM configs WHERE id='metadata'").fetchone()
+            if dict_meta:
+                metadata = json.loads(dict_meta['json'])
+                version = metadata.get('version', '0.0.0')
 
             # ========================
             # UPDATES
             # ========================
-            try:
-                update_json_2_153(file, conn)
-            except Exception as e:
-                print(f'EERROR - {file}: {e}')
+            if versiontuple(version) < versiontuple('2.153'):
+                try:
+                    update_json_2_153(file, conn)
+                except Exception as e:
+                    print(f'ERROR (2.153) - {file}: {e}')
+
+            if versiontuple(version) < versiontuple('3.0'):
+                try:
+                    update_schema_3_0(file, conn)
+                except Exception as e:
+                    print(f'ERROR (3.0) - {file}: {e}')
+
+            if versiontuple(version) < versiontuple('3.1'):
+                try:
+                    rm_doctype_3_1(file, conn)
+                except Exception as e:
+                    print(f'ERROR (3.1) - {file}: {e}')
 
             conn.commit()
             conn.close()

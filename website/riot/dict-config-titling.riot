@@ -42,8 +42,8 @@
             <input name="hwannotype"
                   type="radio"
                   value="simple"
-                  checked={ state.data.headwordAnnotationsType == "simple" }
-                  onchange={ changeAnnotation }/>
+                  checked={state.data.headwordAnnotationsType == "simple"}
+                  onchange={onAnnotationRadioChange}/>
             <span>simple</span>
          </label>
          <br/>
@@ -60,8 +60,8 @@
             <input name="hwannotype"
                   type="radio"
                   value="advanced"
-                  checked={ state.data.headwordAnnotationsType == "advanced" }
-                  onchange={ changeAnnotation }/>
+                  checked={state.data.headwordAnnotationsType == "advanced"}
+                  onchange={onAnnotationRadioChange}/>
             <span>advanced</span>
          </label>
          <br/>
@@ -70,7 +70,7 @@
                   class="materialize-textarea"
                   placeholder="headword annotations"
                   disabled={ state.data.headwordAnnotationsType == "simple" }>{ state.data.headwordAnnotationsAdvanced }</textarea>
-            <span class="helper-text">You can insert any HTML containing placeholders for elements in the form of '%(element)', e.g. '&lt;b>%(headword)&lt;/b>'.</span>
+            <span class="helper-text">You can insert any HTML containing placeholders for elements in the form of '%(element)', e.g. '&lt;b>%(entry.headword)&lt;/b>'.</span>
          </div>
       </div>
    </div>
@@ -107,14 +107,9 @@
             }
          },
 
-         changeAnnotation() {
-            if ($("[name=hwannotype][value=advanced]").is(":checked")) {
-               $("#headwordAnnotations select").attr("disabled", "disabled")
-               $("#advancedAnnotations").removeAttr("disabled")
-            } else {
-               $("#advancedAnnotations select").attr("disabled", "disabled")
-               $("#headwordAnnotations").removeAttr("disabled")
-            }
+         onAnnotationRadioChange(evt) {
+            this.state.data.headwordAnnotationsType = evt.target.value
+            this.update()
          },
 
          onMounted() {
@@ -129,9 +124,9 @@
             this.store.loadDictionaryConfig("titling")
                   .done(response => {
                      this.state.data = response.content
-                     if (!this.state.data.numberEntries) this.state.data.numberEntries = 1000
-                     if (!this.state.data.headwordAnnotationsType) this.state.data.headwordAnnotationsType = "simple"
-                     if (!this.state.data.headwordAnnotations) this.state.data.headwordAnnotations = []
+                     this.state.data.numberEntries = this.state.data.numberEntries || 1000
+                     this.state.data.headwordAnnotationsType = this.state.data.headwordAnnotationsType || "simple"
+                     this.state.data.headwordAnnotations = this.state.data.headwordAnnotations || []
                      if(this.state.data.locale){
                         $("#locale").val(this.store.getLanguageName(this.state.data.locale))
                      }

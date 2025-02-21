@@ -114,7 +114,7 @@
       </div>
    </template>
    <dict-config-buttons save-data={saveData}
-         show-save={!state.showMissingHeadwordWarning}></dict-config-buttons>
+         disabled={!!state.showMissingHeadwordWarning}/>
 
    <script>
       export default {

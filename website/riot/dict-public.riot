@@ -156,7 +156,8 @@
             <span class="mr-2">
                {dictData.licence.toUpperCase()}
             </span>
-            <a href={dictData.siteconfig.licences[dictData.licence].url}
+            <a if={dictData.siteconfig.licences[dictData.licence]}
+                  href={dictData.siteconfig.licences[dictData.licence].url}
                   class="verticalMiddle"
                   target="_blank">
                <img src="{dictData.siteconfig.licences[dictData.licence].icon}">
@@ -210,7 +211,7 @@
          },
 
          onToggleQueryBuilder(show){
-            this.update({showQueryBuilder: typeof show == "undefined" ? !this.state.showQueryBuilder : show})
+            this.update({showQueryBuilder: show ?? !this.state.showQueryBuilder})
          },
 
          onClone(){
@@ -265,9 +266,8 @@
 
          getEntryUrl(){
             let editorMode = this.dictData.userAccess
-                  && this.dictData.userAccess.canEdit
-                  && window.nvhStore.data.customEditor ? "edit" : "view"
-            return `#/${this.dictData.dictId}/edit/${this.dictData.doctype}/${this.state.displayedEntryId}/${editorMode}`
+                  && this.dictData.userAccess.canEdit ? "edit" : "view"
+            return `#/${this.dictData.dictId}/edit/${this.state.displayedEntryId}/${editorMode}`
          },
 
          initializeDropdown(){

@@ -20,6 +20,11 @@ class AdminTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.schema_nvh = [
+            "entry: * ~.+",
+            "  pos: ~.+",
+            "  sense: * ~.+",
+        ]
         cls.export_filepath = None
         cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         cls.website = config.website
@@ -44,7 +49,7 @@ class AdminTests(unittest.TestCase):
     # DICT CREATE
     def test_01(self):
         data = {'url': self.dict_name,
-                'schemaKeys': json.dumps(["entry", "entry.flag", "entry.sense", "entry.sense.example"]),
+                "structure": json.dumps({"nvhSchema": "\n".join(self.schema_nvh)}),
                 'title': 'title',
                 'addExamples': 'false'}
         r = requests.post(url=self.website + "/make.json", data=data,
@@ -168,6 +173,11 @@ class AdminTests(unittest.TestCase):
 class UserTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.schema_nvh = [
+            "entry: * ~.+",
+            "  pos: ~.+",
+            "  sense: * ~.+",
+        ]
         cls.export_filepath = None
         cls.headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         cls.website = config.website
@@ -200,7 +210,7 @@ class UserTests(unittest.TestCase):
     # DICT CREATE (ADMIN)
     def test_01(self):
         data = {'url': self.dict_name,
-                'schemaKeys': json.dumps(["entry", "entry.flag", "entry.sense", "entry.sense.example"]),
+                "structure": json.dumps({"nvhSchema": "\n".join(self.schema_nvh)}),
                 'title': 'title',
                 'addExamples': 'false'}
         r = requests.post(url=self.website + "/make.json", data=data,

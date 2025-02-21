@@ -1,10 +1,6 @@
 window.showTooltip = (selector, message, delay, options) => {
    let node = $(selector)
-   let instance = M.Tooltip.getInstance(node)
-   if(instance){
-      instance.destroy()
-   }
-
+   if(M.Tooltip.getInstance(node)) return
 
    node.tooltip(Object.assign({
       enterDelay: delay || 0,
@@ -13,15 +9,21 @@ window.showTooltip = (selector, message, delay, options) => {
    }, options || {}))
    let tooltip = M.Tooltip.getInstance(node)
    setTimeout(function(node){
-      if($(node).is(":hover")){
-         let tooltip = M.Tooltip.getInstance(node)
-         tooltip && tooltip.open()
+      let tooltip = M.Tooltip.getInstance(node)
+      if(tooltip){
+         if(node.is(":hover")){
+            tooltip.open()
+         } else {
+            tooltip.destroy()
+         }
       }
    }.bind(null, node), delay || 0)
-   node.one("mouseleave", function(){
-      !this.isOpen && this.destroy()
-   }.bind(tooltip))
 
+   tooltip.onClose = () => {
+      setTimeout(function(tooltip){
+         tooltip.destroy()
+      }.bind(null, tooltip), 300)
+   }
    return tooltip
 }
 
@@ -265,6 +267,15 @@ window.escapeHTML = str => {
          .replace(/>/g, "&gt;")
 }
 
+window.unescapeHTML = str => {
+   return String(str)
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, "\"")
+      .replace(/&apos;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+}
+
 window.stringToElement = str => {
    // string should have only one top level element
    str = str.trim()
@@ -288,6 +299,33 @@ window.getElementPreceedingText = element => {
       }
    }
    return text.trim()
+}
+
+window.countAllSubstrings = (str, subStr) => {
+   // including overlaps: search "aa" in "aaaa" returns 3
+   let count = 0
+   let pos = str.indexOf(subStr)
+   while (pos !== -1) {
+      count++
+      pos = str.indexOf(subStr, pos + 1)
+   }
+   return count
+}
+
+window.getNthSubstringIndex = (str, subStr, maxIndex) => {
+   let index = null
+   let count = 0
+   while (maxIndex > 0 && index !== -1) {
+        index = str.indexOf(subStr, index)
+        if (index !== -1) {
+            count++
+            if (count == maxIndex) {
+                return index
+            }
+            index++ // Move to the next position after the current match
+        }
+    }
+   return -1
 }
 
 window.objectEquals = (x, y) => {
@@ -337,29 +375,67 @@ window.debounce = (func, timeout = 300) => {
    return f
 }
 
-window.loadScript = (src, onLoad) => {
-   let id = window.idEscape(src)
-   let script = document.getElementById(id)
-   if(!script){
-      script = document.createElement("script")
-      script.onload = () => {
-         script.attributes.loaded = 1
-         window.dispatcher.trigger(`SCRIPT_LOADED_${id}`)
+window.loadScript = (src) => {
+   return new Promise((resolve, reject) => {
+      onScriptLoaded = success => {
+         if(!success){
+            window.showToast(`Could not load script "${src}".`)
+         }
+         script.setAttribute("loaded", success * 1)
+         window.dispatcher.trigger(`SCRIPT_LOADED_${id}`, {
+            script: src,
+            success: success
+         })
       }
-      script.onerror = () => {
-         window.showToast(`Could not load script "${src}".`)
+
+      let id = window.idEscape(src)
+      let script = document.getElementById(id)
+      window.dispatcher.one(`SCRIPT_LOADED_${id}`, result => {
+         result.success ? resolve(result) : reject(result)
+      })
+      if(!script){
+         script = document.createElement("script")
+         script.onload = onScriptLoaded.bind(null, true)
+         script.onerror = onScriptLoaded.bind(null, false)
+         script.id = id
+         script.src = `${src}?ver=${window.LEXONOMY_VERSION}`
+         document.head.appendChild(script)
+      } else if (script.attributes.loaded){
+         onScriptLoaded(script.attributes.loaded == 1)
       }
-      window.dispatcher.one(`SCRIPT_LOADED_${id}`, onLoad)
-      script.id = id
-      script.src = `${src}?ver=${window.LEXONOMY_VERSION}`
-      document.head.appendChild(script)
-   } else {
-      if(script.attributes.loaded){
-         onLoad()
-      } else {
-         window.dispatcher.one(`SCRIPT_LOADED_${id}`, onLoad)
+   })
+}
+
+window.loadStylesheet = (href) => {
+   return new Promise((resolve, reject) => {
+      onLinkLoaded = success => {
+         if(!success){
+            window.showToast(`Could not load stylesheet "${href}".`)
+         }
+         link.setAttribute("loaded", success * 1)
+         window.dispatcher.trigger(`STYLESHEET_LOADED_${id}`, {
+            link: href,
+            success: success
+         })
       }
-   }
+      let id = window.idEscape(href)
+      let link = document.getElementById(id)
+      window.dispatcher.one(`STYLESHEET_LOADED_${id}`, result => {
+         result.success ? resolve(result) : reject(result)
+      })
+      if(!link){
+         link = document.createElement("link")
+         link.rel = 'stylesheet'
+         link.type = 'text/css'
+         link.onload = onLinkLoaded.bind(null, true)
+         link.onerror = onLinkLoaded.bind(null, false)
+         link.id = id
+         link.href = `${href}?ver=${window.LEXONOMY_VERSION}`
+         document.head.appendChild(link)
+      } else if(link.attributes.loaded){
+         onLinkLoaded(link.attributes.loaded == 1)
+      }
+   })
 }
 
 window.openConfirmDialog = (params) => {

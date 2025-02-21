@@ -14,15 +14,6 @@
       <span class="totalEntries">total {window.Formatter.num(dictData.entryCount)} entries</span>
    </h1>
    <template if={dictData.isDictionaryLoaded}>
-      <div if={ dictData.doctypes.length > 1 }
-            class="doctypes">
-         <ul class="tabs">
-            <li each={ type in dictData.doctypes }
-                  class="tab col s2 {type == dictData.doctype ? 'active' : ''}">
-               <a onclick={ doChangeDoctype.bind(this, type) }>{ type }</a>
-            </li>
-         </ul>
-      </div>
       <div id="dictEditContainer">
          <div class="positionRelative">
             <entry-list/>
@@ -51,7 +42,8 @@
             <span class="mr-2">
                {dictData.licence.toUpperCase()}
             </span>
-            <a href={dictData.siteconfig.licences[dictData.licence].url}
+            <a if={dictData.siteconfig.licences[dictData.licence]}
+                  href={dictData.siteconfig.licences[dictData.licence].url}
                   class="verticalMiddle"
                   target="_blank">
                <img src="{dictData.siteconfig.licences[dictData.licence].icon}">
@@ -83,6 +75,7 @@
             document.addEventListener('keydown', this.onDocumentKeyDown)
             document.addEventListener('mouseup', this.onDocumentMouseUp)
             window.addEventListener('resize', this.onResizeDebounced)
+            window.addEventListener('scroll', this.refreshEntryListMenuHeight)
             this.refreshEntryListMenu()
             setTimeout(() => {$(".sidenav-trigger").removeClass("pulse")}, 3000)
          },
@@ -91,12 +84,14 @@
             if($('#entryListSidenav')[0] && !M.Sidenav.getInstance($('#entryListSidenav')[0])){
                this.refreshEntryListMenu()
             }
+            this.refreshEntryListMenuHeight()
          },
 
          onBeforeUnmount(){
             document.removeEventListener('keydown', this.onDocumentKeyDown)
             document.removeEventListener('mousedown', this.onDocumentMouseUp)
             window.removeEventListener('resize', this.onResizeDebounced)
+            window.removeEventListener('scroll', this.refreshEntryListMenuHeight)
          },
 
          onEntryIdChanged(){
@@ -104,22 +99,14 @@
          },
 
          onToggleQueryBuilder(show){
-            this.update({showQueryBuilder: typeof show == "undefined" ? !this.state.showQueryBuilder : show})
-         },
-
-         doChangeDoctype(newdoctype) {
-            if (newdoctype != this.dictData.doctype) {
-               this.dictData.search.searchtext = ""
-               this.dictData.search.modifier = "start"
-               this.dictData.search.advanced_query = ""
-               route(this.dictData.dictId + "/edit/" + newdoctype)
-               let request = this.store.loadEntryList()
-               request && request.done(() => {
-                     if(this.dictData.entryList.length){
-                        this.store.changeEntryId(this.dictData.entryList[0].id)
-                     }
-                  })
-               this.update()
+            this.update({showQueryBuilder: show ?? !this.state.showQueryBuilder})
+            if(this.state.isMobile){
+               let sidenav = M.Sidenav.getInstance($('#entryListSidenav')[0])
+               if(this.state.showQueryBuilder){
+                  sidenav.close()
+               } else {
+                  sidenav.open()
+               }
             }
          },
 
@@ -245,6 +232,21 @@
             } else {
                sidenav.css("transform", "unset")
             }
+            this.refreshEntryListMenuHeight()
+         },
+
+         refreshEntryListMenuHeight(){
+            let entryList = document.querySelector(".entry-list")
+            if(entryList){
+               let filterFormHeight = Math.round(document.querySelector("dict-entry-filter").clientHeight)
+               if(this.state.isMobile){
+                  entryList.style.maxHeight = `calc(100vh - ${filterFormHeight}px)`
+               } else {
+                  let entryListTop = document.querySelector("entry-list").getBoundingClientRect().top
+                  let offset = filterFormHeight + Math.max(0, entryListTop)
+                  entryList.style.maxHeight = `calc(100vh - ${offset}px)`
+               }
+            }
          }
       }
    </script>
@@ -324,6 +326,10 @@
          }
       }
       :host:not(.isMobile){
+         .entryListContainer{
+            position: sticky;
+            top: 0;
+         }
          .hideSideMenu{
             .entryListContainer{
                width: 0!important;

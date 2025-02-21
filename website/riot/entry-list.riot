@@ -15,7 +15,7 @@
          <div class="entry-list"
                onscroll={onEntryListScroll}>
             <a each={ (entry, idx) in dictData.entryList }
-                  href="#/{dictData.dictId}/edit/{dictData.doctype}/{entry.id}/{dictData.editorMode}{store.getEntrySearchUrlQueryString()}"
+                  href="#/{dictData.dictId}/edit/{entry.id}/{dictData.editorMode}{store.getEntrySearchUrlQueryString()}"
                   data-idx={idx}
                   class="entry-list-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}">
                <span class="lineNum">{idx + 1}.</span>
@@ -486,8 +486,6 @@
       .entryListContainer{
          min-height: 50vh;
          transition: width 0.2s;
-         position: sticky;
-         top: 0;
       }
       .noEntries{
          padding-top: 10vh;

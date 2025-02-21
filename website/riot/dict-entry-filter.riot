@@ -11,7 +11,7 @@
                data-tooltip="In basic tab you can start search with '#' to search by entry ID (e.g. '#17').">help_outline</i>
       </span>
    </ul>
-   <div class="filterForm">
+   <div class="filterForm tabContent">
       <div if={dictData.search.tab == "basic"}>
          <span class="searchBox inputWithRightIcon">
             <input type="text"
@@ -110,7 +110,7 @@
 
          onToggleQueryBuilder(show){
             this.update()
-            $(this.root).toggleClass("showQueryBuilder", typeof show == "undefined" ? "" : show)
+            $(this.root).toggleClass("showQueryBuilder", show ?? "")
          },
 
          onAdvancedQueryFocus(){
@@ -242,7 +242,6 @@
          }
       }
       .filterForm{
-         background-color: #fafafa;
          padding: 10px;
          div{
             display: flex;

@@ -17,14 +17,15 @@ class StoreClass {
          ],
          ENTRY_TYPES: {
             string: "Text",
-            markup: "Text markup",
+            list: "List",
             int: "Number",
+            markup: "Text markup",
             image: "Image",
             audio: "Audio",
+            video: "Video",
             url: "URL",
             empty: "Empty", // no value, just child elements
-            bool: "Yes/No",
-            list: "List"
+            bool: "Yes/No"
          }
       }
       this.data = {
@@ -50,6 +51,7 @@ class StoreClass {
             advanced_query: ''
          }
       }
+      this.schema = new window.NvhSchemaClass()
 
       this.resetDictionary()
    }
@@ -58,13 +60,10 @@ class StoreClass {
       return this.data.dictionaryList.find(d => d.id == dictId)
    }
 
-   open(dictId, doctype, entryId, editorMode){
+   open(dictId, entryId, editorMode){
       this.changeDictionary(dictId)
-      this.changeDoctype(doctype)
       entryId && this.changeEntryId(entryId)
-      if(editorMode){
-         this.data.editorMode = editorMode
-      }
+      this.data.editorMode = editorMode || "edit"
    }
 
    changeDictionary(dictId){
@@ -76,19 +75,6 @@ class StoreClass {
             this.loadActualDictionary()
          } else {
             this.trigger("dictionaryChanged")
-         }
-      }
-   }
-
-   changeDoctype(doctype){
-      if(this.data.isDictionaryLoading){
-         this.one("dictionaryChanged", this.changeDoctype.bind(this, doctype))
-      } else if(this.data.config){  // is dictionary loaded
-         doctype = doctype || this.data.doctypes[0]
-         if(doctype != this.data.doctype){
-            this.data.doctype = doctype
-            this.data.config.structure.root = doctype
-            this.trigger("doctypeChanged")
          }
       }
    }
@@ -223,16 +209,8 @@ class StoreClass {
    }
 
    isStructureValid(){
-      return this.data.config
-            && this.data.config.structure
-            && this.data.config.structure.root
-            && this.data.config.structure.elements
-            && !!this.data.config.structure.elements[this.data.config.structure.root]
-            && Object.values(this.data.config.structure.elements).every(element => {
-               return element.children
-                     && element.type
-                     && this.const.ENTRY_TYPES[element.type]
-            })
+      return !this.schema.isEmpty()
+            && this.schema.isValid
    }
 
    resetDictionary(){
@@ -245,8 +223,6 @@ class StoreClass {
          isEntryLoaded: false,
          isDictionaryExamplesLoading: false,
          config: null,
-         doctype: null,
-         doctypes: null,
          entryList: null,
          entry: null,
          dictId: null,
@@ -257,7 +233,7 @@ class StoreClass {
             modifier: 'start',
             advanced_query: ''
          },
-         editorMode: 'view',
+         editorMode: 'edit',
          userAccess: false,
          dictionaryExamples: null,
          dictionaryExamplesHasMore: null
@@ -348,50 +324,25 @@ class StoreClass {
                      this.trigger("unauthorizedDictionary")
                      return
                   }
-                  let elements = response.configs.structure.elements
-                  if(!response.configs.formatting){
-                     response.configs.formatting = {
-                        elements: response.configs.xemplate
-                     }
+                  if(!response.userAccess.canEdit){
+                     this.data.editorMode = "view"
                   }
-                  if(!response.configs.formatting.elements){
-                     response.configs.formatting = {elements: response.configs.formatting}
-                  }
-                  if(!response.configs.searchability.templates){
-                     response.configs.searchability.templates = []
-                  }
-                  if(elements){
-                     Object.keys(elements).forEach(elementPath => {
-                        if(!response.configs.formatting.elements[elementPath]){
-                           response.configs.formatting.elements[elementPath] = {}
-                        }
-                     })
-                     Object.entries(elements).forEach(([elementPath, element]) => {
-                        if(typeof element.children == "undefined"){
-                           element.children = []
-                        }
-                        /*element.children.forEach(childName => {
-                           elements[childName].parent = elementPath
-                        })*/
-                        if(typeof element.min != "undefined"){
-                           element.min = element.min * 1
-                        }
-                        if(typeof element.max != "undefined"){
-                           element.max = element.max * 1
-                        }
-                        element.values = element.values || []
+                  this.schema.update(response.configs.structure?.nvhSchema || "")
+                  response.configs.formatting ??= {}
+                  response.configs.formatting.elements ??= {}
+                  response.configs.searchability.templates ??= []
+                  if(!this.schema.isEmpty()){
+                     this.schema.forEach(element => {
+                        response.configs.formatting.elements[element.path] ??= {}
                      })
                   }
                   Object.assign(this.data, {
                         config: response.configs,
-                        userAccess: response.userAccess,
-                        doctype: response.doctype,
-                        doctypes: response.doctypes
+                        userAccess: response.userAccess
                      },
                      response.publicInfo
                   )
 
-                  window.xema = this.data.config.structure  // global variable xema is used by some custom editors
                   this.data.isDictionaryLoaded = true
                   this.data.isDictionaryLoading = false
                   if(this.data.siteconfig.showDictionaryNameInPageTitle){
@@ -407,12 +358,7 @@ class StoreClass {
                this.data.isDictionaryLoading = false
                this.trigger("isDictionaryLoadingChanged")
                if(response.userAccess && !["dict-config-structure", "unauthorized"].includes(this.data.actualPage)
-                     && (!this.data.doctypes
-                              || !this.data.doctypes.length
-                              || !this.data.doctypes[0]
-                              || !this.isStructureValid()
-                        )
-               ){
+                     && !this.isStructureValid()){
                   this.showBrokenStructureDialog()
                }
             })
@@ -446,7 +392,7 @@ class StoreClass {
    reloadCurrentEntries(){
       // reload current loaded entries (initial entry batch + entries loaded via scrolling in entry list)
       let min = this.data.config.titling.numberEntries || 500
-      return this.loadEntries(this.getEntrySearchParams(this.data.entryList.length < min ? min : this.data.entryList.length))
+      return this.loadEntries(this.getEntrySearchParams(this.data.entryList?.length ?? 0 < min ? min : this.data.entryList.length))
             .done(response => {
                if(response.entries){
                   this.data.entryList = this.processFlagsInEntryList(response.entries)
@@ -457,7 +403,7 @@ class StoreClass {
    }
 
    loadEntryList(howmany){
-      if(!this.data.dictId || (window.auth.data.authorized && !this.data.doctype)){
+      if(!this.data.dictId || !window.auth.data.authorized){
          return
       }
       this.data.isEntryListLoading = true
@@ -484,7 +430,7 @@ class StoreClass {
    loadEntries(data){
       let url
       if(window.auth.data.authorized && (this.data.userAccess.canView || this.data.userAccess.canEdit)){
-         url = `${window.API_URL}${this.data.dictId}/${this.data.doctype}/entrylist.json`
+         url = `${window.API_URL}${this.data.dictId}/entrylist.json`
       } else {
          url = `${window.API_URL}${this.data.dictId}/search.json`
       }
@@ -579,11 +525,13 @@ class StoreClass {
             .done(response => {
                if(response.success){
                   this.data.entryId = null
-                  let idx = this.data.entryList.findIndex(e => e.id == response.id)
-                  let nextEntry = this.data.entryList[idx + 1] || this.data.entryList[idx - 1]
-                  this.data.entryList.splice(idx, 1)
-                  if(nextEntry){
-                     this.changeEntryId(nextEntry.id)
+                  if(this.data.entryList){
+                     let idx = this.data.entryList.findIndex(e => e.id == response.id)
+                     let nextEntry = this.data.entryList[idx + 1] || this.data.entryList[idx - 1]
+                     this.data.entryList.splice(idx, 1)
+                     if(nextEntry){
+                        this.changeEntryId(nextEntry.id)
+                     }
                   }
                   this.trigger("entryListChanged", response.id)
                }
@@ -763,6 +711,21 @@ class StoreClass {
          failMessage: "Could not create the dictionary.",
          successMessage: "The dictionary was created."
       }, xhrParams))
+            .done(response => {
+               if(response.success) {
+                  this.loadDictionaryList()
+               }
+            })
+   }
+
+   createDictionaryFromTemplate(data){
+      return window.connection.post(Object.assign({
+         url: `${window.API_URL}make_templated.json`,
+         method: 'POST',
+         data: data,
+         failMessage: "Could not create the dictionary.",
+         successMessage: "The dictionary was created."
+      }))
             .done(response => {
                if(response.success) {
                   this.loadDictionaryList()
@@ -1286,8 +1249,8 @@ class StoreClass {
 
    showBrokenStructureDialog(){
       let content = this.data.userAccess.canConfig
-            ? `There is an error in dictionary configruation. Entry structure is broken. <div class="center-align mt-6"><a id="btnOpenStructureConfig" class="btn btn-primary">open structure settings</a></div>`
-            : `There is an error in dictionary configruation. Entry structure is broken. Please contact the owner of the dictionary`
+            ? `There is an error in dictionary configuration. Entry structure is broken. <div class="center-align mt-6"><a id="btnOpenStructureConfig" class="btn btn-primary">open structure settings</a></div>`
+            : `There is an error in dictionary configuration. Entry structure is broken. Please contact the owner of the dictionary`
       window.modal.open({
          title: "Broken structure",
          tag: "raw-html",
@@ -1494,8 +1457,8 @@ class StoreClass {
    }
 
    advancedSearchParseRule(rule, groupArray){
-      if(rule.attr != ".*" && !this.data.config.structure.elements[rule.attr]){
-         let suggestion = Object.keys(this.data.config.structure.elements).find(element =>  element.startsWith(rule.attr))
+      if(rule.attr != ".*" && !this.schema.getElementByPath(rule.attr)){
+         let suggestion = this.schema.findElement(element => element.path.startsWith(rule.attr))?.path
          throw `Unknown element "${rule.attr}".${suggestion ? ' Did you mean "' + suggestion + '"?' : ''}`
       }
       if(!rule.operator){
@@ -1506,7 +1469,7 @@ class StoreClass {
          if(groupArray.length){
             let ruleIdx = groupArray.findIndex(g => g.attr = rule.attr)
             let nextRule = groupArray[ruleIdx + 1]
-            if(nextRule && !this.data.config.structure.elements[nextRule.attr]){
+            if(nextRule && !this.schema.getElementByPath(nextRule.attr)){
                missingQuotes = ` Did you forget to put "${nextRule.attr}" in quotes?`
             }
          }

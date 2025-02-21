@@ -41,7 +41,7 @@ with open(os.path.join(currdir, 'version.txt')) as v_f:
 DEFAULT_ENTRY_LIMIT = 5000
 defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
-                     "structure": {"elements": {}},
+                     "structure": {"nvhSchema": "", 'root': ''},
                      "titling": {"headwordAnnotations": []},
                      "flagging": {"flag_element": "", "flags": []},
                      "entry_count": 0}
@@ -232,17 +232,13 @@ def verifyLoginAndProjectAccess(email, sessionkey):
             configs['annotator_of'].append(r['project_id'])
     return ret, configs
 
-def getDmlLexSchemaItems(modules, xlingual_langs, linking_relations, etymology_langs):
+def getDmlLexSchemaItems(modules, xlingual_langs=[], linking_relations=[], etymology_langs=[]):
     with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r') as f:
         result, desc_dict = dmlex2schema.get_dmlex_schema(f, "entry", modules, xlingual_langs, linking_relations, etymology_langs)
         schema = []
         used_modules = set()
         dmlex2schema.final_schema2str(result, schema, used_modules)
-        schema_json = {}
-        nvh_structure = nvh.parse_string(''.join(schema))
-        nvh_structure.build_json(schema_json)
-
-        return schema_json, desc_dict, list(used_modules)
+        return ''.join(schema), desc_dict, list(used_modules)
 
 
 def deleteEntry(db, entryID, email):
@@ -287,18 +283,17 @@ def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
     nvhParsed = nvh.parse_string(entryNvh)
     title = getEntryTitle(nvhParsed, configs["titling"])
     sortkey = getSortTitle(nvhParsed, configs["titling"])
-    doctype = getDoctype(nvhParsed)
     needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
     # entry title already exists?
     c = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
     r = c.fetchone()
     feedback = {"type": "saveFeedbackHeadwordExists", "info": r["id"]} if r else None
     if entryID:
-        sql = "INSERT INTO entries(id, nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        params = (entryID, entryNvh, title, sortkey, needs_refresh, entryJson, doctype)
+        sql = "INSERT INTO entries(id, nvh, title, sortkey, needs_refresh, json) VALUES (?, ?, ?, ?, ?, ?)"
+        params = (entryID, entryNvh, title, sortkey, needs_refresh, entryJson)
     else:
-        sql = "INSERT INTO entries(nvh, title, sortkey, needs_refresh, json, doctype) VALUES (?, ?, ?, ?, ?, ?)"
-        params = (entryNvh, title, sortkey, needs_refresh, entryJson, doctype)
+        sql = "INSERT INTO entries(nvh, title, sortkey, needs_refresh, json) VALUES (?, ?, ?, ?, ?)"
+        params = (entryNvh, title, sortkey, needs_refresh, entryJson)
     c = dictDB.execute(sql, params)
     entryID = c.lastrowid
 
@@ -336,12 +331,11 @@ def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
         nvhParsed = nvh.parse_string(entryNvh)
         title = getEntryTitle(nvhParsed, configs["titling"]) # TODO move to front-end
         sortkey = getSortTitle(nvhParsed, configs["titling"])
-        doctype = getDoctype(nvhParsed)
         needs_refresh = 1 if configs["searchability"].get("searchableElements") and len(configs["searchability"].get("searchableElements")) > 0 else 0
         c2 = dictDB.execute("SELECT id FROM entries WHERE title = ? AND id <> ?", (title, entryID))
         r2 = c2.fetchone()
         feedback = {"type": "saveFeedbackHeadwordExists", "info": r2["id"]} if r2 else None
-        dictDB.execute("UPDATE entries SET doctype=?, nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (doctype, entryNvh, title, sortkey, needs_refresh, entryJson, entryID))
+        dictDB.execute("UPDATE entries SET nvh=?, title=?, sortkey=?, needs_refresh=?, json=? WHERE id=?", (entryNvh, title, sortkey, needs_refresh, entryJson, entryID))
         dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvhParsed, configs["titling"], True), entryID))
         dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
 
@@ -679,8 +673,8 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
     return dictDB
 
 
-def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
-             bottle_file_object=None, hwNode=None):
+def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
+             bottle_files={}, hwNode=None, titling_node=None):
     if title == "":
         title = "?"
     if blurb == "":
@@ -692,25 +686,23 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     #init db schema
     dictDB = initDict(dictID, title, lang, blurb, email, dmlex)
 
-    if not bottle_file_object:
-        if nvh_schema_string:
+    if not bottle_files:
+        if structure_json.get('nvhSchema', False):
             # DICTIONARY STRUCTURE
-            elements = {'tab': 'advanced'}
-            nvh_structure = nvh.parse_string(nvh_schema_string)
-            nvh_structure.build_json(elements)
-            structure = {"root": nvh_structure.children[0].name, "elements": elements}
-        elif json_schema:
-            structure = json.loads(json_schema)
+            if not structure_json.get('root', False):
+                structure_json['root'] = nvh.schema_get_root_name(structure_json['nvhSchema'])
+            structure = structure_json
         else:
             raise Exception('No schema provided')
 
         dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
 
+        schema_keys = nvh.schema_keys(structure_json['nvhSchema'])
         # DICTIONARY FORMATTING
         formatting = {}
         with open(currdir + "/dictTemplates/styles.json", 'r') as f:
             styles = json.loads(f.read())
-            for key in structure['elements'].keys():
+            for key in schema_keys:
                 if styles.get(key):
                     formatting[key] = styles[key]
                 else:
@@ -720,9 +712,9 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
         # ADD EXAMPLES
         if dmlex and addExamples:
             with open("dictTemplates/dmlex.entry.example.nvh", 'r') as f:
-                examples = filter_nodes(nvh2json(f.read()), structure['elements'].keys())
+                examples = filter_nodes(nvh2json(f.read()), schema_keys)
             for idx, example in enumerate(examples):
-                dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, 'entry', example["nvh"], json.dumps(example['json']), example["title"], example["sortkey"], 0, 0, 0))
+                dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["nvh"], json.dumps(example['json']), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
             dictDB.execute("UPDATE configs SET json=? WHERE id=?", (len(examples), 'entry_count'))
@@ -733,12 +725,13 @@ def makeDict(dictID, nvh_schema_string, json_schema, title, lang, blurb, email, 
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
     attachDict(dictDB, dictID, users, dict_config)
 
-    if bottle_file_object:
-        err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate, bottle_upload_obj=bottle_file_object)
-        return {'url': dictID, 'success':True, 'upload_error': err, 
+    if bottle_files:
+        err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate,
+                                                           bottle_files=bottle_files, titling_node=titling_node)
+        return {'url': dictID, 'success': True if not err else False, 'upload_error': err,
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
-    return {'url': dictID, 'success':True, 'error': ''}
+    return {'url': dictID, 'success': True, 'error': ''}
 
 
 def recur_filter(node, structure_nodes):
@@ -762,7 +755,6 @@ def filter_nodes(examples_json, structure_nodes):
                     recur_filter(entry[key], structure_nodes)
         result.append({'json': {'entry': [entry], '_value': ''},
                        'nvh': json2nvh_str({'entry': [entry], '_value': ''}, paths=True),
-                       'doctype': 'enntry',
                        "title": '<span class="headword">' + entry["_value"] + '</span>',
                        'sortkey': entry["_value"]})
     return result
@@ -784,8 +776,8 @@ def attachDict(dictDB, dictID, users, dict_config):
 
     for email, access_rights in users.items():
         conn.execute("insert into user_dict (dict_id, user_email, can_view, can_edit, can_config, can_download, can_upload) values (?,?,?,?,?,?,?)",
-                     (dictID, email.lower(), access_rights['canView'], access_rights['canEdit'], access_rights['canConfig'],
-                      access_rights['canDownload'], access_rights['canUpload']))
+                     (dictID, email.lower(), access_rights.get('canView', False), access_rights.get('canEdit', False), access_rights.get('canConfig', False),
+                      access_rights.get('canDownload', False), access_rights.get('canUpload', False)))
     conn.commit()
 
 def listDictUsers(dictID):
@@ -1222,7 +1214,7 @@ def createUser(email, user, manager=0):
     mailText += "Your new credentials:\n";
     mailText += "user: "+email+"\n";
     mailText += "password: "+passwd+"\n";
-    mailText += "Please visit the lexonomy.eu and change the generated password in your account settings.\n\n"
+    mailText += "Please visit the " + siteconfig["baseUrl"] + " and change the generated password in your account settings.\n\n"
     mailText += "Yours,\nThe Lexonomy team"
     sendmail(email, mailSubject, mailText)
 
@@ -1336,54 +1328,12 @@ def markdown_text(text):
 #     else:
 #         return {"entryID": 0, "xml": ""}
 
-def readNabesByEntryID(dictDB, dictID, entryID, configs):
-    nabes_before = []
-    nabes_after = []
-    nabes = []
-    c = dictDB.execute("select e1.id, e1.title, e1.sortkey, e1.xml from entries as e1 where e1.doctype=? ", (configs["structure"]["root"],))
-    for r in c.fetchall():
-        nabes.append({"id": str(r["id"]), "title": r["title"], "sortkey": r["sortkey"], "titlePlain": getEntryTitle(r['xml'], configs["titling"], True)})
-
-    # sort by selected locale
-    collator = Collator.createInstance(Locale(getLocale(configs)))
-    nabes.sort(key=lambda x: collator.getSortKey(x['sortkey']))
-
-    #select before/after entries
-    entryID_seen = False
-    for n in nabes:
-        if not entryID_seen:
-            nabes_before.append(n)
-        else:
-            nabes_after.append(n)
-        if n["id"] == entryID:
-            entryID_seen = True
-    return nabes_before[-8:] + nabes_after[0:15]
-
-def readNabesByText(dictDB, dictID, configs, text):
-    nabes_before = []
-    nabes_after = []
-    nabes = []
-    c = dictDB.execute("select e1.id, e1.title, e1.sortkey from entries as e1 where e1.doctype=? ", (configs["structure"]["root"],))
-    for r in c.fetchall():
-        nabes.append({"id": str(r["id"]), "title": r["title"], "sortkey": r["sortkey"]})
-
-    # sort by selected locale
-    collator = Collator.createInstance(Locale(getLocale(configs)))
-    nabes.sort(key=lambda x: collator.getSortKey(x['sortkey']))
-
-    #select before/after entries
-    for n in nabes:
-        if collator.getSortKey(n["sortkey"]) <= collator.getSortKey(text):
-            nabes_before.append(n)
-        else:
-            nabes_after.append(n)
-    return nabes_before[-8:] + nabes_after[0:15]
 
 def readRandoms(dictDB, limit=10): # OK
     configs = readDictConfigs(dictDB)
     more = False
     randoms = []
-    c = dictDB.execute("select id, title, sortkey, nvh from entries where doctype=? and id in (select id from entries order by random() limit ?)", (configs["structure"]["root"], limit))
+    c = dictDB.execute("SELECT id, title, sortkey, nvh FROM entries WHERE id IN (SELECT id FROM entries ORDER BY random() LIMIT ?)", (limit,))
     for r in c.fetchall():
         randoms.append({"id": r["id"], "title": r["title"], "sortkey": r["sortkey"], "titlePlain": getEntryTitle(nvh.parse_string(r["nvh"]), configs["titling"], True)})
 
@@ -1398,7 +1348,7 @@ def readRandoms(dictDB, limit=10): # OK
     return {"entries": randoms, "more": more}
 
 def readRandomOne(dictDB, dictID, configs): # TODO
-    c = dictDB.execute("select id, title, nvh from entries where id in (select id from entries where doctype=? order by random() limit 1)", (configs["structure"]["root"], ))
+    c = dictDB.execute("SELECT id, title, nvh FROM entries WHERE id IN (SELECT id FROM entries ORDER BY random() LIMIT 1)")
     r = c.fetchone()
     if r:
         return {"id": r["id"], "title": r["title"], "nvh": r["nvh"]}
@@ -1475,12 +1425,12 @@ def getImportProgress(file_path):
     done_re = re.compile(r'^INFO \[.*\]:\s*IMPORTED \(.*\):\s*PER:\s*(\d+)\s*,\s*COUNT:\s*(\d+)/(\d+)$')
     waring_re = re.compile(r'^WARNING(:|\s\[.*\]:)\s*(.+)$')
     err_re = re.compile(r'^ERROR(:|\s\[.*\]:)\s*(.*?)$')
-    if os.path.isfile(file_path + ".log"):
+    if os.path.isfile(os.path.join(file_path, "import_progress.log")):
         errors = []
         warnings = []
         progress = {}
         finished = False
-        with open(file_path + ".log", "r") as log_f:
+        with open(os.path.join(file_path, "import_progress.log"), "r") as log_f:
             for line in log_f:
                 prg = done_re.match(line)
                 warn = waring_re.match(line)
@@ -1500,13 +1450,13 @@ def getImportProgress(file_path):
         return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], ['No log file found'], file_path
 
 
-def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_upload_obj=None):
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_files={}, titling_node=None):
     """
     return progress, finished status, error messages
     """
     supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
     # XML file transforamtion
-    if not supported_formats.match(bottle_upload_obj.filename):
+    if not supported_formats.match(bottle_files.get("import_entires").filename):
         return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
 
     save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
@@ -1515,11 +1465,45 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
 
     os.makedirs(save_path)
 
-    file_path =os.path.join(save_path, bottle_upload_obj.filename)
-    bottle_upload_obj.save(file_path)
-
-    logfile_f = open(file_path + ".log", "w")
     dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dictID+".sqlite")
+
+    # ====================================
+    # CONFIG
+    # ====================================
+    # safe all files as received
+    for _, value in bottle_files.items():
+        value.save(os.path.join(save_path, value.filename))
+
+    entries_path = None
+    if bottle_files.get('import_entires'):
+        entries_path = os.path.join(save_path, bottle_files.get('import_entires').filename)
+        logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
+
+    config = {'styles': {},
+              'editting': {},
+              'structure': {}}
+    # if config.json received rewrite the default one
+    if bottle_files.get('config'): # Must be first !!!
+        config = json.loads(bottle_files.get('config').file.read())
+        if not config.get('styles', False):
+            config['styles'] = {}
+        if not config.get('editting', False):
+            config['editting'] = {}
+        if not config.get('structure', False):
+            config['structure'] = {}
+
+    if bottle_files.get('ce_css'):
+        config['editting']['css'] =  bottle_files.get('ce_css').file.read().decode('utf-8')
+
+    if bottle_files.get('ce_js'):
+        config['editting']['js'] =  bottle_files.get('ce_js').file.read().decode('utf-8')
+
+    if bottle_files.get('structure'):
+        config['structure']['nvhSchema'] = bottle_files.get('structure').file.read().decode('utf-8')
+
+    if bottle_files.get('styles'):
+        config['styles']['css']= bottle_files.get('styles').file.read().decode('utf-8')
+    # ====================================
 
     params = []
     if deduplicate:
@@ -1528,17 +1512,22 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         params.append('-p')
     if purge_all:
         params.append('-pp')
+    if titling_node:
+        params.append('-t')
+        params.append(titling_node)
+    if config:
+        with open(os.path.join(save_path, "merged_config.json"), 'w') as f:
+            json.dump(config, f, indent=4)
+        params.append('--config')
+        params.append(os.path.join(save_path, "merged_config.json"))
 
-    subprocess.Popen([currdir + "/import2dict.py", dbpath, file_path, email, hwNode] + params,
-                      stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
-    return '', "Import started. You may close the window, import will run in the background. Please wait...", file_path
+    if entries_path:
+        subprocess.Popen([currdir + "/import2dict.py", dbpath, entries_path, email, hwNode] + params,
+                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+    else:
+        return 'No entries', "", ""
 
-def readDoctypesUsed(dictDB):
-    c = dictDB.execute("select doctype from entries group by doctype order by count(*) desc")
-    doctypes = []
-    for r in c.fetchall():
-        doctypes.append(r["doctype"])
-    return doctypes
+    return '', "Import started. You may close the window, import will run in the background. Please wait...", save_path
 
 def getLastEditedEntry(dictDB, email):
     c = dictDB.execute("select entry_id from history where email=? order by [when] desc limit 1", (email, ))
@@ -1555,7 +1544,7 @@ def listEntriesById(dictDB, entryID, configs):
         entries.append({"id": r["id"], "title": r["title"], "nvh": r["nvh"]})
     return entries
 
-def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start", howmany=10, offset=0, sortdesc=False, reverse=False, fullNVH=False):
+def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howmany=10, offset=0, sortdesc=False, reverse=False, fullNVH=False):
     collate = ""
     if "locale" in configs["titling"]:
         collator = Collator.createInstance(Locale(getLocale(configs)))
@@ -1591,25 +1580,25 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
     if sortdesc:
         orderby = "DESC"
     if modifier == "start":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
-        params1 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%", howmany, offset)
-        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?)"
-        params2 = (doctype, lowertext+"%", searchtext+"%", searchtext+"%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (lowertext+"%", searchtext+"%", searchtext+"%", howmany, offset)
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE (LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR e.sortkey LIKE ?)"
+        params2 = (lowertext+"%", searchtext+"%", searchtext+"%")
     elif modifier == "wordstart":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? and (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
-        params1 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%", howmany, offset)
-        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?)"
-        params2 = (doctype, lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%", howmany, offset)
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE (LOWER(s.txt) LIKE ? OR LOWER(s.txt) LIKE ? OR s.txt LIKE ? OR s.txt LIKE ?)"
+        params2 = (lowertext + "%", "% " + lowertext + "%", searchtext + "%", "% " + searchtext + "%")
     elif modifier == "substring":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
-        params1 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%", howmany, offset)
-        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND (LOWER(s.txt) LIKE ? OR s.txt LIKE ?)"
-        params2 = (doctype, "%" + lowertext + "%", "%" + searchtext + "%")
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE (LOWER(s.txt) LIKE ? OR s.txt LIKE ?) GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = ("%" + lowertext + "%", "%" + searchtext + "%", howmany, offset)
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE (LOWER(s.txt) LIKE ? OR s.txt LIKE ?)"
+        params2 = ("%" + lowertext + "%", "%" + searchtext + "%")
     elif modifier == "exact":
-        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt LIKE ? GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
-        params1 = (doctype, searchtext, howmany, offset)
-        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE doctype=? AND s.txt LIKE ?"
-        params2 = (doctype, searchtext)
+        sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE s.txt LIKE ? GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
+        params1 = (searchtext, howmany, offset)
+        sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE s.txt LIKE ?"
+        params2 = (searchtext)
     c1 = dictDB.execute(sql1, params1)
     entries = []
     for r1 in c1.fetchall():
@@ -1629,8 +1618,8 @@ def listEntries(dictDB, dictID, configs, doctype, searchtext="", modifier="start
 
 def listEntriesPublic(dictDB, dictID, configs, searchtext):
     howmany = 100
-    sql_list = "select s.txt, min(s.level) as level, e.id, e.title, e.sortkey, case when s.txt=? then 1 else 2 end as priority from searchables as s inner join entries as e on e.id=s.entry_id where s.txt like ? and e.doctype=? group by e.id order by priority, level, s.level"
-    c1 = dictDB.execute(sql_list, ("%"+searchtext+"%", "%"+searchtext+"%", configs["structure"].get("root")))
+    sql_list = "select s.txt, min(s.level) as level, e.id, e.title, e.sortkey, case when s.txt=? then 1 else 2 end as priority from searchables as s inner join entries as e on e.id=s.entry_id where s.txt like ? group by e.id order by priority, level, s.level"
+    c1 = dictDB.execute(sql_list, ("%"+searchtext+"%", "%"+searchtext+"%"))
     entries = []
     for r1 in c1.fetchall():
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"], "exactMatch": (r1["level"] == 1 and r1["priority"] == 1)}
@@ -1647,7 +1636,7 @@ def listEntriesPublic(dictDB, dictID, configs, searchtext):
     return entries
 
 def extractText(nvhParsed, elName):
-    if elName == "":
+    if not elName:
         return []
     return extractElementText(nvhParsed, elName, [])
 
@@ -1676,45 +1665,45 @@ def getDictStats(dictDB):
     res["needResave"] = r["needResave"]
     return res
 
-def combine_dmlex_schemas(old_sch_json, new_sch_json, xlingual_langs, linking_relations, etymology_langs):
+def combine_dmlex_schemas(old_sch_nvh, new_sch_nvh):
     """Find all custom nodes in old dmlex schema and add it to new dmlex schema if perents exists"""
-    stadard_dmlex_nodes, _, _ = getDmlLexSchemaItems(['all'], xlingual_langs, linking_relations, etymology_langs)
+    stadard_dmlex_schema, _, _ = getDmlLexSchemaItems(['all'])
     removed_nodes = {}
+    stadard_dmlex_nodes_keys = nvh.schema_keys(stadard_dmlex_schema)
+    old_sch_json = nvh.schema_nvh2json(old_sch_nvh)
+    new_sch_json = nvh.schema_nvh2json(new_sch_nvh)
+
     for old_node, old_value in old_sch_json.items():
         if old_node not in new_sch_json.keys():
-            if old_node in stadard_dmlex_nodes.keys():
+            if True in [True if re.fullmatch(x, old_node) else False for x in stadard_dmlex_nodes_keys]:
                 removed_nodes[old_node] = old_value
             elif old_value['parent'] in new_sch_json.keys():
                 new_sch_json[old_node] = old_value
-                new_sch_json[old_value['parent']]['children'].append(old_node)
+                if old_node not in new_sch_json[old_value['parent']]['children']:
+                    new_sch_json[old_value['parent']]['children'].append(old_node)
             else:
                 removed_nodes[old_node] = old_value
-    return removed_nodes
+
+    return removed_nodes, nvh.schema_json2nvh(new_sch_json)
 
 
 def updateDmLexSchema(current_schema, requested_modules, xlingual_langs, linking_relations, etymology_langs):
-    requested_schema_json, desc_dict, used_modules = getDmlLexSchemaItems(requested_modules, xlingual_langs, linking_relations, etymology_langs)
+    new_schema, desc_dict, used_modules = getDmlLexSchemaItems(requested_modules, xlingual_langs, linking_relations, etymology_langs)
 
     if sorted(current_schema.get('modules', [])) != sorted(requested_modules):
-        removed_nodes = combine_dmlex_schemas(current_schema['elements'], requested_schema_json, xlingual_langs, linking_relations, etymology_langs)
-        final_schema = requested_schema_json
+        removed_nodes, final_schema = combine_dmlex_schemas(current_schema['nvhSchema'], new_schema)
     else:
-        final_schema = current_schema['elements']
+        final_schema = current_schema['nvhSchema']
 
     return final_schema, desc_dict, used_modules, removed_nodes
 
 
 def updateDictConfig(dictDB, dictID, configID, content):
     if configID == 'structure':
-        if content.get('nvhSchema', False):
-            elements = {}
-            nvh_structure = nvh.parse_string(content['nvhSchema'])
-            nvh_structure.build_json(elements)
-            value = {"root": nvh_structure.children[0].name, "elements": elements}
-        elif content.get('jsonSchema', False):
-            value = content['jsonSchema']
-        elif content.get('elements', False):
-            value = content
+        value = content
+        if value.get('root', False):
+            value['root'] = nvh.schema_get_root_name(content['nvhSchema'])
+
     else:
         value = content
 
@@ -1813,117 +1802,6 @@ def makeQuery(lemma):
 def clearRefac(dictDB):
     dictDB.execute("update entries set needs_refac=0, needs_refresh=0")
     dictDB.commit()
-
-
-#def refac(dictDB, dictID, configs):
-#    from xml.dom import minidom, Node
-#    if len(configs['subbing']) == 0:
-#        return False
-#    c = dictDB.execute("select e.id, e.xml, h.email from entries as e left outer join history as h on h.entry_id=e.id where e.needs_refac=1 order by h.[when] asc limit 1")
-#    r = c.fetchone()
-#    if not r:
-#        return False
-#    entryID = r["id"]
-#    xml = r["xml"]
-#    email = r["email"] or ""
-#    doc = minidom.parseString(xml)
-#    doc.documentElement.setAttributeNS("http://www.lexonomy.eu/", "lxnm:entryID", str(entryID))
-#    #in the current entry, remove all <lxnm:subentryParent>
-#    _els = doc.getElementsByTagNameNS("http://www.lexonomy.eu/", "subentryParent")
-#    for el in _els:
-#        el.parentNode.removeChild(el)
-#    # in the current entry, find elements which are subentries, and are not contained inside other subentries
-#    els = []
-#    for doctype in configs["subbing"]:
-#        _els = doc.getElementsByTagName(doctype)
-#        for el in _els:
-#            if el.parentNode and el.parentNode.nodeType == 1:
-#                isSubSub = False
-#                p = el.parentNode
-#                while p.parentNode and p.parentNode.nodeType == 1:
-#                    if p.tagName in configs["subbing"]:
-#                        isSubSub = True
-#                    p = p.parentNode
-#                if not isSubSub:
-#                    els.append(el)
-#    dictDB.execute("delete from sub where parent_id=?", (entryID, ))
-#    # keep saving subentries of the current entry until there are no more subentries to save:
-#    if len(els) > 0:
-#        for el in els:
-#            subentryID = el.getAttributeNS("http://www.lexonomy.eu/", "subentryID")
-#            xml = el.toxml()
-#            if subentryID:
-#                subentryID, adjustedXml, changed, feedback = updateEntry(dictDB, configs, subentryID, xml, email.lower(), {"refactoredFrom":entryID})
-#                el.setAttributeNS("http://www.lexonomy.eu/", "lxnm:subentryID", str(subentryID))
-#                dictDB.execute("insert into sub(parent_id, child_id) values(?,?)", (entryID, subentryID))
-#                if changed:
-#                    dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?) and id<>?", (subentryID, entryID))
-#            else:
-#                subentryID, adjustedXml, feedback = createEntry(dictDB, configs, None, xml, email.lower(), {"refactoredFrom":entryID})
-#                el.setAttributeNS("http://www.lexonomy.eu/", "lxnm:subentryID", str(subentryID))
-#                subentryID, adjustedXml, changed, feedback = updateEntry(dictDB, configs, subentryID, el.toxml(), email.lower(), {"refactoredFrom":entryID})
-#                dictDB.execute("insert into sub(parent_id, child_id) values(?,?)", (entryID, subentryID))
-#                dictDB.execute("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (subentryID, ))
-#    xml = doc.toxml().replace('<?xml version="1.0" ?>', '').strip()
-#    dictDB.execute("update entries set xml=?, needs_refac=0 where id=?", (xml, entryID))
-#    dictDB.commit()
-#
-#
-#
-#def refresh(dictDB, dictID, configs):
-#    from xml.dom import minidom, Node
-#    if len(configs['subbing']) == 0:
-#        return False
-#    # takes one entry that needs refreshing and sucks into it the latest versions of its subentries
-#    # get one entry that needs refreshing where none of its children needs refreshing
-#    c = dictDB.execute("select pe.id, pe.xml from entries as pe left outer join sub as s on s.parent_id=pe.id left join entries as ce on ce.id=s.child_id where pe.needs_refresh=1 and (ce.needs_refresh is null or ce.needs_refresh=0) limit 1")
-#    r = c.fetchone()
-#    if not r:
-#        return False
-#    parentID = r["id"]
-#    parentXml = r["xml"]
-#    if not "xmlns:lxnm" in parentXml:
-#        parentXml = re.sub(r"<([^>^ ]*) ", r"<\1 xmlns:lxnm='http://www.lexonomy.eu/' ", parentXml)
-#    parentDoc = minidom.parseString(parentXml)
-#    # this will be called repeatedly till exhaustion
-#    while True:
-#        # find an element which is a subentry and which we haven't sucked in yet:
-#        el = None
-#        for doctype in configs["subbing"]:
-#            els = parentDoc.documentElement.getElementsByTagName(doctype)
-#            for el in els:
-#                if el and not el.hasAttributeNS("http://www.lexonomy.eu/", "subentryID"):
-#                    el = None
-#                if el and el.hasAttributeNS("http://www.lexonomy.eu/", "done"):
-#                    el = None
-#                if el:
-#                    break
-#            if el:
-#                break
-#        if el: #if such en element exists
-#            subentryID = el.getAttributeNS("http://www.lexonomy.eu/", "subentryID")
-#            # get the subentry from the database and inject it into the parent's xml:
-#            c = dictDB.execute("select xml from entries where id=?", (subentryID, ))
-#            r = c.fetchone()
-#            if not r:
-#                el.parentNode.removeChild(el)
-#            else:
-#                childXml = r["xml"]
-#                childDoc = minidom.parseString(childXml)
-#                elNew = childDoc.documentElement
-#                el.parentNode.replaceChild(elNew, el)
-#                elNew.setAttributeNS("http://www.lexonomy.eu/", "lxnm:subentryID", subentryID)
-#                elNew.setAttributeNS("http://www.lexonomy.eu/", "lxnm:done", "1")
-#        else: #if no such element exists: we are done
-#            els = parentDoc.documentElement.getElementsByTagName("*")
-#            for el in els:
-#                if el.hasAttributeNS("http://www.lexonomy.eu/", "done"):
-#                    el.removeAttributeNS("http://www.lexonomy.eu/", "done")
-#            parentXml = parentDoc.toxml().replace('<?xml version="1.0" ?>', '').strip()
-#            # save the parent's xml (into which all subentries have been injected by now) and tell it that it needs a resave:
-#            dictDB.execute("update entries set xml=?, needs_refresh=0, needs_resave=1 where id=?", (parentXml, parentID))
-#            return True
-
 
 def resave(dictDB, dictID, configs):
     c = dictDB.execute("select id, nvh from entries where needs_resave=1")
@@ -2045,15 +1923,16 @@ def flagEntry(dictDB, configs, entryID, flags, email, historiography):
         pass
     success = True
     error = ""
+
+    schema_json = nvh.schema_nvh2json(configs["structure"]["nvhSchema"])
     for flag in flags:
-        s, error = addNode(nvhParsed, flag, configs["flagging"]["flag_element"], configs["structure"]["elements"])
+        s, error = addNode(nvhParsed, flag, configs["flagging"]["flag_element"], schema_json)
         success = success and s
-    dictDB.execute("UPDATE entries SET doctype=?, nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (getDoctype(nvhParsed),
-                                                                                                                                                  nvhParsed.dump_string(),
-                                                                                                                                                  nvh2jsonDump(nvhParsed),
-                                                                                                                                                  getEntryTitle(nvhParsed, configs["titling"]),
-                                                                                                                                                  getSortTitle(nvhParsed, configs["titling"]),
-                                                                                                                                                  0, 0, 0, entryID))
+    dictDB.execute("UPDATE entries SET nvh=?, json=?, title=?, sortkey=?, needs_resave=?, needs_refresh=?, needs_refac=? where id=?", (nvhParsed.dump_string(),
+                                                                                                                                       nvh2jsonDump(nvhParsed),
+                                                                                                                                       getEntryTitle(nvhParsed, configs["titling"]),
+                                                                                                                                       getSortTitle(nvhParsed, configs["titling"]),
+                                                                                                                                       0, 0, 0, entryID))
 
     dictDB.execute("insert into history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, nvhParsed.dump_string(), json.dumps(historiography)))
     dictDB.commit()
@@ -2409,86 +2288,6 @@ def preprocessLex0(entryXml):
         he.appendChild(het)
     return doc.toxml().replace('<?xml version="1.0" ?>', '').strip()
 
-def listOntolexEntries(dictDB, dictID, configs, doctype, searchtext=""):
-    from lxml import etree as ET
-    if searchtext == "":
-        sql = "select id, title, sortkey, xml from entries where doctype=? order by id"
-        params = (doctype, )
-    else:
-        sql = "select s.txt, min(s.level) as level, e.id, e.sortkey, e.title, e.xml from searchables as s inner join entries as e on e.id=s.entry_id where doctype=? and s.txt like ? group by e.id order by e.id"
-        params = (doctype, searchtext+"%")
-    c = dictDB.execute(sql, params)
-    for r in c.fetchall():
-        headword = getEntryHeadword(r["xml"], configs["titling"].get("headword"))
-        headword = headword.replace('"', "'")
-        item = {"id": r["id"], "title": headword}
-        if configs["ident"].get("lang"):
-            lang = configs["ident"].get("lang")
-        else:
-            lang = "en"
-        entryId = re.sub("[\W_]", "",  headword) + "_" + str(r["id"])
-        line = "<" + siteconfig["baseUrl"] + dictID + "#" + entryId + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/lemon/ontolex#LexicalEntry> ."
-        yield line; yield "\n"
-        line = "<" + siteconfig["baseUrl"] + dictID + "#" + entryId + "> <http://www.w3.org/2000/01/rdf-schema#label> \"" + headword + "\"@" + lang + " ."
-        yield line; yield "\n"
-
-        #just guessing and hoping
-        root = ET.fromstring(r["xml"])
-        num = 0
-        for sense in root.findall("sense"):
-            senseDef = sense.find("def")
-            if senseDef != None and senseDef.text:
-                defText = re.sub(r'[\r\n]', ' ', senseDef.text)
-            elif sense.text:
-                defText = re.sub(r'[\r\n]', ' ', sense.text)
-            else:
-                defText = ""
-            if defText != "":
-                num += 1
-                defText = defText.replace('"', "'")
-                senseId = 'sense:' + str(r["id"]) + "_" + str(num)
-                line = "<" + siteconfig["baseUrl"] + dictID + "#" + entryId + "> <http://www.w3.org/ns/lemon/ontolex#sense> <" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> ."
-                yield line; yield "\n"
-                line = "<" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> <http://www.w3.org/2004/02/skos/core#definition> \"" + defText + "\"@" + lang + " ."
-                yield line; yield "\n"
-        for sense in root.findall("meaning"):
-            senseDef = sense.find("def")
-            senseDesc = sense.find("semDescription")
-            if senseDef != None and senseDef.text:
-                defText = re.sub(r'[\r\n]', ' ', senseDef.text)
-            elif senseDesc != None and senseDesc.text:
-                defText = re.sub(r'[\r\n]', ' ', senseDesc.text)
-            elif sense.text:
-                defText = re.sub(r'[\r\n]', ' ', sense.text)
-            else:
-                defText = ""
-            if defText != "":
-                num += 1
-                defText = defText.replace('"', "'")
-                senseId = 'meaning:' + str(r["id"]) + "_" + str(num)
-                line = "<" + siteconfig["baseUrl"] + dictID + "#" + entryId + "> <http://www.w3.org/ns/lemon/ontolex#sense> <" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> ."
-                yield line; yield "\n"
-                line = "<" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> <http://www.w3.org/2004/02/skos/core#definition> \"" + defText + "\"@" + lang + " ."
-                yield line; yield "\n"
-        for sense in root.findall("def"):
-            if sense.text:
-                num += 1
-                defText = re.sub(r'[\r\n]', ' ', sense.text)
-                defText = defText.replace('"', "'")
-                senseId = 'def:' + str(r["id"]) + "_" + str(num)
-                line = "<" + siteconfig["baseUrl"] + dictID + "#" + entryId + "> <http://www.w3.org/ns/lemon/ontolex#sense> <" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> ."
-                yield line; yield "\n"
-                line = "<" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> <http://www.w3.org/2004/02/skos/core#definition> \"" + defText + "\"@" + lang + " ."
-                yield line; yield "\n"
-        # no sense detected, copy headword
-        if num == 0:
-            defText = re.sub(r'[\r\n]', ' ', headword)
-            defText = defText.replace('"', "'")
-            senseId = 'entry:' + str(r["id"]) + "_1"
-            line = "<" + siteconfig["baseUrl"] + dictID + "#" + entryId + "> <http://www.w3.org/ns/lemon/ontolex#sense> <" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> ."
-            yield line; yield "\n"
-            line = "<" + siteconfig["baseUrl"] + dictID + "#" + senseId + "> <http://www.w3.org/2004/02/skos/core#definition> \"" + defText + "\"@" + lang + " ."
-            yield line; yield "\n"
 
 def elexisDictAbout(dictID):
     dictDB = getDB(dictID)
@@ -2605,52 +2404,6 @@ def elexisDictAbout(dictID):
 #     else:
 #         return None
 
-# def elexisGetLemma(dictID, headword, limit=None, offset=0):
-#     dictDB = getDB(dictID)
-#     if dictDB:
-#         info = {"language": "en", "release": "PRIVATE"}
-#         configs = readDictConfigs(dictDB)
-#         configs = loadHandleMeta(configs)
-#         if configs["metadata"].get("dc.language.iso") and len(configs["metadata"]["dc.language.iso"]) > 0:
-#             info["language"] = configs["metadata"]["dc.language.iso"][0]
-#         elif configs['ident'].get('lang'):
-#             info["language"] = configs['ident'].get('lang')
-#         if configs["metadata"].get("dc.rights"):
-#             if configs["metadata"].get("dc.rights.label") == "PUB":
-#                 info["release"] = "PUBLIC"
-#             else:
-#                 info["release"] = "PRIVATE"
-#         else:
-#             if configs["publico"]["public"]:
-#                 info["release"] = "PUBLIC"
-#             else:
-#                 info["release"] = "PRIVATE"
-#         lemmas = []
-#         query = "SELECT e.id, e.xml FROM searchables AS s INNER JOIN entries AS e on e.id=s.entry_id WHERE doctype=? AND s.txt=? GROUP BY e.id ORDER by s.level"
-#         params = (configs["structure"]["root"], headword)
-#         if limit != None and limit != "":
-#             query += " LIMIT "+str(int(limit))
-#         if offset != "" and int(offset) > 0:
-#             query += " OFFSET "+str(int(offset))
-#         c = dictDB.execute(query, params)
-#         formats = []
-#         firstentry = True
-#         for r in c.fetchall():
-#             if firstentry:
-#                 firstentry = False
-#                 jsonentry = elexisConvertTei(r["xml"])
-#                 if jsonentry != None:
-#                     formats = ["tei", "json"]
-#             lemma = {"release": info["release"], "language": info["language"], "formats": formats}
-#             lemma["id"] = str(r["id"])
-#             lemma["lemma"] = getEntryHeadword(r["xml"], configs["titling"].get("headword"))
-#             pos = elexisGuessPOS(r["xml"])
-#             if pos != "":
-#                 lemma["partOfSpeech"] = [pos]
-#             lemmas.append(lemma)
-#         return lemmas
-#     else:
-#         return None
 
 # def elexisGuessPOS(xml):
 #     # try to guess frequent PoS element

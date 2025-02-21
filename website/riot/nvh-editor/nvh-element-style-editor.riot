@@ -63,7 +63,8 @@
          },
 
          onBeforeUpdate(){
-            let elementList = Object.keys(this.nvhData.structure.elements)
+            let elementList = this.nvhStore.schema.getElementList()
+                  .map(element => element.path)
             let actualElementIdx = elementList.indexOf(this.state.elementPath)
             this.state.prevElementPath = elementList[actualElementIdx - 1]
             this.state.nextElementPath = elementList[actualElementIdx + 1]

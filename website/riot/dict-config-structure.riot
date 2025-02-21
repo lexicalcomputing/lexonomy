@@ -3,86 +3,26 @@
    <h1 class="pageTitle">Entry structure</h1>
    <dict-configuration-issues config-id="structure"/>
 
-   <div if={state.tab == "dmlex" && state.brokenConfig}
-         class="message messageError">
-      Structure is broken. Empty structure is used instead.
-      <a href="javascript:void(0);"
-            onclick={onShowBrokenStructureClick}>show broken structure</a>
-   </div>
-
    <template if={!state.isLoading}>
-      <div class="tabsWrapper displayFlex">
-         <div class="settingsRadio borderRight pr-4">
-            <label >
-              <input name="structure"
-                  value="dmlex"
-                  onclick={onTabRadioMouseDown}
-                  type="radio"
-                  checked={state.tab == "dmlex"}
-                  onchange={onTabChange}/>
-              <span>Simple settings</span>
-            </label>
-            <label>
-              <input name="structure"
-                  value="advanced"
-                  onclick={onTabRadioMouseDown}
-                  type="radio"
-                  checked={state.tab == "advanced"}
-                  onchange={onTabChange}/>
-              <span>Custom structure</span>
-            </label>
-            <label >
-              <input name="structure"
-                  value="custom"
-                  onclick={onTabRadioMouseDown}
-                  type="radio"
-                  checked={state.tab == "custom"}
-                  onchange={onTabChange}/>
-              <span>Expert settings</span>
-            </label>
-         </div>
-
-         <div class="tabsContent">
-            <div if={state.tab == "dmlex"}>
-               <nvh-schema {...state.DMLexSettings}
-                     {...structureStore.data.structure}
-                     on-change={onNvhSchemaChange}/>
-            </div>
-
-            <div if={state.tab == "advanced"} class="mb-8">
-               <structure-editor/>
-            </div>
-
-            <div if={state.tab == "custom"}
-                  class="tabCustom mb-8">
-               <div class="tabCustomForm">
-                  <p class="mt-0 mb-12">To specify your custom Lexonomy schema use <i>NVH schema</i>.
-                     Learn more about NVH schema at <a href="https://www.namevaluehierarchy.org/schema.html" target="_blank">namevaluehierarchy.org</a>.
-                  </p>
-                  <div class="mb-16">
-                     <div class="input-field">
-                        <nvh-schema-textarea riot-value={state.schemaNvh}
-                              on-valid-change={onNvhSchemaValidChange}
-                              on-input={onNvhSchemaInput}/>
-                        <label>Your NVH schema</label>
-                     </div>
-                     <div class="buttons">
-                        <button class="btn btn-secondary"
-                              onclick={onLoadSampleNvhSchemaClick}>Load sample NVH schema</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-         </div>
+      <div if={(structureStore.data.mode != "custom" || structureStore.data.tab != "code") && structureStore.data.brokenConfig}
+            class="message messageError">
+         The structure is broken. You can fix the structure in the source code editor mode.
+         <br>
+         <button class="btn mt-4"
+               onclick={onOpenSourceCodeClick}>
+            edit structure
+         </button>
       </div>
-      <div class="borderTop pt-4">
+      <structure-editor save={save}/>
+
+      <div if={!structureStore.data.brokenConfig}
+            class="pt-4">
          <div class="switch">
             <label>
                <input name="new_entry_template"
-                  type="checkbox"
-                  checked={state.hasNewEntryTemplate}
-                  onchange={onHasNewEntryTemplateChange} >
+                     type="checkbox"
+                     checked={state.hasNewEntryTemplate}
+                     onchange={onHasNewEntryTemplateChange} >
                <span class="lever"></span>
                Set new entry template
             </label>
@@ -94,12 +34,12 @@
                <br>
                You can also set a default values for newly added elements.
             </div>
-            <new-entry-template elements={structureStore.data.structure.elements}
-                  root={structureStore.data.structure.root}
-                  new-entry-template={structureStore.data.newEntryTemplate}
-                  on-change={structureStore.setNewEntryTemplate.bind(structureStore)}/>
+            <new-entry-template schema={schema}
+                  new-entry-template={state.newEntryTemplate}
+                  on-change={onNewEntryTemplateChange}/>
          </div>
       </div>
+
       <div class="mt-16">
          <dict-config-buttons save-data={save}/>
       </div>
@@ -108,29 +48,27 @@
 
    <script>
       export default {
-         bindings: [["structureStore",  "elementChanged", "onStructureEditorElemenChange"]],
-
          state: {
             isLoading: true,
             isBusy: false,
-            tab: "dmlex",
-            data: null,
-            brokenConfig: null,
-            isCustomNvhSchemaValid: null,
-            DMLexStructure: null,
-            changed: false
          },
 
          onBeforeMount(){
+            this.schema = new window.NvhSchemaClass()
             this.structureStore = window.structureEditorStore
+            this.structureStore.setSchema(this.schema)
+            this.bindings = [["structureStore",  "brokenConfigChanged", "update"],
+                             ["schema", "schemaChanged", "refreshBtnSaveDisabled"],
+                             ["schema", "isValidChanged", "refreshBtnSaveDisabled"]]
          },
 
          onMounted() {
             this.store.loadDictionaryConfig("structure")
                   .done(response => {
                      if(response.success){
-                        this.state.tab = response.content.tab || "dmlex"
-                        this.state.DMLexSettings = response.content.DMLexSettings
+                        this.structureStore.data.mode = response.content.mode || "dmlex"
+                        this.structureStore.data.tab = ["visual", "code"].includes(response.content.tab) ? response.content.tab : "visual"
+                        this.structureStore.data.DMLexSettings = response.content.DMLexSettings
                               || {
                                     modules: [],
                                     xlingual_langs: [],
@@ -138,313 +76,93 @@
                                     showMoreSettings: false,
                                     selectedElements: []
                                  }
-                        this.structureStore.setConfigStructure({
-                           elements: response.content.elements || {},
-                           root: response.content.root
-                        })
-                        this.structureStore.setNewEntryTemplate(response.content.newEntryTemplate)
+                        let nvh = response.content.nvhSchema
+                        this.schema.update(nvh)
+                        this.state.newEntryTemplate = response.content.newEntryTemplate
                         this.state.hasNewEntryTemplate = response.content.hasNewEntryTemplate
-                        this.state.originalStructure = window.deepCopy(this.structureStore.data.structure)
-                        this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
-                        if(this.state.tab == "custom"){
-                           this.state.schemaNvh = this.structureStore.getNvh()
-                        }
-                        if(this.state.tab == "dmlex"){
-                           if(!this.store.isStructureValid()){
-                              this.state.brokenConfig = this.state.data
-                              this.state.data = {
-                                 elements: {
-                                    entry: {
-                                       children: [],
-                                       type: "txt"
-                                    }
-                                 },
-                                 root: "entry"
-                              }
-                           }
+                        this.structureStore.data.originalSchema = nvh
+                        this.structureStore.data.originalDmlexSettings = window.deepCopy(this.structureStore.data.DMLexSettings)
+                        if(this.structureStore.data.mode != "custom"
+                                 && this.structureStore.data.tab != "code"
+                                 && !this.schema.isValid
+                                 && this.schema.parseError){
+                              this.structureStore.data.brokenConfig = true
                         }
                      }
                   })
                   .always(() => {
                      this.update({isLoading: false})
-                     if(this.state.tab == "custom"){
-                        this.refreshCustomTextFields()
-                     }
-                     this.refreshBtnSaveDisabled()
                   })
          },
 
-         onTabChange(evt){
-            this.changeTab(evt.target.value)
-         },
-
-         changeTab(newTab, updateStructure=true){
-            if(updateStructure){
-               if(this.state.tab == "dmlex"){
-                  this.structureStore.setConfigStructure(this.state.DMLexStructure)
-               } else if(this.state.tab == "custom"){
-                  this.structureStore.setConfigStructure(this.structureStore.nvhToStructure(this.state.schemaNvh))
-               }
-            }
-            if(newTab == "custom"){
-               this.state.schemaNvh = this.structureStore.getNvh()
-            }
-            this.update({
-               tab: newTab,
-               changed: false,
-            })
-            this.refreshBtnSaveDisabled()
-            if(newTab == "custom"){
-               this.refreshCustomTextFields()
-            }
-         },
-
-         onTabRadioMouseDown(evt){
-            let tab = evt.target.value
-            if(tab != this.state.tab){
-               if(this.state.changed){
-                  if(this.isSchemaValid()){
-                     window.modal.open({
-                        title: "Save changes?",
-                        tag: "raw-html",
-                        props: {
-                           content: "Before changing the structure setting mode you need to save changes first or discard the changes."
-                        },
-                        small: true,
-                        showCloseButton: false,
-                        buttons: [{
-                           label: "Cancel",
-                           onClick: (dialog, modal) => {
-                              modal.close()
-                           }
-                        }, {
-                           label: "discard changes",
-                           onClick: this.discardChanges.bind(this, tab)
-                        }, {
-                           label: "save changes",
-                           onClick: function(tab, dialog, modal){
-                              this.save()
-                                    .done(function(tab){
-                                       this.changeTab(tab)
-                                       modal.close()
-                                    }.bind(this, tab))
-                           }.bind(this, tab)
-                        }]
-                     })
-                  } else {
-                     window.modal.open({
-                        title: "Discard changes?",
-                        tag: "raw-html",
-                        props: {
-                           content: "There is an error in the structure. Before changing the structure setting mode you need to fix the structure first or discard the changes."
-                        },
-                        small: true,
-                        showCloseButton: false,
-                        buttons: [{
-                           label: "Cancel",
-                           onClick: (dialog, modal) => {
-                              modal.close()
-                           }
-                        }, {
-                           label: "discard changes",
-                           onClick: this.discardChanges.bind(this, tab)
-                        }]
-                     })
-                  }
-                  evt.stopPropagation()
-                  evt.preventDefault()
-               }
-            }
+         onOpenSourceCodeClick(){
+            this.structureStore.data.mode = "custom"
+            this.structureStore.data.tab = "code"
+            this.update()
          },
 
          onHasNewEntryTemplateChange(){
-            if(!this.state.hasNewEntryTemplate){ // now hasNewEntryTemplat=false, so it will be changed to true in this function
-               if(this.state.tab == "dmlex"){
-                  this.structureStore.setConfigStructure(this.state.DMLexStructure)
-               } else if(this.state.tab == "custom"){
-                  this.updateStructureFromNvhSchema()
-               }
-               if(!this.structureStore.data.newEntryTemplate){
-                  this.structureStore.setNewEntryTemplate({
-                     defaultElements: {},
-                     defaultValues: {}
-                  })
+            if(!this.state.hasNewEntryTemplate && !this.state.newEntryTemplate){
+               this.state.newEntryTemplate = {
+                  defaultElements: {},
+                  defaultValues: {}
                }
             }
             this.update({hasNewEntryTemplate: !this.state.hasNewEntryTemplate})
          },
 
-         onNvhSchemaChange(DMLexStructure, DMLexSettings){
-            this.state.DMLexStructure = DMLexStructure
-            this.state.DMLexSettings = DMLexSettings
-            this.state.changed = !window.objectEquals(DMLexSettings, this.state.originalDmlexSettings)
-            if(this.state.hasNewEntryTemplate){
-               this.structureStore.setConfigStructure(DMLexStructure)
-            }
-            this.update()
-            this.refreshBtnSaveDisabled()
-         },
-
-         onStructureEditorElemenChange(){
-            this.state.changed = true
-            this.refreshBtnSaveDisabled()
-         },
-
-         onNvhSchemaInput(schema){
-            this.state.schemaNvh = schema
-            if(this.state.hasNewEntryTemplate){
-               this.updateStructureFromNvhSchema()
-            }
-            this.state.changed = true
-            this.refreshBtnSaveDisabled()
-         },
-
-         onNvhSchemaValidChange(isValid){
-            this.state.isCustomNvhSchemaValid = isValid
-            this.refreshBtnSaveDisabled()
-         },
-
-         onLoadSampleNvhSchemaClick() {
-            this.state.schemaNvh = `entry:\n  headword:\n  partOfSpeech: ?\n  sense: +\n    definition: ?\n    example: *\n  `
-            this.update()
-            this.state.isCustomNvhSchemaValid = true
-            this.refreshCustomTextFields()
-            this.refreshBtnSaveDisabled()
-         },
-
-         onShowBrokenStructureClick(){
-            window.modal.open({
-               title: "Broken structure",
-               tag: "raw-html",
-               props: {
-                  content: JSON.stringify(this.state.brokenConfig)
-               }
-            })
-         },
-
-         discardChanges(tab, dialog, modal){
-            if(this.state.tab == "dmlex"){
-               this.state.DMLexSettings =  window.deepCopy(this.state.originalDmlexSettings)
-               this.state.DMLexStructure =  window.deepCopy(this.state.DMLexStructure)
-            }
-            this.structureStore.setConfigStructure(this.state.originalStructure)
-            this.changeTab(tab, false)
-            modal.close()
-         },
-
-         updateStructureFromNvhSchema(){
-            try{
-               let structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
-               this.structureStore.setConfigStructure(structure)
-               this.update()
-            } catch(e){}
+         onNewEntryTemplateChange(newEntryTemplate){
+            this.state.newEntryTemplate = newEntryTemplate
          },
 
          save() {
             this.update({isBusy: true})
-            let structure
-            if(this.state.tab == "dmlex"){
-               structure = this.state.DMLexStructure
-            } else if(this.state.tab == "advanced"){
-               structure = this.structureStore.data.structure
-            } else if(this.state.tab == "custom"){
-               structure = this.structureStore.nvhToStructure(this.state.schemaNvh)
-            }
             let data = {
-               jsonSchema: Object.assign({
-                  tab: this.state.tab,
-                  DMLexSettings: this.state.DMLexSettings,
-                  hasNewEntryTemplate: this.state.hasNewEntryTemplate,
-                  newEntryTemplate: this.deleteInvalidElementsInNewEntryTemplate(structure)
-               }, structure)
+               nvhSchema: this.schema.getNvh(),
+               mode: this.structureStore.data.mode,
+               tab: this.structureStore.data.tab,
+               DMLexSettings: this.structureStore.data.DMLexSettings,
+               hasNewEntryTemplate: this.state.hasNewEntryTemplate,
+               newEntryTemplate: this.deleteInvalidElementsInNewEntryTemplate()
             }
             return this.store.updateDictionaryConfig("structure", data)
                   .done(response => {
-                     this.state.brokenConfig = null
-                     this.state.changed = false
-                     this.state.originalStructure = window.deepCopy(response.content.jsonSchema)
-                     this.state.originalDmlexSettings = window.deepCopy(this.state.DMLexSettings)
+                     this.structureStore.data.brokenConfig = null
+                     this.structureStore.data.originalSchema = this.schema.getNvh()
+                     this.structureStore.data.originalDmlexSettings = window.deepCopy(this.structureStore.data.DMLexSettings)
                   })
                   .always(() => this.update({isBusy: false}))
          },
 
-         deleteInvalidElementsInNewEntryTemplate(structure){
+         deleteInvalidElementsInNewEntryTemplate(nvh){
             if(this.state.hasNewEntryTemplate){
-               let newEntryTemplate = this.structureStore.data.newEntryTemplate
-               Object.keys(newEntryTemplate.defaultElements).forEach(elementPath => {
-                  if(!structure.elements[elementPath]){
-                     delete newEntryTemplate.defaultElements[elementPath]
-                  }
-               })
-               Object.keys(newEntryTemplate.defaultValues).forEach(elementPath => {
-                  if(!structure.elements[elementPath]){
-                     delete newEntryTemplate.defaultValues[elementPath]
-                  }
-               })
+               let newEntryTemplate = this.state.newEntryTemplate
+               let elementsInStructure = this.schema.getElementList()
+                     .map(element => element.path)
+               const deleteInvalid = elements => {
+                  Object.keys(elements).forEach(elementPath => {
+                     if(!elementsInStructure.includes(elementPath)){
+                        delete elements[elementPath]
+                     }
+                  })
+               }
+               deleteInvalid(newEntryTemplate.defaultElements)
+               deleteInvalid(newEntryTemplate.defaultValues)
                return newEntryTemplate
-            } else {
-               return null
             }
-         },
-
-         isSchemaValid(){
-            if(this.state.tab == "dmlex"){
-               return true
-            } else if(this.state.tab == "advanced"){
-               return !!this.structureStore.data.structure.root
-                           && !this.structureStore.data.editedElement
-            } else if(this.state.tab == "custom"){
-               return !!this.state.schemaNvh
-                     && this.state.isCustomNvhSchemaValid
-            }
+            return null
          },
 
          refreshBtnSaveDisabled(){
-            $("#submit_button", this.root).toggleClass("disabled", !this.isSchemaValid())
-         },
-
-         refreshCustomTextFields(){
-            M.updateTextFields()
+            let disabled = this.structureStore.data.editedElement
+                  || !this.schema.isValid
+                  || this.schema.isEmpty()
+            $("dict-config-buttons .submitButton", this.root).toggleClass("disabled", disabled)
          }
       }
    </script>
 
    <style type="scss">
-      .tabsWrapper{
-         gap: 40px;
-         @media screen and (max-width: 900px) {
-            flex-wrap: wrap;
-         }
-      }
-      .settingsRadio{
-         width: 250px;
-         span{
-            white-space: nowrap;
-         }
-      }
-      .tabsContent{
-         width: 100%;
-      }
-      textarea{
-         min-height: 89px;
-      }
-      .tabs {
-         border-bottom: none;
-         a.active{
-            background-color: #fafafa;
-         }
-      }
-      .tabCustom{
-         .tabCustomForm{
-            max-width: 760px;
-            flex: 1
-         }
-      }
-      nvh-schema{
-         h3{
-            margin-top: 0;
-         }
-      }
       .newEntryTemplateSettings{
          padding: 10px 0 0 36px;
       }

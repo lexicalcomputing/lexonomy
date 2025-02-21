@@ -1,7 +1,10 @@
 window.nvhPlugins.ske = {
    isActive: function(element){
+      let config = window.store.data.config
       return this.hasSkeConnectionSettings()
-            && (this.hasExamples(element)
+            && (window.store.schema.isPathRoot(element.path)
+               || config.ske.searchElements.includes(element.path)
+               || this.hasExamples(element)
                || this.hasCollocations(element)
                || this.hasThesaurus(element)
                || this.hasDefinitions(element))
@@ -25,9 +28,9 @@ window.nvhPlugins.ske = {
 
    hasFeature: function(element, skeConfigKey) {
       let config = window.store.data.config
-      let containerName = config.ske[skeConfigKey]
-      return ((element.name == config.structure.root) || config.ske.searchElements.includes(element.path))
-            && config.structure.elements[containerName]
+      let containerPath = config.ske[skeConfigKey]
+      return (window.store.schema.isPathRoot(element.path) || config.ske.searchElements.includes(element.path))
+            && window.store.schema.getElementByPath(containerPath)
    },
 
    hasSkeConnectionSettings: function() {
@@ -55,7 +58,7 @@ window.nvhPlugins.ske = {
    getConcordanceOperations(element, searchWord){
       let config = window.store.data.config
       let operations = []
-      if (element.name == config.structure.root && config.ske.concquery.length > 0) {
+      if (window.store.schema.isPathRoot(element.path) && config.ske.concquery.length > 0) {
          let cql = config.ske.concquery.replace(/%\([^)]+\)/g, function (match) {
             let elementPath = match.substring(2, match.length - 1)
             let element = window.nvhStore.findElement(el => el.path == elementPath)
@@ -107,7 +110,7 @@ window.nvhPlugins.ske = {
       </li>`))
       dropdownContent.append($('<li class="divider" tabindex="-1"></li>'))
 
-      let searchWord = element.name == config.structure.root
+      let searchWord = window.store.schema.isPathRoot(element.path)
             ? this.getHeadword()
             : element.value
       this.hasExamples(element) && dropdownContent.append($(`<li><a>Find examples<i class="material-icons left">search</i></a></li>`)

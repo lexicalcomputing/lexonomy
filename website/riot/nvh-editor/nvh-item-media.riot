@@ -3,11 +3,20 @@
       <img if={props.type == "image"}
             src="{props.url}"
             class="nvh-image"/>
-      <video if={props.type == "video"}
-            controls
-            class="nvh-video">
-         <source src="{props.url}"/>
-      </video>
+      <template if={props.type == "video"}>
+         <video if={!isYouTube()}
+               controls
+               class="nvh-video">
+            <source src="{props.url}"/>
+         </video>
+         <iframe if={isYouTube()}
+               width="560"
+               height="315"
+               src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
+               frameborder="0"
+               allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               allowfullscreen></iframe>
+      </template>
       <audio if={props.type == "audio"}
             controls
             class="nvh-audio"
@@ -22,6 +31,19 @@
          <i class="material-icons">open_in_new</i>
       </a>
    </template>
+
+   <script>
+      export default{
+         isYouTube(){
+            return !!this.getYouTubeVideoId()
+         },
+
+         getYouTubeVideoId(){
+            let match = this.props.url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/)
+            return match ? match[1] : null
+         }
+      }
+   </script>
 
    <style>
       :host{

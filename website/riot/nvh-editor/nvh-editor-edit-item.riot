@@ -32,29 +32,29 @@
                onclick={onCollapseToggleClick}
                style={props.element.collapsed ? '' : 'display: none;'}>{getCollapsedValue()}</span>
 
-         <span if={state.config.type != "empty"}
-               class="nvh-value"
+         <span class="nvh-value"
                style={props.element.collapsed ? 'display: none;' : ''}>
             <span if={!props.element.edit}
                   class="nvh-readonly-value-wrapper">
                <span class="nvh-readonly-value pointer"
                      onmousedown={!props.readOnly && onValueMouseDown}>
-                  <raw-html content={store.stringifyElementValue(props.element.value, state.config.type)}/>
-               </span>
-               <span if={!props.readOnly && state.config.type}
-                     class="nvh-value-icons displayInlineFlex">
-                  <i class="pointer material-icons tiny"
-                        onmousedown={onValueMouseDown}>edit</i>
-                  <i if={nvhStore.isElementDuplicationAllowed(props.element)}
-                        class="pointer material-icons tiny"
-                        onclick={onDuplicateElementClick}>content_copy</i>
-                  <i if={nvhStore.isElementRemovalAllowed(props.element)}
-                        class="pointer material-icons tiny"
-                        onclick={onRemoveElementClick}>delete</i>
+                  <raw-html content={getReadOnlyValue()}/>
                </span>
             </span>
             <nvh-item-value-editor if={props.element.edit}
                   element={props.element}/>
+         </span>
+         <span if={!props.readOnly && state.config.type && !props.element.edit}
+               class="nvh-value-icons displayInlineFlex">
+            <i if={nvhStore.isElementEditAllowed(props.element)}
+                  class="pointer material-icons tiny"
+                  onmousedown={onValueMouseDown}>edit</i>
+            <i if={nvhStore.isElementDuplicationAllowed(props.element)}
+                  class="pointer material-icons tiny"
+                  onclick={onDuplicateElementClick}>content_copy</i>
+            <i if={nvhStore.isElementRemovalAllowed(props.element)}
+                  class="pointer material-icons tiny"
+                  onclick={onRemoveElementClick}>delete</i>
          </span>
       </span>
       <nvh-dnd-zone element={props.element}
@@ -110,7 +110,7 @@
          },
 
          onDragStart(evt){
-            if ($(".nvh-drag-handle", this.root).first()[0].contains(this.state.target)) {
+            if ($(".nvh-drag-handle", this.root).first()[0]?.contains(this.state.target)) {
                setTimeout(() => {
                   // prevent DOM manipulation to fire ondragend event immediately after ondragstart
                   $(this.root).addClass("nvh-dragged-element")
@@ -162,6 +162,18 @@
             setTimeout(() => {
                this.nvhStore.startElementEditing(this.props.element)
             }, 0)
+         },
+
+         getReadOnlyValue(){
+            let createReplaceString = (childPath, find, child) => {
+               let tooltip = child.children.filter(element => element.value !== "")
+                     .map(element => `${window.store.getElementDisplayedName(element.path)}: ${element.value}`)
+                     .join("<br>")
+               let color = this.nvhStore.getElementColor(childPath)
+               return `<span class="${tooltip ? 'tooltipped': ''}" data-tooltip="${tooltip}" style="border-bottom: 1px solid ${color}; background-color: ${color}20;">${find}</span>`
+            }
+            let value = this.store.stringifyElementValue(this.props.element.value, this.state.config.type)
+            return this.nvhStore.replaceMarkupOccurrences(value, this.props.element, createReplaceString)
          },
 
          getCollapsedValue(){
@@ -226,6 +238,7 @@
          border-radius: 10px;
          white-space: nowrap;
          align-items: stretch;
+         position: relative;
          &:hover{
             .nvh-value-icons{
                opacity: 1;
@@ -238,9 +251,11 @@
          .nvh-value-icons{
             position: absolute;
             left: 100%;
-            top: 1px;
-            gap: 15px;
+            top: 3px;
+            height: 24px;
+            gap: 10px;
             padding-left: 15px;
+            opacity: 0;
             i{
                opacity: 0.3;
                transition: all 0.1s ease-in-out;
@@ -249,9 +264,6 @@
                   opacity: 0.5;
                }
             }
-         }
-         .nvh-value-icons{
-            opacity: 0;
          }
       }
       .nvh-item-value-editor{
@@ -315,9 +327,12 @@
       .nvh-value {
          position: relative;
          flex: 1;
-         .nvh-readonly-value:hover{
-            text-shadow: 0px 0px black;
-            color: #000;
+         .nvh-readonly-value{
+            white-space: pre-wrap;
+            &:hover{
+               text-shadow: 0px 0px black;
+               color: #000;
+            }
          }
       }
       .nvh-children{

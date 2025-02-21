@@ -132,10 +132,14 @@ class nvh:
 
     def filter_entries (self, selectors, projectors, maxitems=0):
         def prepare_selector(q):
-            m = re.match("((?:[a-zA-Z._](?:#[<>=]+\d+)?)+) *(?:(=|!=|~=)(.*))?$", q)
-            # e.g. 'hw.sense.example#=0.quality=bad'
+            try:
+                m = re.match(r"((?:[\w._\-\d](?:#[<>=]+\d+)?)+) *(?:(=|!=|~=)(.*))?$", q)
+                # e.g. 'hw.sense.example#=0.quality=bad'
+            except Exception as e:
+                raise Exception(f"Invalid query: '{q}'")
+
             if not m:
-                raise Exception("Invalid query: '%s'" % q)
+                raise Exception("Cannot parse query: '%s'" % q)
             return m.groups()
         self.refresh()
         children = [c for c in self.children if all(c.selection(*prepare_selector(f)) for f in selectors)]
@@ -488,7 +492,7 @@ class nvh:
     def print_schema (s, indent = 0, outfile = sys.stdout):
         def get_symbol(d):
             result = []
-            if d["optional"]:
+            if d.get("optional"):
                 if  d["max"] == None or d["max"] > 1:
                     result.append("*")
                 else:
@@ -502,7 +506,31 @@ class nvh:
 
         for k in s:
             print("%s%s: %s" % (" " * indent, k, get_symbol(s[k])), file=outfile)
-            nvh.print_schema (s[k]["schema"], indent + 4, outfile)
+            nvh.print_schema (s[k]["schema"], indent + 2, outfile)
+
+    @staticmethod
+    def dump_schema (s, out, indent = 0):
+        def get_symbol(d):
+            result = []
+            if d.get("optional"):
+                if  d["max"] == None or d["max"] > 1:
+                    result.append("*")
+                else:
+                    result.append("?")
+            elif  d["max"] == None or d["max"] > 1:
+                result.append("+")
+
+            result.append(d["type"])
+
+            return ' '.join(result)
+
+        for k in s:
+            out.append("%s%s: %s" % (" " * indent, k, get_symbol(s[k])))
+            nvh.dump_schema (s[k]["schema"], out, indent + 2)
+
+    @staticmethod
+    def schema_get_root_name(nvh_schema_string):
+        return nvh.parse_string(nvh_schema_string).children[0].name
 
     @staticmethod
     def parse_line (line, line_nr, parent):
@@ -561,7 +589,19 @@ class nvh:
             last_indent = indent
         return dictionary
 
-    def build_json(self, schema_dict: dict) -> None:
+    @staticmethod
+    def schema_keys(nvh_schema_string):
+        schema_json = nvh.schema_nvh2json(nvh_schema_string)
+        return schema_json.keys()
+
+    @staticmethod
+    def schema_nvh2json(nvh_schema):
+        schema = nvh.parse_string(nvh_schema)
+        schema_json = {}
+        schema.schema_transform_nvh2json(schema_json)
+        return schema_json
+
+    def schema_transform_nvh2json(self, schema_dict: dict) -> None:
         # build json for each nvh node recursively
         p = self.parent
         curr_path = [self.name]
@@ -581,7 +621,51 @@ class nvh:
             schema_dict[curr_name] = item
 
         for c in self.children:
-            c.build_json(schema_dict)
+            c.schema_transform_nvh2json(schema_dict)
+
+    @staticmethod
+    def schema_json2nvh(schema_json):
+        sorted_keys = list(schema_json.keys())
+        sorted_keys.sort(key=lambda x: x.count('.'))
+        root = sorted_keys[0]
+        schema_nvh = []
+        nvh.schema_transform_json2nvh(schema_json, root, schema_nvh)
+        return '\n'.join(schema_nvh)
+
+    @staticmethod
+    def schema_transform_json2nvh(schema_json, node_key, result_schema_nvh, indent=0):
+        name = indent*'  ' + schema_json[node_key]['name']
+        if schema_json[node_key]['min'] == 0 and schema_json[node_key]['max'] == None:
+            count = '*'
+        elif schema_json[node_key]['min'] == 1 and schema_json[node_key]['max'] == None:
+            count = '+'
+        elif schema_json[node_key]['min'] == 0 and schema_json[node_key]['max'] == 1:
+            count = '?'
+        elif schema_json[node_key]['min'] > 0 and schema_json[node_key]['max'] == None:
+            count = f"{schema_json[node_key]['min']}+"
+        elif schema_json[node_key]['min'] == 1 and schema_json[node_key]['max'] == 1: 
+            count = ''
+        elif schema_json[node_key]['min'] != None and schema_json[node_key]['max'] != None:
+            count = f"{schema_json[node_key]['min']}-{schema_json[node_key]['max']}"
+
+        node_type = schema_json[node_key].get('type', '')
+        node_re = schema_json[node_key].get('re', '')
+        node_values = schema_json[node_key].get('values', '')
+
+        value = []
+        if count:
+            value.append(count)
+        if node_type:
+            value.append(node_type)
+        if node_re:
+            value.append(f'~{node_re}')
+        if node_values:
+            value.append(node_values)
+
+        result_schema_nvh.append(name + ": " + " ".join(value))
+
+        for ch in schema_json[node_key].get('children', []):
+            nvh.schema_transform_json2nvh(schema_json, ch, result_schema_nvh, indent+1)
 
     def dump_xml(self, result_xml):
         def get_xml_atts(node_children):
@@ -742,7 +826,7 @@ if __name__ == "__main__":
             if len(sys.argv) < 3:
                 usage()
             schema_json: dict = {}
-            dictionary.build_json(schema_json)
+            dictionary.schema_transform_nvh2json(schema_json)
             print(json.dumps(schema_json, indent=2))
         else:
             usage()

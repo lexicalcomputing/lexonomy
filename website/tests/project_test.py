@@ -74,7 +74,7 @@ class TestQueries(unittest.TestCase):
                 'language': 'en'
                 }
         f = open(os.path.join(current_dir, 'example_nvh', 'project_source.nvh'), 'rb')
-        files = {'filename': f}
+        files = {'import_entires': f}
 
         r = requests.post(url=self.website + "/make.json", data=data, files=files, cookies=self.cookies)
         f.close()

@@ -2,7 +2,10 @@
 # coding: utf-8
 # Author: Tomas Svoboda, tomas.svoboda@sketchengine.eu, Lexical Computing CZ
 import os
+import re
+import sys
 import json
+import traceback
 
 
 def _delete_keys(dictionary, keys):
@@ -19,20 +22,22 @@ def _rename_keys(dictionary, keys):
             dictionary[new_key] = dictionary.pop(old_key)
 
 
-def migrate_to_3_0(config):
+def migrate_to_3_0(config, titling_element='', entry_element='', structure_elements=[]):
     if 'ident' in config:
         config['ident']['direction'] = 'ltr'
 
-    if 'users' in config:
-        for user_config in config['users'].values():
-            user_config['canView'] = True
-
     if 'xemplate' in config:
         _rename_keys(config, [('xemplate', 'formatting')])
+        if config['formatting'].get('_css'):
+            _rename_keys(config['formatting'], [('_css', 'customCss')])
+            config['formatting']['useCustomCss'] = True
+
         for key, value in config['formatting'].items():
-            if 'shown' not in value or not value['shown']:
-                value['hidden'] = True
-            _delete_keys(value, ['shown'])
+            if key not in ['_xsl', 'customCss', 'useCustomCss']:
+                if 'shown' not in value or not value['shown']:
+                    value['hidden'] = True
+
+                _delete_keys(value, ['shown'])
 
     if 'editing' in config:
         _delete_keys(config['editing'], ['xonomyMode', 'xonomyTextEditor'])
@@ -54,9 +59,69 @@ def migrate_to_3_0(config):
     ]:
         if source in config and 'container' in config[source]:
             config['ske'][dest] = config[source]['container']
-    _delete_keys(config, ['kex', 'xampl', 'thes', 'defo', 'collx'])
+    _delete_keys(config, ['kex', 'xampl', 'thes', 'defo', 'collx', 'xema', 'users'])
 
-    return config
+    # Setting defaults
+    if titling_element:
+        config['titling']['headword'] = titling_element
+        config['titling']['headwordSorting'] = titling_element
+
+    if entry_element and config['formatting'].get(entry_element, False):
+        config['formatting'][entry_element]['hidden'] = False
+
+    # converting to paths
+    if structure_elements:
+        def key2path(key):
+            for path in structure_elements.keys():
+                if path.split('.')[-1] == key:
+                    return path
+            return f'{entry_element}.{key}'
+
+        if config.get('formatting', False):
+            old_keys = list(config['formatting'].keys())
+            for key in old_keys:
+                new_key = key2path(key)
+                config['formatting'][new_key] = config['formatting'].pop(key)
+
+        if config.get('titling', False):
+            for i in ['headword', 'headwordSorting']:
+                if config['titling'].get(i, False):
+                    config['titling'][i] = key2path(config['titling'][i])
+            if config['titling'].get('headwordAnnotations', False):
+                new_list = []
+                for i in config['titling']['headwordAnnotations']:
+                    new_list.append(key2path(i))
+                config['titling']['headwordAnnotations'] = new_list
+            if config['titling'].get('headwordAnnotationsAdvanced', False):
+                new_key = config['titling']['headwordAnnotationsAdvanced']
+                for key in re.findall(r'%\(([^\)]+)\)', config['titling']['headwordAnnotationsAdvanced']):
+                    new_key = re.sub('%\('+key+'\)', '%('+key2path(key)+')', new_key)
+                config['titling']['headwordAnnotationsAdvanced'] = new_key
+
+        if config.get('searchability', False) and config['searchability'].get('searchableElements', False):
+            new_list = []
+            for i in config['searchability']['searchableElements']:
+                new_list.append(key2path(i))
+            config['searchability']['searchableElements'] = new_list
+
+        if config.get('flagging', False) and config['flagging'].get('flag_element', False):
+            config['flagging']['flag_element'] = key2path(config['flagging']['flag_element'])
+
+        if config.get('ske', False):
+            if config['ske'].get('searchElements', False):
+                new_list = []
+                for i in config['ske']['searchElements']:
+                    new_list.append(key2path(i))
+                config['ske']['searchElements'] = new_list
+
+            for i in ['collocationContainer', 'exampleContainer', 'collocationContainer', 'definitionContainer', 'thesaurusContainer']:
+                if config['ske'].get(i, False):
+                    config['ske'][i] = key2path(config['ske'][i])
+            if config['ske'].get('concquery'):
+                new_key = config['ske']['concquery']
+                for key in re.findall(r'%\(([^\)]+)\)', config['ske']['concquery']):
+                    new_key = re.sub('%\('+key+'\)', '%('+key2path(key)+')', new_key)
+                config['ske']['concquery'] = new_key
 
 
 def migrate_config(config, version):
@@ -76,12 +141,15 @@ def main():
                         required=False, default='',
                         help='Result output path. If not specified, input file is overwritten.')
     args = parser.parse_args()
-    with open(args.config_path) as f:
-        config = json.load(f)
-        migrated_config = migrate_config(config, '3.0')
-    output_path = args.out if args.out else args.config_path
-    with open(output_path, 'w') as f:
-        f.writelines(json.dumps(migrated_config))
+    try:
+        with open(args.config_path) as f:
+            config = json.load(f)
+            migrated_config = migrate_config(config, '3.0')
+        output_path = args.out if args.out else args.config_path
+        with open(output_path, 'w') as f:
+            f.writelines(json.dumps(migrated_config))
+    except Exception as e:
+        sys.stderr.write(f'Error {args.config_path}: {e}\n{traceback.format_exc()}\n')
 
 
 if __name__ == '__main__':

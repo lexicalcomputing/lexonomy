@@ -25,8 +25,10 @@
    <div class="buttons mt-12 pt-6">
       <button class="btn btn-secondary"
             onclick={onCancelClick}>cancel</button>
-      <button class="btn btn-primary {!state.stringifiedQuery ? 'disabled' : ''}"
-            onclick={onSearchClick}>search</button>
+      <primary-button disabled={!state.stringifiedQuery ? 'disabled' : ''}
+            on-click={onSearchClick}
+            label="Search"
+            icon="search"/>
    </div>
 
    <script>
@@ -79,25 +81,6 @@
                type: "rule",
                parent: group
             })
-            this.onChange()
-         },
-
-         addGroup(group){
-            let childGroup = {
-               type: "group",
-               operator: "and",
-               parent: group,
-               children: []
-            }
-            childGroup.children.push({
-               type: "rule",
-               parent: childGroup
-            })
-            childGroup.children.push({
-               type: "rule",
-               parent: childGroup
-            })
-            group.children.push(childGroup)
             this.onChange()
          },
 

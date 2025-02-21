@@ -98,14 +98,23 @@
             route('/*/edit(\?*){0,1}', (dictId) => {
                this.goTo('dict-edit', [dictId])
             })
+            // just backward compatibility for old links, can be removed in future
             route('/*/edit/*(\?*){0,1}', (dictId, doctype) => {
-               this.goTo('dict-edit', [dictId, doctype])
+               this.goTo('dict-edit', [dictId])
             })
+            route('/*/edit/([0-9]+|new)(\?*){0,1}', (dictId, entryId) => {
+               this.goTo('dict-edit', [dictId, entryId, "view"])
+            })
+            // just backward compatibility for old links, can be removed in future
             route('/*/edit/*/([0-9]+|new)(\?*){0,1}', (dictId, doctype, entryId) => {
-               this.goTo('dict-edit', [dictId, doctype, entryId, "view"])
+               this.goTo('dict-edit', [dictId, entryId, "view"])
             })
             route('/*/edit/*/([0-9]+|new)/*(\?*){0,1}', (dictId, doctype, entryId, editorMode) => {
-               this.goTo('dict-edit', [dictId, doctype, entryId, editorMode])
+               this.goTo('dict-edit', [dictId, entryId, editorMode])
+            })
+            // just backward compatibility for old links, can be removed in future
+            route('/*/edit/([0-9]+|new)/*(\?*){0,1}', (dictId, entryId, editorMode) => {
+               this.goTo('dict-edit', [dictId, entryId, editorMode])
             })
             route('/*/config/*', (dictId, configId) => {
                this.goTo('dict-config-' + configId, [dictId])

@@ -26,8 +26,9 @@
             if(!this.state.active
                   && (this.props.element == this.nvhData.detachedEntry
                      || (this.nvhData.draggedElement != this.props.element
-                        && this.nvhStore.getAvailableParentElementPaths(this.nvhData.draggedElement.path).includes(this.props.element.path)
-                        && (this.props.element == this.nvhData.draggedElement.parent || this.nvhStore.canHaveAnotherChild(this.props.element, this.nvhData.draggedElement.path))
+                        && this.nvhStore.getElementConfig(this.nvhData.draggedElement.path)?.parent?.path == this.props.element.path
+                        && (this.props.element == this.nvhData.draggedElement.parent
+                           || this.nvhStore.canHaveAnotherChild(this.props.element, this.nvhData.draggedElement.path))
                      )
                   )
                ){
@@ -69,6 +70,7 @@
          position: relative;
          transition: 0.2s;
          display: block;
+         max-width: 200px;
          .nvh-zone{
             transition: 0.2s;
             position: absolute;
@@ -76,7 +78,7 @@
             min-height: 30px;
             top: -10px;
             bottom: -10px;
-            left: 30px;
+            left: -10px;
             right: 20px;
          }
          .nvh-bar{
@@ -86,6 +88,7 @@
             pointer-events: none;
             min-height: 3px;
             top: 10px;
+            left: 40px;
             border-radius: 20px;
          }
 

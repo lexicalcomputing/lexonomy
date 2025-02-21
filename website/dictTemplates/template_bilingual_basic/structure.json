@@ -1,0 +1,7 @@
+entry: 1 string
+  pos: * list ["noun","verb","go to configuration>structure to add more"]
+  transcription: * string
+  sense: * string
+    translation: * string ~.+
+    transcription: * string
+    example: * string ~.+

@@ -189,16 +189,20 @@ def dmlex_schema():
                                                                    json.loads(request.query.xlingual_langs) if request.query.xlingual_langs else [],
                                                                    json.loads(request.query.linking_relations) if request.query.linking_relations else [],
                                                                    json.loads(request.query.etymology_langs) if request.query.etymology_langs else [])
-        return {"elements": schema, "desc_dict": desc_dict, 'modules': used_modules, "root": "entry", "success": True}
+        schema_root = nvh.schema_get_root_name(schema)
+        return {"nvhSchema": schema, "desc_dict": desc_dict, 'modules': used_modules, "root": schema_root, "success": True}
     except Exception as e:
-        return {"elements": "", "desc_dict": "", 'modules': [], "root": "", "success": False, "error": e}
+        return {"nvhSchema": "", "desc_dict": "", 'modules': [], "root": "", "success": False, "error": e}
 
 @post(siteconfig["rootPath"] + "schema_to_json.json") # OK
 def schema_to_json():
-    schema = nvh.parse_string(json.loads(request.forms.schema))
-    schema_dict: dict = {}
-    schema.build_json(schema_dict)
-    return {"schemajson": json.dumps(schema_dict)}
+    schema_dict = nvh.schema_nvh2json(request.forms.schema)
+    return {"success": True, "schemajson": json.dumps(schema_dict)}
+
+@post(siteconfig["rootPath"] + "schema_json_to_nvh.json") # OK
+def schema_to_json():
+    schema_nvh = nvh.schema_json2nvh(json.loads(request.forms.json_schema))
+    return {"success": True, "schema_nvh": '\n'.join(schema_nvh)}
 
 @get(siteconfig["rootPath"] + "userdicts.json")
 @auth
@@ -242,12 +246,6 @@ def entrycreate(dictID, user, dictDB, configs):
 def entryflag(dictID, user, dictDB, configs):
     success, error = ops.flagEntry(dictDB, configs, request.forms.id, json.loads(request.forms.flags), user["email"], {})
     return {"success": success, "id": request.forms.id, 'error': error}
-
-@get(siteconfig["rootPath"]+"<dictID>/subget")
-@authDict(["canEdit"])
-def subget(dictID, user, dictDB, configs):
-    total, entries, first = ops.listEntries(dictDB, dictID, configs, request.query.doctype, request.query.lemma, "wordstart", 100, 0, False, False, True)
-    return {"success": True, "total": total, "entries": entries}
 
 @post(siteconfig["rootPath"]+"<dictID>/history.json")
 def history(dictID):
@@ -498,9 +496,11 @@ def send_signup():
 
 @post(siteconfig["rootPath"] + "createaccount.json")
 def do_create_account():
-    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
-    res = ops.createAccount(request.forms.token, request.forms.password, client_ip)
-    return {"success": res}
+    if siteconfig.get('allow_registration', None) != False :
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
+        res = ops.createAccount(request.forms.token, request.forms.password, client_ip)
+        return {"success": res}
+    return {"success": False}
 
 @post(siteconfig["rootPath"] + "forgotpwd.json")
 def forgotpwd(): # OK
@@ -522,24 +522,62 @@ def makedict(user):
 @post(siteconfig["rootPath"] + "make.json")
 @auth
 def makedictjson(user):
-    if request.files.get('filename'):
-        upload = request.files.get("filename")
+    if len(request.files) > 0:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        if supported_formats.match(upload.filename):
-            res = ops.makeDict(request.forms.url, None, None, request.forms.title,
+        if supported_formats.match(request.files.get("import_entires").filename):
+            res = ops.makeDict(request.forms.url, None, request.forms.title,
                                request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
                                deduplicate=True if request.forms.deduplicate=='true' else False,
-                               bottle_file_object=upload, hwNode=request.forms.hwNode)
+                               bottle_files=request.files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
         else:
             return{"success": False, "url": request.forms.url,
                    "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
     else:
-        res = ops.makeDict(request.forms.url, request.forms.nvhSchema, request.forms.jsonSchema,
+        res = ops.makeDict(request.forms.url, json.loads(request.forms.structure),
                            request.forms.title, request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=request.forms.addExamples=="true",
-                           deduplicate=False, bottle_file_object=None, hwNode=None)
+                           deduplicate=False, bottle_files={}, hwNode=None, titling_node=None)
     return res
+
+
+@post(siteconfig["rootPath"] + "make_templated.json")
+@auth
+def makedictjson(user):
+    files = {}
+    template_dir = os.path.join(currdir, 'dictTemplates', 'template_' + request.forms.template_id)
+
+    for file_name in os.listdir(template_dir):
+        if file_name == 'configs.json':
+            f1 = open(os.path.join(template_dir, file_name), 'rb')
+            files['config'] = bottle.FileUpload(f1, '', file_name)
+        elif file_name == 'entries.nvh':
+            f2 = open(os.path.join(template_dir, file_name), 'rb')
+            files['import_entires'] = bottle.FileUpload(f2, '', file_name)
+        elif file_name == 'custom_editor.css':
+            f3 = open(os.path.join(template_dir, file_name), 'rb')
+            files['ce_css'] = bottle.FileUpload(f3, '', file_name)
+        elif file_name == 'custom_editor.js':
+            f4 = open(os.path.join(template_dir, file_name), 'rb')
+            files['ce_js'] = bottle.FileUpload(f4, '', file_name)
+        elif file_name == 'structure.nvh':
+            f5 = open(os.path.join(template_dir, file_name), 'rb')
+            files['structure'] = bottle.FileUpload(f5, '', file_name)
+        elif file_name == 'styles.css':
+            f6 = open(os.path.join(template_dir, file_name), 'rb')
+            files['styles'] = bottle.FileUpload(f6, '', file_name)
+
+    res = ops.makeDict(request.forms.url, None, request.forms.title,
+                       request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
+                       addExamples=False,
+                       deduplicate=True if request.forms.deduplicate=='true' else False,
+                       bottle_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
+
+    for i in [f1,f2,f3,f4,f5,f6]:
+        i.close()
+
+    return res
+
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
 @authDict(["canView"])
@@ -564,7 +602,7 @@ def movedict(dictID, user, dictDB, configs):
 @auth
 def movedict(user):
     res = ops.checkDictExists(request.forms.url)
-    return {"success": res}
+    return {"success": True, "exists": res}
 
 @post(siteconfig["rootPath"] + "changepwd.json")
 @auth
@@ -796,8 +834,6 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        doctypes = [configs["structure"]["root"]]
-        doctypes = list(set(doctypes))
 
         # WARNING consider if new config item does show personal data, than add to this list
         hide_items = ["siteconfig", "download", "users"]
@@ -805,29 +841,10 @@ def dictconfig(dictID):
             configs.pop(item)
 
         res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]},
-               "userAccess": user["dictAccess"], "configs": configs,
-               "doctype": configs["structure"]["root"], "doctypes": doctypes}
+               "userAccess": user["dictAccess"], "configs": configs}
 
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
-
-@get(siteconfig["rootPath"]+"<dictID>/doctype.json")
-def dictconfig(dictID):
-    if not ops.dictExists(dictID):
-        return {"success": False}
-    else:
-        user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-        doctypes = [configs["structure"]["root"]]
-        doctypes = list(set(doctypes))
-        res = {"success": True, "doctype": configs["structure"]["root"], "doctypes": doctypes, "userAccess": user["dictAccess"]}
-        return res
-
-@get(siteconfig["rootPath"]+"<dictID>/<entryID:re:\d+>/nabes.json")
-def publicentrynabes(dictID, entryID):
-    dictDB = ops.getDB(dictID)
-    user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, dictDB)
-    nabes = ops.readNabesByEntryID(dictDB, dictID, entryID, configs)
-    return {"nabes": nabes}
 
 
 @post(siteconfig["rootPath"]+"<dictID>/random.json") # OK
@@ -847,7 +864,7 @@ def exportconfigs(dictID, user, dictDB, configs):
         elif configid == 'users':
             output['users'] = ops.listDictUsers(dictID)
         else:
-            output[configid] = configs[configid]
+            output[configid] = configs.get(configid, None)
     response.set_header("Content-Disposition", "attachment; filename="+dictID+"-configs.json")
     return output
 
@@ -918,9 +935,9 @@ def getImportProgress(dictID, user, dictDB, configs):
     return{"finished": finished, "progress": progress, "error": err, "warnings": warns, 'upload_file_path': upload_file_path}
 
 
-@post(siteconfig["rootPath"]+"<dictID>/<doctype>/entrylist.json") # OK
+@post(siteconfig["rootPath"]+"<dictID>/entrylist.json") # OK
 @authDict(["canEdit"])
-def entrylist(dictID, doctype, user, dictDB, configs):
+def entrylist(dictID, user, dictDB, configs):
     if request.forms.id:
         if request.forms.id == "last":
             entryID = ops.getLastEditedEntry(dictDB, user["email"])
@@ -936,7 +953,7 @@ def entrylist(dictID, doctype, user, dictDB, configs):
 
         return {"success": True, "entries": entries, "total": total, "firstRun": first}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, doctype, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
+        total, entries, first = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
         return {"success": True, "entries": entries, "total": total, "firstRun": first}
 
 @post(siteconfig["rootPath"]+"<dictID>/search.json")
@@ -968,13 +985,15 @@ def configread(dictID, user, dictDB, configs):
 @authDict(["canConfig"])
 def dmlexschemaupdate(dictID, user, dictDB, configs):
     try:
-        final_schema, desc_dict, used_modules, removed_nodes = ops.updateDmLexSchema(configs['structure'], json.loads(request.query.modules),
+        final_schema, desc_dict, used_modules, removed_nodes = ops.updateDmLexSchema(configs['structure'],
+                                                                                     json.loads(request.query.modules),
                                                                                      json.loads(request.query.xlingual_langs) if request.query.xlingual_langs else [],
                                                                                      json.loads(request.query.linking_relations) if request.query.linking_relations else [],
                                                                                      json.loads(request.query.etymology_langs) if request.query.etymology_langs else [])
-        return {"elements": final_schema, "desc_dict": desc_dict, 'modules': used_modules, 'removed_nodes': removed_nodes, 'root': 'entry', "success": True}
+        schema_root = nvh.schema_get_root_name(final_schema)
+        return {"nvhSchema": final_schema, "desc_dict": desc_dict, 'modules': used_modules, 'removed_nodes': removed_nodes, 'root': schema_root, "success": True}
     except Exception as e:
-        return {"success": False, "elements": {}, "desc_dict": '', 'modules': [], 'removed_nodes':{}, 'root': 'entry', "error": str(e)}
+        return {"success": False, "nvhSchema": {}, "desc_dict": '', 'modules': [], 'removed_nodes':{}, 'root': '', "error": str(e)}
 
 @post(siteconfig["rootPath"]+"<dictID>/dictconfigupdate.json")
 @authDict(["canConfig"])
@@ -1030,27 +1049,6 @@ def resavejson(dictID, user, dictDB, configs):
         count += 1
     return {"todo": stats["needResave"]}
 
-@post(siteconfig["rootPath"] + "<dictID>/<doctype>/ontolex.api")
-def ontolex(dictID, doctype):
-    data = json.loads(request.body.getvalue().decode('utf-8'))
-    if not data.get("email") or not data.get("apikey"):
-        return {"success": False, "message": "missing email or api key"}
-    user = ops.verifyUserApiKey(data["email"], data["apikey"])
-    if not user["valid"]:
-        return {"success": False}
-    else:
-        if data.get("search"):
-            search = data["search"]
-        else:
-            search = ""
-        dictDB = ops.getDB(dictID)
-        configs = ops.readDictConfigs(dictDB)
-        dictAccess = configs["users"].get(user["email"]) or user["email"] in siteconfig["admins"]
-        if not dictAccess:
-            return {"success": False}
-        else:
-            response.headers['Content-Type'] = "text/plain; charset=utf-8"
-            return ops.listOntolexEntries(dictDB, dictID, configs, doctype, search)
 
 @get(siteconfig["rootPath"] + "api")
 def apitest():
@@ -1262,12 +1260,6 @@ def dictedit(dictID):
     else:
         return redirect("/")
 
-@get(siteconfig["rootPath"]+"<dictID>/edit/<doctype>")
-def dicteditdoc(dictID, doctype):
-    if ops.dictExists(dictID):
-        return redirect("/#" + dictID + '/edit/' + doctype)
-    else:
-        return redirect("/")
 
 @get(siteconfig["rootPath"]+"docs/intro")
 def docintro():

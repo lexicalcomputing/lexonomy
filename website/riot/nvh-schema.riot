@@ -1,5 +1,5 @@
 <nvh-schema class="displayFlex">
-   <div class="pb-8">
+   <div class="pb-8 pr-6">
       <h3>Entry components</h3>
       <div class="pl-4"
             style="min-width: 350px;">
@@ -8,29 +8,10 @@
                   checked="checked"
                   disabled="disabled">
             <span class="displayFlex alignCenter">
-               Core
+               Core components
                <i class="moduleHelpIcon help help material-icons tooltipped"
-                     data-tooltip="DMLex Core allows you to model the basic entries-and-sense structure of a monolingual lexicographic resource.">help_outline</i>
+                     data-tooltip=" Includes the key components useful for all kinds of dictionaries such as part-of-speech, pronunciation, word forms, senses, definitions, examples, labels, tags and others.">help_outline</i>
             </span>
-         </label>
-         <label class="checkbox moduleName mt-2">
-            <input type="checkbox"
-                  checked="checked"
-                  disabled="disabled">
-            <span class="displayFlex alignCenter">
-               Controlled values
-               <i class="moduleHelpIcon help help material-icons tooltipped"
-                     data-tooltip="DMLex Controlled Values Module extends DMLex Core to represent inventories of look-up values to be used as part-of-speech tags, usage label tags and others.">help_outline</i>
-            </span>
-         </label>
-         <label class="checkbox moduleName mt-2">
-            <input type="checkbox"
-                  checked="checked"
-                  disabled="disabled">
-            <span class="displayFlex alignCenter">
-               Linking
-               <i class="moduleHelpIcon help help material-icons tooltipped"
-                     data-tooltip="DMLex Linking Module extends DMLex Core and allows you to model various kinds of relations between entries, senses and other objects, including semantic relations such as synonymy and antonymy and presentational relations such as subentries and subsenses, both within a single lexicographic resource and across multiple lexicographic resources.">help_outline</i>              </span>
          </label>
          <label class="checkbox moduleName mt-2">
             <input type="checkbox"
@@ -38,9 +19,9 @@
                   name="xlingual"
                   onchange={onModuleCheckboxChange.bind(this, "xlingual")}>
             <span class="displayFlex alignCenter">
-               Crosslingual module
+               Multilingual components
                <i class="moduleHelpIcon help material-icons tooltipped"
-                     data-tooltip="DMLex Crosslingual Module extends DMLex Core to model bilingual and multilingual lexicographic resources.">help_outline</i>
+                     data-tooltip="Includes components required for bilingual and multilingual dictionaries such as translations, examples of translations, pronunciations and others.">help_outline</i>
             </span>
          </label>
          <div id="xlingualSettings"
@@ -67,9 +48,9 @@
                   name="annotation"
                   onchange={onModuleCheckboxChange.bind(this, "annotation")}>
             <span class="displayFlex alignCenter">
-               Annotation module
+               Highlighting
                <i class="moduleHelpIcon help material-icons tooltipped"
-                           data-tooltip="DMLex Annotation Module extends DMLex Core to allow the modelling of inline markup on various objects such as example sentences, including the modelling of collocations and corpus patterns.">help_outline</i>
+                     data-tooltip="Includes components required to highlight words, usually in definitions and example sentences, and assign functions to them.">help_outline</i>
             </span>
          </label>
          <label class="checkbox moduleName mt-2">
@@ -79,8 +60,6 @@
                   onchange={onModuleCheckboxChange.bind(this, "etymology")}>
             <span class="displayFlex alignCenter">
                Etymology module
-               <i class="moduleHelpIcon help material-icons tooltipped"
-                           data-tooltip="DMLex Etymology Module extends DMLex Core to allow the modelling of etymological information in dictionaries.">help_outline</i>
             </span>
          </label>
          <div id="etymologySettings"
@@ -99,10 +78,14 @@
                      id="etymologyLanguage"
                      autocomplete="off"
                      onkeyup={onEtymologyLanguageKeyUp}>
-               <label>Add etymon language</label>
+               <label>
+                  Add etymon language prefix
+                  <i class="tiny help material-icons tooltipped"
+                     data-tooltip="The etymon language prefix for elements related to this language. For example, enm for Middle English will produce elements names such as enm_etymonUnit.">help_outline</i>
+               </label>
                <span if={!state.isEtymologyLanguageValid}
-                     class="helper-text red-text">Invalid language. Allowed characters: a-z, A-Z, 0-9, -</span>
-               <span class="helper-text">Add language and hit enter.</span>
+                     class="helper-text red-text">Invalid language. Allowed characters: a-z, A-Z, 0-9, -, _</span>
+               <span class="helper-text">Add language prefix and hit enter.</span>
             </div>
          </div>
       </div>
@@ -120,21 +103,22 @@
          </label>
       </div>
       <loading-overlay if={state.isLoading}/>
-      <div class="ml-4 mt-4">
-         <div each={(element, idx) in state.fullElementList}>
+      <div if={state.schema}
+            class="ml-4 mt-4">
+         <div each={(element, idx) in state.schema.getElementList()}>
             <div class="entryLine elementWithCheckbox displayInlineFlex alignCenter">
                <label if={state.showMoreSettings}
-                     style="padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
+                     style="padding-left: {element.indent * 30 + 10}px;">
                   <input type="checkbox"
-                        checked={state.selectedElements.has(element.path) || element.name == state.root}
-                        disabled={element.name == state.root}
+                        checked={state.selectedElements.has(element.path) || state.schema.isElementRoot(element)}
+                        disabled={state.schema.isElementRoot(element)}
                         onclick={onElementCheckboxChanged.bind(this, element.path)} />
-                  <span style="color: {window.nvhStore.getColorByIndex(idx)};">
+                  <span style="color: {state.schema.getElementColor(element)};">
                      {element.name}
                   </span>
                </label>
                <span if={!state.showMoreSettings}
-                     style="color: {window.nvhStore.getColorByIndex(idx)}; padding-left: {(element.path.split('.').length - 1) * 30 + 10}px;">
+                     style="color: {state.schema.getElementColor(element)}; padding-left: {element.indent * 30 + 10}px;">
                   {element.name}
                </span>
                <i class="grey-text inlineBlock material-icons ml-2 tiny verticalMiddle help tooltipped"
@@ -151,13 +135,12 @@
        export default {
          state: {
             isLoading: true,
-            fullElementList: [],
+            schema: null,
             modules: [],
             xlingual_langs: [],
             etymology_langs: [],
             isEtymologyLanguageValid: true,
             elementDescription: null,
-            schema: null,
             showMoreSettings: false,
             selectedElements: null
          },
@@ -168,6 +151,7 @@
             this.state.etymology_langs = this.props.etymology_langs || []
             this.state.showMoreSettings = this.props.showMoreSettings
             this.state.selectedElements = new Set(this.props.selectedElements)
+            this.state.schema = new window.NvhSchemaClass()
          },
 
          onElementCheckboxChanged(elementPath, evt){
@@ -208,21 +192,18 @@
             if(moduleName == "xlingual" && checked){
                this.initLanguageAutocomplete()
             }
-            this.callOnChange()
          },
 
          onRemoveLanguageClick(languageCode, evt){
             evt.stopPropagation()
             this.state.xlingual_langs = this.state.xlingual_langs.filter(l => l != languageCode)
             this.loadSchema()
-            this.callOnChange()
          },
 
          onRemoveEtymologyLanguageClick(language, evt){
             evt.stopPropagation()
             this.state.etymology_langs = this.state.etymology_langs.filter(l => l != language)
             this.loadSchema()
-            this.callOnChange()
          },
 
          onEtymologyLanguageKeyUp(evt){
@@ -233,13 +214,12 @@
                      if(!this.state.etymology_langs.includes(language)){
                         this.state.etymology_langs.push(language)
                         this.loadSchema()
-                        this.callOnChange()
                      }
                      $("#etymologyLanguage").val("")
                   }
                } else {
                   let wasValid = this.state.isEtymologyLanguageValid
-                  this.state.isEtymologyLanguageValid = !!language.match(/^[a-zA-Z0-9-]+$/)
+                  this.state.isEtymologyLanguageValid = !!language.match(/^[a-zA-Z0-9-_]+$/)
                   if(wasValid != this.state.isEtymologyLanguageValid){
                      this.update()
                   }
@@ -250,7 +230,7 @@
          onShowMoreSettingsChanged(){
             this.state.showMoreSettings = !this.state.showMoreSettings
             if(this.state.showMoreSettings){
-               this.state.fullElementList.forEach(element => {
+               this.state.schema.forEach(element => {
                   this.state.selectedElements.add(element.path)
                })
             }
@@ -259,26 +239,9 @@
          },
 
          callOnChange(){
-            if(this.props.onChange){
-               let elements
-               if(this.state.showMoreSettings){
-                  elements = {}
-                  this.state.fullElementList
-                        .filter(element => element.path == this.props.root || this.state.selectedElements.has(element.path))
-                        .forEach(element => {
-                           let copy = Object.assign({}, element)
-                           if(copy.children){
-                              copy.children = copy.children.filter(childPath => this.state.selectedElements.has(childPath))
-                           }
-                           elements[copy.path] = copy
-                        })
-               } else {
-                  elements = this.state.elements
-               }
-               this.props.onChange({
-                  elements: elements,
-                  root: this.state.root
-               }, {
+            if(this.props.onChange && !this.state.schema.isEmpty()){  // exclude first call on mount
+               let nvh = this.state.isLoading ? "" : this.getFinalNvh()
+               this.props.onChange(nvh, {
                   modules: this.state.modules,
                   xlingual_langs: this.state.xlingual_langs,
                   etymology_langs: this.state.etymology_langs,
@@ -288,30 +251,28 @@
             }
          },
 
+         getFinalNvh(){
+            if(this.state.showMoreSettings){
+               return this.state.schema.getElementList()
+                     .filter(element => {
+                        return this.state.selectedElements.has(element.path)
+                     })
+                     .map(element => {
+                        return this.state.schema.stringifyElement(element)
+                     })
+                     .join("\n")
+            } else {
+               return this.state.schema.getNvh()
+            }
+         },
+
          selectElementAndItsParents(elementPath){
             this.state.selectedElements.add(elementPath)
             let path = elementPath
             while(path){
                // check all parent elements
                this.state.selectedElements.add(path)
-               path = path.split(".").slice(0,-1).join(".")
-            }
-         },
-
-         refreshFullElementList(){
-            getElementList = (elementPath, list=[]) => {
-               let element = this.state.elements[elementPath]
-               if(element){
-                  list.push(element)
-                  element.children?.forEach(child => {
-                     getElementList(child, list)
-                  })
-               }
-               return list
-            }
-            this.state.fullElementList = []
-            if(this.state.elements){
-               this.state.fullElementList = getElementList(this.state.root)
+               path = path.split(".").slice(0, -1).join(".")
             }
          },
 
@@ -336,6 +297,7 @@
 
          loadSchema(){
             this.update({isLoading: true})
+            this.callOnChange()
             this.state.loadSchemaRequest && this.state.loadSchemaRequest.abort()
             let modules = ["core", ...this.state.modules]
             if(!this.state.xlingual_langs.length){
@@ -346,28 +308,24 @@
             }
             this.state.loadSchemaRequest = this.store.DMLexToSchema(modules, this.state.xlingual_langs, this.state.etymology_langs)
                   .done(response => {
-                     let oldElementList = this.state.elements ? Object.keys(this.state.elements) : null
+                     let nvh = response.nvhSchema
+                     let oldElementList = !this.state.schema.isEmpty() ? this.state.schema.getElementList().map(element => element.path) : null
+                     this.state.schema.update(nvh)
                      this.state.elementDescription = response.desc_dict
-                     this.state.elements = response.elements
-                     this.state.root = response.root
-                     Object.entries(this.state.elements).forEach(([path, element]) => {
-                        element.path = path
-                     })
                      if(this.state.showMoreSettings && oldElementList){
                         // add new elements to selectedElements list
-                        Object.keys(this.state.elements).forEach(elementPath => {
-                           if(!oldElementList.includes(elementPath)){
-                              this.selectElementAndItsParents(elementPath)
+                        this.state.schema.forEach(element => {
+                           if(!oldElementList.includes(element.path)){
+                              this.selectElementAndItsParents(element.path)
                            }
                         })
                         // remove deleted elements from selectedElements list
                         let removedKeys = Object.keys(this.state.selectedElements).forEach(elementPath => {
-                           if(!this.state.elements[elementPath]){
-                              this.state.selectedElements.delete(elementPat)
+                           if(!this.state.schema.find(element => element.path == elementPath)){
+                              this.state.selectedElements.delete(elementPath)
                            }
                         })
                      }
-                     this.refreshFullElementList()
                   })
                   .always(() => {
                      this.update({isLoading: false})
@@ -380,6 +338,7 @@
    <style type="scss">
       :host{
          min-height: 200px;
+         flex-wrap: wrap;
       }
       .moduleName{
          display: flex;

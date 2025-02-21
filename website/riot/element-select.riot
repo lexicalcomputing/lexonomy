@@ -1,5 +1,6 @@
 <element-select>
    <select onchange={onChange}
+         disabled={props.disabled}
          multiple={props.multiple}>
       <option if={props.showEmptyValue}
             selected={props.riotValue == ""}
@@ -10,7 +11,7 @@
       <option each={option in elementOptionList}
             selected={props.multiple ? props.riotValue.includes(option.path) : option.path == props.riotValue}
             value={option.path}>
-         <span style="{option.style}">
+         <span style="color: {option.color}; margin-left: {option.indent * 15}px">
             {store.getElementDisplayedName(option.path)}
          </span>
       </option>
@@ -19,19 +20,12 @@
    <script>
       export default{
          onBeforeMount(){
-            let elements = window.nvhStore.getElementTreeList(this.props.rootElement)
+            this.elementOptionList = window.nvhStore.getElementTreeList(this.props.rootElement)
             if(typeof this.props.includeRootElement == "boolean" && !this.props.includeRootElement){
-               elements.shift()
-               elements.forEach(element => {element.indent -= 1})
+               this.elementOptionList.shift()
+               this.elementOptionList.forEach(element => {element.indent -= 1})
             }
-            this.elementOptionList = elements.map(element => {
-               return {
-                  path: element.path,
-                  style: `color: ${element.color}; margin-left: ${element.indent * 15}px`
-               }
-            })
          },
-
 
          onMounted(){
             window.initFormSelects(this.root)

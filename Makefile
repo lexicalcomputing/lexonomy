@@ -20,7 +20,7 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
 
 deploy:
-	mkdir -p $(DEPLOYDIR)/data
+	mkdir -p $(DEPLOYDIR)/data || :
 	cp -r website $(DEPLOYDIR)/
 
 	# If new instance create siteconfig.json and config.js

@@ -33,21 +33,11 @@
       rule
    </button>
 
-   <!--button class="addRuleBtn btn btn-flat"
-         onclick={onAddGroupClick}>
-      <i class="material-icons left">add</i>
-      AND/OR
-   </button-->
-
 
    <script>
       export default{
          onAddRuleClick(){
             this.props.builder.addRule(this.props.group)
-         },
-
-         onAddGroupClick(){
-            this.props.builder.addGroup(this.props.group)
          },
 
          onOperatorClick(operator){
