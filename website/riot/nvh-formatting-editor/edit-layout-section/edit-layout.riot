@@ -52,6 +52,7 @@
       },
       deleteElement(indexToDelete, parentState) {
         parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
+        this.props.global.canOpenActionPanel = false;
         this.update();
       },
       closeActionPanel() {
