@@ -34,6 +34,7 @@
         let newElement = {
           status: {
             isActive: false,
+            isHovered: false,
           },
           orientation: editingMode,
           type: "placeholder",
@@ -126,14 +127,8 @@
       padding: 7px;
     }
 
-    .placeholder:hover {
-      border: 4px solid rgb(132, 155, 237);
-    }
-    .placeholder:has(.placeholder:hover) {
-      border: 4px solid #f7f6ed;
-    }
     .placeholder-selected {
-      border: 4px solid rgb(21, 93, 225) !important;
+      border: 4px solid var(--color-is-active) !important;
     }
 
 

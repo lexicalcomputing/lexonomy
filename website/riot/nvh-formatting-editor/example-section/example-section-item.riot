@@ -1,5 +1,7 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation}">
+  <div class="element-holder element-holder-{props.schema.orientation}
+              {props.schema.status.isActive ? "element-holder-active" : ""}
+              {props.schema.status.isHovered? "element-holder-hovered" : ""}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div if={props.schema.content.fullName === props.entry.fullName}
@@ -32,11 +34,19 @@
   <style>
     .element-holder {
       display: flex;
-      border: 2px solid var(--color-row);
+      width: fit-content;
     }
     .element-holder-column {
       flex-direction: column;
-      border: 2px solid var(--color-column);
+    }
+    .element-holder-hovered {
+      border: 2px solid var(--color-is-hovered);
+    }
+    .element-holder-hovered:has(.element-holder-hovered) {
+      border: none;
+    }
+    .element-holder-active {
+      border: 2px solid var(--color-is-active) !important;
     }
   </style>
 </example-section-item>
