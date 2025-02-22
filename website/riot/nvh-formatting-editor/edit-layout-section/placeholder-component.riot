@@ -1,11 +1,13 @@
 <placeholder-component>
-  <action-panel if={!props.isBaseLevel && props.status.isActive}
-                class="action-panel"
+  <action-panel if={!props.isBaseLevel}
+                class="action-panel
+                      {props.status.isHovered ? "action-panel-hovered" : ""}"
                 global={props.global}
                 index={props.index}
                 parentState={props.parentState}
                 state={props.state}
                 delete-element={props.deleteElement}
+                close-action-panel={props.closeActionPanel}
                 element={this}
                 />
   <elementholder-component if={props.state.content.name !== ""}
@@ -279,10 +281,21 @@
 
 
     .action-panel {
+      display: none;
       position: absolute;
       top: -40px;
       left: -4px;
       z-index: 100;
+    }
+    .action-panel:hover {
+      opacity: 1 !important;
+    }
+    .placeholder:has(.placeholder:hover) .action-panel-hovered {
+      display: none;
+    }
+    .placeholder:not(:has(.placeholder:hover)) .action-panel-hovered {
+      display: block;
+      opacity: 0.3;
     }
 
 

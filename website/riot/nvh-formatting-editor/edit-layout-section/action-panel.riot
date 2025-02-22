@@ -53,12 +53,6 @@
         onclick={changeOrientation}>
         <div class="action-orientation-label">{props.state.orientation === "column" ? "V" : "H"}</div>
     </div>
-    <div class="action"
-        id="action-close"
-        title="Close"
-        onclick={closeActionPanel}>
-      <i class="small material-icons">close</i>
-    </div>
   </div>
 
 <script>
@@ -112,12 +106,11 @@
       this.props.global.parent.update();
     },
 
-    closeActionPanel() {
-      this.props.global.canOpenActionPanel = false;
-    },
     duplicateElement() {
       let copiedElement = JSON.parse(JSON.stringify(this.props.state)); /*deep copy*/
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
+      this.props.state.status.isActive = true;
+      copiedElement.status.isHovered = false;
       this.props.global.parent.update();
     },
     decreaseElementIndex() {
@@ -126,6 +119,7 @@
       }
       this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
       this.props.parentState.children.splice(this.props.index - 1, 0, this.props.state);
+      this.props.state.status.isHovered = false;
     },
     increaseElementIndex() {
       if (this.props.index === this.props.parentState.children.length - 1) {
@@ -133,6 +127,7 @@
       }
       this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
       this.props.parentState.children.splice(this.props.index + 1, 0, this.props.state);
+      this.props.state.status.isHovered = false;
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
