@@ -531,7 +531,7 @@ def makedict(user):
 def makedictjson(user):
     if len(request.files) > 0:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        if supported_formats.match(request.files.get("import_entires").filename):
+        if supported_formats.match(request.files.get("import_entries").filename):
             res = ops.makeDict(request.forms.url, None, request.forms.title,
                                request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
@@ -567,7 +567,7 @@ def makedictjson(user):
             files['config'] = bottle.FileUpload(f1, '', file_name)
         elif file_name == 'entries.nvh':
             f2 = open(os.path.join(template_dir, file_name), 'rb')
-            files['import_entires'] = bottle.FileUpload(f2, '', file_name)
+            files['import_entries'] = bottle.FileUpload(f2, '', file_name)
         elif file_name == 'custom_editor.css':
             f3 = open(os.path.join(template_dir, file_name), 'rb')
             files['ce_css'] = bottle.FileUpload(f3, '', file_name)
