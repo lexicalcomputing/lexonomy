@@ -1483,6 +1483,8 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     config = {'styles': {},
               'editting': {},
               'structure': {}}
+
+    has_config = False
     # if config.json received rewrite the default one
     if bottle_files.get('config'): # Must be first !!!
         config = json.loads(bottle_files.get('config').file.read())
@@ -1492,18 +1494,23 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
             config['editting'] = {}
         if not config.get('structure', False):
             config['structure'] = {}
+        has_config == True
 
     if bottle_files.get('ce_css'):
         config['editting']['css'] =  bottle_files.get('ce_css').file.read().decode('utf-8')
+        has_config == True
 
     if bottle_files.get('ce_js'):
         config['editting']['js'] =  bottle_files.get('ce_js').file.read().decode('utf-8')
+        has_config == True
 
     if bottle_files.get('structure'):
         config['structure']['nvhSchema'] = bottle_files.get('structure').file.read().decode('utf-8')
+        has_config == True
 
     if bottle_files.get('styles'):
         config['styles']['css']= bottle_files.get('styles').file.read().decode('utf-8')
+        has_config == True
     # ====================================
 
     params = []
@@ -1516,7 +1523,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     if titling_node:
         params.append('-t')
         params.append(titling_node)
-    if config:
+    if has_config:
         with open(os.path.join(save_path, "merged_config.json"), 'w') as f:
             json.dump(config, f, indent=4)
         params.append('--config')
@@ -1702,6 +1709,10 @@ def updateDmLexSchema(current_schema, requested_modules, xlingual_langs, linking
 def updateDictConfig(dictDB, dictID, configID, content):
     if configID == 'structure':
         value = content
+        if not content.get('nvhSchema', False):
+            old_strucure_json = json.loads(dictDB.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
+            if old_strucure_json and old_strucure_json.get('nvhSchema', False):
+                value['nvhSchema'] = old_strucure_json['nvhSchema']
         if value.get('root', False):
             value['root'] = nvh.schema_get_root_name(content['nvhSchema'])
 
