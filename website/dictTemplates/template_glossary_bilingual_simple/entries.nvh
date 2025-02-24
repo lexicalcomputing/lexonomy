@@ -1,0 +1,7 @@
+entry: test
+  transcription: test
+  translation: test
+    transcription: test
+    example: test
+      exampleTranslation: test
+  note: test

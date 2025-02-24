@@ -1456,8 +1456,9 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     """
     supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
     # XML file transforamtion
-    if not supported_formats.match(bottle_files.get("import_entires").filename):
-        return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
+    if bottle_files.get("import_entires", False):
+        if not supported_formats.match(bottle_files["import_entires"].filename):
+            return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
 
     save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
     while os.path.exists(save_path):
@@ -1475,7 +1476,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         value.save(os.path.join(save_path, value.filename))
 
     entries_path = None
-    if bottle_files.get('import_entires'):
+    if bottle_files.get('import_entires', False):
         entries_path = os.path.join(save_path, bottle_files.get('import_entires').filename)
         logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
 
