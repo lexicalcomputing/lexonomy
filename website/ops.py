@@ -721,7 +721,11 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
                         dict_formatting[key] = dmlex_formatting[key]
                     else:
                         dict_formatting[key] = dmlex_formatting['__other__']
-            dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps({"elements": dict_formatting})))
+        else:
+            for key in schema_keys:
+                dict_formatting[key] = {"gutter": "indent", "lineBreak": "both"}
+
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps({"elements": dict_formatting})))
 
         # ADD EXAMPLES
         if dmlex and addExamples:
