@@ -547,6 +547,13 @@ def makedictjson(user):
     files = {}
     template_dir = os.path.join(currdir, 'dictTemplates', 'template_' + request.forms.template_id)
 
+    f1 = None
+    f2 = None
+    f3 = None
+    f4 = None
+    f5 = None
+    f6 = None
+
     for file_name in os.listdir(template_dir):
         if file_name == 'configs.json':
             f1 = open(os.path.join(template_dir, file_name), 'rb')
@@ -574,7 +581,8 @@ def makedictjson(user):
                        bottle_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
 
     for i in [f1,f2,f3,f4,f5,f6]:
-        i.close()
+        if i != None:
+            i.close()
 
     return res
 
