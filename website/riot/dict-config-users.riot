@@ -184,6 +184,8 @@
                window.showToast('Email is not valid.')
             } else if (this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
                window.showToast('User should have assigned at least one privilege.')
+            } else if(new Set(this.state.data.users.map(user => user.email.trim())).size != this.state.data.users.length){
+               window.showToast('Each email can only be used once.')
             } else {
                let data = {}
                this.state.data.users.forEach(u => {
