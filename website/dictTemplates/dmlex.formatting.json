@@ -1,0 +1,255 @@
+{
+    "entry": {
+        "layout": "block",
+        "separation": "space",
+        "gutter": "",
+        "weight": "bold",
+        "slant": "",
+        "textsize": 6,
+        "colour": "blue"
+    },
+    "entry.homograph": {
+        "layout": "inline",
+        "textsize": 3,
+        "weight": "bold",
+        "colour": "blue"
+    },
+    "entry.pos": {
+        "layout": "inline",
+        "colour": "grey",
+        "weight": "bold",
+        "lineBreak": "after"
+    },
+    "entry.label": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.pronunciation": {
+        "layout": "block",
+        "hideValue": true
+    },
+    "entry.pronunciation.transcription": {
+        "layout": "inline",
+        "innerPunc": "squareBrackets",
+        "weight": "bold",
+        "textsize": 2
+    },
+    "entry.pronunciation.transcription.scheme": {
+        "layout": "inline",
+        "colour": "grey",
+        "textsize": 1,
+        "hideValue": true,
+        "hidden": true
+    },
+    "entry.pronunciation.label": {
+        "layout": "inline",
+        "textsize": 1,
+        "colour": "grey"
+    },
+    "entry.form": {
+        "layout": "inline",
+        "lineBreak": "before"
+    },
+    "entry.form.tag": {
+        "layout": "inline",
+        "textsize": 1,
+        "hidden": true
+    },
+    "entry.form.label": {
+        "layout": "block",
+        "textsize": 1,
+        "colour": "grey"
+    },
+    "entry.form.pronunciation": {
+        "layout": "block",
+        "hideValue": true
+    },
+    "entry.form.pronunciation.transcription": {
+        "layout": "block",
+        "innerPunc": "squareBrackets",
+        "weight": "bold"
+    },
+    "entry.form.pronunciation.transcription.scheme": {
+        "layout": "block",
+        "textsize": 1,
+        "colour": "grey",
+        "hidden": true
+    },
+    "entry.form.pronunciation.label": {
+        "layout": "block"
+    },
+    "entry.sense": {
+        "layout": "block",
+        "weight": "bold",
+        "colour": "blue",
+        "textsize": 3,
+        "label": "\u27bd"
+    },
+    "entry.sense.label": {
+        "layout": "inline",
+        "border": "thick",
+        "borderRadius": "large",
+        "background": "blue"
+    },
+    "entry.sense.definition": {
+        "layout": "block",
+        "textsize": 3
+    },
+    "entry.sense.definition.definitionType": {
+        "layout": "block",
+        "textsize": 1,
+        "borderRadius": "large",
+        "border": "solid",
+        "hidden": true
+    },
+    "entry.sense.definition.headword": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.definition.collocate": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.definition.collocate.lemma": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.definition.collocate.label": {
+        "layout": "block"
+    },
+    "entry.sense.example": {
+        "layout": "block",
+        "textsize": 2,
+        "colour": "blue",
+        "slant": "italic",
+        "label": "\u23f5",
+        "border": "solid"
+    },
+    "entry.sense.example.sourceIdentity": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.sourceElaboration": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.soundFile": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.label": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.headword": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.collocate": {
+        "layout": "inline",
+        "textsize": 1,
+        "colour": "blue",
+        "hidden": true
+    },
+    "entry.sense.example.collocate.lemma": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.collocate.label": {
+        "layout": "inline",
+        "textsize": 1,
+        "colour": "grey"
+    },
+    "entry.sense.example.de_exampleTranslation": {
+        "layout": "block",
+        "textsize": 2,
+        "slant": "italic",
+        "colour": "green",
+        "label": "\u23f5"
+    },
+    "entry.sense.example.de_exampleTranslation.soundFile": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.de_exampleTranslation.label": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.de_exampleTranslation.headword": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.de_exampleTranslation.collocate": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.de_exampleTranslation.collocate.lemma": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.sense.example.de_exampleTranslation.collocate.label": {
+        "layout": "block"
+    },
+    "entry.sense.de_explanation": {
+        "layout": "block",
+        "textsize": 2,
+        "colour": "green"
+    },
+    "entry.sense.de_translation": {
+        "layout": "block",
+        "label": "DE",
+        "textsize": 3,
+        "colour": "green",
+        "weight": "bold",
+        "lineBreak": "both"
+    },
+    "entry.sense.de_translation.pos": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.label": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.pronunciation": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.pronunciation.transcription": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.pronunciation.transcription.scheme": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.pronunciation.label": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form.tag": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form.label": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form.pronunciation": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form.pronunciation.transcription": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form.pronunciation.transcription.scheme": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.form.pronunciation.label": {
+        "layout": "block"
+    },
+    "entry.sense.de_translation.placeholder": {
+        "layout": "block",
+        "hidden": true
+    },
+    "entry.placeholder": {
+        "layout": "block"
+    },
+    "__other__": {
+      "lineBreak": "after"
+   }
+}
