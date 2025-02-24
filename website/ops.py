@@ -1404,7 +1404,7 @@ def download(dictDB, dictID, export_type):
     if export_type == 'nvh':
         c = dictDB.execute("select id, nvh from entries")
         for r in c.fetchall():
-            yield r['nvh']
+            yield r['nvh'].rstrip('\n') + '\n'
 
     elif export_type == 'xml':
         yield "<"+dictID+">\n"
