@@ -324,36 +324,18 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
 
-
-        # =============
-        # Formatting
-        # =============
-        formatting = {}
-        schema_keys = nvh.schema_keys(schema_string)
-        with open(current_dir + "/dictTemplates/styles.json", 'r') as f:
-            styles = json.loads(f.read())
-            for key in schema_keys:
-                if styles.get(key):
-                    formatting[key] = styles[key]
-                else:
-                    formatting[key] = styles['__other__']
-
-        if purge_all:
-            db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
-        else:
-            db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
-
         configs = ops.readDictConfigs(db)
         dict_stats = ops.getDictStats(db)
 
         main_db = ops.getMainDB()
         log_info(f"Importing {filename} into {dict_id}")
-        d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_id,))
-        limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
         # =============
         # Limits
         # =============
+        d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_id,))
+        limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
+
         max_import = limit - dict_stats["entryCount"]
         if max_import < entry_count:
             log_warning("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))

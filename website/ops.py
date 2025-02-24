@@ -699,15 +699,16 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
 
         schema_keys = nvh.schema_keys(structure_json['nvhSchema'])
         # DICTIONARY FORMATTING
-        formatting = {}
-        with open(currdir + "/dictTemplates/styles.json", 'r') as f:
-            styles = json.loads(f.read())
-            for key in schema_keys:
-                if styles.get(key):
-                    formatting[key] = styles[key]
-                else:
-                    formatting[key] = styles['__other__']
-        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
+        dict_formatting = {}
+        if dmlex:
+            with open(currdir + "/dictTemplates/dmlex.formatting.json", 'r') as f:
+                dmlex_formatting = json.loads(f.read())
+                for key in schema_keys:
+                    if dmlex_formatting.get(key):
+                        dict_formatting[key] = dmlex_formatting[key]
+                    else:
+                        dict_formatting[key] = dmlex_formatting['__other__']
+            dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps({"elements": dict_formatting})))
 
         # ADD EXAMPLES
         if dmlex and addExamples:
