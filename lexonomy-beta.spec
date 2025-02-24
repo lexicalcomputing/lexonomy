@@ -14,12 +14,12 @@ URL:		https://www.lexonomy.eu/
 Source0: lexonomy-beta-%{version}.tar.gz
 
 BuildRequires:	make
-BuildRequires:	python3 >= 3.10
+BuildRequires:	python3 >= 3.8
 BuildRequires:	git
 BuildRequires:	nodejs
 BuildRequires:	npm
 
-Requires:	python3 >= 3.10
+Requires:	python3 >= 3.8
 Requires:	python3-jwt
 Requires:	python3-markdown
 Requires:	python3-paste
