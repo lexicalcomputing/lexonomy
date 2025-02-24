@@ -58,6 +58,7 @@
             this.structureStore = window.structureEditorStore
             this.structureStore.setSchema(this.schema)
             this.bindings = [["structureStore",  "brokenConfigChanged", "update"],
+                             ["structureStore", "elementChanged", "refreshBtnSaveDisabled"],
                              ["schema", "schemaChanged", "refreshBtnSaveDisabled"],
                              ["schema", "isValidChanged", "refreshBtnSaveDisabled"]]
          },
