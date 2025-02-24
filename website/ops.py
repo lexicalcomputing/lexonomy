@@ -259,7 +259,14 @@ def deleteEntry(db, entryID, email):
 
     c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
     r2 = c2.fetchone()
-    db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'entry_count'))
+    if r2:
+        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'entry_count'))
+    else:
+        c2_1 = db.execute("SELECT COUNT(*) AS total FROM entries")
+        current_total = int(c2_1.fetchone()['total'])
+
+        db.execute("INSERT INTO configs (id, json) VALUES (?,?)", ('entry_count', current_total - 1))
+
     db.commit()
 
 def readEntry(db, configs, entryID):
@@ -311,7 +318,13 @@ def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
 
     c2 = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
     r2 = c2.fetchone()
-    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1, 'entry_count'))
+    if r2:
+        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1, 'entry_count'))
+    else:
+        c2_1 = dictDB.execute("SELECT COUNT(*) AS total FROM entries")
+        current_total = int(c2_1.fetchone()['total'])
+
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?,?)", ('entry_count', current_total + 1))
 
     if '__lexonomy__completed' in entryNvh:
         c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")

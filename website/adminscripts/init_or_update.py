@@ -185,8 +185,6 @@ def update_dict_db():
                     metadata['version'] = new_version
                     conn.execute('INSERT OR REPLACE INTO configs (id, json) VALUES (?,?)', ('metadata', json.dumps(metadata)))
                     conn.commit()
-                else:
-                    print(f'Already updated: {file}')
             except Exception as e:
                 print(f'ERROR ({new_version}) {e}: {file}')
 
