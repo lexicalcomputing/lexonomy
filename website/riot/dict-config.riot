@@ -21,6 +21,10 @@
 
    <div if={state.showImport}
          class="importBox">
+      <div if={state.importError}
+            class="message messageError mt-6">
+         {state.importError}
+      </div>
       <button class="btn btn-floating btn-flat closeIcon"
             onclick={onToggleImportClick}>
          <i class="material-icons black-text">close</i>
@@ -43,15 +47,12 @@
             </div>
          </div>
       </template>
+
       <div if={state.configsInFile}>
          <button class="btn btn-floating btn-flat backIcon"
                onclick={onSelectAnoterhFileClick}>
             <i class="material-icons black-text">keyboard_backspace</i>
          </button>
-         <div if={state.importError}
-               class="message messageError">
-            {state.importError}
-         </div>
          <div if={!state.importError}>
              <div class="grey-text">
                Chose configrations found in "{window.trim(state.file.name, 30)}" to import:
