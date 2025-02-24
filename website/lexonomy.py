@@ -939,7 +939,7 @@ def importjson(dictID, user, dictDB, configs):
                                                 deduplicate=True if request.forms.deduplicate.lower()=='true' else False,
                                                 purge=True if request.forms.purge.lower()=='true' else False,
                                                 purge_all=True if request.forms.purge_all.lower()=='true' else False,
-                                                bottle_upload_obj=request.files.get("filename"))
+                                                bottle_files=request.files)
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
 
