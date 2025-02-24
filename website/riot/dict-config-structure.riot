@@ -154,7 +154,7 @@
          },
 
          refreshBtnSaveDisabled(){
-            let disabled = this.structureStore.data.editedElement
+            let disabled = !!this.structureStore.data.editedElement
                   || !this.schema.isValid
                   || this.schema.isEmpty()
             $("dict-config-buttons .submitButton", this.root).toggleClass("disabled", disabled)
