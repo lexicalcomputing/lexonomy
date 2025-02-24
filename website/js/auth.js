@@ -77,11 +77,6 @@ class AuthClass {
             },
             failMessage: "Registration failed."
          })
-            .done(response => {
-               if(response.success){
-                  window.showToast("Registration was successfully completed.")
-               }
-            })
    }
 
    registerPassword(token, password){
@@ -136,8 +131,7 @@ class AuthClass {
             data: {
                token: token,
                type: type
-            },
-            failMessage: "Could not verify the token."
+            }
          })
    }
 
