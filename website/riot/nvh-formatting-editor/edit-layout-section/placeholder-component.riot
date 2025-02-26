@@ -218,7 +218,14 @@
           status.isActive = false;
         }
         this.props.global.canOpenActionPanel = false;
-      }
+      },
+
+      /*TODO: unused for now*/
+      hasChildWithContent(state) {
+        for (let child of state.children) {
+          this.hasChildWithContent(child);
+        }
+      },
     }
   </script>
 
