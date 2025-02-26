@@ -1,14 +1,350 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div">
-      <example-section-item if={props.exampleEntry !== null}
+      <example-section-item
         each={child in props.schema.children}
         schema={child}
-        entry={props.exampleEntry}/>
+        entry={this.exampleEntry}/>
     <div>
   </div>
 
   <script>
+    /*Example entry for testing purposes*/
+    export default {
+      exampleEntry: {
+        name: "entry",
+        fullName: "entry",
+        value: "car",
+        children: [
+          {
+            name: "homograph",
+            fullName: "entry.homograph",
+            value: "1",
+            children: []
+          },
+          {
+            name: "pos",
+            fullName: "entry.pos",
+            value: "N",
+            children: []
+          },
+          {
+            name: "label",
+            fullName: "entry.label",
+            value: "label",
+            children: []
+          },
+          {
+            name: "pronunciation",
+            fullName: "entry.pronunciation",
+            value: "car-br.mp3",
+            children: [
+              {
+                name: "transcription",
+                fullName: "entry.pronunciation.transcription",
+                value: "kɑː",
+                children: [
+                  {
+                    name: "scheme",
+                    fullName: "entry.pronunciation.transcription.scheme",
+                    value: "IPA",
+                    children: []
+                  }
+                ]
+              },
+              {
+                name: "label",
+                fullName: "entry.pronunciation.label",
+                value: "British",
+                children: []
+              }
+            ]
+          },
+          {
+            name: "pronunciation",
+            fullName: "entry.pronunciation",
+            value: "car-am.mp3",
+            children: [
+              {
+                name: "transcription",
+                fullName: "entry.pronunciation.transcription",
+                value: "kɑːr",
+                children: [
+                  {
+                    name: "scheme",
+                    fullName: "entry.pronunciation.transcription.scheme",
+                    value: "IPA",
+                    children: []
+                  }
+                ]
+              },
+              {
+                name: "label",
+                fullName: "entry.pronunciation.label",
+                value: "American",
+                children: []
+              }
+            ]
+          },
+          {
+            name: "form",
+            fullName: "entry.form",
+            value: "cars",
+            children: [
+              {
+                name: "tag",
+                fullName: "entry.form.tag",
+                value: "pl",
+                children: []
+              },
+              {
+                name: "pronunciation",
+                fullName: "entry.form.pronunciation",
+                value: "cars-br.mp3",
+                children: [
+                  {
+                    name: "transcription",
+                    fullName: "entry.form.pronunciation.transcription",
+                    value: "kɑːz",
+                    children: [
+                      {
+                        name: "scheme",
+                        fullName: "entry.form.pronunciation.transcription.scheme",
+                        value: "IPA",
+                        children: []
+                      }
+                    ]
+                  },
+                  {
+                    name: "label",
+                    fullName: "entry.form.pronunciation.label",
+                    value: "British",
+                    children: []
+                  },
+                ]
+              },
+              {
+                name: "pronunciation",
+                fullName: "entry.form.pronunciation",
+                value: "cars-am.mp3",
+                children: [
+                  {
+                    name: "transcription",
+                    fullName: "entry.form.pronunciation.transcription",
+                    value: "kɑːrz",
+                    children: [
+                      {
+                        name: "scheme",
+                        fullName: "entry.form.pronunciation.transcription.scheme",
+                        value: "IPA",
+                        children: []
+                      }
+                    ]
+                  },
+                  {
+                    name: "label",
+                    fullName: "entry.form.pronunciation.label",
+                    value: "American",
+                    children: []
+                  },
+                ]
+              },
+              {
+                name: "label",
+                fullName: "entry.form.label",
+                value: "label",
+                children: []
+              },
+            ]
+          },
+          {
+            name: "form",
+            fullName: "entry.form",
+            value: "car",
+            children: [
+              {
+                name: "tag",
+                fullName: "entry.form.tag",
+                value: "sg",
+                children: []
+              },
+              {
+                name: "pronunciation",
+                fullName: "entry.form.pronunciation",
+                value: "car-br.mp3",
+                children: [
+                  {
+                    name: "transcription",
+                    fullName: "entry.form.pronunciation.transcription",
+                    value: "kɑː",
+                    children: [
+                      {
+                        name: "scheme",
+                        fullName: "entry.form.pronunciation.transcription.scheme",
+                        value: "IPA",
+                        children: []
+                      }
+                    ]
+                  },
+                  {
+                    name: "label",
+                    fullName: "entry.form.pronunciation.label",
+                    value: "British",
+                    children: []
+                  },
+                ]
+              },
+              {
+                name: "pronunciation",
+                fullName: "entry.form.pronunciation",
+                value: "car-am.mp3",
+                children: [
+                  {
+                    name: "transcription",
+                    fullName: "entry.form.pronunciation.transcription",
+                    value: "kɑːr",
+                    children: [
+                      {
+                        name: "scheme",
+                        fullName: "entry.form.pronunciation.transcription.scheme",
+                        value: "IPA",
+                        children: []
+                      }
+                    ]
+                  },
+                  {
+                    name: "label",
+                    fullName: "entry.form.pronunciation.label",
+                    value: "American",
+                    children: []
+                  },
+                ]
+              },
+              {
+                name: "label",
+                fullName: "entry.form.label",
+                value: "label",
+                children: []
+              },
+            ]
+          },
+          {
+            name: "sense",
+            fullName: "entry.sense",
+            value: "motor vehicle",
+            children: [
+              {
+                name: "label",
+                fullName: "entry.sense.label",
+                value: "label",
+                children: []
+              },
+              {
+                name: "definition",
+                fullName: "entry.sense.definition",
+                value: "a road vehicle powered by an engine, typically used for transporting passengers",
+                children: [
+                  {
+                    name: "definitionType",
+                    fullName: "entry.sense.definition.definitionType",
+                    value: "full",
+                    children: []
+                  },
+                ]
+              },
+              {
+                name: "example",
+                fullName: "entry.sense.example",
+                value: "After I explained to him that I hadn't heard the car, he realized how the situation could have come about.",
+                children: [
+                  {
+                    name: "sourceIdentity",
+                    fullName: "entry.sense.example.sourceIdentity",
+                    value: "sketchengine",
+                    children: []
+                  },
+                  {
+                    name: "sourceElaboration",
+                    fullName: "entry.sense.example.sourceElaboration",
+                    value: "GDEX examples",
+                    children: []
+                  },
+                  {
+                    name: "soundFile",
+                    fullName: "entry.sense.example.soundFile",
+                    value: "audio_file.mp3",
+                    children: []
+                  },
+                  {
+                    name: "label",
+                    fullName: "entry.sense.example.label",
+                    value: "label",
+                    children: []
+                  },
+                ]
+              },
+            ]
+          },
+          {
+            name: "sense",
+            fullName: "entry.sense",
+            value: "train",
+            children: [
+              {
+                name: "label",
+                fullName: "entry.sense.label",
+                value: "label",
+                children: []
+              },
+              {
+                name: "definition",
+                fullName: "entry.sense.definition",
+                value: "a train carriage",
+                children: [
+                  {
+                    name: "definitionType",
+                    fullName: "entry.sense.definition.definitionType",
+                    value: "full",
+                    children: []
+                  },
+                ]
+              },
+              {
+                name: "example",
+                fullName: "entry.sense.example",
+                value: "Nothing was damaged and they pulled the cars back onto the rails.",
+                children: [
+                  {
+                    name: "sourceIdentity",
+                    fullName: "entry.sense.example.sourceIdentity",
+                    value: "sketchengine",
+                    children: []
+                  },
+                  {
+                    name: "sourceElaboration",
+                    fullName: "entry.sense.example.sourceElaboration",
+                    value: "GDEX examples",
+                    children: []
+                  },
+                  {
+                    name: "soundFile",
+                    fullName: "entry.sense.example.soundFile",
+                    value: "audio_file1.mp3",
+                    children: []
+                  },
+                  {
+                    name: "label",
+                    fullName: "entry.sense.example.label",
+                    value: "label",
+                    children: []
+                  },
+                ]
+              },
+            ]
+          },
+        ]
+      }
+    }
   </script>
 
   <style>

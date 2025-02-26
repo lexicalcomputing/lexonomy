@@ -78,16 +78,13 @@
       </div>
       <div class="example-section-wrapper">
         <example-section class="example-section"
-                        schema={schema}
-                        exampleEntry={entryInfo}/>
+                        schema={schema}/>
       </div>
     </div>
   </div>
   
   <script>
     export default {
-      entryInfoRaw: null,
-      entryInfo: null,
       state: {
         showElements: true,
         showStyle: false,
@@ -141,7 +138,6 @@
           area: "entry",
           color: window.nvhStore.getElementColor("entry")
         };
-        this.loadEntry();
       },
       onBeforeUpdate() {
         this.elementsSchema = this.createElementsSchema(window.store.schema.schema);
@@ -156,7 +152,6 @@
           canOpenActionPanel: true,
           parent: null,
         };
-        this.entryInfo = this.createEntryStructure(Object.entries(JSON.parse(entryInfoRaw.json).entry[0]));
       },
 
       onDragEnter() {
@@ -231,38 +226,6 @@
         },
 
         this.update();
-      },
-      loadEntry() {
-        /*Just loading example entry for testing*/
-        window.store.changeEntryId(4);
-        let entryPromise = window.store.loadEntry();
-        entryPromise.then(result => {
-          entryInfoRaw = result;
-          this.update();
-        });
-      },
-      createEntryStructure(entry) {
-        let objectHolder = {
-          name: null,
-          fullName: "entry",
-          value: null,
-          children: []
-        };
-        
-        for (let element of entry) {
-          if (element[0] === "_name") {
-            objectHolder.name = element[1];
-          } else if (element[0] === "_value") {
-            objectHolder.value = element[1];
-          } else {
-            for (let childHolder of element[1]) {
-              let child = this.createEntryStructure(Object.entries(childHolder));
-              child.fullName = element[0];
-              objectHolder.children.push(child);
-            }
-          }
-        }
-        return objectHolder;
       },
     }
   </script>
