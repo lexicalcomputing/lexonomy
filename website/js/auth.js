@@ -28,7 +28,7 @@ class AuthClass {
             failMessage: "Could not check authorization cookie."
          })
                .done(response => {
-                  if (response.success) {
+                  if (response.success && response.loggedin) {
                      Object.assign(this.data, response)
                      this.data.authorized = true;
                      this.trigger("authChanged")
@@ -52,7 +52,7 @@ class AuthClass {
             }
          })
                .done(response => {
-                  if (response.success) {
+                  if (response.success && response.loggedin) {
                      Object.assign(this.data, response)
                      this.data.authorized = true;
                      this.trigger("authChanged")
@@ -61,9 +61,9 @@ class AuthClass {
                .always((response) => {
                   this.data.isCheckingAuth = false
                   this.trigger("checkingAuthChanged")
-                  if(!response){
+                  if(!response || !response.success){
                      window.showToast("Login failed.")
-                  } else if(!response.success){
+                  } else if(!response.loggedin){
                      window.showToast("You have entered an invalid email or password.")
                   }
                })
@@ -77,11 +77,6 @@ class AuthClass {
             },
             failMessage: "Registration failed."
          })
-            .done(response => {
-               if(response.success){
-                  window.showToast("Registration was successfully completed.")
-               }
-            })
    }
 
    registerPassword(token, password){
@@ -136,8 +131,7 @@ class AuthClass {
             data: {
                token: token,
                type: type
-            },
-            failMessage: "Could not verify the token."
+            }
          })
    }
 
@@ -166,7 +160,8 @@ class AuthClass {
       this.trigger("checkingAuthChanged")
       return window.connection.post({
          url: `${window.API_URL}logout.json`,
-         failMessage: "Could not log out."
+         failMessage: "Could not log out.",
+         ignoreUnauthorized: true
       })
             .done(() => {
                this.data.authorized = false;

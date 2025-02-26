@@ -448,26 +448,33 @@ def kontext_xampl(dictID, user, dictDB, configs):
 
 @post(siteconfig["rootPath"] + "login.json")
 def check_login():
-    if request.forms.email != "" and request.forms.password != "":
-        res = ops.login(request.forms.email, request.forms.password)
-        if res["success"]:
-            #response.set_cookie("email", res["email"], path="/")
-            #response.set_cookie("sessionkey", res["key"], path="/")
-            response.add_header('Set-Cookie', "email=\""+res["email"]+"\"; Path=/; SameSite=None; Secure")
-            response.add_header('Set-Cookie', "sessionkey="+res["key"]+"; Path=/; SameSite=None; Secure")
-            return {"success": True, "email": res["email"], "sessionkey": res["key"], "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"], "isProjectManager": res["isProjectManager"]}
-    res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
-    if res["loggedin"]:
-        return {"success": True, "email": res["email"], "sessionkey": request.cookies.sessionkey, "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"], "isProjectManager": res["isProjectManager"]}
-    return {"success": False}
+    try:
+        if request.forms.email != "" and request.forms.password != "":
+            res = ops.login(request.forms.email, request.forms.password)
+            if res["success"]:
+                #response.set_cookie("email", res["email"], path="/")
+                #response.set_cookie("sessionkey", res["key"], path="/")
+                response.add_header('Set-Cookie', "email=\""+res["email"]+"\"; Path=/; SameSite=None; Secure")
+                response.add_header('Set-Cookie', "sessionkey="+res["key"]+"; Path=/; SameSite=None; Secure")
+                return {"success": True, "loggedin": True, "email": res["email"], "sessionkey": res["key"], "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"], "isProjectManager": res["isProjectManager"]}
+        res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
+        if res["loggedin"]:
+            return {"success": True, "loggedin": True, "email": res["email"], "sessionkey": request.cookies.sessionkey, "ske_username": res["ske_username"], "ske_apiKey": res["ske_apiKey"], "apiKey": res["apiKey"], "consent": res["consent"], "isAdmin": res["isAdmin"], "isProjectManager": res["isProjectManager"]}
+        return {"success": True, "loggedin": False}
+    except Exception as e:
+        return{"success": False, 'message': e}
 
 @post(siteconfig["rootPath"] + "logout.json")
 @auth
 def do_logout(user):
-    ops.logout(user)
-    response.delete_cookie("email", path="/")
-    response.delete_cookie("sessionkey", path="/")
-    return {"success": False}
+    try:
+        ops.logout(user)
+        response.delete_cookie("email", path="/")
+        response.delete_cookie("sessionkey", path="/")
+        return {"success": True, "loggedin": False}
+    except Exception as e:
+        return{"success": False, 'message': e}
+
 
 @get(siteconfig["rootPath"] + "logout")
 @auth
@@ -524,7 +531,7 @@ def makedict(user):
 def makedictjson(user):
     if len(request.files) > 0:
         supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        if supported_formats.match(request.files.get("import_entires").filename):
+        if supported_formats.match(request.files.get("import_entries").filename):
             res = ops.makeDict(request.forms.url, None, request.forms.title,
                                request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                                addExamples=False,
@@ -547,13 +554,20 @@ def makedictjson(user):
     files = {}
     template_dir = os.path.join(currdir, 'dictTemplates', 'template_' + request.forms.template_id)
 
+    f1 = None
+    f2 = None
+    f3 = None
+    f4 = None
+    f5 = None
+    f6 = None
+
     for file_name in os.listdir(template_dir):
         if file_name == 'configs.json':
             f1 = open(os.path.join(template_dir, file_name), 'rb')
             files['config'] = bottle.FileUpload(f1, '', file_name)
         elif file_name == 'entries.nvh':
             f2 = open(os.path.join(template_dir, file_name), 'rb')
-            files['import_entires'] = bottle.FileUpload(f2, '', file_name)
+            files['import_entries'] = bottle.FileUpload(f2, '', file_name)
         elif file_name == 'custom_editor.css':
             f3 = open(os.path.join(template_dir, file_name), 'rb')
             files['ce_css'] = bottle.FileUpload(f3, '', file_name)
@@ -574,7 +588,8 @@ def makedictjson(user):
                        bottle_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
 
     for i in [f1,f2,f3,f4,f5,f6]:
-        i.close()
+        if i != None:
+            i.close()
 
     return res
 
@@ -924,7 +939,7 @@ def importjson(dictID, user, dictDB, configs):
                                                 deduplicate=True if request.forms.deduplicate.lower()=='true' else False,
                                                 purge=True if request.forms.purge.lower()=='true' else False,
                                                 purge_all=True if request.forms.purge_all.lower()=='true' else False,
-                                                bottle_upload_obj=request.files.get("filename"))
+                                                bottle_files=request.files)
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
 

@@ -5,7 +5,7 @@
       <i class="material-icons left">vpn_lock</i>
       my dictionaries
    </a>
-   <h1 class="pageTitle">Open dictionaries</h1>
+   <h1 class="pageTitle">Public dictionaries</h1>
    <loading-overlay if={state.isLoading}></loading-overlay>
    <div if={!state.isLoading}>
       <div>
@@ -60,12 +60,12 @@
                   Title<i class="material-icons order_title">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
                </span>
             </th>
-            <th>
+            <th class="languageTh">
                <span onclick={onSortClick.bind(this, "language")}>
                   Language<i class="material-icons order_language">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
                </span>
             </th>
-            <th>
+            <th class="sizeTh right-align">
                <span onclick={onSortClick.bind(this, "size")}>
                   Size <i class="material-icons order_size">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
                </span>
@@ -75,7 +75,7 @@
                   Author<i class="material-icons order_author">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
                </span>
             </th>
-            <th>
+            <th class="licenceTh">
                <span onclick={onSortClick.bind(this, "licence")}>
                   Licence<i class="material-icons order_licence">{state.asc ? "arrow_downward" : "arrow_upward"}</i>
                </span>
@@ -101,7 +101,7 @@
                      {row.lang}
                   </span>
                </td>
-               <td>
+               <td class="sizeColumn">
                   <span>
                      {window.Formatter.num(row.size)}
                   </span>
@@ -351,12 +351,14 @@
       .onlyFavoritesChbWrapper{
          margin-left: 2.5rem;
       }
-      table td:nth-child(5){
-         white-space: nowrap;
-      }
       th{
          white-space: nowrap;
          cursor: pointer;
+         &.languageTh,
+         &.sizeTh,
+         &.licenceTh{
+            width: 100px;
+         }
          span{
             line-height: 24px;
             &:hover{
@@ -373,6 +375,12 @@
                   opacity: 1;
                }
             }
+         }
+      }
+      .sizeColumn{
+         text-align: right;
+         span{
+            margin-right: 37px;
          }
       }
       .favoriteColumn{

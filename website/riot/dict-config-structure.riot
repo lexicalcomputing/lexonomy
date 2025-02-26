@@ -58,6 +58,7 @@
             this.structureStore = window.structureEditorStore
             this.structureStore.setSchema(this.schema)
             this.bindings = [["structureStore",  "brokenConfigChanged", "update"],
+                             ["structureStore", "elementChanged", "refreshBtnSaveDisabled"],
                              ["schema", "schemaChanged", "refreshBtnSaveDisabled"],
                              ["schema", "isValidChanged", "refreshBtnSaveDisabled"]]
          },
@@ -154,7 +155,7 @@
          },
 
          refreshBtnSaveDisabled(){
-            let disabled = this.structureStore.data.editedElement
+            let disabled = !!this.structureStore.data.editedElement
                   || !this.schema.isValid
                   || this.schema.isEmpty()
             $("dict-config-buttons .submitButton", this.root).toggleClass("disabled", disabled)

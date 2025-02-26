@@ -23,11 +23,13 @@ class ConnectionClass {
    sendRequest(params){
       let failMessage = params.failMessage || ""
       let successMessage = params.successMessage || ""
+      let ignoreUnauthorized = params.ignoreUnauthorized || false
       delete params.failMessage
       delete params.successMessage
+      delete params.ignoreUnauthorized
       return $.ajax(params)
             .done(response => {
-               if(response.loggedin === false){
+               if(response.loggedin === false && !ignoreUnauthorized){
                   window.auth.invalidateSession()
                }
             })

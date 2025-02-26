@@ -259,7 +259,14 @@ def deleteEntry(db, entryID, email):
 
     c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
     r2 = c2.fetchone()
-    db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'entry_count'))
+    if r2:
+        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'entry_count'))
+    else:
+        c2_1 = db.execute("SELECT COUNT(*) AS total FROM entries")
+        current_total = int(c2_1.fetchone()['total'])
+
+        db.execute("INSERT INTO configs (id, json) VALUES (?,?)", ('entry_count', current_total - 1))
+
     db.commit()
 
 def readEntry(db, configs, entryID):
@@ -311,7 +318,13 @@ def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
 
     c2 = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
     r2 = c2.fetchone()
-    dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1, 'entry_count'))
+    if r2:
+        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1, 'entry_count'))
+    else:
+        c2_1 = dictDB.execute("SELECT COUNT(*) AS total FROM entries")
+        current_total = int(c2_1.fetchone()['total'])
+
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?,?)", ('entry_count', current_total + 1))
 
     if '__lexonomy__completed' in entryNvh:
         c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
@@ -699,15 +712,20 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
 
         schema_keys = nvh.schema_keys(structure_json['nvhSchema'])
         # DICTIONARY FORMATTING
-        formatting = {}
-        with open(currdir + "/dictTemplates/styles.json", 'r') as f:
-            styles = json.loads(f.read())
+        dict_formatting = {}
+        if dmlex:
+            with open(currdir + "/dictTemplates/dmlex.formatting.json", 'r') as f:
+                dmlex_formatting = json.loads(f.read())
+                for key in schema_keys:
+                    if dmlex_formatting.get(key):
+                        dict_formatting[key] = dmlex_formatting[key]
+                    else:
+                        dict_formatting[key] = dmlex_formatting['__other__']
+        else:
             for key in schema_keys:
-                if styles.get(key):
-                    formatting[key] = styles[key]
-                else:
-                    formatting[key] = styles['__other__']
-        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(formatting)))
+                dict_formatting[key] = {"gutter": "indent", "lineBreak": "both"}
+
+        dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps({"elements": dict_formatting})))
 
         # ADD EXAMPLES
         if dmlex and addExamples:
@@ -1386,7 +1404,7 @@ def download(dictDB, dictID, export_type):
     if export_type == 'nvh':
         c = dictDB.execute("select id, nvh from entries")
         for r in c.fetchall():
-            yield r['nvh']
+            yield r['nvh'].rstrip('\n') + '\n'
 
     elif export_type == 'xml':
         yield "<"+dictID+">\n"
@@ -1456,8 +1474,9 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     """
     supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
     # XML file transforamtion
-    if not supported_formats.match(bottle_files.get("import_entires").filename):
-        return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
+    if bottle_files.get("import_entries", False):
+        if not supported_formats.match(bottle_files["import_entries"].filename):
+            return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
 
     save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
     while os.path.exists(save_path):
@@ -1475,13 +1494,15 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         value.save(os.path.join(save_path, value.filename))
 
     entries_path = None
-    if bottle_files.get('import_entires'):
-        entries_path = os.path.join(save_path, bottle_files.get('import_entires').filename)
+    if bottle_files.get('import_entries', False):
+        entries_path = os.path.join(save_path, bottle_files.get('import_entries').filename)
         logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
 
     config = {'styles': {},
               'editting': {},
               'structure': {}}
+
+    has_config = False
     # if config.json received rewrite the default one
     if bottle_files.get('config'): # Must be first !!!
         config = json.loads(bottle_files.get('config').file.read())
@@ -1491,18 +1512,23 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
             config['editting'] = {}
         if not config.get('structure', False):
             config['structure'] = {}
+        has_config == True
 
     if bottle_files.get('ce_css'):
         config['editting']['css'] =  bottle_files.get('ce_css').file.read().decode('utf-8')
+        has_config == True
 
     if bottle_files.get('ce_js'):
         config['editting']['js'] =  bottle_files.get('ce_js').file.read().decode('utf-8')
+        has_config == True
 
     if bottle_files.get('structure'):
         config['structure']['nvhSchema'] = bottle_files.get('structure').file.read().decode('utf-8')
+        has_config == True
 
     if bottle_files.get('styles'):
         config['styles']['css']= bottle_files.get('styles').file.read().decode('utf-8')
+        has_config == True
     # ====================================
 
     params = []
@@ -1515,7 +1541,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     if titling_node:
         params.append('-t')
         params.append(titling_node)
-    if config:
+    if has_config:
         with open(os.path.join(save_path, "merged_config.json"), 'w') as f:
             json.dump(config, f, indent=4)
         params.append('--config')
@@ -1701,6 +1727,10 @@ def updateDmLexSchema(current_schema, requested_modules, xlingual_langs, linking
 def updateDictConfig(dictDB, dictID, configID, content):
     if configID == 'structure':
         value = content
+        if not content.get('nvhSchema', False):
+            old_strucure_json = json.loads(dictDB.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
+            if old_strucure_json and old_strucure_json.get('nvhSchema', False):
+                value['nvhSchema'] = old_strucure_json['nvhSchema']
         if value.get('root', False):
             value['root'] = nvh.schema_get_root_name(content['nvhSchema'])
 
