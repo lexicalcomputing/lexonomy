@@ -403,7 +403,7 @@ class StoreClass {
    }
 
    loadEntryList(howmany){
-      if(!this.data.dictId || !window.auth.data.authorized){
+      if(!this.data.dictId || (!window.auth.data.authorized && !this.data.config?.publico?.public)){
          return
       }
       this.data.isEntryListLoading = true
