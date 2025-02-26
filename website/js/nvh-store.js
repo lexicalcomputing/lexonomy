@@ -129,6 +129,11 @@ class NVHStoreClass {
       this.data.customEditor = null
       this.data.legacyCustomEditor = false
       this.data.collapsedElements.clear()
+      let getAvailableActions = this.getAvailableActions()
+      if((window.store.data.editorMode == "edit" && !getAvailableActions.canEdit)
+         || (window.store.data.editorMode == "code" && !getAvailableActions.canCode)){
+            this.changeEditorMode("view") // custom editor does not have view mode
+      }
       if(this.data.editing.useOwnEditor){
          if(window.store.data.editorMode == "view"){
             this.changeEditorMode("edit") // custom editor does not have view mode
