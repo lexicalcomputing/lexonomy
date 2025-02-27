@@ -36,8 +36,9 @@
               fullName: data.fullName,
               area: data.name,
               color: data.color,
+              children: data.children
             }
-            this.props.addElement(this.props.index, this.props.global.parent, this.props.state, "column", content);
+            this.props.addElementWithChildren(this.props.index, this.props.global.parent, this.props.state, this.props.state, content);
             this.props.global.canBeDropped = false;
           }
         }

@@ -9,7 +9,7 @@
     </div>
     <div style="color: {props.state.data.color}">{props.state.data.name}</div>
   </div>
-  <template each={child in props.state.children}>
+  <template each={child in props.state.data.children}>
     <elements-choice-item state={child}
                           indentationLevel={props.indentationLevel + 15}
                           parent={props.parent}/>

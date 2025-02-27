@@ -100,6 +100,7 @@
           fullName: data.fullName,
           area: data.name,
           color: data.color,
+          children: data.children
         }
 
         switch (adderIndex) {
@@ -130,11 +131,11 @@
         let desiredOrientation = undesiredOrientation == "column" ? "row" : "column";
         this.props.addElement(0, this.props.global.parent, this.props.state, desiredOrientation, null);
         let newWrapperPlaceholder = this.props.state.children[0];
-        this.props.addElement(0, this.props.global.parent, newWrapperPlaceholder, "column", firstLabel);
-        this.props.addElement(1, this.props.global.parent, newWrapperPlaceholder, "column", secondLabel);
+        this.props.addElementWithChildren(0, this.props.global.parent, newWrapperPlaceholder, newWrapperPlaceholder, firstLabel);
+        this.props.addElementWithChildren(1, this.props.global.parent, newWrapperPlaceholder, newWrapperPlaceholder, secondLabel);
       } else {
-        this.props.addElement(0, this.props.global.parent, this.props.state, "column", firstLabel);
-        this.props.addElement(1, this.props.global.parent, this.props.state, "column", secondLabel);
+        this.props.addElementWithChildren(0, this.props.global.parent, this.props.state, this.props.state, firstLabel);
+        this.props.addElementWithChildren(1, this.props.global.parent, this.props.state, this.props.state, secondLabel);
       }
     }
   }
