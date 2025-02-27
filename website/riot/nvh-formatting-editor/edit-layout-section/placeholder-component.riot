@@ -50,6 +50,7 @@
                             class="placeholder placeholder-{child.orientation}
                                   {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}
                                   {child.status.isActive ? "placeholder-selected" : ""}
+                                  {child.status.isHovered ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
                                   {child.children.length === 0 ? "placeholder-no-children" : ""}"
                             state={props.childWithInheritedArea(child, props.state)}
@@ -216,8 +217,9 @@
 
       openActionPanel(status) {
         if (this.props.global.canOpenActionPanel) {
+          let currentIsActive = status.isActive
           this.props.closeActionPanel(); /*close actionPanel if any was opened*/
-          status.isActive = true;
+          status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
         } else {
           status.isActive = false;
         }
