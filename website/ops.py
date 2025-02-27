@@ -188,7 +188,7 @@ def verifyLogin(email, sessionkey):
             email = request.auth[0]
             sessionkey = login_res["key"]
     if email == "" or sessionkey == "":
-        return {"loggedin": False, "email": None}
+        return {"loggedin": False, "email": None, "isAdmin": False}
     conn = getMainDB()
     now = datetime.datetime.utcnow()
     yesterday = now - datetime.timedelta(days=1)
@@ -197,7 +197,7 @@ def verifyLogin(email, sessionkey):
                      (email, sessionkey, yesterday))
     user = c.fetchone()
     if not user:
-        return {"loggedin": False, "email": None}
+        return {"loggedin": False, "email": None, "isAdmin": False}
     conn.execute("update users set sessionLast=? where email=?", (now, email))
     conn.commit()
     return {"loggedin": True, "email": email, "isAdmin": email in siteconfig["admins"],
@@ -208,13 +208,17 @@ def verifyLogin(email, sessionkey):
 def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     ret = verifyLogin(email, sessionkey)
     configs = readDictConfigs(dictDB)
-    dictAccess = configs["users"].get(email)
-    if ret["loggedin"] == False or (not dictAccess and not ret["isAdmin"]):
-        return {"loggedin": ret["loggedin"], "email": email, "dictAccess": False, "isAdmin": False}, configs
-    ret["dictAccess"] = dictAccess or {}
+    dictAccess = configs["users"].get(email, {"canEdit": False, "canConfig": False,
+                                              "canDownload": False, "canUpload": False,
+                                              "canView": False})
+
+    ret["dictAccess"] = dictAccess
+    # Admin full access
     for r in ["canEdit", "canConfig", "canDownload", "canUpload", "canView"]:
-        ret[r] = ret.get("isAdmin") or (dictAccess and dictAccess[r])
-        ret["dictAccess"][r] = ret[r]
+        ret["dictAccess"][r] = ret.get("isAdmin", False) or dictAccess.get(r, False)
+
+    if configs['publico']['public']:
+        ret["dictAccess"]['canView'] = True
     return ret, configs
 
 def verifyLoginAndProjectAccess(email, sessionkey):
@@ -1576,7 +1580,7 @@ def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howman
         collator = Collator.createInstance(Locale(getLocale(configs)))
         dictDB.create_collation("custom", collator.compare)
         collate = "collate custom"
-    if searchtext == "":
+    if searchtext == "" or searchtext == None:
         cc = dictDB.execute("select count(*) as total from entries")
         rc = cc.fetchone()
         cf = dictDB.execute("select * from entries order by sortkey %s limit %s offset %s" % (collate, howmany, 0 if not offset else offset))
