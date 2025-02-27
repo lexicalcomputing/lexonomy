@@ -310,7 +310,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         # =============
         # Structure
         # =============
-        structure = {"root": entry_element, "nvhSchema": schema_string}
+        structure = {"root": entry_element, "nvhSchema": schema_string, 'mode': 'custom', 'tab': 'visual'}
         if purge_all:
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
