@@ -194,12 +194,12 @@
             name: element.name,
             fullName: element.path,
             color: window.nvhStore.getElementColor(element.path),
+            children: [],
           },
-          children: []
         };
         for (let child of element.children) {
           let newElement = this.createElementsSchema(child);
-          objectStructure.children.push(newElement)
+          objectStructure.data.children.push(newElement)
         }
         return objectStructure;
       },

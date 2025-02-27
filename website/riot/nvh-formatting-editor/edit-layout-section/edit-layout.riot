@@ -15,6 +15,7 @@
                               index={index}
                               delete-element={deleteElement}
                               add-element={addElement}
+                              add-element-with-children={addElementWithChildren}
                               close-action-panel={closeActionPanel}
                               child-with-inherited-area={childWithInheritedArea}/>
       </template>
@@ -49,6 +50,63 @@
         state.children.splice(index, 0, newElement);
         component.update();
         this.props.global.canOpenActionPanel = false;
+      },
+      addElementWithChildren(index, component, state, element, label) {
+        /*label can not be null or undefined*/
+        if (label == null || label == undefined) {
+          return;
+        }
+        let newElement = {
+          status: {
+            isActive: false,
+            isHovered: false,
+          },
+          orientation: "column",
+          type: "placeholder",
+          content: {
+            name: label.name,
+            fullName: label.fullName,
+            area: label.area,
+            color: label.color,
+          },
+          children: []
+        };
+
+        if (state != null) {
+          state.children.splice(index, 0, newElement);
+        }
+        if (label.children !== undefined && label.children !== null) {
+          /*
+          If element has children, append also this element,
+          so that it is displayed together with its children.
+          */
+          if (label.children.length !== 0) {
+            let selfDisplayElement = {
+              status: {
+                isActive: false,
+                isHovered: false,
+              },
+              orientation: "column",
+              type: "placeholder",
+              content: {
+                name: label.name,
+                fullName: label.fullName,
+                area: label.area,
+                color: label.color,
+              },
+              children: []
+            };
+            newElement.children.push(selfDisplayElement);
+          }
+          for(let child of label.children) {
+            let childElement = this.addElementWithChildren(null, null, null, newElement, child.data);
+            newElement.children.push(childElement);
+          }
+        }
+        if (component != null) {
+          component.update();
+        }
+        return newElement;
       },
       deleteElement(indexToDelete, parentState) {
         parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
