@@ -155,8 +155,12 @@
       },
 
       onDragEnter() {
-        let trashIcon = document.getElementById("trash-icon");
-        trashIcon.classList.add("trash-dragged-over");
+        const rawData = event.dataTransfer.getData("text/plain");
+        const data = JSON.parse(rawData);
+        if (data.type === "elementholder-label") {
+          let trashIcon = document.getElementById("trash-icon");
+          trashIcon.classList.add("trash-dragged-over");
+        }
       },
       onDragLeave() {
         let trashIcon = document.getElementById("trash-icon");
