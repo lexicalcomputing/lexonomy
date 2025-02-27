@@ -63,7 +63,11 @@ class StoreClass {
    open(dictId, entryId, editorMode){
       this.changeDictionary(dictId)
       entryId && this.changeEntryId(entryId)
-      this.data.editorMode = editorMode || "edit"
+      editorMode ??= "edit"
+      if(["edit", "code"].includes(editorMode) && !this.data.userAccess.canEdit){
+         editorMode = "view"
+      }
+      this.data.editorMode = editorMode
    }
 
    changeDictionary(dictId){
