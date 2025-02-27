@@ -1,6 +1,21 @@
-entry: test
-  pos: Noun
-  transcription: test
-  sense: test
-    definition: test
-    example: test
+entry: cook
+  pos: noun
+  transcription: kʊk
+  sense:
+    definition: a person who prepares and cooks food
+    example: The cook prepared a delicious meal for the guests.
+entry: cook
+  pos: verb
+  transcription: kʊk
+  sense:
+    definition: prepare food by boiling, baking, frying, or grilling
+    example: She likes to cook Italian dishes for dinner.
+entry: spice
+  pos: noun
+  transcription: spaɪs
+  sense:
+    definition: An aromatic substance from a seed, fruit, root, or bark of a plant, used to flavor food.
+    example: The chef combined several spices—cumin, turmeric, and coriander—to create a rich flavour.
+  sense:
+    definition: Something that adds excitement, variety, or interest to something routine or unremarkable.
+    example: These hobbies helped to refresh his mind and add spice to his life.
