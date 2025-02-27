@@ -1,4 +1,5 @@
-entry: 1 string
-  transcription: * string ~.+
+entry: * string
+  transcription: * string
+  domain: * list ["electronics","communication","physics"]
   definition: * string ~.+
   note: * string

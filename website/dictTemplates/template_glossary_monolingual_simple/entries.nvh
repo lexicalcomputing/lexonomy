@@ -1,4 +1,13 @@
-entry: test
-  transcription: test
-  definition: test
-  note: test
+entry: capacitor
+  transcription: kəˈpæsɪtə
+  domain: electronics
+  definition: an electronic component that stores energy in an electric field
+  note: Previously called "condenser". The name is still used in some compounds such as "condenser microphone".
+entry: VoIP
+  domain: communication
+  definition: (Voice over Internet Protocol) A technology that converts voice into digital data, enabling voice communication over the Internet rather than traditional telephone lines.
+  note:
+entry: electric field
+  domain: electronics
+  domain: physics
+  definition: an area around an object with an electric charge

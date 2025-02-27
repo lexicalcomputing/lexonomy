@@ -1516,25 +1516,24 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
             config['editting'] = {}
         if not config.get('structure', False):
             config['structure'] = {}
-        has_config == True
+        has_config = True
 
     if bottle_files.get('ce_css'):
         config['editting']['css'] =  bottle_files.get('ce_css').file.read().decode('utf-8')
-        has_config == True
+        has_config = True
 
     if bottle_files.get('ce_js'):
         config['editting']['js'] =  bottle_files.get('ce_js').file.read().decode('utf-8')
-        has_config == True
+        has_config = True
 
     if bottle_files.get('structure'):
         config['structure']['nvhSchema'] = bottle_files.get('structure').file.read().decode('utf-8')
-        has_config == True
+        has_config = True
 
     if bottle_files.get('styles'):
         config['styles']['css']= bottle_files.get('styles').file.read().decode('utf-8')
-        has_config == True
+        has_config = True
     # ====================================
-
     params = []
     if deduplicate:
         params.append('-d')

@@ -1,7 +1,28 @@
-entry: test
-  transcription: test
-  translation: test
-    transcription: test
-    example: test
-      exampleTranslation: test
-  note: test
+entry: glasses
+  es_translation: gafas
+    variety: Spain
+  es_translation: anteojos
+    variety: Argentina
+  es_translation: lentes
+    variety: Mexico
+entry: car
+  es_translation: coche
+    variety: Spain
+  es_translation: auto
+    variety: Argentina
+  es_translation: carro
+    variety: Mexico
+entry: drive
+  es_translation: conducir
+    variety: Spain
+  es_translation: manejar
+    variety: Argentina
+    variety: Mexico
+entry: cake
+  es_translation: tarta
+    variety: Spain
+  es_translation: torta
+    variety: Argentina
+    example: El servicio de mesa dulce y torta cubrió nuestras expectativas al 100%.
+  es_translation: pastel
+    variety: Mexico

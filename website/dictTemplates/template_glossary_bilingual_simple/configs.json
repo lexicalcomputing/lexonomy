@@ -1,0 +1,133 @@
+{
+    "ident": {
+        "title": "Template: Glossary bi simple",
+        "blurb": "This is a template for a basic bilingual dictionary suitable for glossaries, terminology lists and small dictionaries. The entry structure includes labels, example sentences and notes. \n\nUse the **Dictionary > Configuration > Structure** menu to edit the entry structure and add or remove components.\n\nSome entries have been inserted as examples.",
+        "lang": "en",
+        "direction": "ltr"
+    },
+    "structure": {
+        "mode": "custom",
+        "tab": "visual",
+        "DMLexSettings": {
+            "modules": [
+                "xlingual"
+            ],
+            "xlingual_langs": [
+                "fr"
+            ],
+            "etymology_langs": [],
+            "showMoreSettings": true,
+            "selectedElements": [
+                "entry",
+                "entry.pronunciation",
+                "entry.pronunciation.transcription",
+                "entry.pronunciation.transcription.scheme",
+                "entry.pronunciation.label",
+                "entry.sense",
+                "entry.sense.definition",
+                "entry.sense.example",
+                "entry.sense.example.fr_exampleTranslation",
+                "entry.sense.fr_translation",
+                "entry.sense.fr_translation.pronunciation",
+                "entry.sense.fr_translation.pronunciation.transcription"
+            ]
+        },
+        "hasNewEntryTemplate": true,
+        "newEntryTemplate": {
+            "defaultElements": {
+                "entry": true,
+                "entry.es_translation": true,
+                "entry.es_translation.variety": true,
+                "entry.es_translation.example": true
+            },
+            "defaultValues": {}
+        }
+    },
+    "formatting": {
+        "entry": {
+            "weight": "bold",
+            "textsize": 6,
+            "colour": "blue"
+        },
+        "entry.pronunciation": {
+            "hideValue": true
+        },
+        "entry.pronunciation.transcription": {
+            "innerPunc": "squareBrackets",
+            "weight": "bold",
+            "textsize": 2
+        },
+        "entry.pronunciation.transcription.scheme": {
+            "colour": "grey",
+            "textsize": 1,
+            "hideValue": true,
+            "hidden": true
+        },
+        "entry.pronunciation.label": {
+            "textsize": 1,
+            "colour": "grey"
+        },
+        "entry.sense": {
+            "weight": "bold",
+            "colour": "blue",
+            "textsize": 3,
+            "label": "\u27bd"
+        },
+        "entry.sense.definition": {
+            "textsize": 3
+        },
+        "entry.sense.example": {
+            "textsize": 2,
+            "colour": "blue",
+            "slant": "italic",
+            "label": "\u23f5",
+            "border": "solid"
+        },
+        "entry.sense.example.fr_exampleTranslation": {
+            "lineBreak": "after"
+        },
+        "entry.sense.fr_translation": {
+            "lineBreak": "after"
+        },
+        "entry.sense.fr_translation.pronunciation": {
+            "lineBreak": "after"
+        },
+        "entry.sense.fr_translation.pronunciation.transcription": {
+            "lineBreak": "after"
+        },
+        "elements": {
+            "entry": {
+                "textsize": 5,
+                "colour": "grey",
+                "weight": "bold"
+            },
+            "entry.transcription": {},
+            "entry.es_translation": {
+                "textsize": 4,
+                "lineBreak": "before"
+            },
+            "entry.es_translation.variety": {
+                "background": "yellow",
+                "textsize": 1,
+                "borderRadius": "large",
+                "lineBreak": "after"
+            },
+            "entry.es_translation.example": {
+                "slant": "italic",
+                "colour": "grey"
+            },
+            "entry.es_translation.example.exampleTranslation": {},
+            "entry.note": {}
+        }
+    },
+    "titling": {
+        "headword": "entry",
+        "headwordSorting": "entry"
+    },
+    "searchability": {
+        "searchableElements": [
+            "entry"
+        ],
+        "templates": []
+    }
+}

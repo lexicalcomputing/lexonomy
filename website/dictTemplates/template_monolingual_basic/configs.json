@@ -1,0 +1,71 @@
+{    
+    "ident": {
+        "title": "Template: Monolingual basic",
+        "blurb": "This is a template for a basic monolingual dictionary suitable for glossaries, terminology lists and small dictionaries. The entry structure is simple and only includes the headword, part of speech, definition and example.\n\nUse the **Dictionary > Configuration > Structure** menu **to** edit the entry structure and add or remove components.\n\nSome entries have been inserted as examples.",
+        "lang": "",
+        "direction": "ltr"
+    },
+    "structure": {
+        "mode": "custom",
+        "tab": "visual",
+        "DMLexSettings": {
+            "modules": [],
+            "xlingual_langs": [],
+            "etymology_langs": [],
+            "selectedElements": []
+        },
+        "hasNewEntryTemplate": true,
+        "newEntryTemplate": {
+            "defaultElements": {
+                "entry.pos": true,
+                "entry": true,
+                "entry.transcription": true,
+                "entry.sense": true,
+                "entry.sense.definition": true,
+                "entry.sense.example": true
+            },
+            "defaultValues": {}
+        }
+    },
+    "formatting": {
+        "elements": {
+            "entry": {
+                "textsize": 5,
+                "colour": "blue",
+                "weight": "bold"
+            },
+            "entry.pos": {},
+            "entry.transcription": {
+                "lineBreak": "both",
+                "outerPunc": "squareBrackets"
+            },
+            "entry.sense": {
+                "gutter": "sensenum1",
+                "textsize": 2
+            },
+            "entry.sense.definition": {
+                "textsize": 3
+            },
+            "entry.sense.example": {
+                "slant": "italic",
+                "colour": "grey"
+            }
+        },
+        "customCss": ""
+    },
+    "searchability": {
+        "searchableElements": [
+            "entry"
+        ],
+        "templates": []
+    },
+    "titling": {
+        "headword": "entry",
+        "headwordSorting": "entry",
+        "sortDesc": false,
+        "numberEntries": "1000",
+        "locale": "",
+        "headwordAnnotationsType": "advanced",
+        "headwordAnnotationsAdvanced": "%(entry) <small style=\"color:darkgrey\">%(entry.pos) </small>"
+    }
+}
