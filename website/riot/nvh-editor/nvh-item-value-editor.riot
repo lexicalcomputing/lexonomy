@@ -81,6 +81,7 @@
             this.state.showEditor = ["string", "markup", "image", "audio", "video", "url"].includes(this.state.config.type)
             this.state.markupChildrenPaths = this.state.config.children
                   .filter(childConfig => childConfig.type == "markup")
+                  .map(childConfig => childConfig.path)
          },
 
          onMounted(){
