@@ -22,7 +22,7 @@
           ondrop={(event) => onDrop(event, 2)}>
       </div>
       <div class="placeholder-content-box {props.isAreaHolder ? "" : "placeholder-content-box-left"}">
-        {props.name}
+        {props.isAreaHolder ? props.name : props.name + " (wrapper)"}
       </div>
       <div if={props.isAreaHolder}
           class="inside-adder inside-adder-vertical"
