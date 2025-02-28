@@ -79,9 +79,13 @@ def migrate_to_3_0(config, titling_element='', entry_element='', structure_eleme
 
         if config.get('formatting', False):
             old_keys = list(config['formatting'].keys())
+            config['formatting']['__elements__'] = {}
             for key in old_keys:
-                new_key = key2path(key)
-                config['formatting'][new_key] = config['formatting'].pop(key)
+                if key not in ['_xsl', 'customCss', 'useCustomCss']:
+                    new_key = key2path(key)
+                    config['formatting']['__elements__'][new_key] = config['formatting'].pop(key)
+            config['formatting']['elements'] = config['formatting']['__elements__']
+            config['formatting'].pop('__elements__')
 
         if config.get('titling', False):
             for i in ['headword', 'headwordSorting']:
