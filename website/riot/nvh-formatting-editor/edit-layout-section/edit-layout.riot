@@ -43,6 +43,7 @@
             name: label == null ? "" : label.name,
             fullName: label == null ? "" : label.fullName,
             area: label == null ? "" : label.area,
+            areaFullName: label == null ? "" : label.areaFullName,
             color: label == null ? "": label.color,
           },
           children: []
@@ -67,6 +68,7 @@
             name: label.name,
             fullName: label.fullName,
             area: label.area,
+            areaFullName: label.areaFullName,
             color: label.color,
           },
           children: []
@@ -92,6 +94,7 @@
                 name: label.name,
                 fullName: label.fullName,
                 area: label.area,
+                areaFullName: label.areaFullName,
                 color: label.color,
               },
               children: []
@@ -128,6 +131,7 @@
           return child;
         }
         child.content.area = child.content.name === "" ? state.content.area : child.content.name;
+        child.content.areaFullName = child.content.name === "" ? state.content.areaFullName : child.content.fullName;
         return child;
       },
       openActionPanel() {

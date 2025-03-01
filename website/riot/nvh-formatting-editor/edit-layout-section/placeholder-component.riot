@@ -95,6 +95,7 @@
             state.content.name = data.name;
             state.content.fullName = data.fullName;
             state.content.area = data.name;
+            state.content.areaFullName = data.fullName;
             state.content.color = data.color;
           }
         }
@@ -224,6 +225,11 @@
           status.isActive = false;
         }
         this.props.global.canOpenActionPanel = false;
+      },
+
+      /*TODO: unused for now*/
+      isParent(element, parent) {
+
       },
 
       /*TODO: unused for now*/

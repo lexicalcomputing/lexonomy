@@ -61,6 +61,7 @@
         this.props.state.content.name = "";
         this.props.state.content.fullName = "";
         this.props.state.content.area = "";
+        this.props.state.content.areaFullName = "";
         this.props.state.content.color = "";
       }
       let trash = document.getElementById("trash-icon");
@@ -99,6 +100,7 @@
           name: data.name,
           fullName: data.fullName,
           area: data.name,
+          areaFullName: data.fullName,
           color: data.color,
           children: data.children
         }
