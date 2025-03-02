@@ -168,6 +168,7 @@ def lexonomyconfig():
         "showDictionaryNameInPageTitle": siteconfig.get("showDictionaryNameInPageTitle"),
         "limitPublicDictionarySize": siteconfig.get("limitPublicDictionarySize", True),
         "notification": siteconfig.get("notification"),
+        "permanentNotification": siteconfig.get("permanentNotification"),
         "homepage": siteconfig.get("homepage")
     }
     if "consent" in siteconfig and siteconfig["consent"].get("terms") != "":
