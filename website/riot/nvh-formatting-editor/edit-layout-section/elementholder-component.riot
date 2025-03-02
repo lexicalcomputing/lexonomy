@@ -6,7 +6,8 @@
       draggable={!props.isBaseLevel ? "true" : "false"}
       ondragstart={onDragStart}
       ondragend={onDragEnd}>
-    <div if={props.isAreaHolder} 
+    <div if={props.isAreaHolder && props.canHaveAdders
+            && isDraggedElementOk()} 
         class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnterHorizontal}
         ondragleave={onDragLeaveHorizontal}
@@ -14,7 +15,8 @@
         ondrop={(event) => onDrop(event, 1)}>
     </div>
     <div class="content-box-wrapper-2">
-      <div if={props.isAreaHolder}
+      <div if={props.isAreaHolder && props.canHaveAdders
+              && isDraggedElementOk()}
           class="inside-adder inside-adder-vertical"
           ondragenter={onDragEnterVertical}
           ondragleave={onDragLeaveVertical}
@@ -24,7 +26,8 @@
       <div class="placeholder-content-box {props.isAreaHolder ? "" : "placeholder-content-box-left"}">
         {props.isAreaHolder ? props.name : props.name + " (wrapper)"}
       </div>
-      <div if={props.isAreaHolder}
+      <div if={props.isAreaHolder && props.canHaveAdders
+              && isDraggedElementOk()}
           class="inside-adder inside-adder-vertical"
           ondragenter={onDragEnterVertical}
           ondragleave={onDragLeaveVertical}
@@ -32,7 +35,8 @@
           ondrop={(event) => onDrop(event, 3)}>
       </div>
     </div>
-    <div if={props.isAreaHolder}
+    <div if={props.isAreaHolder && props.canHaveAdders
+            && isDraggedElementOk()}
         class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnterHorizontal}
         ondragleave={onDragLeaveHorizontal}
@@ -63,6 +67,7 @@
         this.props.state.content.area = "";
         this.props.state.content.areaFullName = "";
         this.props.state.content.color = "";
+        this.props.state.content.canHaveChildren = true;
       }
       let trash = document.getElementById("trash-icon");
       trash.classList.add("trash-disabled");
@@ -139,6 +144,10 @@
         this.props.addElementWithChildren(0, this.props.global.parent, this.props.state, this.props.state, firstLabel);
         this.props.addElementWithChildren(1, this.props.global.parent, this.props.state, this.props.state, secondLabel);
       }
+    },
+    isDraggedElementOk() {
+      return this.props.isChildOfParent(this.props.global.draggedElementFullName, this.props.fullName)
+              && this.props.global.draggedElementFullName !== this.props.fullName;
     }
   }
 </script>

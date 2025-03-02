@@ -13,6 +13,7 @@
                               global={props.global}
                               isBaseLevel={true}
                               index={index}
+                              canHaveAdders={true}
                               delete-element={deleteElement}
                               add-element={addElement}
                               add-element-with-children={addElementWithChildren}
@@ -31,6 +32,7 @@
         props.global.parent = props.parent
       },
 
+      /*TODO: it seems like label is here always null, figure out why*/
       addElement(index, component, state, editingMode, label) {
         let newElement = {
           status: {
@@ -45,6 +47,7 @@
             area: label == null ? "" : label.area,
             areaFullName: label == null ? "" : label.areaFullName,
             color: label == null ? "": label.color,
+            canHaveChildren: true, /*really true ?*/
           },
           children: []
         };
@@ -52,6 +55,7 @@
         component.update();
         this.props.global.canOpenActionPanel = false;
       },
+      /*TODO: probably remove element attribute*/
       addElementWithChildren(index, component, state, element, label) {
         /*label can not be null or undefined*/
         if (label == null || label == undefined) {
@@ -67,9 +71,10 @@
           content: {
             name: label.name,
             fullName: label.fullName,
-            area: label.area,
-            areaFullName: label.areaFullName,
+            area: label.name,
+            areaFullName: label.fullName,
             color: label.color,
+            canHaveChildren: label.canHaveChildren !== undefined ? label.canHaveChildren : label.children.length !== 0,
           },
           children: []
         };
@@ -77,7 +82,12 @@
         if (state != null) {
           state.children.splice(index, 0, newElement);
         }
-        if (label.children !== undefined && label.children !== null) {
+        if (label.children !== undefined && label.children !== null && element.content.fullName != label.fullName) {
+          /*
+          The last condition, is for a case, when I drop to an plus icon
+          e.g. pronunciation and the parent is also of type pronunciation,
+          so that it will not render all the children.
+          */
           /*
           If element has children, append also this element,
           so that it is displayed together with its children.
@@ -93,9 +103,10 @@
               content: {
                 name: label.name,
                 fullName: label.fullName,
-                area: label.area,
-                areaFullName: label.areaFullName,
+                area: label.name,
+                areaFullName: label.fullName,
                 color: label.color,
+                canHaveChildren: false,
               },
               children: []
             };

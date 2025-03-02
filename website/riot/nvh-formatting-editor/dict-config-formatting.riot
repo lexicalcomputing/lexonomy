@@ -36,6 +36,7 @@
       <div class="elements-choice-section-wrapper">
         <elements-choice-section class="elements-choice-section"
                                 parent={this}
+                                global={global}
                                 elementsSchema={elementsSchema}/>
       </div>
     </div>
@@ -111,9 +112,10 @@
               fullName: "",
               area: "",
               areaFullName: "",
-              color: ""
+              color: "",
+              canHaveChildren: true,
             },
-            contentColor: "",
+            contentColor: "", /*TODO: probably remove*/
             children: [],
           }
         ]
@@ -126,6 +128,7 @@
           canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
           canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
           canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
+          draggedElementFullName: "",
           dropInfo: {
             wasSuccessful: false,
             index: null,
@@ -138,7 +141,8 @@
           fullName: "entry",
           area: "entry",
           areaFullName: "entry",
-          color: window.nvhStore.getElementColor("entry")
+          color: window.nvhStore.getElementColor("entry"),
+          canHaveChildren: true,
         };
       },
       onBeforeUpdate() {
@@ -147,6 +151,7 @@
           canBeRemovedIfHovered: true,
           canBeDropped: true,
           canBeDragged: true,
+          draggedElementFullName: this.global.draggedElementFullName,
           dropInfo: {
             wasSuccessful: false,
             index: null,
@@ -224,7 +229,8 @@
                 fullName: "entry",
                 area: "entry",
                 areaFullName: "entry",
-                color: window.nvhStore.getElementColor("entry")
+                color: window.nvhStore.getElementColor("entry"),
+                canHaveChildren: true,
               },
               contentColor: "",
               children: [],
