@@ -12,7 +12,8 @@
   <template each={child in props.state.data.children}>
     <elements-choice-item state={child}
                           indentationLevel={props.indentationLevel + 15}
-                          parent={props.parent}/>
+                          parent={props.parent}
+                          global={props.global}/>
   </template>
 
   <script>
@@ -22,6 +23,8 @@
         const data = JSON.stringify(this.props.state.data);
         event.dataTransfer.setData("text/plain", data);
 
+        this.props.global.draggedElementFullName = this.props.state.data.fullName;
+
         let insideAdders = document.getElementsByClassName("inside-adder");
         for (let insideAdder of insideAdders) {
           insideAdder.classList.add("inside-adder-highligth");
@@ -30,8 +33,11 @@
         for (let adder of adders) {
           adder.classList.add("adder-highligth-plus");
         }
+        this.props.parent.update();
       },
       onDragEnd(event) {
+        this.props.global.draggedElementFullName = "";
+
         let insideAdders = document.getElementsByClassName("inside-adder");
         for (let insideAdder of insideAdders) {
           insideAdder.classList.remove("inside-adder-highligth");

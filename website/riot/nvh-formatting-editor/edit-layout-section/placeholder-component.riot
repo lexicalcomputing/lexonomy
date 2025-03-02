@@ -13,11 +13,14 @@
   <elementholder-component if={props.state.content.name !== ""}
                           class="elementholder"
                           name={props.state.content.name}
+                          fullName={props.state.content.fullName}
                           color={props.state.content.color}
                           isAreaHolder={props.state.children.length === 0}
                           state={props.state}
+                          canHaveAdders={props.canHaveAdders}
                           add-element={props.addElement}
                           add-element-with-children={props.addElementWithChildren}
+                          is-child-of-parent={isChildOfParent}
                           global={props.global}
                           isBaseLevel={props.isBaseLevel}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}"
@@ -25,7 +28,8 @@
       ondragenter={onPlaceholderWrapperDragEnter}
       ondragleave={onPlaceholderWrapperDragLeave}
       ondrop={onPlaceholderWrapperDrop}>
-    <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
+    <adder-component if={props.editing.enabled && props.canHaveAdders
+                        && isChildOfParent(props.global.draggedElementFullName, this.props.state.content.areaFullName)}
                     onclick={() => props.addElement(0, props.global.parent, props.state, "row", null)}
                     ondragover={onAdderDragOver}
                     ondragenter={onAdderDragEnter}
@@ -61,12 +65,14 @@
                             global={props.global}
                             isBaseLevel={false}
                             index={index}
+                            canHaveAdders={canHaveAdders(props.state.content.areaFullName, child)}
                             delete-element={props.deleteElement}
                             add-element={props.addElement}
                             add-element-with-children={props.addElementWithChildren}
                             close-action-panel={props.closeActionPanel}
                             child-with-inherited-area={props.childWithInheritedArea}/>
-      <adder-component if={props.editing.enabled && props.editing.mode !== "delete"}
+      <adder-component if={props.editing.enabled && props.canHaveAdders
+                          && isChildOfParent(props.global.draggedElementFullName, this.props.state.content.areaFullName)}
                       onclick={() => props.addElement(index + 1, props.global.parent, props.state, "row", null)}
                       ondragover={onAdderDragOver}
                       ondragenter={onAdderDragEnter}
@@ -92,11 +98,21 @@
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
+            if (!this.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+              /*
+              Dragged element can not be dropped because,
+              it is not a child element of the parent placeholder where I want to drop him.
+              */
+              this.props.global.canBeDropped = false;
+              return;
+            }
+
             state.content.name = data.name;
             state.content.fullName = data.fullName;
             state.content.area = data.name;
             state.content.areaFullName = data.fullName;
             state.content.color = data.color;
+            state.content.canHaveChildren = data.children.length !== 0;
           }
         }
         event.target.classList.remove("placeholder-highligth");
@@ -227,9 +243,19 @@
         this.props.global.canOpenActionPanel = false;
       },
 
-      /*TODO: unused for now*/
-      isParent(element, parent) {
-
+      canHaveAdders(parentFullName, placeholder) {
+        if (parentFullName === placeholder.content.fullName) {
+          return false;
+        }
+        if (!placeholder.content.canHaveChildren) {
+          return false;
+        }
+        return true;
+      },
+      isChildOfParent(child, parent) {
+        let result = child.includes(parent);
+        let alternative = this.props.global.draggedElementFullName === "";
+        return result || alternative;
       },
 
       /*TODO: unused for now*/
