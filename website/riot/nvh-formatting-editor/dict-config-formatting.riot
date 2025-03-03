@@ -123,7 +123,7 @@
       elementsSchema: null,
 
       onBeforeMount() {
-        this.elementsSchema = this.createElementsSchema(window.store.schema.schema);
+        this.elementsSchema = this.createElementsSchema(window.store.schema.getRoot());
         this.global = {
           canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
           canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
