@@ -5,7 +5,7 @@
         title="Drag"
         draggable="true"
         ondragstart={(event) => onDragStart(event, props.state)}
-        ondragend={(event) => onDragEnd(props.index, props.parentState)}>
+        ondragend={(event) => onDragEnd(props.index, props.parentState, props.state)}>
       <i class="small material-icons">drag_handle</i>
     </div>
     <div class="action"
@@ -72,15 +72,17 @@
         const data = JSON.stringify(state);
         event.dataTransfer.setData("text/plain", data);
 
+        this.props.global.draggedElementFullName = state.content.fullName
+        state.status.isDragged = true;
+
         let adders = document.getElementsByClassName("adder");
         for (let adder of adders) {
           adder.classList.add("adder-highligth");
         }
-        this.props.element.root.classList.add("item-dragged");
       }
       this.props.global.canBeDragged = false;
     },
-    onDragEnd(indexToDelete, parentState) {
+    onDragEnd(indexToDelete, parentState, state) {
       /*
       If placeholder was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
@@ -88,10 +90,13 @@
       */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
                                 && this.props.global.dropInfo.index < indexToDelete;
+      
+      this.props.global.draggedElementFullName = "";
+      state.status.isDragged = false;
 
       if (this.props.global.dropInfo.wasSuccessful) {
         if (wasIndexDecreased) {
-              parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
+          parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
         } else {
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
         }
@@ -101,7 +106,6 @@
       for (let adder of adders) {
         adder.classList.remove("adder-highligth");
       }
-      this.props.element.root.classList.remove("item-dragged");
 
       this.props.global.parent.update();
     },
@@ -109,7 +113,7 @@
     duplicateElement() {
       let copiedElement = JSON.parse(JSON.stringify(this.props.state)); /*deep copy*/
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
-      this.props.state.status.isActive = true;
+      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
       copiedElement.status.isHovered = false;
       this.props.global.parent.update();
     },
@@ -120,6 +124,7 @@
       this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
       this.props.parentState.children.splice(this.props.index - 1, 0, this.props.state);
       this.props.state.status.isHovered = false;
+      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
     },
     increaseElementIndex() {
       if (this.props.index === this.props.parentState.children.length - 1) {
@@ -128,9 +133,11 @@
       this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
       this.props.parentState.children.splice(this.props.index + 1, 0, this.props.state);
       this.props.state.status.isHovered = false;
+      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
+      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
     }
   }
 </script>

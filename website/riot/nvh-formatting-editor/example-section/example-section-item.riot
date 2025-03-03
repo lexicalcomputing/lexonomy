@@ -1,7 +1,7 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation}
-              {props.schema.status.isActive && hasContentOrChildWithContent(props.schema) ? "element-holder-active" : ""}
-              {props.schema.status.isHovered && hasContentOrChildWithContent(props.schema) ? "element-holder-hovered" : ""}">
+  <div class="element-holder element-holder-{props.schema.orientation} {isDisplayLabel() ? "element-holder-single-wrapper" : ""}
+              {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
+              {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div if={props.schema.content.fullName === props.entry.fullName}
@@ -30,17 +30,18 @@
 
   <script>
     export default {
-      hasContentOrChildWithContent(state) {
-        if (state.content.name !== "") {
-          return true;
-        }
+      hasChildWithContent(state) {
         for (let child of state.children) {
-          if (this.hasContentOrChildWithContent(child)) {
+          if (child.content.name !== "") {
             return true;
           }
+          this.hasChildWithContent(child);
         }
         return false;
       },
+      isDisplayLabel() {
+        return this.props.schema.children.length === 0 && this.props.schema.content.name  !== "";
+      }
     }
   </script>
 
@@ -48,6 +49,11 @@
     .element-holder {
       display: flex;
       width: fit-content;
+    }
+    .element-holder-single-wrapper {
+      border: 1px solid rgb(187, 196, 196);
+      margin: 1px;
+      padding: 1px;
     }
     .element-holder-column {
       flex-direction: column;
