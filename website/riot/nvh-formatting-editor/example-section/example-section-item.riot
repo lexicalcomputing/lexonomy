@@ -1,5 +1,5 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation}
+  <div class="element-holder element-holder-{props.schema.orientation} {props.schema.children.length === 0 ? "element-holder-single-wrapper" : ""}
               {props.schema.status.isActive && hasContentOrChildWithContent(props.schema) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && hasContentOrChildWithContent(props.schema) ? "element-holder-hovered" : ""}">
     <div if={props.schema.children.length === 0}
@@ -48,6 +48,11 @@
     .element-holder {
       display: flex;
       width: fit-content;
+    }
+    .element-holder-single-wrapper {
+      border: 1px solid black;
+      margin: 1px;
+      padding: 1px;
     }
     .element-holder-column {
       flex-direction: column;
