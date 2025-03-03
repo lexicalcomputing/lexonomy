@@ -1,7 +1,8 @@
-entry: 1 string
+entry: * string
   pos: * list ["noun","verb","go to configuration>structure to add more"]
   transcription: * string
   sense: * string
     translation: * string ~.+
-    transcription: * string
+      transcription: * string
+      gender: * list ["feminine","masculine"]
     example: * string ~.+

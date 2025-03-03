@@ -329,7 +329,10 @@
                      this.scrollSelectedIntoView()
                   }
                } else {
-                  this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
+                  setTimeout(() => {
+                     // without timeout another callback is pushed to list of callbacks of "entryListChanged" event and this cause infinite loop of calling this function
+                     this.store.one("entryListChanged", this.setCursorByEntryId.bind(this))
+                  }, 1)
                }
             }
          },

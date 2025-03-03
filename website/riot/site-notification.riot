@@ -1,10 +1,12 @@
 <site-notification>
    <div if={state.show}
-         class="notificationBar p-4 amber lighten-5 centerAlign">
+         class="notificationBar p-2 amber lighten-5 centerAlign">
       <div class="notificationMessage">
-         {state.notification}
+         <raw-html
+               content={state.notification}/>
       </div>
-      <button class="notificationCloseBtn btn btn-flat btn-floating"
+      <button if={!dictData.siteconfig.permanentNotification}
+            class="notificationCloseBtn btn btn-flat btn-floating"
             onclick={onCloseClick}>
          <i class="material-icons">close</i>
       </button>
@@ -20,7 +22,9 @@
          },
 
          onSiteConfigChanged(){
-            if(this.dictData.siteconfig.notification && !window.getCookie("hideNotification")){
+            if(this.dictData.siteconfig.notification
+               && (this.dictData.siteconfig.permanentNotification
+                   || !window.getCookie("hideNotification"))){
                this.update({
                   notification: this.dictData.siteconfig.notification,
                   show: true
@@ -44,8 +48,8 @@
          align-items: center;
       }
       .notificationMessage{
+         display: block;
          margin: 0 auto;
-         font-size: 1.2rem;
       }
       .notificationCloseBtn{
 

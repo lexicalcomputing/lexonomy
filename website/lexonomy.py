@@ -92,7 +92,7 @@ def authDict(checkRights, errorRedirect=False):
 
             res, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, conn)
             for r in checkRights:
-                if not res.get(r, False):
+                if not res['dictAccess'].get(r, False):
                     if errorRedirect:
                         redirect("/#"+kwargs["dictID"])
                     else:
@@ -168,6 +168,7 @@ def lexonomyconfig():
         "showDictionaryNameInPageTitle": siteconfig.get("showDictionaryNameInPageTitle"),
         "limitPublicDictionarySize": siteconfig.get("limitPublicDictionarySize", True),
         "notification": siteconfig.get("notification"),
+        "permanentNotification": siteconfig.get("permanentNotification"),
         "homepage": siteconfig.get("homepage")
     }
     if "consent" in siteconfig and siteconfig["consent"].get("terms") != "":
@@ -217,7 +218,7 @@ def entrydelete(dictID, user, dictDB, configs):
     return {"success": True, "id": request.forms.id}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryread.json")
-@authDict([])
+@authDict(["canView"])
 def entryread(dictID, user, dictDB, configs):
     adjustedEntryID, nvh, json, _title = ops.readEntry(dictDB, configs, request.forms.id)
     adjustedEntryID = int(adjustedEntryID)
@@ -863,10 +864,10 @@ def dictconfig(dictID):
 
 
 @post(siteconfig["rootPath"]+"<dictID>/random.json") # OK
-def publicrandom(dictID):
+@authDict(["canView"])
+def randomentries(dictID, user, dictDB, configs):
     if not ops.dictExists(dictID):
         return redirect("/")
-    dictDB = ops.getDB(dictID)
     return ops.readRandoms(dictDB, int(request.query.limit) if request.query.limit else 10)
 
 @post(siteconfig["rootPath"]+"<dictID>/exportconfigs.json")
@@ -951,7 +952,7 @@ def getImportProgress(dictID, user, dictDB, configs):
 
 
 @post(siteconfig["rootPath"]+"<dictID>/entrylist.json") # OK
-@authDict(["canEdit"])
+@authDict(['canView'])
 def entrylist(dictID, user, dictDB, configs):
     if request.forms.id:
         if request.forms.id == "last":
@@ -980,7 +981,7 @@ def publicsearch(dictID):
     if not configs["publico"]["public"]:
         return {"success": False}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, configs['structure']['root'], request.forms.searchtext, modifier, howmany, request.forms.offset)
+        total, entries, first = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, modifier, howmany, request.forms.offset)
         return {"success": True, "entries": entries, "total": total}
 
 @post(siteconfig["rootPath"]+"<dictID>/configread.json")

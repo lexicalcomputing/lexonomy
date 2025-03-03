@@ -1,7 +1,28 @@
-entry: test
-  pos: NOUN
-  transcription: test
-  sense: test
-    translation: test
-    transcription: test
-    example: Test example
+entry: cook
+  pos: verb
+  transcription: kʊk
+  sense:
+    translation: cuisiner
+      transcription: kɥi.zi.ne
+    example: J'aime cuisiner des plats italiens pour ma famille.
+entry: cook
+  pos: noun
+  transcription: kʊk
+  sense: male cook
+    translation: cuisinier
+      transcription: kɥi.zi.nje
+      gender: masculine
+    example: Le cuisinier prépare un délicieux repas pour les invités.
+  sense: female cook
+    translation: cuisinière
+      transcription: kɥi.zi.njɛʁ
+      gender: feminine
+    example: La cuisinière travaille dans un restaurant réputé.
+entry: spice
+  pos: noun
+  transcription: spaɪs
+  sense:
+    translation: épice
+      transcription: epis
+      gender: feminine
+    example: Cette épice confère un arôme subtil au plat.
