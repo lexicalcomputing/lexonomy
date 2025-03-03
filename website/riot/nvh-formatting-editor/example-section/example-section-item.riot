@@ -1,7 +1,7 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
-              {props.schema.status.isActive ? "element-holder-active" : ""}
-              {props.schema.status.isHovered? "element-holder-hovered" : ""}">
+              {props.schema.status.isActive && hasContentOrChildWithContent(props.schema) ? "element-holder-active" : ""}
+              {props.schema.status.isHovered && hasContentOrChildWithContent(props.schema) ? "element-holder-hovered" : ""}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div if={props.schema.content.fullName === props.entry.fullName}
@@ -29,6 +29,19 @@
   </div>
 
   <script>
+    export default {
+      hasContentOrChildWithContent(state) {
+        if (state.content.name !== "") {
+          return true;
+        }
+        for (let child of state.children) {
+          if (this.hasContentOrChildWithContent(child)) {
+            return true;
+          }
+        }
+        return false;
+      },
+    }
   </script>
 
   <style>
