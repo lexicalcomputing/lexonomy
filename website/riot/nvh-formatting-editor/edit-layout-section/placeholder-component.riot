@@ -266,13 +266,6 @@
         let alternative = this.props.global.draggedElementFullName === "";
         return result || alternative;
       },
-
-      /*TODO: unused for now*/
-      hasChildWithContent(state) {
-        for (let child of state.children) {
-          this.hasChildWithContent(child);
-        }
-      },
     }
   </script>
 
