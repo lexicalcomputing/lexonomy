@@ -56,6 +56,7 @@
          onBeforeMount(){
             this.schema = new window.NvhSchemaClass()
             this.structureStore = window.structureEditorStore
+            this.structureStore.reset()
             this.structureStore.setSchema(this.schema)
             this.bindings = [["structureStore",  "brokenConfigChanged", "update"],
                              ["structureStore", "elementChanged", "refreshBtnSaveDisabled"],

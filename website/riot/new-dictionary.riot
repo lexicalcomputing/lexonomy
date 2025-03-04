@@ -376,6 +376,7 @@
          onBeforeMount(){
             this.schema = new window.NvhSchemaClass()
             this.structureStore = window.structureEditorStore
+            this.structureStore.reset()
             this.structureStore.setSchema(this.schema)
             this.structureStore.data.mode = "dmlex"
             this.structureStore.data.tab = "visual"

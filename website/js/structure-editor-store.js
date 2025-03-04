@@ -1,15 +1,20 @@
 class StructureEditorStoreClass {
    constructor(){
+      this.reset()
+      observable(this)
+   }
+
+   reset(){
       this.data = {
          schema: null,
          tab: null,
          mode: null,
+         DMLexSettings: null,
          originalSchema: null,
          originalDmlexSettings: null,
          draggedElement: null,
          editedElement: null
       }
-      observable(this)
    }
 
    setSchema(schema){
