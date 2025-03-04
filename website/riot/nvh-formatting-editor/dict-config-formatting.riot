@@ -180,7 +180,6 @@
         */
         if (this.isSchemaChanged(this.schemaHistory.at(this.schemaHistoryIndex), this.schema)) {
           this.schemaHistory.length = this.schemaHistoryIndex + 1;
-          this.clearStatuses(this.schema);
           this.schemaHistory.push(JSON.parse(JSON.stringify(this.schema)));
           this.schemaHistoryIndex += 1;
         }
@@ -270,6 +269,7 @@
         if (this.schemaHistoryIndex > 0) {
           this.schemaHistoryIndex -= 1;
           this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(this.schemaHistoryIndex)));
+          this.clearStatuses(this.schema);
           this.update();
         }
       },
@@ -277,6 +277,7 @@
         if (this.schemaHistoryIndex < this.schemaHistory.length - 1) {
           this.schemaHistoryIndex += 1;
           this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(this.schemaHistoryIndex)));
+          this.clearStatuses(this.schema);
           this.update();
         }
       },
