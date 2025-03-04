@@ -1,5 +1,5 @@
 DICT_DIR=./dicts
-LEXONOMY_DICT_DIR=/var/www/xmedved1/lexonomy/data/dicts/
+LEXONOMY_DICT_DIR=$(shell jq -r '.dataDir' ../../siteconfig.json)
 MAIN_DB=lexonomy.sqlite
 
 # ===============================================
@@ -73,7 +73,7 @@ XML=$(wildcard dump_xml/*.xml)
 migrate_data: user_credentials.csv lexonomy_public_dicts_info.csv $(XML:%.xml=%.xml.xml2nvh.nvh)
 
 %.xml.xml2nvh.nvh: %.xml
-	grep $(subst dump_xml/,,$^) lexonomy_public_dicts_info.csv | ./scripts/import_data.py ./dump_xml ./dump_json $(LEXONOMY_DICT_DIR) -c user_credentials.csv &> $@.log
+	grep $(subst dump_xml/,,$^) lexonomy_public_dicts_info.csv | python3.10 ./scripts/import_data.py ./dump_xml ./dump_json $(LEXONOMY_DICT_DIR) -c user_credentials.csv &> $@.log
 
 
 clean_migration:
