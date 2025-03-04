@@ -96,7 +96,7 @@
 
       if (this.props.global.dropInfo.wasSuccessful) {
         if (wasIndexDecreased) {
-              parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
+          parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
         } else {
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
         }
