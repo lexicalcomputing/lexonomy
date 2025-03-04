@@ -132,6 +132,7 @@
         ]
       },
       schemaHistory: null,
+      schemaHistoryIndex: null,
       elementsSchema: null,
 
       onBeforeMount() {
@@ -157,6 +158,7 @@
           canHaveChildren: true,
         };
         this.schemaHistory = [JSON.parse(JSON.stringify(this.schema))];
+        this.schemaHistoryIndex = 0;
       },
       onBeforeUpdate() {
         this.elementsSchema = this.createElementsSchema(window.store.schema.schema);
@@ -170,10 +172,17 @@
             index: null,
           },
           canOpenActionPanel: true,
+          schemaHistoryIndex: this.schemaHistoryIndex,
           parent: null,
         };
-        if (this.isSchemaChanged(this.schemaHistory.at(-1), this.schema)) {
+        /*
+        Change history, if I modified edit section in other way that using 'undo' or 'redo'.
+        */
+        if (this.isSchemaChanged(this.schemaHistory.at(this.schemaHistoryIndex), this.schema)) {
+          this.schemaHistory.length = this.schemaHistoryIndex + 1;
+          this.clearStatuses(this.schema);
           this.schemaHistory.push(JSON.parse(JSON.stringify(this.schema)));
+          this.schemaHistoryIndex += 1;
         }
       },
 
@@ -258,14 +267,18 @@
         this.update();
       },
       undoSchema() {
-        if (this.schemaHistory.length > 1) {
-          this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(-2)));
-          this.schemaHistory.pop();
+        if (this.schemaHistoryIndex > 0) {
+          this.schemaHistoryIndex -= 1;
+          this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(this.schemaHistoryIndex)));
           this.update();
         }
       },
       redoSchema() {
-        // TODO: implement
+        if (this.schemaHistoryIndex < this.schemaHistory.length - 1) {
+          this.schemaHistoryIndex += 1;
+          this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(this.schemaHistoryIndex)));
+          this.update();
+        }
       },
       isSchemaChanged(oldSchema, newSchema) {
         if (oldSchema.orientation !== newSchema.orientation) {
@@ -290,7 +303,18 @@
         }
 
         return false;
-      }
+      },
+      clearStatuses(state) {
+        if (state === null) {
+          return;
+        }
+        Array.from(state.children).map(child => this.clearStatuses(child));
+        state.children.map(child => {
+          child.status.isActive = false;
+          child.status.isHovered = false;
+          child.status.isDragged = false;
+        });
+      },
     }
   </script>
 
