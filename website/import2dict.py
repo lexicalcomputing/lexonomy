@@ -100,8 +100,8 @@ def xml_entry2nvh_entry(dom, fd, main_node_value, first=False, indent=0):
 
             for n, v in ch_attrs.items():
                 fd.write('{}_xattr_{}: {}\n'.format('  '*(indent+1) if indent else '  ', re.sub('\.', '_', n), v))
-
-        translit = translit or xml_entry2nvh_entry(ch, fd, main_node_value, indent=indent + 1)
+        ch_traslit = xml_entry2nvh_entry(ch, fd, main_node_value, indent=indent + 1)
+        translit = translit or ch_traslit
     return translit
 
 
