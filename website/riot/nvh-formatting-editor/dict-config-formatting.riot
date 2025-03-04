@@ -56,9 +56,20 @@
         <div class="header-box">
           <i class="small material-icons">edit</i>
           <h2>Editing</h2>
-          <div id="reset-icon-wrapper"
-              onclick={resetSchema}>
-            RESET
+          <div id="buttons-box">
+            <div id="undo-icon-wrapper"
+                onclick={undoSchema}>
+              UNDO
+            </div>
+            <div id="redo-icon-wrapper"
+                onclick={redoSchema}>
+              REDO
+            </div>
+            <div class="horizontal-filler"></div>
+            <div id="reset-icon-wrapper"
+                onclick={resetSchema}>
+              RESET
+            </div>
           </div>
         </div>
       </div>
@@ -120,6 +131,7 @@
           }
         ]
       },
+      schemaHistory: null,
       elementsSchema: null,
 
       onBeforeMount() {
@@ -144,6 +156,7 @@
           color: window.nvhStore.getElementColor("entry"),
           canHaveChildren: true,
         };
+        this.schemaHistory = [JSON.parse(JSON.stringify(this.schema))];
       },
       onBeforeUpdate() {
         this.elementsSchema = this.createElementsSchema(window.store.schema.schema);
@@ -159,6 +172,9 @@
           canOpenActionPanel: true,
           parent: null,
         };
+        if (this.isSchemaChanged(this.schemaHistory.at(-1), this.schema)) {
+          this.schemaHistory.push(JSON.parse(JSON.stringify(this.schema)));
+        }
       },
 
       onDragEnter() {
@@ -241,6 +257,40 @@
 
         this.update();
       },
+      undoSchema() {
+        if (this.schemaHistory.length > 1) {
+          this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(-2)));
+          this.schemaHistory.pop();
+          this.update();
+        }
+      },
+      redoSchema() {
+        // TODO: implement
+      },
+      isSchemaChanged(oldSchema, newSchema) {
+        if (oldSchema.orientation !== newSchema.orientation) {
+          return true;
+        }
+        if (oldSchema.content !== undefined && oldSchema.content !== undefined) {
+          if (oldSchema.content.fullName !== newSchema.content.fullName) {
+            return true;
+          }
+          if (oldSchema.content.fullName !== newSchema.content.fullName) {
+            return true;
+          }
+        }
+        if (oldSchema.children.length !== newSchema.children.length) {
+          return true;
+        }
+
+        for (let i = 0; i < newSchema.children.length; i++) {
+          if (this.isSchemaChanged(oldSchema.children.at(i), newSchema.children.at(i))) {
+            return true;
+          }
+        }
+
+        return false;
+      }
     }
   </script>
 
@@ -292,13 +342,22 @@
       transform: scale(1.1);
       color: red;
     }
+
+    #buttons-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 2px;
+      background-color: rgb(240, 247, 246)
+    }
+
     #reset-icon-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       border: 2px solid black;
       padding: 2px 4px;
-      margin-left: 5px;
       background-color: rgb(232, 108, 102);
     }
     #reset-icon-wrapper:hover {
@@ -308,6 +367,44 @@
     }
     #reset-icon-wrapper:active {
       transform: scale(1.1);
+    }
+
+    #undo-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid black;
+      padding: 2px 4px;
+      background-color: rgb(166, 227, 240);
+    }
+    #undo-icon-wrapper:hover {
+      transform: scale(1.05);
+      background-color: rgb(147, 219, 235);
+      cursor: pointer;
+    }
+    #undo-icon-wrapper:active {
+      transform: scale(1.1);
+    }
+
+    #redo-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid black;
+      padding: 2px 4px;
+      background-color: rgb(166, 240, 202);
+    }
+    #redo-icon-wrapper:hover {
+      transform: scale(1.05);
+      background-color: rgb(146, 235, 189);
+      cursor: pointer;
+    }
+    #redo-icon-wrapper:active {
+      transform: scale(1.1);
+    }
+
+    .horizontal-filler {
+      width: 300px;
     }
 
 
