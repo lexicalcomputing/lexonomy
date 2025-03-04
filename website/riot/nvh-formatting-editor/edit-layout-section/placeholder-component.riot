@@ -28,7 +28,7 @@
       ondragenter={() => {}/*onPlaceholderWrapperDragEnter*/}
       ondragleave={() => {}/*onPlaceholderWrapperDragLeave*/}
       ondrop={() => {}/*onPlaceholderWrapperDrop*/}>
-    <adder-component if={props.editing.enabled && props.canHaveAdders
+    <adder-component if={props.editing.enabled && props.canHaveAdders && !props.state.status.isDragged
                         && isChildOfParent(props.global.draggedElementFullName, this.props.state.content.areaFullName)}
                     onclick={() => props.addElement(0, props.global.parent, props.state, "row", null)}
                     ondragover={onAdderDragOver}
@@ -56,7 +56,8 @@
                                   {child.status.isActive ? "placeholder-selected" : ""}
                                   {child.status.isHovered ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
-                                  {child.children.length === 0 ? "placeholder-no-children" : ""}"
+                                  {child.children.length === 0 ? "placeholder-no-children" : ""}
+                                  {child.status.isDragged ? "placeholder-dragged" : ""}"
                             state={props.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             editing={props.editing}
@@ -71,7 +72,7 @@
                             add-element-with-children={props.addElementWithChildren}
                             close-action-panel={props.closeActionPanel}
                             child-with-inherited-area={props.childWithInheritedArea}/>
-      <adder-component if={props.editing.enabled && props.canHaveAdders
+      <adder-component if={props.editing.enabled && props.canHaveAdders && !props.state.status.isDragged
                           && isChildOfParent(props.global.draggedElementFullName, this.props.state.content.areaFullName)}
                       onclick={() => props.addElement(index + 1, props.global.parent, props.state, "row", null)}
                       ondragover={onAdderDragOver}
@@ -207,7 +208,9 @@
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
           if (data.type === "placeholder") {
+            this.props.closeActionPanel();
             state.children.splice(index, 0, data);
+            state.children[index].status.isActive = true;
             this.props.global.dropInfo.wasSuccessful = true;
             this.props.global.dropInfo.index = index
             event.target.classList.remove("adder-highligth-dragged");
@@ -312,18 +315,20 @@
     }
 
 
-    .item-dragged {
-      background-color: rgb(212, 210, 203);
+    .placeholder-dragged {
+      opacity: 0.8;
     }
-    .item-dragged * {
-      display: none;
+    .placeholder-dragged * {
+      opacity: 0.8;
     }
     .adder-highligth {
       background-color: var(--color-can-be-dropped);
       padding: 5px !important;
+      transition: all 500ms ease;
     }
     .adder-highligth-dragged {
       background-color: var(--color-is-dragged-over) !important;
+      transition: all 200ms ease;
     }
 
 

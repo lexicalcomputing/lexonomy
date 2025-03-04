@@ -38,6 +38,7 @@
           status: {
             isActive: false,
             isHovered: false,
+            isDragged: false,
           },
           orientation: editingMode,
           type: "placeholder",
@@ -47,7 +48,7 @@
             area: label == null ? "" : label.area,
             areaFullName: label == null ? "" : label.areaFullName,
             color: label == null ? "": label.color,
-            canHaveChildren: true, /*really true ?*/
+            canHaveChildren: true, /*NOTE: really true ?*/
           },
           children: []
         };
@@ -65,6 +66,7 @@
           status: {
             isActive: false,
             isHovered: false,
+            isDragged: false,
           },
           orientation: "column",
           type: "placeholder",
@@ -97,6 +99,7 @@
               status: {
                 isActive: false,
                 isHovered: false,
+                isDragged: false,
               },
               orientation: "column",
               type: "placeholder",
