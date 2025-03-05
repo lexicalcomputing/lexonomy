@@ -78,6 +78,7 @@
                     editing={state.editing}
                     schema={schema}
                     parent={this}
+                    close-action-panel={closeActionPanel}
                     global={global}/>
       </div>
     </div>
@@ -148,6 +149,7 @@
             index: null,
           },
           canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
+          selectedPlaceholderAreaFullName: "",
           parent: null,
         };
         this.schema.children[0].content = {
@@ -175,6 +177,7 @@
           },
           canOpenActionPanel: true,
           schemaHistoryIndex: this.schemaHistoryIndex,
+          selectedPlaceholderAreaFullName: this.global.selectedPlaceholderAreaFullName,
           parent: null,
         };
         /*
@@ -204,6 +207,8 @@
       },
       onDrop() {
         this.global.dropInfo.wasSuccessful = true;
+        this.closeActionPanel();
+        this.global.selectedPlaceholderAreaFullName = "";
         let trashIcon = document.getElementById("trash-icon");
         trashIcon.classList.remove("trash-dragged-over");
       },
@@ -264,6 +269,7 @@
             }
           ]
         },
+        this.global.selectedPlaceholderAreaFullName = "";
 
         this.update();
       },
@@ -272,6 +278,7 @@
           this.schemaHistoryIndex -= 1;
           this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(this.schemaHistoryIndex)));
           this.clearStatuses(this.schema);
+          this.global.selectedPlaceholderAreaFullName = "";
           this.update();
         }
       },
@@ -280,6 +287,7 @@
           this.schemaHistoryIndex += 1;
           this.schema = JSON.parse(JSON.stringify(this.schemaHistory.at(this.schemaHistoryIndex)));
           this.clearStatuses(this.schema);
+          this.global.selectedPlaceholderAreaFullName = "";
           this.update();
         }
       },
@@ -317,6 +325,16 @@
           child.status.isHovered = false;
           child.status.isDragged = false;
         });
+      },
+      closeActionPanel() {
+        this.closeActionPanelRec(this.schema);
+      },
+      closeActionPanelRec(state) {
+        if (state === null) {
+          return null;
+        }
+        Array.from(state.children).map(child => this.closeActionPanelRec(child));
+        state.children.map(child => child.status.isActive = false);
       },
     }
   </script>

@@ -44,7 +44,7 @@
                     add-element={props.addElement}
                     add-element-with-children={props.addElementWithChildren}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => openActionPanel(child.status)}
+      <placeholder-component onclick={() => openActionPanel(child)}
                             ondragover={onDragOver}
                             ondrop={(event) => onDrop(event, child)}
                             ondragenter={() => {}/*onPlaceholderDragEnter*/}
@@ -99,6 +99,8 @@
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
+            this.props.closeActionPanel();
+            this.props.global.selectedPlaceholderAreaFullName = "";
             if (state.children.length !== 0 && data.children.length === 0) {
               /*Can not drop label to be a wrapper, if it can not have children*/
               this.props.global.canBeDropped = false;
@@ -228,8 +230,10 @@
             this.props.closeActionPanel();
             state.children.splice(index, 0, data);
             state.children[index].status.isHovered = false;
+            state.children[index].status.isActive = false;
             this.props.global.dropInfo.wasSuccessful = true;
-            this.props.global.dropInfo.index = index
+            this.props.global.dropInfo.index = index;
+            this.props.global.selectedPlaceholderAreaFullName = "";
             event.target.classList.remove("adder-highligth-dragged");
             this.props.global.canBeDropped = false;
           } /*else if (data.type === "choice-item") {
@@ -275,13 +279,18 @@
         this.props.global.parent.update();
       },
 
-      openActionPanel(status) {
+      openActionPanel(child) {
         if (this.props.global.canOpenActionPanel) {
-          let currentIsActive = status.isActive
+          let currentIsActive = child.status.isActive
           this.props.closeActionPanel(); /*close actionPanel if any was opened*/
-          status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
+          child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
+          if (child.status.isActive && child.content.name === "") { /*setting of valid choice elements (only empty placeholders)*/
+            this.props.global.selectedPlaceholderAreaFullName = child.content.areaFullName;            
+          } else {
+            this.props.global.selectedPlaceholderAreaFullName = "";
+          }
         } else {
-          status.isActive = false;
+          child.status.isActive = false;
         }
         this.props.global.canOpenActionPanel = false;
       },

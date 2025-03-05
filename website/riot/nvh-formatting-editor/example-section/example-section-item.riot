@@ -32,15 +32,17 @@
     export default {
       hasChildWithContent(state) {
         for (let child of state.children) {
-          if (child.content.name !== "") {
+          if (child.content.name !== "" && child.children.length === 0) {
             return true;
           }
-          this.hasChildWithContent(child);
+          if (this.hasChildWithContent(child)) {
+            return true;
+          }
         }
         return false;
       },
       isDisplayLabel() {
-        return this.props.schema.children.length === 0 && this.props.schema.content.name  !== "";
+        return this.props.schema.children.length === 0 && this.props.schema.content.name !== "";
       },
       /*This allows displaying non-direct children*/
       getEntryChildren(entry, resultChildren) {
