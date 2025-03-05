@@ -176,17 +176,25 @@
          saveData() {
             if (!this.state.data.users.length) {
                window.showToast('Please, add at least one user.')
-            } else if (this.state.data.users.find(row => row.canConfig) == undefined) {
+            } else if(this.state.data.users.find(row => row.canConfig) == undefined) {
                window.showToast('At least one user must have <i>Configure</i> permission.')
             } else if(this.state.data.users.find(row => row.email == "")) {
                window.showToast('Email must not be empty.')
-            } else if(this.state.data.users.find(row => !window.isEmail(row.email))) {
-               window.showToast('Email is not valid.')
-            } else if (this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)){
-               window.showToast('User should have assigned at least one privilege.')
-            } else if(new Set(this.state.data.users.map(user => user.email.trim())).size != this.state.data.users.length){
-               window.showToast('Each email can only be used once.')
             } else {
+               let invalidUser = this.state.data.users.find(row => !window.isEmail(row.email))
+               if(invalidUser) {
+                  window.showToast(`Email "${invalidUser.email}" is not valid.`)
+                  return
+               }
+               if(new Set(this.state.data.users.map(user => user.email.trim())).size != this.state.data.users.length){
+                  window.showToast('Each email can only be used once.')
+                  return
+               }
+               invalidUser = this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)
+               if (invalidUser){
+                  window.showToast(`User "${invalidUser.email}" should have assigned at least one privilege.`)
+                  return
+               }
                let data = {}
                this.state.data.users.forEach(u => {
                   data[u.email] = {
