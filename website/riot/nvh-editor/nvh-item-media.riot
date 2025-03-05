@@ -1,5 +1,5 @@
 <nvh-item-media>
-   <template if={props.type}>
+   <template if={props.type && props.url}>
       <img if={props.type == "image"}
             src="{props.url}"
             class="nvh-image"/>
@@ -21,12 +21,9 @@
             controls
             class="nvh-audio"
             src="{props.url}"/>
-      <template if={props.type == "url"}>
-         {props.url}
-      </template>
       <a href="{props.url}"
             class="nvh-link tooltipped clickable"
-            data-tooltip="Open in new tab"
+            data-tooltip="Open in new tab: {props.url}"
             target="_blank">
          <i class="material-icons">open_in_new</i>
       </a>
