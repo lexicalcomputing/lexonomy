@@ -99,7 +99,23 @@
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
-            /*TODO: check whether children are valid when placing label*/
+            if (state.children.length !== 0 && data.children.length === 0) {
+              /*Can not drop label to be a wrapper, if it can not have children*/
+              this.props.global.canBeDropped = false;
+              return;
+            }
+            if (this.props.state.content.areaFullName.includes(data.fullName) && state.children.length !== 0) {
+              /*Can not drop label to area with same fullName because it is redundant*/
+              this.props.global.canBeDropped = false;
+              return;
+            }
+            for (let child of state.children) {
+              if (!this.isParentLabelOfDropObject(data.fullName, child)) {
+                /*Can not place label to placeholder, because not all children labels are valid*/
+                this.props.global.canBeDropped = false;
+                return;
+              }
+            }
             if (!this.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
               /*
               Dragged element can not be dropped because,
@@ -288,6 +304,10 @@
         return result || alternative;
       },
       isChildObjectOfParent(childObject, parent) {
+        if (childObject.content.fullName === parent && childObject.children.length !== 0) {
+          /*This avoids placing a wrapper with label "parent" into another wrapper with label "parent"*/
+          return false;
+        }
         let result = childObject.content.fullName.includes(parent);
         let alternative = childObject.content.fullName === "";
         if (!result && !alternative) {
@@ -296,6 +316,20 @@
 
         for (let child of childObject.children) {
           if (!this.isChildObjectOfParent(child, parent)) {
+            return false;
+          }
+        }
+        return true;
+      },
+      isParentLabelOfDropObject(parentLabel, dropObject) {
+        let result = dropObject.content.fullName.includes(parentLabel);
+        let alternative = dropObject.content.fullName === "";
+        if (!result && !alternative) {
+          return false;
+        }
+
+        for (let child of dropObject.children) {
+          if (!this.isParentLabelOfDropObject(parentLabel, child)) {
             return false;
           }
         }
