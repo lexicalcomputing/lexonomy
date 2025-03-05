@@ -20,7 +20,7 @@
                             entry={props.entry}/>
       <template if={props.schema.content.area !== childSchema.content.area
                     && childSchema.content.name !== ""}
-                each={childEntry in props.entry.children}>
+                each={childEntry in this.getEntryChildren(props.entry, [])}>
         <example-section-item if={childSchema.content.fullName === childEntry.fullName}
                               schema={childSchema}
                               entry={childEntry}/>
@@ -41,6 +41,14 @@
       },
       isDisplayLabel() {
         return this.props.schema.children.length === 0 && this.props.schema.content.name  !== "";
+      },
+      /*This allows displaying non-direct children*/
+      getEntryChildren(entry, resultChildren) {
+        for (let child of entry.children) {
+          this.getEntryChildren(child, resultChildren);
+          resultChildren.push(child);
+        }
+        return resultChildren;
       }
     }
   </script>
