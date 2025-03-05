@@ -1,5 +1,5 @@
 <elements-choice-item>
-  <div class="elements-choice-item-wrapper"
+  <div class="elements-choice-item-wrapper {isValidToActivePlaceholder() ? "elements-choice-item-wrapper-highlight" : ""}"
       style="padding-left: {props.indentationLevel}px"
       draggable="true"
       ondragstart={onDragStart}
@@ -55,6 +55,10 @@
         }
 
         this.props.parent.update();
+      },
+      isValidToActivePlaceholder() {
+        return this.props.state.data.fullName.includes(this.props.global.selectedPlaceholderAreaFullName)
+                && this.props.global.selectedPlaceholderAreaFullName !== "";
       }
     }
   </script>
@@ -68,6 +72,12 @@
     }
     .elements-choice-item-wrapper:hover {
       background-color: #d7e4f7;
+    }
+    .elements-choice-item-wrapper-highlight {
+      background-color: rgb(230, 244, 210);
+    }
+    .elements-choice-item-wrapper-highlight:hover {
+      background-color: rgb(206, 231, 170);
     }
     .elements-choice-item-box {
       width: 8px;
