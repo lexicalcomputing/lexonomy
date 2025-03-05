@@ -72,7 +72,8 @@
         const data = JSON.stringify(state);
         event.dataTransfer.setData("text/plain", data);
 
-        this.props.global.draggedElementFullName = state.content.fullName
+        this.props.global.draggedElementFullName = state.content.fullName;
+        this.props.global.draggedPlaceholder = state;
         state.status.isDragged = true;
 
         let adders = document.getElementsByClassName("adder");
@@ -92,6 +93,7 @@
                                 && this.props.global.dropInfo.index < indexToDelete;
       
       this.props.global.draggedElementFullName = "";
+      this.props.global.draggedPlaceholder = null;
       state.status.isDragged = false;
 
       if (this.props.global.dropInfo.wasSuccessful) {

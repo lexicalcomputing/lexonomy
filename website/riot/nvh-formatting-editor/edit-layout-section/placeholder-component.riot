@@ -49,8 +49,8 @@
                             ondrop={(event) => onDrop(event, child)}
                             ondragenter={() => {}/*onPlaceholderDragEnter*/}
                             ondragleave={() => {}/*onPlaceholderDragLeave*/}
-                            onmouseenter={(event) => onPlaceholderMouseEnter(event, child)}
-                            onmouseleave={(event) => onPlaceholderMouseLeave(event, child)}
+                            onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
+                            onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
                             class="placeholder placeholder-{child.orientation}
                                   {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}
                                   {child.status.isActive ? "placeholder-selected" : ""}
@@ -99,6 +99,7 @@
         const data = JSON.parse(rawData);
         if (this.props.global.canBeDropped) {
           if (data.type === "choice-item") {
+            /*TODO: check whether children are valid when placing label*/
             if (!this.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
               /*
               Dragged element can not be dropped because,
@@ -223,24 +224,38 @@
         }
       },
 
-      onPlaceholderMouseEnter(event, state) {
+      onPlaceholderMouseEnter(event, state, parentState) {
         event.target.classList.add("placeholder-mouse-hover");
         state.status.isHovered = true;
         /*
           This is a work-around.
           If I create a new placeholder inside of a placeholder,
           the outer one will lose focus. In this way I assign a focus to parent
-          placeholder, which is expected behaviour.
+          placeholder, which is expected behaviour. This is not true for base placeholder.
         */
         const classList = Array.from(event.target.parentElement.parentElement.classList);
-        if (classList.includes("placeholder")) {
+        if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
           event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+          parentState.status.isHovered = true;
         }
         this.props.global.parent.update();
       },
-      onPlaceholderMouseLeave(event, state) {
+      onPlaceholderMouseLeave(event, state, parentState) {
         event.target.classList.remove("placeholder-mouse-hover");
         state.status.isHovered = false;
+
+        /*
+          This is a work-around.
+          If I move a placeholder using arrows, sometimes I enter child placeholder
+          without entering parent placeholder. I need to assure that after leaving child placeholder,
+          the parent will be hovered which is expected behaviour. This is not true for base placeholder.
+        */
+        const classList = Array.from(event.target.parentElement.parentElement.classList);
+        if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
+          event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+          parentState.status.isHovered = true;
+        }
+
         this.props.global.parent.update();
       },
 
@@ -265,10 +280,27 @@
         return true;
       },
       isChildOfParent(child, parent) {
+        if (this.props.global.draggedPlaceholder != null) {
+          return this.isChildObjectOfParent(this.props.global.draggedPlaceholder, parent);
+        }
         let result = child.includes(parent);
         let alternative = this.props.global.draggedElementFullName === "";
         return result || alternative;
       },
+      isChildObjectOfParent(childObject, parent) {
+        let result = childObject.content.fullName.includes(parent);
+        let alternative = childObject.content.fullName === "";
+        if (!result && !alternative) {
+          return false;
+        }
+
+        for (let child of childObject.children) {
+          if (!this.isChildObjectOfParent(child, parent)) {
+            return false;
+          }
+        }
+        return true;
+      }
     }
   </script>
 

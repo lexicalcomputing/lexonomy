@@ -142,6 +142,7 @@
           canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
           canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
           draggedElementFullName: "",
+          draggedPlaceholder: null,
           dropInfo: {
             wasSuccessful: false,
             index: null,
@@ -167,6 +168,7 @@
           canBeDropped: true,
           canBeDragged: true,
           draggedElementFullName: this.global.draggedElementFullName,
+          draggedPlaceholder: this.global.draggedPlaceholder,
           dropInfo: {
             wasSuccessful: false,
             index: null,
