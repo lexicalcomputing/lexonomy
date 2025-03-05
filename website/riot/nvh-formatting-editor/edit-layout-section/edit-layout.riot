@@ -84,11 +84,11 @@
         if (state != null) {
           state.children.splice(index, 0, newElement);
         }
-        if (label.children !== undefined && label.children !== null && element.content.fullName != label.fullName) {
+        if (label.children !== undefined && label.children !== null && element.content.areaFullName != label.areaFullName) {
           /*
-          The last condition, is for a case, when I drop to an plus icon
-          e.g. pronunciation and the parent is also of type pronunciation,
-          so that it will not render all the children.
+          Children are present.
+          When I drop to an plus icon e.g. pronunciation and the parent
+          is also of type pronunciation, so that it will not render all the children.
           */
           /*
           If element has children, append also this element,
