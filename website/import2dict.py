@@ -116,7 +116,7 @@ def get_titling_element_value(dom, fd, xml_main_node_name):
         main_node_value = get_titling_element_value(ch, fd, xml_main_node_name)
         if main_node_value:
             return main_node_value
-    return None
+    return ''
 
 def xml2nvh(input_xml , fd, titling_element='', entry_element=''):
     global rootTag
