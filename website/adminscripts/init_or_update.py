@@ -131,24 +131,28 @@ def update_dict_db():
     def update_schema_3_0(conn):
         from nvh import nvh
         structure_data = json.loads(conn.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
+        if not structure_data.get('nvhSchema', False) and structure_data.get('elements', False):
+            schema_json = structure_data['elements']
+            schema_nvh = nvh.schema_json2nvh(schema_json)
+            del structure_data['elements']
+            structure_data['nvhSchema'] = schema_nvh
 
-        schema_json = structure_data['elements']
-        schema_nvh = nvh.schema_json2nvh(schema_json)
-        del structure_data['elements']
-        structure_data['nvhSchema'] = schema_nvh
+            if structure_data.get('tab', False):
+                tab = structure_data['tab']
+                structure_data['mode'] = 'dmlex' if tab == 'dmlex' else 'custom'
+                structure_data['tab'] = 'code' if tab == 'custom' else 'visual'
+            else:
+                structure_data['mode'] = "custom"
+                structure_data['tab'] = "visual"
 
-        if structure_data.get('tab', False):
-            tab = structure_data['tab']
-            structure_data['mode'] = 'dmlex' if tab == 'dmlex' else 'custom'
-            structure_data['tab'] = 'code' if tab == 'custom' else 'visual'
-        else:
-            structure_data['mode'] = "custom"
-            structure_data['tab'] = "visual"
-
-        conn.execute("UPDATE configs SET json=? WHERE id='structure'", (json.dumps(structure_data),))
+            conn.execute("UPDATE configs SET json=? WHERE id='structure'", (json.dumps(structure_data),))
 
     def rm_doctype_3_1(conn):
-        conn.execute("ALTER TABLE entries DROP COLUMN doctype")
+        try:
+            conn.execute("SELECT * FROM entries LIMIT 1").fetchone()['doctype']
+            conn.execute("ALTER TABLE entries DROP COLUMN doctype")
+        except IndexError:
+            pass
 
     print("Updating dicts ...")
     for file in os.listdir(dicts_path):
