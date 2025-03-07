@@ -244,7 +244,14 @@
         return false;
       },
       createSchemaURL() {
-        let blobContent = [JSON.stringify(window.nvhFormattingEditor.schema)];
+        /*
+        I do not export first "entry" placeholder, because it is default.
+        I export only "orientation" and "fullName" of each placeholder because I can derive
+        all the attributes from them.
+        */
+        let exportSchema = {children: []};
+        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.schema.children[0]);
+        let blobContent = [JSON.stringify(exportSchema)];
         let blob = new Blob(blobContent, { type: "application/json" });
         let schemaURL = URL.createObjectURL(blob);
         return schemaURL;
@@ -254,10 +261,106 @@
         file && this.state.fileReader.readAsText(file, 'UTF-8');
       },
       setSchemaFromImportedFile(importedSchemaString) {
-        let importedSchemaObject = JSON.parse(importedSchemaString);
-        // TODO: Validate imported schema
-        window.nvhFormattingEditor.schema = importedSchemaObject;
+        let importedSchema = JSON.parse(importedSchemaString);
+        if (!this.isImportedSchemaValid(importedSchema, "entry")) {
+          console.log("Imported schema is not valid");
+          return;
+        }
+        let defaultNewSchema = {
+          orientation: "column",
+          children: [
+            {
+              status: {
+                isActive: false,
+                isDragged: false,
+              },
+              orientation: "column",
+              type: "placeholder",
+              content: {
+                name: "entry",
+                fullName: "entry",
+                area: "entry",
+                areaFullName: "entry",
+                color: window.nvhStore.getElementColor("entry"),
+                canHaveChildren: true,
+              },
+              children: [],
+            }
+          ]
+        }
+        let newSchema = {children: []};
+        this.recreateImportedSchema(newSchema, importedSchema, "entry");
+        defaultNewSchema.children[0].children = newSchema.children;
+        window.nvhFormattingEditor.schema = defaultNewSchema;
         window.nvhFormattingEditor.formattingEditorComponent.update();
+      },
+      createExportedSchema(exportSchema, editingSchema) {
+        for (let child of editingSchema.children) {
+          exportSchema.children.push({
+            orientation: child.orientation,
+            fullName: child.content.fullName,
+            children: [],
+          });
+          this.createExportedSchema(exportSchema.children.at(exportSchema.children.length - 1), child);
+        }
+      },
+      recreateImportedSchema(newSchema, importedSchema, areaFullName) {
+        for (let child of importedSchema.children) {
+          let newAreaFullName = child.fullName === "" ? areaFullName : child.fullName;
+          newSchema.children.push({
+            status: {
+              isActive: false,
+              isHovered: false,
+              isDragged: false,
+            },
+            orientation: child.orientation,
+            type: "placeholder",
+            content: {
+              name: this.getNameFromFullName(child.fullName),
+              fullName: child.fullName,
+              area: this.getNameFromFullName(newAreaFullName),
+              areaFullName: newAreaFullName,
+              color: window.nvhStore.getElementColor(child.fullName),
+              canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
+            },
+            children: [],
+          });
+          this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);
+        }
+      },
+
+      getNameFromFullName(fullName) {
+        let nameParts = fullName.split(".");
+        return nameParts.at(nameParts.length - 1);
+      },
+      isImportedSchemaValid(importedSchema, areaFullName) {
+        for (let child of importedSchema.children) {
+          if (child.orientation !== "column" && child.orientation !== "row") {
+            // Invalid orientation
+            return false;
+          }
+          if (child.fullName !== "" && !window.nvhFormattingEditor.getChoiceElementsFullNamesList().includes(child.fullName)) {
+            // Invalid element
+            return false;
+          }
+          if (child.fullName !== "" && !child.fullName.includes(areaFullName)) {
+            // Invalid child
+            return false;
+          }
+          if (child.fullName === areaFullName && child.children.length !== 0) {
+            // Nested wrappers of same name
+            return false;
+          }
+          if (window.store.schema.getElementByPath(child.fullName).children.length === 0 && child.children.length !== 0) {
+            // Element has child but it should not have
+            return false;
+          }
+          let newAreaFullName = child.fullName === "" ? areaFullName : child.fullName;
+          if (!this.isImportedSchemaValid(child, newAreaFullName)) {
+            return false;
+          }
+        }
+        return true;
       }
     }
   </script>
