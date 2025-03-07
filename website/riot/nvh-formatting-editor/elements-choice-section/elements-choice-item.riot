@@ -11,9 +11,7 @@
   </div>
   <template each={child in props.state.data.children}>
     <elements-choice-item state={child}
-                          indentationLevel={props.indentationLevel + 15}
-                          parent={props.parent}
-                          global={props.global}/>
+                          indentationLevel={props.indentationLevel + 15}/>
   </template>
 
   <script>
@@ -23,7 +21,7 @@
         const data = JSON.stringify(this.props.state.data);
         event.dataTransfer.setData("text/plain", data);
 
-        this.props.global.draggedElementFullName = this.props.state.data.fullName;
+        window.nvhFormattingEditor.global.draggedElementFullName = this.props.state.data.fullName;
 
         let insideAdders = document.getElementsByClassName("inside-adder");
         for (let insideAdder of insideAdders) {
@@ -33,10 +31,10 @@
         for (let adder of adders) {
           adder.classList.add("adder-highligth-plus");
         }
-        this.props.parent.update();
+        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onDragEnd(event) {
-        this.props.global.draggedElementFullName = "";
+        window.nvhFormattingEditor.global.draggedElementFullName = "";
 
         let insideAdders = document.getElementsByClassName("inside-adder");
         for (let insideAdder of insideAdders) {
@@ -54,11 +52,11 @@
           adderIcon.classList.remove("adder-icon-wrapper-highligth-dragged");
         }
 
-        this.props.parent.update();
+        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
-        return this.props.state.data.fullName.includes(this.props.global.selectedPlaceholderAreaFullName)
-                && this.props.global.selectedPlaceholderAreaFullName !== "";
+        return this.props.state.data.fullName.includes(window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName)
+                && window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName !== "";
       }
     }
   </script>

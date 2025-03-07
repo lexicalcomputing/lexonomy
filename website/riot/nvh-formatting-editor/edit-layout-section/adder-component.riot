@@ -29,7 +29,7 @@
       onDrop(event) {
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
-        if (this.props.global.canBeDropped) {
+        if (window.nvhFormattingEditor.global.canBeDropped) {
           if (data.type === "choice-item") {
             let content = {
               name: data.name,
@@ -39,8 +39,8 @@
               color: data.color,
               children: data.children
             }
-            this.props.addElementWithChildren(this.props.index, this.props.global.parent, this.props.state, this.props.state, content);
-            this.props.global.canBeDropped = false;
+            window.nvhFormattingEditor.addElementWithChildren(this.props.index, window.nvhFormattingEditor.global.parent, this.props.state, this.props.state, content);
+            window.nvhFormattingEditor.global.canBeDropped = false;
           }
         }
       }

@@ -1,36 +1,19 @@
 <placeholder-component>
   <action-panel if={!props.isBaseLevel}
                 class="action-panel
-                      {props.status.isHovered ? "action-panel-hovered" : ""}"
-                global={props.global}
+                      {props.state.status.isHovered ? "action-panel-hovered" : ""}"
                 index={props.index}
                 parentState={props.parentState}
-                state={props.state}
-                delete-element={props.deleteElement}
-                close-action-panel={props.closeActionPanel}
-                element={this}
-                />
+                state={props.state}/>
   <elementholder-component if={props.state.content.name !== ""}
                           class="elementholder"
-                          name={props.state.content.name}
-                          fullName={props.state.content.fullName}
-                          color={props.state.content.color}
-                          isAreaHolder={props.state.children.length === 0}
                           state={props.state}
                           canHaveAdders={props.canHaveAdders}
-                          add-element={props.addElement}
-                          add-element-with-children={props.addElementWithChildren}
-                          is-child-of-parent={isChildOfParent}
-                          global={props.global}
                           isBaseLevel={props.isBaseLevel}/>
-  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}"
-      ondragover={() => {}/*onPlaceholderWrapperDragOver*/}
-      ondragenter={() => {}/*onPlaceholderWrapperDragEnter*/}
-      ondragleave={() => {}/*onPlaceholderWrapperDragLeave*/}
-      ondrop={() => {}/*onPlaceholderWrapperDrop*/}>
-    <adder-component if={props.editing.enabled && props.canHaveAdders && !props.state.status.isDragged
-                        && isChildOfParent(props.global.draggedElementFullName, this.props.state.content.areaFullName)}
-                    onclick={() => props.addElement(0, props.global.parent, props.state, "row", null)}
+  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}">
+    <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+                        && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
+                    onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
                     ondragover={onAdderDragOver}
                     ondragenter={onAdderDragEnter}
                     ondragleave={onAdderDragLeave}
@@ -39,42 +22,27 @@
                           {props.state.children.length === 0 ? "adder-alone" : ""}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}
                     index={0}
-                    global={props.global}
-                    state={props.state}
-                    add-element={props.addElement}
-                    add-element-with-children={props.addElementWithChildren}/>
+                    state={props.state}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => openActionPanel(child)}
+      <placeholder-component onclick={() => window.nvhFormattingEditor.openActionPanel(child)}
                             ondragover={onDragOver}
                             ondrop={(event) => onDrop(event, child)}
-                            ondragenter={() => {}/*onPlaceholderDragEnter*/}
-                            ondragleave={() => {}/*onPlaceholderDragLeave*/}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
                             onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
                             class="placeholder placeholder-{child.orientation}
-                                  {props.editing.enabled && props.editing.mode === "delete" ? "placeholder-deletable placeholder-deletable-" + child.orientation : ""}
                                   {child.status.isActive ? "placeholder-selected" : ""}
                                   {child.status.isHovered ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
                                   {child.children.length === 0 ? "placeholder-no-children" : ""}
                                   {child.status.isDragged ? "placeholder-dragged" : ""}"
-                            state={props.childWithInheritedArea(child, props.state)}
+                            state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
-                            editing={props.editing}
-                            isActive={child.isActive}
-                            status={child.status}
-                            global={props.global}
                             isBaseLevel={false}
                             index={index}
-                            canHaveAdders={canHaveAdders(props.state.content.areaFullName, child)}
-                            delete-element={props.deleteElement}
-                            add-element={props.addElement}
-                            add-element-with-children={props.addElementWithChildren}
-                            close-action-panel={props.closeActionPanel}
-                            child-with-inherited-area={props.childWithInheritedArea}/>
-      <adder-component if={props.editing.enabled && props.canHaveAdders && !props.state.status.isDragged
-                          && isChildOfParent(props.global.draggedElementFullName, this.props.state.content.areaFullName)}
-                      onclick={() => props.addElement(index + 1, props.global.parent, props.state, "row", null)}
+                            canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
+      <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+                          && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
+                      onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
                       ondragover={onAdderDragOver}
                       ondragenter={onAdderDragEnter}
                       ondragleave={onAdderDragLeave}
@@ -82,10 +50,7 @@
                       class="adder adder-{props.state.orientation}"
                       orientation={props.state.orientation}
                       index={index + 1}
-                      global={props.global}
-                      state={props.state}
-                      add-element={props.addElement}
-                      add-element-with-children={props.addElementWithChildren}/>
+                      state={props.state}/>
     </template>
   </div>
 
@@ -97,33 +62,33 @@
       onDrop(event, state) {
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
-        if (this.props.global.canBeDropped) {
+        if (window.nvhFormattingEditor.global.canBeDropped) {
           if (data.type === "choice-item") {
-            this.props.closeActionPanel();
-            this.props.global.selectedPlaceholderAreaFullName = "";
+            window.nvhFormattingEditor.closeActionPanel();
+            window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             if (state.children.length !== 0 && data.children.length === 0) {
               /*Can not drop label to be a wrapper, if it can not have children*/
-              this.props.global.canBeDropped = false;
+              window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
             if (this.props.state.content.areaFullName.includes(data.fullName) && state.children.length !== 0) {
               /*Can not drop label to area with same fullName because it is redundant*/
-              this.props.global.canBeDropped = false;
+              window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
             for (let child of state.children) {
               if (!this.isParentLabelOfDropObject(data.fullName, child)) {
                 /*Can not place label to placeholder, because not all children labels are valid*/
-                this.props.global.canBeDropped = false;
+                window.nvhFormattingEditor.global.canBeDropped = false;
                 return;
               }
             }
-            if (!this.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+            if (!window.nvhFormattingEditor.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
               /*
               Dragged element can not be dropped because,
               it is not a child element of the parent placeholder where I want to drop him.
               */
-              this.props.global.canBeDropped = false;
+              window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
 
@@ -135,112 +100,40 @@
             state.content.canHaveChildren = data.children.length !== 0;
           }
         }
-        event.target.classList.remove("placeholder-highligth");
-        event.target.classList.remove("placeholder-inside-wrapper-highligth");
-        event.target.classList.remove("placeholder-adder-highligth");
-        this.props.global.canBeDropped = false;
-      },
-      /*NOTE: OUT OF USE*/
-      onPlaceholderDragEnter(event) {
-        if (this.props.isBaseLevel) {
-          return;
-        }
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
-        if (data.type === "choice-item") {
-          const classList = Array.from(event.target.classList);
-          if (classList.includes("placeholder")) {
-            event.target.classList.add("placeholder-highligth");
-          }
-        }
-      },
-      /*NOTE: OUT OF USE*/
-      onPlaceholderDragLeave(event) {
-        const classList = Array.from(event.target.classList);
-        if (classList.includes("placeholder")) {
-          event.target.classList.remove("placeholder-highligth");
-        }
-      },
-      /*NOTE: OUT OF USE*/
-      onPlaceholderWrapperDragEnter(event) {
-        if (this.props.isBaseLevel) {
-          return;
-        }
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
-        if (data.type === "choice-item") {
-          const classList = Array.from(event.target.classList);
-          if (classList.includes("placeholder-inside-wrapper")) {
-            event.target.parentElement.classList.add("placeholder-inside-wrapper-highligth");
-          }
-        }
-      },
-      /*NOTE: OUT OF USE*/
-      onPlaceholderWrapperDragLeave(event) {
-        const classList = Array.from(event.target.classList);
-        if (classList.includes("placeholder-inside-wrapper")) {
-          event.target.parentElement.classList.remove("placeholder-inside-wrapper-highligth");
-        }
-      },
-      /*NOTE: OUT OF USE*/
-      onPlaceholderWrapperDragOver(event) {
-        event.preventDefault();
-      },
-      /*NOTE: OUT OF USE*/
-      onPlaceholderWrapperDrop(event) {
-        const classList = Array.from(event.target.classList);
-        if (classList.includes("placeholder-inside-wrapper")) {
-          event.target.parentElement.classList.remove("placeholder-highligth");
-          event.target.parentElement.classList.remove("placeholder-inside-wrapper-highligth");
-          event.target.parentElement.classList.remove("placeholder-adder-highligth");
-        }
+        window.nvhFormattingEditor.global.canBeDropped = false;
       },
       onAdderDragOver(event) {
         event.preventDefault();
       },
-      /*NOTE: DISABLE DRAG HIGHTLIGHT*/
       onAdderDragEnter(event) {
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
         if (data.type === "placeholder") {
           event.target.classList.add("adder-highligth-dragged");
-        } /*else if (data.type === "choice-item" && !this.props.isBaseLevel) {
-          const classList = Array.from(event.target.classList);
-          if (classList.includes("adder")) {
-            event.target.parentElement.parentElement.classList.add("placeholder-adder-highligth");
-          }
-        }*/
+        }
       },
-      /*NOTE: DISABLE DRAG HIGHTLIGHT*/
       onAdderDragLeave(event) {
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
         if (data.type === "placeholder") {
           event.target.classList.remove("adder-highligth-dragged");
-        } /*else if (data.type === "choice-item") {
-          event.target.parentElement.parentElement.classList.remove("placeholder-adder-highligth");
-        }*/ 
+        }
       },
-      /*NOTE: DISABLE DRAG HIGHTLIGHT*/
       onAdderDrop(event, state, index) {
         const rawData = event.dataTransfer.getData("text/plain");
         const data = JSON.parse(rawData);
-        if (this.props.global.canBeDropped) {
+        if (window.nvhFormattingEditor.global.canBeDropped) {
           if (data.type === "placeholder") {
-            this.props.closeActionPanel();
+            window.nvhFormattingEditor.closeActionPanel();
             state.children.splice(index, 0, data);
             state.children[index].status.isHovered = false;
             state.children[index].status.isActive = false;
-            this.props.global.dropInfo.wasSuccessful = true;
-            this.props.global.dropInfo.index = index;
-            this.props.global.selectedPlaceholderAreaFullName = "";
+            window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
+            window.nvhFormattingEditor.global.dropInfo.index = index;
+            window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             event.target.classList.remove("adder-highligth-dragged");
-            this.props.global.canBeDropped = false;
-          } /*else if (data.type === "choice-item") {
-            event.target.parentElement.parentElement.classList.remove("placeholder-highligth");
-            event.target.parentElement.parentElement.classList.remove("placeholder-inside-wrapper-highligth");
-            event.target.parentElement.parentElement.classList.remove("placeholder-adder-highligth");
-          }*/
+            window.nvhFormattingEditor.global.canBeDropped = false;
+          }
         }
       },
 
@@ -258,7 +151,7 @@
           event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
           parentState.status.isHovered = true;
         }
-        this.props.global.parent.update();
+        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseLeave(event, state, parentState) {
         event.target.classList.remove("placeholder-mouse-hover");
@@ -276,60 +169,9 @@
           parentState.status.isHovered = true;
         }
 
-        this.props.global.parent.update();
+        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
 
-      openActionPanel(child) {
-        if (this.props.global.canOpenActionPanel) {
-          let currentIsActive = child.status.isActive
-          this.props.closeActionPanel(); /*close actionPanel if any was opened*/
-          child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
-          if (child.status.isActive && child.content.name === "") { /*setting of valid choice elements (only empty placeholders)*/
-            this.props.global.selectedPlaceholderAreaFullName = child.content.areaFullName;            
-          } else {
-            this.props.global.selectedPlaceholderAreaFullName = "";
-          }
-        } else {
-          child.status.isActive = false;
-        }
-        this.props.global.canOpenActionPanel = false;
-      },
-
-      canHaveAdders(parentFullName, placeholder) {
-        if (parentFullName === placeholder.content.fullName) {
-          return false;
-        }
-        if (!placeholder.content.canHaveChildren) {
-          return false;
-        }
-        return true;
-      },
-      isChildOfParent(child, parent) {
-        if (this.props.global.draggedPlaceholder != null) {
-          return this.isChildObjectOfParent(this.props.global.draggedPlaceholder, parent);
-        }
-        let result = child.includes(parent);
-        let alternative = this.props.global.draggedElementFullName === "";
-        return result || alternative;
-      },
-      isChildObjectOfParent(childObject, parent) {
-        if (childObject.content.fullName === parent && childObject.children.length !== 0) {
-          /*This avoids placing a wrapper with label "parent" into another wrapper with label "parent"*/
-          return false;
-        }
-        let result = childObject.content.fullName.includes(parent);
-        let alternative = childObject.content.fullName === "";
-        if (!result && !alternative) {
-          return false;
-        }
-
-        for (let child of childObject.children) {
-          if (!this.isChildObjectOfParent(child, parent)) {
-            return false;
-          }
-        }
-        return true;
-      },
       isParentLabelOfDropObject(parentLabel, dropObject) {
         let result = dropObject.content.fullName.includes(parentLabel);
         let alternative = dropObject.content.fullName === "";
@@ -362,25 +204,6 @@
     .placeholder-inside-wrapper-row {
       flex-direction: row;
     }
-
-
-    .placeholder-deletable:hover {
-      background-color: rgb(241, 165, 159) !important;
-      cursor: pointer;
-    }
-    /*
-    "placeholder-deletable" is hovered and has no descendants that are hovered
-    */
-    .placeholder-deletable:hover:not(:has(.placeholder-deletable:hover)) * {
-      background-color: rgb(241, 165, 159) !important;
-    }
-    /*
-    "placeholder-deletable" has any hovered descendant
-    */
-    .placeholder-deletable:has(.placeholder-deletable:hover) {
-      background-color: white !important;
-    }
-
 
     .placeholder-wrapping-content {
       border: 4px dashed rgb(234, 231, 200);

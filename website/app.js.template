@@ -24,6 +24,7 @@ import './js/structure-editor-store.js'
 import './js/formatter.js'
 import './js/customstyles.js'
 import './js/browser-update.js'
+import './js/nvh-formatting-editor/nvh-formatting-editor.js'
 
 
 import './app.styles.scss'
