@@ -17,7 +17,7 @@
     <div class="action"
         id="action-delete"
         title="Delete"
-        onclick={() => props.deleteElement(props.index, props.parentState)}>
+        onclick={() => window.nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
       <i class="small material-icons">delete</i>
     </div>
     <div if={props.parentState.orientation === "column"} 
@@ -67,13 +67,13 @@
     },
   
     onDragStart(event, state) {
-      if (this.props.global.canBeDragged) {
+      if (window.nvhFormattingEditor.global.canBeDragged) {
         event.dataTransfer.clearData();
         const data = JSON.stringify(state);
         event.dataTransfer.setData("text/plain", data);
 
-        this.props.global.draggedElementFullName = state.content.fullName;
-        this.props.global.draggedPlaceholder = state;
+        window.nvhFormattingEditor.global.draggedElementFullName = state.content.fullName;
+        window.nvhFormattingEditor.global.draggedPlaceholder = state;
         state.status.isDragged = true;
 
         let adders = document.getElementsByClassName("adder");
@@ -81,7 +81,7 @@
           adder.classList.add("adder-highligth");
         }
       }
-      this.props.global.canBeDragged = false;
+      window.nvhFormattingEditor.global.canBeDragged = false;
     },
     onDragEnd(indexToDelete, parentState, state) {
       /*
@@ -90,13 +90,13 @@
       the desired element.
       */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
-                                && this.props.global.dropInfo.index < indexToDelete;
+                                && window.nvhFormattingEditor.global.dropInfo.index < indexToDelete;
       
-      this.props.global.draggedElementFullName = "";
-      this.props.global.draggedPlaceholder = null;
+      window.nvhFormattingEditor.global.draggedElementFullName = "";
+      window.nvhFormattingEditor.global.draggedPlaceholder = null;
       state.status.isDragged = false;
 
-      if (this.props.global.dropInfo.wasSuccessful) {
+      if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
         if (wasIndexDecreased) {
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
         } else {
@@ -109,7 +109,7 @@
         adder.classList.remove("adder-highligth");
       }
 
-      this.props.global.parent.update();
+      window.nvhFormattingEditor.formattingEditorComponent.update();
     },
 
     duplicateElement() {
@@ -117,7 +117,7 @@
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
       this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
       copiedElement.status.isHovered = false;
-      this.props.global.parent.update();
+      window.nvhFormattingEditor.formattingEditorComponent.update();
     },
     decreaseElementIndex() {
       if (this.props.index === 0) {

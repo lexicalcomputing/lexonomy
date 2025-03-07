@@ -1,149 +1,25 @@
 <edit-layout>
   <div class="edit-layout-container">
     <div class="scrollable-div">
-      <template each={(child, index) in props.schema.children}>
-        <placeholder-component onclick={openActionPanel}
+      <template each={(child, index) in window.nvhFormattingEditor.schema.children}>
+        <placeholder-component onclick={onPlaceholderClick}
                               class="placeholder placeholder-{child.orientation} placeholder-first
                                     {child.status.isActive ? "placeholder-selected" : ""}
                                     {child.children.length === 0 ? "placeholder-no-children" : ""}"
-                              state={childWithInheritedArea(child, null)}
-                              parentState={props.schema}
-                              editing={props.editing}
-                              status={child.status}
-                              global={props.global}
+                              state={window.nvhFormattingEditor.childWithInheritedArea(child, null)}
+                              parentState={window.nvhFormattingEditor.schema}
                               isBaseLevel={true}
                               index={index}
-                              canHaveAdders={true}
-                              delete-element={deleteElement}
-                              add-element={addElement}
-                              add-element-with-children={addElementWithChildren}
-                              close-action-panel={props.closeActionPanel}
-                              child-with-inherited-area={childWithInheritedArea}/>
+                              canHaveAdders={true}/>
       </template>
     </div>
   </div>
 
   <script>
     export default {
-      onBeforeMount(props) {
-        props.global.parent = props.parent
-      },
-      onBeforeUpdate(props) {
-        props.global.parent = props.parent
-      },
-
-      /*TODO: it seems like label is here always null, figure out why*/
-      addElement(index, component, state, editingMode, label) {
-        let newElement = {
-          status: {
-            isActive: true,
-            isHovered: true,
-            isDragged: false,
-          },
-          orientation: editingMode,
-          type: "placeholder",
-          content: {
-            name: label == null ? "" : label.name,
-            fullName: label == null ? "" : label.fullName,
-            area: label == null ? "" : label.area,
-            areaFullName: label == null ? "" : label.areaFullName,
-            color: label == null ? "": label.color,
-            canHaveChildren: true, /*NOTE: really true ?*/
-          },
-          children: []
-        };
-        this.props.closeActionPanel();
-        this.props.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
-        state.children.splice(index, 0, newElement);
-        component.update();
-        this.props.global.canOpenActionPanel = false;
-      },
-      /*TODO: probably remove element attribute*/
-      addElementWithChildren(index, component, state, element, label) {
-        /*label can not be null or undefined*/
-        if (label == null || label == undefined) {
-          return;
-        }
-        let newElement = {
-          status: {
-            isActive: false,
-            isHovered: false,
-            isDragged: false,
-          },
-          orientation: "column",
-          type: "placeholder",
-          content: {
-            name: label.name,
-            fullName: label.fullName,
-            area: label.name,
-            areaFullName: label.fullName,
-            color: label.color,
-            canHaveChildren: label.canHaveChildren !== undefined ? label.canHaveChildren : label.children.length !== 0,
-          },
-          children: []
-        };
-
-        if (state != null) {
-          state.children.splice(index, 0, newElement);
-        }
-        if (label.children !== undefined && label.children !== null && element.content.areaFullName != label.areaFullName) {
-          /*
-          Children are present.
-          When I drop to an plus icon e.g. pronunciation and the parent
-          is also of type pronunciation, so that it will not render all the children.
-          */
-          /*
-          If element has children, append also this element,
-          so that it is displayed together with its children.
-          */
-          if (label.children.length !== 0) {
-            let selfDisplayElement = {
-              status: {
-                isActive: false,
-                isHovered: false,
-                isDragged: false,
-              },
-              orientation: "column",
-              type: "placeholder",
-              content: {
-                name: label.name,
-                fullName: label.fullName,
-                area: label.name,
-                areaFullName: label.fullName,
-                color: label.color,
-                canHaveChildren: false,
-              },
-              children: []
-            };
-            newElement.children.push(selfDisplayElement);
-          }
-          for(let child of label.children) {
-            let childElement = this.addElementWithChildren(null, null, null, newElement, child.data);
-            newElement.children.push(childElement);
-          }
-        }
-        if (component != null) {
-          component.update();
-        }
-        return newElement;
-      },
-      deleteElement(indexToDelete, parentState) {
-        parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
-        this.props.global.canOpenActionPanel = false;
-        this.props.global.draggedElementFullName = "";
-        this.update();
-      },
-      childWithInheritedArea(child, state) {
-        if (state === null) {
-          return child;
-        }
-        child.content.area = child.content.name === "" ? state.content.area : child.content.name;
-        child.content.areaFullName = child.content.name === "" ? state.content.areaFullName : child.content.fullName;
-        return child;
-      },
-      openActionPanel() {
-        this.props.global.parent.update();
-      },
+      onPlaceholderClick() {
+        window.nvhFormattingEditor.formattingEditorComponent.update();
+      }
     }
   </script>
 
@@ -266,37 +142,6 @@
     }
     .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper:hover {
       color: black;
-    }
-
-
-    .placeholder-highligth {
-      background-color: var(--color-is-dragged-over-light) !important;
-    }
-    .placeholder-inside-wrapper-highligth {
-      background-color: var(--color-is-dragged-over-light) !important;
-    }
-    .placeholder-adder-highligth {
-      background-color: var(--color-is-dragged-over-light) !important;
-    }
-    .placeholder-highligth .placeholder {
-      background-color: white;
-    }
-    .placeholder-inside-wrapper-highligth .placeholder {
-      background-color: white;
-    }
-    .placeholder-adder-highligth .placeholder {
-      background-color: white;
-    }
-
-
-    .placeholder-highligth > .placeholder-inside-wrapper {
-      background-color: var(--color-is-dragged-over-light) !important;
-    }
-    .placeholder-inside-wrapper-highligth > .placeholder-inside-wrapper {
-      background-color: var(--color-is-dragged-over-light) !important;
-    }
-    .placeholder-adder-highligth > .placeholder-inside-wrapper {
-      background-color: var(--color-is-dragged-over-light) !important;
     }
   </style>
 </edit-layout>

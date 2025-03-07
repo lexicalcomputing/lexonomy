@@ -1,12 +1,12 @@
 <elementholder-component>
   <div class="content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
-      style="border: 1px solid {props.color};
-            color: {props.isAreaHolder ? "white" : props.color};
-            background-color: {props.isAreaHolder ? props.color : "white"}"
+      style="border: 1px solid {props.state.content.color};
+            color: {props.state.children.length === 0 ? "white" : props.state.content.color};
+            background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}"
       draggable={!props.isBaseLevel ? "true" : "false"}
       ondragstart={onDragStart}
       ondragend={onDragEnd}>
-    <div if={props.isAreaHolder && props.canHaveAdders
+    <div if={props.state.children.length === 0 && props.canHaveAdders
             && isDraggedElementOk()} 
         class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnterHorizontal}
@@ -15,7 +15,7 @@
         ondrop={(event) => onDrop(event, 1)}>
     </div>
     <div class="content-box-wrapper-2">
-      <div if={props.isAreaHolder && props.canHaveAdders
+      <div if={props.state.children.length === 0 && props.canHaveAdders
               && isDraggedElementOk()}
           class="inside-adder inside-adder-vertical"
           ondragenter={onDragEnterVertical}
@@ -23,10 +23,10 @@
           ondragover={onDragOver}
           ondrop={(event) => onDrop(event, 2)}>
       </div>
-      <div class="placeholder-content-box {props.isAreaHolder ? "" : "placeholder-content-box-left"}">
-        {props.isAreaHolder ? props.name : props.name + " (wrapper)"}
+      <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-left"}">
+        {props.state.children.length === 0 ? props.state.content.name : props.state.content.name + " (wrapper)"}
       </div>
-      <div if={props.isAreaHolder && props.canHaveAdders
+      <div if={props.state.children.length === 0 && props.canHaveAdders
               && isDraggedElementOk()}
           class="inside-adder inside-adder-vertical"
           ondragenter={onDragEnterVertical}
@@ -35,7 +35,7 @@
           ondrop={(event) => onDrop(event, 3)}>
       </div>
     </div>
-    <div if={props.isAreaHolder && props.canHaveAdders
+    <div if={props.state.children.length === 0 && props.canHaveAdders
             && isDraggedElementOk()}
         class="inside-adder inside-adder-horizontal"
         ondragenter={onDragEnterHorizontal}
@@ -58,10 +58,10 @@
       let trash = document.getElementById("trash-icon");
       trash.classList.add("trash-enabled");
       trash.classList.remove("trash-disabled");
-      this.props.global.dropInfo.wasSuccessful = false;
+      window.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
     },
     onDragEnd(event) {
-      if (this.props.global.dropInfo.wasSuccessful) {
+      if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
         this.props.state.content.name = "";
         this.props.state.content.fullName = "";
         this.props.state.content.area = "";
@@ -72,7 +72,7 @@
       let trash = document.getElementById("trash-icon");
       trash.classList.add("trash-disabled");
       trash.classList.remove("trash-enabled");
-      this.props.global.parent.update();
+      window.nvhFormattingEditor.formattingEditorComponent.update();
     },
     onDragEnterHorizontal(event) {
       const rawData = event.dataTransfer.getData("text/plain");
@@ -130,24 +130,24 @@
       }
       event.target.classList.remove("inside-adder-horizontal-highligth-dragged");
       event.target.classList.remove("inside-adder-vertical-highligth-dragged");
-      this.props.global.canBeDropped = false;
+      window.nvhFormattingEditor.global.canBeDropped = false;
     },
 
     addElementInside(undesiredOrientation, firstLabel, secondLabel) {
       if (this.props.state.orientation === undesiredOrientation) {
         let desiredOrientation = undesiredOrientation == "column" ? "row" : "column";
-        this.props.addElement(0, this.props.global.parent, this.props.state, desiredOrientation, null);
+        window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, this.props.state, desiredOrientation, null);
         let newWrapperPlaceholder = this.props.state.children[0];
-        this.props.addElementWithChildren(0, this.props.global.parent, newWrapperPlaceholder, newWrapperPlaceholder, firstLabel);
-        this.props.addElementWithChildren(1, this.props.global.parent, newWrapperPlaceholder, newWrapperPlaceholder, secondLabel);
+        window.nvhFormattingEditor.addElementWithChildren(0, window.nvhFormattingEditor.formattingEditorComponent, newWrapperPlaceholder, newWrapperPlaceholder, firstLabel);
+        window.nvhFormattingEditor.addElementWithChildren(1, window.nvhFormattingEditor.formattingEditorComponent, newWrapperPlaceholder, newWrapperPlaceholder, secondLabel);
       } else {
-        this.props.addElementWithChildren(0, this.props.global.parent, this.props.state, this.props.state, firstLabel);
-        this.props.addElementWithChildren(1, this.props.global.parent, this.props.state, this.props.state, secondLabel);
+        window.nvhFormattingEditor.addElementWithChildren(0, window.nvhFormattingEditor.formattingEditorComponent, this.props.state, this.props.state, firstLabel);
+        window.nvhFormattingEditor.addElementWithChildren(1, window.nvhFormattingEditor.formattingEditorComponent, this.props.state, this.props.state, secondLabel);
       }
     },
     isDraggedElementOk() {
-      return this.props.isChildOfParent(this.props.global.draggedElementFullName, this.props.fullName)
-              && this.props.global.draggedElementFullName !== this.props.fullName;
+      return window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.fullName)
+              && window.nvhFormattingEditor.global.draggedElementFullName !== this.props.state.content.fullName;
     }
   }
 </script>
