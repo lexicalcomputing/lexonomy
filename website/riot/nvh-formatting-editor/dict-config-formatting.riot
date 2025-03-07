@@ -63,7 +63,23 @@
                 onclick={window.nvhFormattingEditor.redoSchema}>
               REDO
             </div>
-            <div class="horizontal-filler"></div>
+            <div id="import-json-wrapper"
+                title="Import schema from JSON">
+              <input id="import-json-input"
+                  type="file"
+                  accept=".json"
+                  onchange={importSchema}/>
+              <label id="import-json-label" for="import-json-input">
+                <i class="material-icons">file_download</i>
+              </label>
+            </div>
+            <a href={createSchemaURL()} download="schema.json" id="export-link">
+              <div id="export-json-wrapper"
+                  title="Export schema to JSON">
+                <i class="material-icons">file_upload</i>
+              </div>
+            </a>
+            <div style="width: 250px;"></div>
             <div id="reset-icon-wrapper"
                 onclick={window.nvhFormattingEditor.resetSchema}>
               RESET
@@ -95,6 +111,7 @@
         showStyle: false,
         showEditing: true,
         showExample: true,
+        fileReader: null,
       },
       schema: {
         orientation: "column", /*orientation of scrollable-div is always "column"*/
@@ -120,6 +137,10 @@
       },
 
       onBeforeMount() {
+        this.state.fileReader = new FileReader();
+        this.state.fileReader.onload = function(e) {
+          this.setSchemaFromImportedFile(this.state.fileReader.result);
+        }.bind(this),
         window.nvhFormattingEditor.formattingEditorComponent = this;
         window.nvhFormattingEditor.global = {
           canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
@@ -222,6 +243,22 @@
 
         return false;
       },
+      createSchemaURL() {
+        let blobContent = [JSON.stringify(window.nvhFormattingEditor.schema)];
+        let blob = new Blob(blobContent, { type: "application/json" });
+        let schemaURL = URL.createObjectURL(blob);
+        return schemaURL;
+      },
+      importSchema(event) {
+        let file = event.target.files[0];
+        file && this.state.fileReader.readAsText(file, 'UTF-8');
+      },
+      setSchemaFromImportedFile(importedSchemaString) {
+        let importedSchemaObject = JSON.parse(importedSchemaString);
+        // TODO: Validate imported schema
+        window.nvhFormattingEditor.schema = importedSchemaObject;
+        window.nvhFormattingEditor.formattingEditorComponent.update();
+      }
     }
   </script>
 
@@ -334,8 +371,38 @@
       transform: scale(1.1);
     }
 
-    .horizontal-filler {
-      width: 300px;
+    #export-link {
+      text-decoration: none;
+    }
+    #export-link:hover {
+      color: black;
+    }
+
+    #import-json-input {
+      display: none;
+    }
+    #import-json-label {
+      color: black;
+      cursor: pointer;
+      height: 24px;
+    }
+
+    #export-json-wrapper, #import-json-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid black;
+      padding: 2px 4px;
+      background-color: rgb(188, 223, 219);
+    }
+
+    #export-json-wrapper:hover, #import-json-wrapper:hover {
+      transform: scale(1.05);
+      background-color: rgb(174, 203, 199);
+      cursor: pointer;
+    }
+    #export-json-wrapper:active, #import-json-wrapper:active {
+      transform: scale(1.1);
     }
 
 
