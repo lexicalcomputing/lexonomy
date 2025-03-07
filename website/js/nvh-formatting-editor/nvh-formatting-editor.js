@@ -282,6 +282,10 @@ class NVHFormattingEditorClass {
     }
     return true;
   }
+
+  getChoiceElementsFullNamesList() {
+    return window.store.schema.getElementList().map(e => e.path);
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();
