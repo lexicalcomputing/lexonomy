@@ -97,6 +97,11 @@
       <div class="header-box">
         <i class="small material-icons">view_compact</i>
         <h2>Example</h2>
+        <div id="export-pdf"
+            title="Export all entries of dictionary to PDF"
+            onclick={onExportPDF}>
+          Export to PDF
+        </div>
       </div>
       <div class="example-section-wrapper">
         <example-section class="example-section"/>
@@ -361,6 +366,9 @@
           }
         }
         return true;
+      },
+      onExportPDF() {
+        // TODO: Not implemented yet
       }
     }
   </script>
@@ -490,7 +498,11 @@
       height: 24px;
     }
 
-    #export-json-wrapper, #import-json-wrapper {
+    #export-pdf {
+      margin-left: 10px;
+    }
+
+    #export-json-wrapper, #import-json-wrapper, #export-pdf {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -499,12 +511,12 @@
       background-color: rgb(188, 223, 219);
     }
 
-    #export-json-wrapper:hover, #import-json-wrapper:hover {
+    #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover {
       transform: scale(1.05);
       background-color: rgb(174, 203, 199);
       cursor: pointer;
     }
-    #export-json-wrapper:active, #import-json-wrapper:active {
+    #export-json-wrapper:active, #import-json-wrapper:active, #export-pdf:active {
       transform: scale(1.1);
     }
 
