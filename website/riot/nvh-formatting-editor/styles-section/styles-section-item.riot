@@ -4,18 +4,128 @@
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "colour", "")}>
+          <i class="material-icons tiny">block</i>
       </div>
-      <div class="value-item value-item-red"
+      <div class="value-item value-item-colour-red"
           onclick={onChangeStyle.bind(this, "colour", "red")}>
       </div>
-      <div class="value-item value-item-green"
+      <div class="value-item value-item-colour-green"
           onclick={onChangeStyle.bind(this, "colour", "green")}>
       </div>
-      <div class="value-item value-item-blue"
+      <div class="value-item value-item-colour-blue"
           onclick={onChangeStyle.bind(this, "colour", "blue")}>
       </div>
-      <div class="value-item value-item-grey"
+      <div class="value-item value-item-colour-grey"
           onclick={onChangeStyle.bind(this, "colour", "grey")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text size:</div>
+    <div class="value-wrapper">
+      <div class="value-item value-item-textsize-1"
+          onclick={onChangeStyle.bind(this, "textsize", "1")}>
+          1
+      </div>
+      <div class="value-item value-item-textsize-2"
+          onclick={onChangeStyle.bind(this, "textsize", "2")}>
+          2
+      </div>
+      <div class="value-item value-item-textsize-3"
+          onclick={onChangeStyle.bind(this, "textsize", "3")}>
+          3
+      </div>
+      <div class="value-item value-item-textsize-4"
+          onclick={onChangeStyle.bind(this, "textsize", "4")}>
+          4
+      </div>
+      <div class="value-item value-item-textsize-5"
+          onclick={onChangeStyle.bind(this, "textsize", "5")}>
+          5
+      </div>
+      <div class="value-item value-item-textsize-6"
+          onclick={onChangeStyle.bind(this, "textsize", "6")}>
+          6
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text weight:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "weight", "")}>
+          a
+      </div>
+      <div class="value-item value-item-weight-bold"
+          onclick={onChangeStyle.bind(this, "weight", "bold")}>
+          a
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text slant:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "slant", "")}>
+          a
+      </div>
+      <div class="value-item value-item-slant-italic"
+          onclick={onChangeStyle.bind(this, "slant", "italic")}>
+          a
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Border:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "border", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-border-solid"
+          onclick={onChangeStyle.bind(this, "border", "solid")}>
+      </div>
+      <div class="value-item value-item-border-thick"
+          onclick={onChangeStyle.bind(this, "border", "thick")}>
+      </div>
+      <div class="value-item value-item-border-dotted"
+          onclick={onChangeStyle.bind(this, "border", "dotted")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Border radius:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "borderRadius", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-borderRadius-small"
+          onclick={onChangeStyle.bind(this, "borderRadius", "small")}>
+      </div>
+      <div class="value-item value-item-borderRadius-medium"
+          onclick={onChangeStyle.bind(this, "borderRadius", "medium")}>
+      </div>
+      <div class="value-item value-item-borderRadius-large"
+          onclick={onChangeStyle.bind(this, "borderRadius", "large")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Background:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "background", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-background-yellow"
+          onclick={onChangeStyle.bind(this, "background", "yellow")}>
+      </div>
+      <div class="value-item value-item-background-blue"
+          onclick={onChangeStyle.bind(this, "background", "blue")}>
+      </div>
+      <div class="value-item value-item-background-grey"
+          onclick={onChangeStyle.bind(this, "background", "grey")}>
       </div>
     </div>
   </div>
@@ -61,9 +171,12 @@
     }
 
     .value-item {
-      height: 20px;
-      width: 20px;
+      height: 25px;
+      width: 25px;
       border: 1px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center
     }
 
     .value-item:hover {
@@ -71,17 +184,61 @@
       transform: scale(1.05);
     }
 
-    .value-item-red {
+    .value-item-colour-red {
       background-color: red;
     }
-    .value-item-green {
+    .value-item-colour-green {
       background-color: green;
     }
-    .value-item-blue {
+    .value-item-colour-blue {
       background-color: blue;
     }
-    .value-item-grey {
+    .value-item-colour-grey {
       background-color: grey;
     }
+
+    .value-item-weight-bold {
+      font-weight: bold;
+    }
+
+    .value-item-slant-italic {
+      font-style: italic;
+    }
+
+    .value-item-border-solid {
+      border: 1px solid black;
+    }
+    .value-item-border-thick {
+      border: 2px solid black;
+    }
+    .value-item-border-dotted {
+      border: 1px dotted black;
+    }
+
+    /*
+    These border radiuses are actually different from the displayed ones,
+    it is because of pallette UX
+    */
+    .value-item-borderRadius-small {
+      border-radius: 5px;
+    }
+    .value-item-borderRadius-medium {
+      border-radius: 8px;
+    }
+    .value-item-borderRadius-large {
+      border-radius: 12px;
+    }
+
+    .value-item-background-yellow {
+      background-color: yellow;
+    }
+    .value-item-background-blue {
+      background-color: blue;
+    }
+    .value-item-background-grey {
+      background-color: grey;
+    }
+
+
   </style>
 </styles-section-item>
