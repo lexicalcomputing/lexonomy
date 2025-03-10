@@ -1,0 +1,399 @@
+<styles-section-item>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text color:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "colour", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-colour-red"
+          onclick={onChangeStyle.bind(this, "colour", "red")}>
+      </div>
+      <div class="value-item value-item-colour-green"
+          onclick={onChangeStyle.bind(this, "colour", "green")}>
+      </div>
+      <div class="value-item value-item-colour-blue"
+          onclick={onChangeStyle.bind(this, "colour", "blue")}>
+      </div>
+      <div class="value-item value-item-colour-grey"
+          onclick={onChangeStyle.bind(this, "colour", "grey")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text size:</div>
+    <div class="value-wrapper">
+      <div class="value-item value-item-textsize-1"
+          onclick={onChangeStyle.bind(this, "textsize", "1")}>
+          1
+      </div>
+      <div class="value-item value-item-textsize-2"
+          onclick={onChangeStyle.bind(this, "textsize", "2")}>
+          2
+      </div>
+      <div class="value-item value-item-textsize-3"
+          onclick={onChangeStyle.bind(this, "textsize", "3")}>
+          3
+      </div>
+      <div class="value-item value-item-textsize-4"
+          onclick={onChangeStyle.bind(this, "textsize", "4")}>
+          4
+      </div>
+      <div class="value-item value-item-textsize-5"
+          onclick={onChangeStyle.bind(this, "textsize", "5")}>
+          5
+      </div>
+      <div class="value-item value-item-textsize-6"
+          onclick={onChangeStyle.bind(this, "textsize", "6")}>
+          6
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text weight:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "weight", "")}>
+          a
+      </div>
+      <div class="value-item value-item-weight-bold"
+          onclick={onChangeStyle.bind(this, "weight", "bold")}>
+          a
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text slant:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "slant", "")}>
+          a
+      </div>
+      <div class="value-item value-item-slant-italic"
+          onclick={onChangeStyle.bind(this, "slant", "italic")}>
+          a
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Border:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "border", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-border-solid"
+          onclick={onChangeStyle.bind(this, "border", "solid")}>
+      </div>
+      <div class="value-item value-item-border-thick"
+          onclick={onChangeStyle.bind(this, "border", "thick")}>
+      </div>
+      <div class="value-item value-item-border-dotted"
+          onclick={onChangeStyle.bind(this, "border", "dotted")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Border radius:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "borderRadius", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-borderRadius-small"
+          onclick={onChangeStyle.bind(this, "borderRadius", "small")}>
+      </div>
+      <div class="value-item value-item-borderRadius-medium"
+          onclick={onChangeStyle.bind(this, "borderRadius", "medium")}>
+      </div>
+      <div class="value-item value-item-borderRadius-large"
+          onclick={onChangeStyle.bind(this, "borderRadius", "large")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Background:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "background", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-background-yellow"
+          onclick={onChangeStyle.bind(this, "background", "yellow")}>
+      </div>
+      <div class="value-item value-item-background-blue"
+          onclick={onChangeStyle.bind(this, "background", "blue")}>
+      </div>
+      <div class="value-item value-item-background-grey"
+          onclick={onChangeStyle.bind(this, "background", "grey")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Inner punctuation:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "roundBrackets")}>
+          &lpar;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "squareBrackets")}>
+          &lsqb;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "curlyBrackets")}>
+          &lcub;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "colon")}>
+          &colon;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "comma")}>
+          &comma;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "dot")}>
+          &period;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "innerPunc", "semicolon")}>
+          &semi;
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Outer punctuation:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "roundBrackets")}>
+          &lpar;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "squareBrackets")}>
+          &lsqb;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "curlyBrackets")}>
+          &lcub;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "colon")}>
+          &colon;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "comma")}>
+          &comma;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "dot")}>
+          &period;
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outerPunc", "semicolon")}>
+          &semi;
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Indentation and bulleting:</div>
+    <div>
+      <div id="select-indentation-bulleting">
+        <div onclick={onSelectOpen} class="select-dropdown">
+          <div>{state.selectedOption}</div>
+          <i class="material-icons tiny">arrow_drop_down</i>
+        </div>
+        <div if={state.indentationBulletingOpened} class="select-dropdown-options">
+          <template each={key in Object.keys(state.options)}>
+            <div onclick={onSelectChange.bind(this, state.options[key])}
+                class="select-dropdown-option">
+              {state.options[key]}
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    export default {
+      state: {
+        indentationBulletingOpened: false,
+        /*Inspiration from element-style-options.riot*/
+        options: {
+          "": "None",
+          "disk": "Round bullet",
+          "square": "Square bullet",
+          "diamond": "Diamond bullet",
+          "arrow": "Arrow bullet",
+          "indent": "Indent",
+          "hanging": "Hanging indent",
+          "sensenum1": "Sense number 1, 2, 3...",
+          "sensenum2": "Sense number a, b, c...",
+          "sensenum3": "Sense number i, ii, iii...",
+          "sensenum0": "Sense number I, II, III...",
+        },
+        selectedOption: "None",
+      },
+
+      onBeforeMount() {
+        if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
+          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
+        }
+      },
+      onBeforeUpdate() {
+        if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
+          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
+        }
+        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+          this.state.indentationBulletingOpened = "";
+          this.state.selectedOption = "None";
+        }
+      },
+
+      onChangeStyle(option, value, event) {
+        this.onChangeStyle2(option, value);
+      },
+      onChangeStyle2(option, value) {
+        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+          return;
+        }
+        window.nvhStore.changeElementStyleOption(window.nvhFormattingEditor.global.selectedPlaceholderFullName, option, value);
+        window.nvhStore.saveStyle();
+        window.nvhFormattingEditor.formattingEditorComponent.update();
+      },
+      onSelectChange(value) {
+        this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
+        this.state.selectedOption = value;
+        // TODO: Store to nvh store
+        this.update();
+      },
+      onSelectOpen() {
+        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+          return;
+        }
+        this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
+        this.update();
+      },
+    }
+  </script>
+
+  <style>
+    .styles-section-item-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .value-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+    }
+
+    .value-item {
+      height: 25px;
+      width: 25px;
+      border: 1px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+    .value-item:hover {
+      cursor: pointer;
+      transform: scale(1.05);
+    }
+
+    #select-indentation-bulleting {
+      display: block;
+      width: 180px;
+      height: 25px;
+      font-weight: bold;
+      border: 1px solid black;
+    }
+    #select-indentation-bulleting:hover {
+      cursor: pointer;
+    }
+    .select-dropdown {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5px;
+    }
+    .select-dropdown-options {
+      height: 120px;
+      padding: 5px;
+      overflow-y: scroll;
+      border: 1px solid black;
+    }
+    .select-dropdown-option:hover {
+      background-color: #d7e4f7;
+    }
+
+    .value-item-colour-red {
+      background-color: red;
+    }
+    .value-item-colour-green {
+      background-color: green;
+    }
+    .value-item-colour-blue {
+      background-color: blue;
+    }
+    .value-item-colour-grey {
+      background-color: grey;
+    }
+
+    .value-item-weight-bold {
+      font-weight: bold;
+    }
+
+    .value-item-slant-italic {
+      font-style: italic;
+    }
+
+    .value-item-border-solid {
+      border: 1px solid black;
+    }
+    .value-item-border-thick {
+      border: 2px solid black;
+    }
+    .value-item-border-dotted {
+      border: 1px dotted black;
+    }
+
+    /*
+    These border radiuses are actually different from the displayed ones,
+    it is because of pallette UX
+    */
+    .value-item-borderRadius-small {
+      border-radius: 5px;
+    }
+    .value-item-borderRadius-medium {
+      border-radius: 8px;
+    }
+    .value-item-borderRadius-large {
+      border-radius: 12px;
+    }
+
+    .value-item-background-yellow {
+      background-color: yellow;
+    }
+    .value-item-background-blue {
+      background-color: blue;
+    }
+    .value-item-background-grey {
+      background-color: grey;
+    }
+
+
+  </style>
+</styles-section-item>

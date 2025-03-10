@@ -45,7 +45,9 @@
         <i class="small material-icons">format_paint</i>
         <h2>Style</h2>
       </div>
-      <div>TBD</div>
+      <div class="style-section-wrapper">
+        <styles-section />
+      </div>
     </div>
     <div if={state.showEditing}
         id="editing-container"
@@ -159,6 +161,7 @@
           },
           canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
           selectedPlaceholderAreaFullName: "",
+          selectedPlaceholderFullName: "",
           parent: null,
         };
         this.schema.children[0].content = {
@@ -186,6 +189,7 @@
           },
           canOpenActionPanel: true,
           selectedPlaceholderAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName,
+          selectedPlaceholderFullName: window.nvhFormattingEditor.global.selectedPlaceholderFullName,
           parent: null,
         };
         /*
@@ -217,6 +221,7 @@
         window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
         window.nvhFormattingEditor.closeActionPanel();
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+        window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
         let trashIcon = document.getElementById("trash-icon");
         trashIcon.classList.remove("trash-dragged-over");
       },
@@ -592,7 +597,7 @@
       padding-left: 1.5em;
       padding-right: 1.5em;
       flex: 1 6 auto;
-      min-width: 150px;
+      min-width: 400px;
     }
     #editing-container {
       border-right: 1px solid #dcdee3;
