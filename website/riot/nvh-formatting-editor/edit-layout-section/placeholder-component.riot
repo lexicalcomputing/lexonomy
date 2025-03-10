@@ -66,6 +66,7 @@
           if (data.type === "choice-item") {
             window.nvhFormattingEditor.closeActionPanel();
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+            window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
             if (state.children.length !== 0 && data.children.length === 0) {
               /*Can not drop label to be a wrapper, if it can not have children*/
               window.nvhFormattingEditor.global.canBeDropped = false;
@@ -131,6 +132,7 @@
             window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
             window.nvhFormattingEditor.global.dropInfo.index = index;
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+            window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
             event.target.classList.remove("adder-highligth-dragged");
             window.nvhFormattingEditor.global.canBeDropped = false;
           }

@@ -1,0 +1,87 @@
+<styles-section-item>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text color:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "colour", "")}>
+      </div>
+      <div class="value-item value-item-red"
+          onclick={onChangeStyle.bind(this, "colour", "red")}>
+      </div>
+      <div class="value-item value-item-green"
+          onclick={onChangeStyle.bind(this, "colour", "green")}>
+      </div>
+      <div class="value-item value-item-blue"
+          onclick={onChangeStyle.bind(this, "colour", "blue")}>
+      </div>
+      <div class="value-item value-item-grey"
+          onclick={onChangeStyle.bind(this, "colour", "grey")}>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    export default {
+      onBeforeMount() {
+        if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
+          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
+        }
+      },
+      onBeforeUpdate() {
+        if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
+          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
+        }
+      },
+      onChangeStyle(option, value, event) {
+        this.onChangeStyle2(option, value);
+      },
+      onChangeStyle2(option, value) {
+        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+          return;
+        }
+        window.nvhStore.changeElementStyleOption(window.nvhFormattingEditor.global.selectedPlaceholderFullName, option, value);
+        window.nvhStore.saveStyle();
+        window.nvhFormattingEditor.formattingEditorComponent.update();
+      }
+    }
+  </script>
+
+  <style>
+    .styles-section-item-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .value-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+    }
+
+    .value-item {
+      height: 20px;
+      width: 20px;
+      border: 1px solid black;
+    }
+
+    .value-item:hover {
+      cursor: pointer;
+      transform: scale(1.05);
+    }
+
+    .value-item-red {
+      background-color: red;
+    }
+    .value-item-green {
+      background-color: green;
+    }
+    .value-item-blue {
+      background-color: blue;
+    }
+    .value-item-grey {
+      background-color: grey;
+    }
+  </style>
+</styles-section-item>

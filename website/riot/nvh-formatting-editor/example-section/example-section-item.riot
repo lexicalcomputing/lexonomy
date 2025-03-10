@@ -5,7 +5,8 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div if={props.schema.content.fullName === props.entry.fullName}
-          class="element-holder-content">
+          class="element-holder-content
+          {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
         {props.entry.value}
       </div>
     </div>
@@ -51,6 +52,20 @@
           resultChildren.push(child);
         }
         return resultChildren;
+      },
+      getCssStyleClass(fullName) {
+        /* NOTE: Inspiration from: nvh-editor-view-item.riot */
+        let styles = window.nvhStore.getElementStyle(fullName);
+        let result_classes = "";
+        for (let i = 0; i < Object.keys(styles).length; i++) {
+          let option = Object.keys(styles)[i];
+          let value = styles[option];
+          if (value === null || value === undefined) {
+            continue;
+          }
+          result_classes += "example_section_item_" + option + "_" + value + " ";
+        }
+        return result_classes;
       }
     }
   </script>
@@ -77,5 +92,44 @@
     .element-holder-active {
       border: 2px solid var(--color-is-active) !important;
     }
+
+    .example_section_item_colour_red {
+      color: red;
+    }
+    .example_section_item_colour_green {
+      color: green;
+    }
+    .example_section_item_colour_blue {
+      color: blue;
+    }
+    .example_section_item_colour_grey {
+      color: grey;
+    }
+
+    .example_section_item_weight_bold {
+      font-weight: bold;
+    }
+
+    .example_section_item_textsize_1 {
+      font-size: 0.8em;
+    }
+    .example_section_item_textsize_2 {
+      font-size: 1em;
+    }
+    .example_section_item_textsize_3 {
+      font-size: 1.2em;
+    }
+    .example_section_item_textsize_4 {
+      font-size: 1.5em;
+    }
+    .example_section_item_textsize_5 {
+      font-size: 2em;
+    }
+    .example_section_item_textsize_6 {
+      font-size: 2.5em;
+    }
+
+
+
   </style>
 </example-section-item>

@@ -133,6 +133,8 @@ import register from "./riot/register.riot"
 import register_password from "./riot/register-password.riot"
 import site_notification from "./riot/site-notification.riot"
 import structure_editor from "./riot/structure-editor.riot"
+import styles_section from "./riot/nvh-formatting-editor/styles-section/styles-section.riot"
+import styles_section_item from "./riot/nvh-formatting-editor/styles-section/styles-section-item.riot"
 import trim_text from "./riot/trim-text.riot"
 import unauthorized from "./riot/unauthorized.riot"
 import user_consent from "./riot/user-consent.riot"
@@ -241,6 +243,8 @@ riot_register("register", register)
 riot_register("register-password", register_password)
 riot_register("site-notification", site_notification)
 riot_register("structure-editor", structure_editor)
+riot_register("styles-section", styles_section)
+riot_register("styles-section-item", styles_section_item)
 riot_register("trim-text", trim_text)
 riot_register("unauthorized", unauthorized)
 riot_register("user-consent", user_consent)

@@ -33,6 +33,7 @@ class NVHFormattingEditorClass {
       ]
     },
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
     window.nvhFormattingEditor.formattingEditorComponent.update();
   }
 
@@ -54,6 +55,7 @@ class NVHFormattingEditorClass {
       window.nvhFormattingEditor.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.schemaHistory.at(window.nvhFormattingEditor.schemaHistoryIndex)));
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+      window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
       window.nvhFormattingEditor.formattingEditorComponent.update();
     }
   }
@@ -64,6 +66,7 @@ class NVHFormattingEditorClass {
       window.nvhFormattingEditor.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.schemaHistory.at(window.nvhFormattingEditor.schemaHistoryIndex)));
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+      window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
       window.nvhFormattingEditor.formattingEditorComponent.update();
     }
   }
@@ -121,8 +124,13 @@ class NVHFormattingEditorClass {
       let currentIsActive = child.status.isActive
       window.nvhFormattingEditor.closeActionPanel(); /*close actionPanel if any was opened*/
       child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
+      if (child.status.isActive && child.children.length === 0) {
+        window.nvhFormattingEditor.global.selectedPlaceholderFullName = child.content.fullName;
+      } else {
+        window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+      }
       if (child.status.isActive && child.content.name === "") { /*setting of valid choice elements (only empty placeholders)*/
-        window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = child.content.areaFullName;            
+        window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
       } else {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       }
@@ -183,6 +191,7 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.closeActionPanel();
     window.nvhFormattingEditor.clearIsHoveredStatus();
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
+    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
     state.children.splice(index, 0, newElement);
     window.nvhFormattingEditor.formattingEditorComponent.update();
     window.nvhFormattingEditor.global.canOpenActionPanel = false;
@@ -261,6 +270,8 @@ class NVHFormattingEditorClass {
     parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
     window.nvhFormattingEditor.global.canOpenActionPanel = false;
     window.nvhFormattingEditor.global.draggedElementFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
     window.nvhFormattingEditor.formattingEditorComponent.update(); // NOTE: here was updated only edit-layout, but maybe does not matter
   }
 
