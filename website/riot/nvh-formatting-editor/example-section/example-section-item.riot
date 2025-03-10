@@ -4,10 +4,20 @@
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
-      <div if={props.schema.content.fullName === props.entry.fullName}
-          class="element-holder-content
-          {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-        {props.entry.value}
+      <div class="element-holder-content-block">
+        <div if={props.schema.content.fullName === props.entry.fullName}
+            class="{props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
+          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
+        </div>
+        <div if={props.schema.content.fullName === props.entry.fullName}
+            class="element-holder-content
+            {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
+          {getPunc(props.schema.content.fullName, "left", "innerPunc")}{props.entry.value}{getPunc(props.schema.content.fullName, "right", "innerPunc")}
+        </div>
+        <div if={props.schema.content.fullName === props.entry.fullName}
+            class="{props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
+          {getPunc(props.schema.content.fullName, "right", "outerPunc")}
+        </div>
       </div>
     </div>
     <div each={childSchema in props.schema.children}
@@ -66,7 +76,34 @@
           result_classes += "example_section_item_" + option + "_" + value + " ";
         }
         return result_classes;
-      }
+      },
+      getPunc(fullName, side, option) {
+        if (fullName === "") {
+          return "";
+        }
+        let innerPunc = window.nvhStore.getElementStyle(fullName)[option];
+        if (innerPunc === undefined) {
+          return "";
+        }
+        switch (innerPunc) {
+          case "roundBrackets":
+            return side === "left" ? "(" : ")";
+          case "squareBrackets":
+            return side === "left" ? "[" : "]";
+          case "curlyBrackets":
+            return side === "left" ? "{" : "}";
+          case "colon":
+            return side === "left" ? "" : ":";
+          case "comma":
+            return side === "left" ? "" : ",";
+          case "dot":
+            return side === "left" ? "" : ".";
+          case "semicolon":
+            return side === "left" ? "" : ";";
+          default:
+            return ""
+        }
+      },
     }
   </script>
 
@@ -79,6 +116,9 @@
       border: 1px solid rgb(187, 196, 196);
       margin: 2px;
       padding: 1px;
+    }
+    .element-holder-content-block {
+      display: flex;
     }
     .element-holder-column {
       flex-direction: column;
