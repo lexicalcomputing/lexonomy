@@ -361,7 +361,7 @@
             // Nested wrappers of same name
             return false;
           }
-          if (window.store.schema.getElementByPath(child.fullName).children.length === 0 && child.children.length !== 0) {
+          if (child.fullName !== "" && window.store.schema.getElementByPath(child.fullName).children.length === 0 && child.children.length !== 0) {
             // Element has child but it should not have
             return false;
           }
