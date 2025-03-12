@@ -203,9 +203,47 @@
       </div>
     </div>
   </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Indentation and bulleting:</div>
+    <div>
+      <div id="select-indentation-bulleting">
+        <div onclick={onSelectOpen} class="select-dropdown">
+          <div>{state.selectedOption}</div>
+          <i class="material-icons tiny">arrow_drop_down</i>
+        </div>
+        <div if={state.indentationBulletingOpened} class="select-dropdown-options">
+          <template each={key in Object.keys(state.options)}>
+            <div onclick={onSelectChange.bind(this, state.options[key])}
+                class="select-dropdown-option">
+              {state.options[key]}
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     export default {
+      state: {
+        indentationBulletingOpened: false,
+        /*Inspiration from element-style-options.riot*/
+        options: {
+          "": "None",
+          "disk": "Round bullet",
+          "square": "Square bullet",
+          "diamond": "Diamond bullet",
+          "arrow": "Arrow bullet",
+          "indent": "Indent",
+          "hanging": "Hanging indent",
+          "sensenum1": "Sense number 1, 2, 3...",
+          "sensenum2": "Sense number a, b, c...",
+          "sensenum3": "Sense number i, ii, iii...",
+          "sensenum0": "Sense number I, II, III...",
+        },
+        selectedOption: "None",
+      },
+
       onBeforeMount() {
         if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
@@ -215,7 +253,12 @@
         if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
+        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+          this.state.indentationBulletingOpened = "";
+          this.state.selectedOption = "None";
+        }
       },
+
       onChangeStyle(option, value, event) {
         this.onChangeStyle2(option, value);
       },
@@ -226,7 +269,20 @@
         window.nvhStore.changeElementStyleOption(window.nvhFormattingEditor.global.selectedPlaceholderFullName, option, value);
         window.nvhStore.saveStyle();
         window.nvhFormattingEditor.formattingEditorComponent.update();
-      }
+      },
+      onSelectChange(value) {
+        this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
+        this.state.selectedOption = value;
+        // TODO: Store to nvh store
+        this.update();
+      },
+      onSelectOpen() {
+        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+          return;
+        }
+        this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
+        this.update();
+      },
     }
   </script>
 
@@ -252,10 +308,35 @@
       align-items: center;
       justify-content: center
     }
-
     .value-item:hover {
       cursor: pointer;
       transform: scale(1.05);
+    }
+
+    #select-indentation-bulleting {
+      display: block;
+      width: 180px;
+      height: 25px;
+      font-weight: bold;
+      border: 1px solid black;
+    }
+    #select-indentation-bulleting:hover {
+      cursor: pointer;
+    }
+    .select-dropdown {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5px;
+    }
+    .select-dropdown-options {
+      height: 120px;
+      padding: 5px;
+      overflow-y: scroll;
+      border: 1px solid black;
+    }
+    .select-dropdown-option:hover {
+      background-color: #d7e4f7;
     }
 
     .value-item-colour-red {
