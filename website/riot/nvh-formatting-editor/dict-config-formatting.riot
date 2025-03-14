@@ -372,8 +372,37 @@
         }
         return true;
       },
-      onExportPDF() {
-        // TODO: Not implemented yet
+      async onExportPDF() {
+        /*
+          Exported PDF file is prepared on backend via pdfkit library
+        */
+        let exampleHTML = `<h1 style="color: red";>PDF document example<h1>`
+        let response = await window.nvhFormattingEditor.createPDF(exampleHTML);
+        const encodedPDFString = response.pdf_string;
+
+        /*
+          Convert encoded PDF string to array of bytes, and use it as an input for Blob to generate URL.
+          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
+        */
+        const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString);
+        const blob = new Blob([bytesArrayPDF], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        /*
+          Because of asynchronous creating of a PDF file,
+          I need to create a temporary <a> element a simulate clicking on it.
+          <a> element in html code would not download PDF file.
+        */
+        const tmpLink = document.createElement("a");
+        tmpLink.href = blobUrl;
+        tmpLink.download = "entries.pdf"
+        document.body.appendChild(tmpLink)
+        tmpLink.click();
+        document.body.removeChild(tmpLink)
+
+        URL.revokeObjectURL(blobUrl)
+
+        return blobUrl;
       }
     }
   </script>

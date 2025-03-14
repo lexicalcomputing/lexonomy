@@ -14,6 +14,7 @@ import urllib.request
 from ops import siteconfig
 import media
 import bottle
+import nvh_formatting_editor
 from bottle import (hook, route, get, post, run, template, error, request,
                     response, static_file, abort, redirect, install)
 
@@ -210,6 +211,13 @@ def schema_to_json():
 def listuserdicts(user):
     dicts = ops.getDictsByUser(user["email"])
     return {"dicts": dicts}
+
+@post(siteconfig["rootPath"] + "createPDF")
+@auth
+def createPDF(user):
+    pdf_string = nvh_formatting_editor.html_string_to_pdf(request.forms.html_string)
+    response.content_type = 'application/json'
+    return {"success": True, "pdf_string": pdf_string}
 
 @post(siteconfig["rootPath"] + "<dictID>/entrydelete.json")
 @authDict(["canEdit"])

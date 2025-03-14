@@ -13,3 +13,4 @@ website/bundle.static.js
 website/bundle.codemirror.js
 website/bundle.css
 .vscode/
+website/data/
