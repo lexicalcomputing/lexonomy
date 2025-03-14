@@ -47,7 +47,7 @@ import hashlib
 #         language: ~.{3}
 #     affiliation: * ["MU (Brno)", "VUT \"Brno\"", "UK, Praha"]
 # ================
-supported_types = ['int', 'image', 'bool', 'audio', 'empty', 'url', 'string', 'list'] # string is the default
+supported_types = ['int', 'image', 'bool', 'audio', 'empty', 'url', 'string', 'list', 'markup', 'video'] # string is the default
 format_re = re.compile('^([*?+]|\d+\+|\d+\-\d+|\d+)?' # min/max
                        '\s*(' + '|'.join(supported_types) + ')?' # type
                        '\s*(\[.*?\])?' # list
