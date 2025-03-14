@@ -9,6 +9,16 @@ class NVHFormattingEditorClass {
     observable(this);
   }
 
+  async createPDF(html_string) {
+    return window.connection.post({
+       url: `${window.API_URL}createPDF`,
+       data: {
+          html_string: html_string,
+       },
+       failMessage: "Could not create PDF"
+    })
+ }
+
   resetSchema() {
     window.nvhFormattingEditor.schema = {
       orientation: "column",
