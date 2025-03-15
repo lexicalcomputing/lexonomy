@@ -376,8 +376,8 @@
         /*
           Exported PDF file is prepared on backend via pdfkit library
         */
-        let exampleHTML = `<h1 style="color: red";>PDF document example<h1>`
-        let response = await window.nvhFormattingEditor.createPDF(exampleHTML);
+        let stringHTML = await window.nvhFormattingEditor.parseAllEntries();
+        let response = await window.nvhFormattingEditor.createPDF(stringHTML);
         const encodedPDFString = response.pdf_string;
 
         /*
