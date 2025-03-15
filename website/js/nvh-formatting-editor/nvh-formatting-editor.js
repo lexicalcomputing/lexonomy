@@ -17,7 +17,87 @@ class NVHFormattingEditorClass {
        },
        failMessage: "Could not create PDF"
     })
- }
+  }
+
+  async parseAllEntries() {
+    let entriesList = await window.store.loadEntryList();
+    let htmlWrapper = "<div>";
+    for (let entry of entriesList.entries) {
+      htmlWrapper += await this.parseEntry(entry.id);
+      htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
+    }
+    htmlWrapper += "</div>"
+    return htmlWrapper;
+  }
+
+  async parseEntry(entryId) {
+    window.store.changeEntryId(entryId);
+    let entry = await window.store.loadEntry();
+    let entryObject = Object.entries(JSON.parse(entry.json).entry[0]);
+
+    let parsedEntry = this.getEntryStructure(entryObject, "entry");
+    let schema = window.nvhFormattingEditor.schema;
+    
+    let entryHTML = this.getEntryHTML(schema.children[0], parsedEntry);
+
+    return entryHTML;
+  }
+
+  getEntryStructure(entry, fullName) {
+    let objectHolder = {
+      fullName: fullName,
+      value: "",
+      children: []
+    };
+    for (let element of entry) {
+      if (element[0] === "_name") {
+        continue;
+      } else if (element[0] === "_value") {
+        objectHolder.value = element[1];
+      } else {
+        for (let childHolder of element[1]) {
+          let child = this.getEntryStructure(Object.entries(childHolder), element[0]);
+          objectHolder.children.push(child);
+        }
+      }
+    }
+    return objectHolder;
+  }
+
+  getEntryHTML(schema, entry) {
+    if (schema.children.length === 0 && schema.content.fullName === entry.fullName) {
+      let entryStyle = entry.fullName === "entry" ? " color: red; font-weight: bold; font-size: 30px;" : ""
+      return `<div style="padding: 3px;${entryStyle}">${entry.value}</div>`;
+    }
+
+    let stringHTML = `<div style="display: flex; flex-direction: ${schema.orientation};">`;
+    for (let childSchema of schema.children) {
+      if (childSchema.content.fullName === "") {
+        stringHTML += this.getEntryHTML(childSchema, entry);
+      } else if (childSchema.content.areaFullName === schema.content.areaFullName) {
+        stringHTML += this.getEntryHTML(childSchema, entry);
+      } else {
+        stringHTML += `<div style="display: flex; flex-direction: ${childSchema.orientation};">`;
+        for (let childEntry of this.getEntryChildren(entry, [])) {
+          if (childSchema.content.fullName === childEntry.fullName) {
+            stringHTML += this.getEntryHTML(childSchema, childEntry);
+          }
+        }
+        stringHTML += `</div>`;
+      }
+    }
+    stringHTML += `</div>`;
+    return stringHTML;
+  }
+
+  /*This allows displaying non-direct children*/
+  getEntryChildren(entry, resultChildren) {
+    for (let child of entry.children) {
+      this.getEntryChildren(child, resultChildren);
+      resultChildren.push(child);
+    }
+    return resultChildren;
+  }
 
   resetSchema() {
     window.nvhFormattingEditor.schema = {
