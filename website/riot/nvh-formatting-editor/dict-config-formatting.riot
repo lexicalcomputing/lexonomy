@@ -1,19 +1,37 @@
 <dict-config-formatting>
   <h1 class="formatting-page-title">Entry Formatting</h1>
+  <div class="formatting-page-layout-container">
+    <div onclick={onLayoutClick.bind(this, "desktop")}
+        class="formatting-page-layout-item {state.activeLayout !== "desktop" ? "item-inactive" : ""}">
+      <i class="small material-icons">desktop_windows</i>
+    </div>
+    <div onclick={onLayoutClick.bind(this, "tablet")}
+        class="formatting-page-layout-item {state.activeLayout !== "tablet" ? "item-inactive" : ""}">
+      <i class="small material-icons">tablet</i>
+    </div>
+    <div onclick={onLayoutClick.bind(this, "mobile")}
+        class="formatting-page-layout-item {state.activeLayout !== "mobile" ? "item-inactive" : ""}">
+      <i class="small material-icons">phone_android</i>
+    </div>
+    <div onclick={onLayoutClick.bind(this, "pdf")}
+        class="formatting-page-layout-item {state.activeLayout !== "pdf" ? "item-inactive" : ""}">
+      <i class="small material-icons">picture_as_pdf</i>
+    </div>
+  </div>
   <div class="formatting-page-visibility-container">
-    <div onclick={onLayoutClick.bind(this, "showElements")}
+    <div onclick={onSectionClick.bind(this, "showElements")}
         class="formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
       <i class="small material-icons">sort</i>
     </div>
-    <div onclick={onLayoutClick.bind(this, "showStyle")}
+    <div onclick={onSectionClick.bind(this, "showStyle")}
         class="formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
       <i class="small material-icons">format_paint</i>
     </div>
-    <div onclick={onLayoutClick.bind(this, "showEditing")}
+    <div onclick={onSectionClick.bind(this, "showEditing")}
         class="formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
       <i class="small material-icons">edit</i>
     </div>
-    <div onclick={onLayoutClick.bind(this, "showExample")}
+    <div onclick={onSectionClick.bind(this, "showExample")}
         class="formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
       <i class="small material-icons">view_compact</i>
     </div>
@@ -119,6 +137,7 @@
         showEditing: true,
         showExample: true,
         fileReader: null,
+        activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
       },
       schema: {
         orientation: "column", /*orientation of scrollable-div is always "column"*/
@@ -226,7 +245,10 @@
         trashIcon.classList.remove("trash-dragged-over");
       },
 
-      onLayoutClick(sectionName) {
+      onLayoutClick(layoutName) {
+        this.update({activeLayout: layoutName});
+      },
+      onSectionClick(sectionName) {
         this.update({[sectionName]: !this.state[sectionName]});
       },
       isSchemaChanged(oldSchema, newSchema) {
@@ -558,7 +580,7 @@
     .formatting-page-title {
       text-wrap: nowrap;
     }
-    .formatting-page-visibility-container {
+    .formatting-page-visibility-container, .formatting-page-layout-container {
       display: flex;
     }
     .formatting-page-wrapper-container {
@@ -591,24 +613,34 @@
       height: 600px;
     }
 
-
-    .formatting-page-visibility-item {
+    .formatting-page-layout-item, .formatting-page-visibility-item {
       padding: 5px;
-      background-color: #40e675;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .formatting-page-visibility-item:hover {
+    .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover {
       cursor: pointer;
-      background-color:rgb(32, 214, 90);
       transform: scale(1.05);
     }
-    .formatting-page-visibility-item:active {
+    .formatting-page-layout-item:active, .formatting-page-visibility-item:active {
       transform: scale(1.1);
     }
+    .formatting-page-layout-item {
+      background-color:rgb(230, 147, 64);
+    }
+    .formatting-page-layout-item:hover {
+      background-color:rgb(214, 153, 32);
+    }
+    .formatting-page-visibility-item {
+      background-color:rgb(64, 230, 117);
+    }
+    .formatting-page-visibility-item:hover {
+      background-color:rgb(32, 214, 90);
+    }
+
     .item-inactive {
-      background-color: #d3e8d9;
+      background-color:rgb(211, 232, 217);
     }
 
 
