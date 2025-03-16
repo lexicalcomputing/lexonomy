@@ -245,12 +245,12 @@
       },
 
       onBeforeMount() {
-        if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
+        if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
       },
       onBeforeUpdate() {
-        if (window.nvhFormattingEditor.schema.children[0].children.length === 0) {
+        if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
         if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {

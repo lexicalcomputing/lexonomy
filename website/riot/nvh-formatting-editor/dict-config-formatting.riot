@@ -139,28 +139,6 @@
         fileReader: null,
         activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
       },
-      schema: {
-        orientation: "column", /*orientation of scrollable-div is always "column"*/
-        children: [
-          {
-            status: {
-              isActive: false, /*action panel is displayed*/
-              isHovered: false,
-            },
-            orientation: "column", /*default placeholder is of type "column"*/
-            type: "placeholder",
-            content: {
-              name: "",
-              fullName: "",
-              area: "",
-              areaFullName: "",
-              color: "",
-              canHaveChildren: true,
-            },
-            children: [],
-          }
-        ]
-      },
 
       onBeforeMount() {
         this.state.fileReader = new FileReader();
@@ -183,17 +161,10 @@
           selectedPlaceholderFullName: "",
           parent: null,
         };
-        this.schema.children[0].content = {
-          name: "entry",
-          fullName: "entry",
-          area: "entry",
-          areaFullName: "entry",
-          color: window.nvhStore.getElementColor("entry"),
-          canHaveChildren: true,
-        };
-        window.nvhFormattingEditor.schema = this.schema;
-        window.nvhFormattingEditor.schemaHistory = [JSON.parse(JSON.stringify(window.nvhFormattingEditor.schema))];
-        window.nvhFormattingEditor.schemaHistoryIndex = 0;
+        window.nvhFormattingEditor.initializeSchemas();
+        window.nvhFormattingEditor.currentLayout.schema = window.nvhFormattingEditor.layout.desktop.schema;
+        window.nvhFormattingEditor.currentLayout.schemaHistory = window.nvhFormattingEditor.layout.desktop.schemaHistory;
+        window.nvhFormattingEditor.currentLayout.schemaHistoryIndex = window.nvhFormattingEditor.layout.desktop.schemaHistoryIndex;
       },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {
@@ -214,10 +185,10 @@
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
         */
-        if (this.isSchemaChanged(window.nvhFormattingEditor.schemaHistory.at(window.nvhFormattingEditor.schemaHistoryIndex), window.nvhFormattingEditor.schema)) {
-          window.nvhFormattingEditor.schemaHistory.length = window.nvhFormattingEditor.schemaHistoryIndex + 1;
-          window.nvhFormattingEditor.schemaHistory.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.schema)));
-          window.nvhFormattingEditor.schemaHistoryIndex += 1;
+        if (this.isSchemaChanged(window.nvhFormattingEditor.currentLayout.schemaHistory.at(window.nvhFormattingEditor.currentLayout.schemaHistoryIndex), window.nvhFormattingEditor.currentLayout.schema)) {
+          window.nvhFormattingEditor.currentLayout.schemaHistory.length = window.nvhFormattingEditor.currentLayout.schemaHistoryIndex + 1;
+          window.nvhFormattingEditor.currentLayout.schemaHistory.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schema)));
+          window.nvhFormattingEditor.currentLayout.schemaHistoryIndex += 1;
         }
       },
 
@@ -246,7 +217,27 @@
       },
 
       onLayoutClick(layoutName) {
-        this.update({activeLayout: layoutName});
+        this.state.activeLayout = layoutName;
+        /*TODO: Is there a way how to simplify this?*/
+        switch(layoutName) {
+          case "desktop":
+            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+            break;
+          case "tablet":
+            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+            break;
+          case "mobile":
+            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
+            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+            break;
+          case "pdf":
+            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.pdf;
+            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+            break;
+        }
+        this.update();
       },
       onSectionClick(sectionName) {
         this.update({[sectionName]: !this.state[sectionName]});
@@ -282,7 +273,7 @@
         all the attributes from them.
         */
         let exportSchema = {children: []};
-        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.schema.children[0]);
+        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.currentLayout.schema.children[0]);
         let blobContent = [JSON.stringify(exportSchema)];
         let blob = new Blob(blobContent, { type: "application/json" });
         let schemaURL = URL.createObjectURL(blob);
@@ -298,32 +289,11 @@
           console.log("Imported schema is not valid");
           return;
         }
-        let defaultNewSchema = {
-          orientation: "column",
-          children: [
-            {
-              status: {
-                isActive: false,
-                isDragged: false,
-              },
-              orientation: "column",
-              type: "placeholder",
-              content: {
-                name: "entry",
-                fullName: "entry",
-                area: "entry",
-                areaFullName: "entry",
-                color: window.nvhStore.getElementColor("entry"),
-                canHaveChildren: true,
-              },
-              children: [],
-            }
-          ]
-        }
+        let defaultNewSchema = window.nvhFormattingEditor.createSchema();
         let newSchema = {children: []};
         this.recreateImportedSchema(newSchema, importedSchema, "entry");
         defaultNewSchema.children[0].children = newSchema.children;
-        window.nvhFormattingEditor.schema = defaultNewSchema;
+        window.nvhFormattingEditor.currentLayout.schema = defaultNewSchema;
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       createExportedSchema(exportSchema, editingSchema) {

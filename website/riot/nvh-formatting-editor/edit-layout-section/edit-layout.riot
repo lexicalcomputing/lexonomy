@@ -1,13 +1,13 @@
 <edit-layout>
   <div class="edit-layout-container">
     <div class="scrollable-div">
-      <template each={(child, index) in window.nvhFormattingEditor.schema.children}>
+      <template each={(child, index) in window.nvhFormattingEditor.currentLayout.schema.children}>
         <placeholder-component onclick={onPlaceholderClick}
                               class="placeholder placeholder-{child.orientation} placeholder-first
                                     {child.status.isActive ? "placeholder-selected" : ""}
                                     {child.children.length === 0 ? "placeholder-no-children" : ""}"
                               state={window.nvhFormattingEditor.childWithInheritedArea(child, null)}
-                              parentState={window.nvhFormattingEditor.schema}
+                              parentState={window.nvhFormattingEditor.currentLayout.schema}
                               isBaseLevel={true}
                               index={index}
                               canHaveAdders={true}/>

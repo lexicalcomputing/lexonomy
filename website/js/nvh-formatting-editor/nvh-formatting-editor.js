@@ -1,11 +1,19 @@
 class NVHFormattingEditorClass {
   constructor() {
     this.formattingEditorComponent = null,
-    this.schema = null,
-    this.schemaHistory = null,
-    this.schemaHistoryIndex = null,
     this.elementsSchema = null,
     this.global = null,
+    this.currentLayout = {
+      schema: null,
+      schemaHistory: null,
+      schemaHistoryIndex: null,
+    }
+    this.layout = {
+      desktop: null,
+      tablet: null,
+      mobile: null,
+      pdf: null,
+    }
     observable(this);
   }
 
@@ -36,7 +44,7 @@ class NVHFormattingEditorClass {
     let entryObject = Object.entries(JSON.parse(entry.json).entry[0]);
 
     let parsedEntry = this.getEntryStructure(entryObject, "entry");
-    let schema = window.nvhFormattingEditor.schema;
+    let schema = window.nvhFormattingEditor.layout.pdf.schema;
     
     let entryHTML = this.getEntryHTML(schema.children[0], parsedEntry);
 
@@ -100,7 +108,45 @@ class NVHFormattingEditorClass {
   }
 
   resetSchema() {
-    window.nvhFormattingEditor.schema = {
+    window.nvhFormattingEditor.initializeSchema();
+    window.nvhFormattingEditor.formattingEditorComponent.update();
+  }
+
+  initializeSchema() {
+    window.nvhFormattingEditor.currentLayout.schema = window.nvhFormattingEditor.createSchema();
+    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+  }
+
+  initializeSchemas() {
+    let initialSchema = window.nvhFormattingEditor.createSchema();
+
+    window.nvhFormattingEditor.layout.desktop = {
+      schema: JSON.parse(JSON.stringify(initialSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.layout.tablet = {
+      schema: JSON.parse(JSON.stringify(initialSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.layout.mobile = {
+      schema: JSON.parse(JSON.stringify(initialSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.layout.pdf = {
+      schema: JSON.parse(JSON.stringify(initialSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+  }
+
+  createSchema() {
+    let schema = {
       orientation: "column",
       children: [
         {
@@ -121,10 +167,8 @@ class NVHFormattingEditorClass {
           children: [],
         }
       ]
-    },
-    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-    window.nvhFormattingEditor.formattingEditorComponent.update();
+    }
+    return schema;
   }
 
   clearStatuses(state) {
@@ -140,10 +184,10 @@ class NVHFormattingEditorClass {
   }
 
   undoSchema() {
-    if (window.nvhFormattingEditor.schemaHistoryIndex > 0) {
-      window.nvhFormattingEditor.schemaHistoryIndex -= 1;
-      window.nvhFormattingEditor.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.schemaHistory.at(window.nvhFormattingEditor.schemaHistoryIndex)));
-      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.schema);
+    if (window.nvhFormattingEditor.currentLayout.schemaHistoryIndex > 0) {
+      window.nvhFormattingEditor.currentLayout.schemaHistoryIndex -= 1;
+      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schemaHistory.at(window.nvhFormattingEditor.currentLayout.schemaHistoryIndex)));
+      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
       window.nvhFormattingEditor.formattingEditorComponent.update();
@@ -151,10 +195,10 @@ class NVHFormattingEditorClass {
   }
 
   redoSchema() {
-    if (window.nvhFormattingEditor.schemaHistoryIndex < window.nvhFormattingEditor.schemaHistory.length - 1) {
-      window.nvhFormattingEditor.schemaHistoryIndex += 1;
-      window.nvhFormattingEditor.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.schemaHistory.at(window.nvhFormattingEditor.schemaHistoryIndex)));
-      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.schema);
+    if (window.nvhFormattingEditor.currentLayout.schemaHistoryIndex < window.nvhFormattingEditor.currentLayout.schemaHistory.length - 1) {
+      window.nvhFormattingEditor.currentLayout.schemaHistoryIndex += 1;
+      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schemaHistory.at(window.nvhFormattingEditor.currentLayout.schemaHistoryIndex)));
+      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
       window.nvhFormattingEditor.formattingEditorComponent.update();
@@ -183,7 +227,7 @@ class NVHFormattingEditorClass {
   }
 
   clearIsHoveredStatus() {
-    window.nvhFormattingEditor.clearIsHoveredStatusRec(window.nvhFormattingEditor.schema);
+    window.nvhFormattingEditor.clearIsHoveredStatusRec(window.nvhFormattingEditor.currentLayout.schema);
   }
 
   clearIsHoveredStatusRec(state) {
@@ -196,7 +240,7 @@ class NVHFormattingEditorClass {
 
   // RENAME ?
   closeActionPanel() {
-    this.closeActionPanelRec(window.nvhFormattingEditor.schema);
+    this.closeActionPanelRec(window.nvhFormattingEditor.currentLayout.schema);
   }
 
   // RENAME ?
