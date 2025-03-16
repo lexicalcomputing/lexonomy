@@ -6,16 +6,12 @@
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
         <div if={props.schema.content.fullName === props.entry.fullName}
-            class="{props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
-        </div>
-        <div if={props.schema.content.fullName === props.entry.fullName}
             class="element-holder-content
             {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-          {getPunc(props.schema.content.fullName, "left", "innerPunc")}{props.entry.value}{getPunc(props.schema.content.fullName, "right", "innerPunc")}
-        </div>
-        <div if={props.schema.content.fullName === props.entry.fullName}
-            class="{props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
+          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
+          {getPunc(props.schema.content.fullName, "left", "innerPunc")}
+          {props.entry.value}
+          {getPunc(props.schema.content.fullName, "right", "innerPunc")}
           {getPunc(props.schema.content.fullName, "right", "outerPunc")}
         </div>
       </div>
@@ -105,9 +101,8 @@
       width: fit-content;
     }
     .element-holder-single-wrapper {
-      border: 1px solid rgb(187, 196, 196);
       margin: 2px;
-      padding: 1px;
+      padding: 2px;
     }
     .element-holder-content-block {
       display: flex;
@@ -116,13 +111,13 @@
       flex-direction: column;
     }
     .element-holder-hovered {
-      border: 2px solid var(--color-is-hovered);
+      outline: 2px solid var(--color-is-hovered);
     }
     .element-holder-hovered:has(.element-holder-hovered) {
-      border: none;
+      outline: none;
     }
     .element-holder-active {
-      border: 2px solid var(--color-is-active) !important;
+      outline: 2px solid var(--color-is-active) !important;
     }
 
     .example_section_item_colour_red {
