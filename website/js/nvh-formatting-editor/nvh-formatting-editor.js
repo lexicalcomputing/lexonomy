@@ -263,7 +263,7 @@ class NVHFormattingEditorClass {
       } else {
         window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
       }
-      if (child.status.isActive && child.content.name === "") { /*setting of valid choice elements (only empty placeholders)*/
+      if (child.status.isActive) {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
       } else {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";

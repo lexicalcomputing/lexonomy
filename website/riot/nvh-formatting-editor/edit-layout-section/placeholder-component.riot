@@ -67,19 +67,26 @@
             window.nvhFormattingEditor.closeActionPanel();
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-            if (state.children.length !== 0 && data.children.length === 0) {
+            if (this.isElementWithoutChildrenToWrapper(data, state)) {
               /*Can not drop label to be a wrapper, if it can not have children*/
               window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
-            if (this.props.state.content.areaFullName.includes(data.fullName) && state.children.length !== 0) {
-              /*Can not drop label to area with same fullName because it is redundant*/
+            if (this.isElementToRedundantNestedWrapper(data, this.props.state, state)) {
+              /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
               window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
             for (let child of state.children) {
               if (!this.isParentLabelOfDropObject(data.fullName, child)) {
                 /*Can not place label to placeholder, because not all children labels are valid*/
+                window.nvhFormattingEditor.global.canBeDropped = false;
+                return;
+              }
+            }
+            for (let child of state.children) {
+              if (this.isPlaceholderAsSameWrapper(data.fullName, child)) {
+                /*Can not create redundant parent wrapper*/
                 window.nvhFormattingEditor.global.canBeDropped = false;
                 return;
               }
@@ -174,6 +181,28 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
 
+      isElementWithoutChildrenToWrapper(element, placeholder) {
+        return placeholder.children.length !== 0 && element.children.length === 0;
+      },
+      isElementToRedundantNestedWrapper(element, placeholderWrapper, placeholder) {
+        return placeholderWrapper.content.areaFullName.includes(element.fullName) && placeholder.children.length !== 0;
+      },
+      isPlaceholderAsSameWrapper(elementName, placeholder) {
+        if (placeholder.content.fullName !== "" && elementName !== placeholder.content.fullName && elementName.includes(placeholder.content.fullName)) {
+          /*Optimization: None of next children can be same wrapper*/
+          return false;
+        }
+        if (elementName === placeholder.content.fullName && placeholder.children.length !== 0) {
+          return true;
+        }
+
+        for (let child of placeholder.children) {
+          if (this.isPlaceholderAsSameWrapper(elementName, child)) {
+            return true;
+          }
+        }
+        return false;
+      },
       isParentLabelOfDropObject(parentLabel, dropObject) {
         let result = dropObject.content.fullName.includes(parentLabel);
         let alternative = dropObject.content.fullName === "";

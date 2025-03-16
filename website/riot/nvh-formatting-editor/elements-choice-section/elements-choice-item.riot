@@ -57,10 +57,12 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
+        /*TODO: add validation*/
         return window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName !== ""
               && this.props.state.data.fullName.includes(window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName);
       },
       isInvalidToActivePlaceholder() {
+        /*TODO: if any placeholder is selected, this should be the opposite of isValidToActivePlaceholder*/
         return window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName !== ""
               && !this.props.state.data.fullName.includes(window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName);
       }
