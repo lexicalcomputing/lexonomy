@@ -1,5 +1,6 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation} {isDisplayLabel() ? "element-holder-single-wrapper" : ""}
+  <div class="element-holder element-holder-{props.schema.orientation}
+              {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}">
     <div if={props.schema.children.length === 0}
@@ -51,6 +52,9 @@
       isDisplayLabel() {
         return this.props.schema.children.length === 0 && this.props.schema.content.name !== "";
       },
+      isEmptyPlaceholder() {
+        return this.props.schema.content.name === "";
+      },
       getCssStyleClass(fullName) {
         /* NOTE: Inspiration from: nvh-editor-view-item.riot */
         let styles = window.nvhStore.getElementStyle(fullName);
@@ -96,13 +100,15 @@
   </script>
 
   <style>
+    .element-holder-used-placeholder {
+      margin: 3px;
+    }
+    .element-holder-empty-placeholder {
+      margin: 0;
+    }
     .element-holder {
       display: flex;
       width: fit-content;
-    }
-    .element-holder-single-wrapper {
-      margin: 2px;
-      padding: 2px;
     }
     .element-holder-content-block {
       display: flex;
