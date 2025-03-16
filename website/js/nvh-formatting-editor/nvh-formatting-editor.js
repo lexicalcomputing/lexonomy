@@ -116,6 +116,8 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.currentLayout.schema = window.nvhFormattingEditor.createSchema();
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholder = null;
+    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
   }
 
   initializeSchemas() {
@@ -143,6 +145,8 @@ class NVHFormattingEditorClass {
     }
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholder = null;
+    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
   }
 
   createSchema() {
@@ -190,6 +194,8 @@ class NVHFormattingEditorClass {
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+      window.nvhFormattingEditor.global.selectedPlaceholder = null;
+      window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
       window.nvhFormattingEditor.formattingEditorComponent.update();
     }
   }
@@ -201,6 +207,8 @@ class NVHFormattingEditorClass {
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+      window.nvhFormattingEditor.global.selectedPlaceholder = null;
+      window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
       window.nvhFormattingEditor.formattingEditorComponent.update();
     }
   }
@@ -253,7 +261,7 @@ class NVHFormattingEditorClass {
   }
 
   // RENAME ?
-  openActionPanel(child) {
+  openActionPanel(child, parent) {
     if (window.nvhFormattingEditor.global.canOpenActionPanel) {
       let currentIsActive = child.status.isActive
       window.nvhFormattingEditor.closeActionPanel(); /*close actionPanel if any was opened*/
@@ -263,10 +271,14 @@ class NVHFormattingEditorClass {
       } else {
         window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
       }
-      if (child.status.isActive && child.content.name === "") { /*setting of valid choice elements (only empty placeholders)*/
+      if (child.status.isActive) {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
+        window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+        window.nvhFormattingEditor.global.selectedPlaceholder = child;
       } else {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+        window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+        window.nvhFormattingEditor.global.selectedPlaceholder = null;
       }
     } else {
       child.status.isActive = false;
@@ -274,8 +286,12 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.global.canOpenActionPanel = false;
   }
 
-  isChildOfParent(child, parent) {
-    if (window.nvhFormattingEditor.global.draggedPlaceholder != null) {
+  isChildChoiceItemOfPlaceholder(child, parent) {
+    return child.includes(parent);
+  }
+
+  isChildOfParent(child, parent) { // NOTE
+    if (window.nvhFormattingEditor.global.draggedPlaceholder !== null) {
       return window.nvhFormattingEditor.isChildObjectOfParent(window.nvhFormattingEditor.global.draggedPlaceholder, parent);
     }
     let result = child.includes(parent);
@@ -326,6 +342,8 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.clearIsHoveredStatus();
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
     window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholder = newElement;
+    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
     window.nvhFormattingEditor.formattingEditorComponent.update();
     window.nvhFormattingEditor.global.canOpenActionPanel = false;
@@ -406,6 +424,8 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.global.draggedElementFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholder = null;
     window.nvhFormattingEditor.formattingEditorComponent.update(); // NOTE: here was updated only edit-layout, but maybe does not matter
   }
 
@@ -430,6 +450,66 @@ class NVHFormattingEditorClass {
 
   getChoiceElementsFullNamesList() {
     return window.store.schema.getElementList().map(e => e.path);
+  }
+
+  /*Validation of choice-element vs. placeholder relationship functions*/
+  isElementWithoutChildrenToWrapper(element, placeholder) {
+    return placeholder.children.length !== 0 && element.children.length === 0;
+  }
+  isElementToRedundantNestedWrapper(element, placeholderWrapperAreaFullName, placeholder) {
+    return placeholderWrapperAreaFullName.includes(element.fullName) && placeholder.children.length !== 0;
+  }
+  isPlaceholderAsSameWrapper(elementName, placeholder) {
+    if (placeholder.content.fullName !== "" && elementName !== placeholder.content.fullName && elementName.includes(placeholder.content.fullName)) {
+      /*Optimization: None of next children can be same wrapper*/
+      return false;
+    }
+    if (elementName === placeholder.content.fullName && placeholder.children.length !== 0) {
+      return true;
+    }
+
+    for (let child of placeholder.children) {
+      if (this.isPlaceholderAsSameWrapper(elementName, child)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  isParentLabelOfDropObject(parentLabel, dropObject) {
+    let result = dropObject.content.fullName.includes(parentLabel);
+    let alternative = dropObject.content.fullName === "";
+    if (!result && !alternative) {
+      return false;
+    }
+
+    for (let child of dropObject.children) {
+      if (!this.isParentLabelOfDropObject(parentLabel, child)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  isChoiceElementValidToPlaceholder(choiceElement, placeholder, placeholderWrapperAreaFullName) {
+    if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
+      return false;
+    }
+    if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)) {
+      return false;
+    }
+    for (let child of placeholder.children) {
+      if (!window.nvhFormattingEditor.isParentLabelOfDropObject(choiceElement.fullName, child)) {
+        return false;
+      }
+    }
+    for (let child of placeholder.children) {
+      if (window.nvhFormattingEditor.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
+        return false;
+      }
+    }
+    if (!window.nvhFormattingEditor.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)) {
+      return false;
+    }
+    return true;
   }
 }
 

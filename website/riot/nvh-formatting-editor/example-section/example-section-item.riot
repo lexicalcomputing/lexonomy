@@ -1,21 +1,19 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation} {isDisplayLabel() ? "element-holder-single-wrapper" : ""}
+  <div class="element-holder element-holder-{props.schema.orientation}
+              {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
-              {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}">
+              {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
+              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
         <div if={props.schema.content.fullName === props.entry.fullName}
-            class="{props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
-        </div>
-        <div if={props.schema.content.fullName === props.entry.fullName}
             class="element-holder-content
             {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-          {getPunc(props.schema.content.fullName, "left", "innerPunc")}{props.entry.value}{getPunc(props.schema.content.fullName, "right", "innerPunc")}
-        </div>
-        <div if={props.schema.content.fullName === props.entry.fullName}
-            class="{props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
+          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
+          {getPunc(props.schema.content.fullName, "left", "innerPunc")}
+          {props.entry.value}
+          {getPunc(props.schema.content.fullName, "right", "innerPunc")}
           {getPunc(props.schema.content.fullName, "right", "outerPunc")}
         </div>
       </div>
@@ -54,6 +52,9 @@
       },
       isDisplayLabel() {
         return this.props.schema.children.length === 0 && this.props.schema.content.name !== "";
+      },
+      isEmptyPlaceholder() {
+        return this.props.schema.content.name === "";
       },
       getCssStyleClass(fullName) {
         /* NOTE: Inspiration from: nvh-editor-view-item.riot */
@@ -100,14 +101,15 @@
   </script>
 
   <style>
+    .element-holder-used-placeholder {
+      margin: 3px;
+    }
+    .element-holder-empty-placeholder {
+      margin: 0;
+    }
     .element-holder {
       display: flex;
       width: fit-content;
-    }
-    .element-holder-single-wrapper {
-      border: 1px solid rgb(187, 196, 196);
-      margin: 2px;
-      padding: 1px;
     }
     .element-holder-content-block {
       display: flex;
@@ -116,13 +118,16 @@
       flex-direction: column;
     }
     .element-holder-hovered {
-      border: 2px solid var(--color-is-hovered);
+      outline: 2px solid var(--color-is-hovered);
     }
     .element-holder-hovered:has(.element-holder-hovered) {
-      border: none;
+      outline: none;
+    }
+    .element-holder-hovered:has(.element-holder-hovered-empty) {
+      outline: none;
     }
     .element-holder-active {
-      border: 2px solid var(--color-is-active) !important;
+      outline: 2px solid var(--color-is-active) !important;
     }
 
     .example_section_item_colour_red {

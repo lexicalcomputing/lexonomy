@@ -24,7 +24,7 @@
                     index={0}
                     state={props.state}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => window.nvhFormattingEditor.openActionPanel(child)}
+      <placeholder-component onclick={() => window.nvhFormattingEditor.openActionPanel(child, props.state)}
                             ondragover={onDragOver}
                             ondrop={(event) => onDrop(event, child)}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
@@ -67,19 +67,28 @@
             window.nvhFormattingEditor.closeActionPanel();
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-            if (state.children.length !== 0 && data.children.length === 0) {
+            window.nvhFormattingEditor.global.selectedPlaceholder = null;
+            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+            if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
               /*Can not drop label to be a wrapper, if it can not have children*/
               window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
-            if (this.props.state.content.areaFullName.includes(data.fullName) && state.children.length !== 0) {
-              /*Can not drop label to area with same fullName because it is redundant*/
+            if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.fullName, state)) {
+              /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
               window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
             for (let child of state.children) {
-              if (!this.isParentLabelOfDropObject(data.fullName, child)) {
+              if (!window.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
                 /*Can not place label to placeholder, because not all children labels are valid*/
+                window.nvhFormattingEditor.global.canBeDropped = false;
+                return;
+              }
+            }
+            for (let child of state.children) {
+              if (window.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
+                /*Can not create redundant parent wrapper*/
                 window.nvhFormattingEditor.global.canBeDropped = false;
                 return;
               }
@@ -133,6 +142,8 @@
             window.nvhFormattingEditor.global.dropInfo.index = index;
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+            window.nvhFormattingEditor.global.selectedPlaceholder = null;
+            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
             event.target.classList.remove("adder-highligth-dragged");
             window.nvhFormattingEditor.global.canBeDropped = false;
           }
@@ -173,21 +184,6 @@
 
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
-
-      isParentLabelOfDropObject(parentLabel, dropObject) {
-        let result = dropObject.content.fullName.includes(parentLabel);
-        let alternative = dropObject.content.fullName === "";
-        if (!result && !alternative) {
-          return false;
-        }
-
-        for (let child of dropObject.children) {
-          if (!this.isParentLabelOfDropObject(parentLabel, child)) {
-            return false;
-          }
-        }
-        return true;
-      }
     }
   </script>
 

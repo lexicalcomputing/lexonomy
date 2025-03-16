@@ -1,5 +1,7 @@
 <elements-choice-item>
-  <div class="elements-choice-item-wrapper {isValidToActivePlaceholder() ? "elements-choice-item-wrapper-highlight" : ""}"
+  <div class="elements-choice-item-wrapper
+              {isValidToActivePlaceholder() ? "elements-choice-item-wrapper-valid" : ""}
+              {isInvalidToActivePlaceholder() ? "elements-choice-item-wrapper-invalid" : ""}"
       style="padding-left: {props.indentationLevel}px"
       draggable="true"
       ondragstart={onDragStart}
@@ -55,8 +57,18 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
-        return this.props.state.data.fullName.includes(window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName)
-                && window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName !== "";
+        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+          return false;
+        }
+        return window.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
+                                                                            window.nvhFormattingEditor.global.selectedPlaceholder,
+                                                                            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName);
+      },
+      isInvalidToActivePlaceholder() {
+        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+          return false;
+        }
+        return !this.isValidToActivePlaceholder();
       }
     }
   </script>
@@ -71,11 +83,14 @@
     .elements-choice-item-wrapper:hover {
       background-color: #d7e4f7;
     }
-    .elements-choice-item-wrapper-highlight {
+    .elements-choice-item-wrapper-valid {
       background-color: rgb(230, 244, 210);
     }
-    .elements-choice-item-wrapper-highlight:hover {
+    .elements-choice-item-wrapper-valid:hover {
       background-color: rgb(206, 231, 170);
+    }
+    .elements-choice-item-wrapper-invalid {
+      opacity: 0.4;
     }
     .elements-choice-item-box {
       width: 8px;
