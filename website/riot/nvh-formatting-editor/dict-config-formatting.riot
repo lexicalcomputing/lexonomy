@@ -159,6 +159,8 @@
           canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
           selectedPlaceholderAreaFullName: "",
           selectedPlaceholderFullName: "",
+          selectedPlaceholder: null,
+          selectedPlaceholderParentAreaFullName: "",
           parent: null,
         };
         window.nvhFormattingEditor.initializeSchemas();
@@ -180,6 +182,8 @@
           canOpenActionPanel: true,
           selectedPlaceholderAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName,
           selectedPlaceholderFullName: window.nvhFormattingEditor.global.selectedPlaceholderFullName,
+          selectedPlaceholder: window.nvhFormattingEditor.global.selectedPlaceholder,
+          selectedPlaceholderParentAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
           parent: null,
         };
         /*
@@ -212,6 +216,8 @@
         window.nvhFormattingEditor.closeActionPanel();
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
         window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+        window.nvhFormattingEditor.global.selectedPlaceholder = null;
+        window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
         let trashIcon = document.getElementById("trash-icon");
         trashIcon.classList.remove("trash-dragged-over");
       },

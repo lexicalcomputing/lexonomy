@@ -57,14 +57,18 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
-        /*TODO: add validation*/
-        return window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName !== ""
-              && this.props.state.data.fullName.includes(window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName);
+        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+          return false;
+        }
+        return window.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
+                                                                            window.nvhFormattingEditor.global.selectedPlaceholder,
+                                                                            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName);
       },
       isInvalidToActivePlaceholder() {
-        /*TODO: if any placeholder is selected, this should be the opposite of isValidToActivePlaceholder*/
-        return window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName !== ""
-              && !this.props.state.data.fullName.includes(window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName);
+        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+          return false;
+        }
+        return !this.isValidToActivePlaceholder();
       }
     }
   </script>
