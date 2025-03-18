@@ -2,19 +2,19 @@
   <h1 class="formatting-page-title">Entry Formatting</h1>
   <div class="formatting-page-layout-container">
     <div onclick={onLayoutClick.bind(this, "desktop")}
-        class="formatting-page-layout-item {state.activeLayout !== "desktop" ? "item-inactive" : ""}">
+        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : ""}">
       <i class="small material-icons">desktop_windows</i>
     </div>
     <div onclick={onLayoutClick.bind(this, "tablet")}
-        class="formatting-page-layout-item {state.activeLayout !== "tablet" ? "item-inactive" : ""}">
+        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : ""}">
       <i class="small material-icons">tablet</i>
     </div>
     <div onclick={onLayoutClick.bind(this, "mobile")}
-        class="formatting-page-layout-item {state.activeLayout !== "mobile" ? "item-inactive" : ""}">
+        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : ""}">
       <i class="small material-icons">phone_android</i>
     </div>
     <div onclick={onLayoutClick.bind(this, "pdf")}
-        class="formatting-page-layout-item {state.activeLayout !== "pdf" ? "item-inactive" : ""}">
+        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : ""}">
       <i class="small material-icons">picture_as_pdf</i>
     </div>
   </div>
@@ -137,7 +137,6 @@
         showEditing: true,
         showExample: true,
         fileReader: null,
-        activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
       },
 
       onBeforeMount() {
@@ -162,6 +161,7 @@
           selectedPlaceholder: null,
           selectedPlaceholderParentAreaFullName: "",
           parent: null,
+          activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
         };
         window.nvhFormattingEditor.initializeSchemas();
         window.nvhFormattingEditor.currentLayout.schema = window.nvhFormattingEditor.layout.desktop.schema;
@@ -185,6 +185,7 @@
           selectedPlaceholder: window.nvhFormattingEditor.global.selectedPlaceholder,
           selectedPlaceholderParentAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
           parent: null,
+          activeLayout: window.nvhFormattingEditor.global.activeLayout,
         };
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
@@ -223,7 +224,7 @@
       },
 
       onLayoutClick(layoutName) {
-        this.state.activeLayout = layoutName;
+        window.nvhFormattingEditor.global.activeLayout = layoutName;
         /*TODO: Is there a way how to simplify this?*/
         switch(layoutName) {
           case "desktop":
@@ -585,7 +586,6 @@
       min-width: 100%;
     }
     .example-section-wrapper {
-      min-width: 600px;
       height: 600px;
     }
 
@@ -647,7 +647,6 @@
       border-right: 1px solid #dcdee3;
       padding-left: 1.5em;
       padding-right: 1.5em;
-      flex: auto;
       width: auto;
     }
 
