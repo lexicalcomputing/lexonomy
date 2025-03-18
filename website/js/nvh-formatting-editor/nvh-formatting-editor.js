@@ -78,14 +78,14 @@ class NVHFormattingEditorClass {
       return `<div style="padding: 3px;${entryStyle}">${entry.value}</div>`;
     }
 
-    let stringHTML = `<div style="display: flex; flex-direction: ${schema.orientation};">`;
+    let stringHTML = `<div style="display: flex; flex-direction: ${schema.orientation}; flex-wrap: wrap;">`;
     for (let childSchema of schema.children) {
       if (childSchema.content.fullName === "") {
         stringHTML += this.getEntryHTML(childSchema, entry);
       } else if (childSchema.content.areaFullName === schema.content.areaFullName) {
         stringHTML += this.getEntryHTML(childSchema, entry);
       } else {
-        stringHTML += `<div style="display: flex; flex-direction: ${childSchema.orientation};">`;
+        stringHTML += `<div style="display: flex; flex-direction: ${childSchema.orientation}; flex-wrap: wrap;">`;
         for (let childEntry of this.getEntryChildren(entry, [])) {
           if (childSchema.content.fullName === childEntry.fullName) {
             stringHTML += this.getEntryHTML(childSchema, childEntry);
