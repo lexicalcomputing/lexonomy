@@ -2,7 +2,8 @@
   <div class="element-holder element-holder-{props.schema.orientation}
               {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
-              {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}">
+              {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
+              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}">
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
@@ -120,6 +121,9 @@
       outline: 2px solid var(--color-is-hovered);
     }
     .element-holder-hovered:has(.element-holder-hovered) {
+      outline: none;
+    }
+    .element-holder-hovered:has(.element-holder-hovered-empty) {
       outline: none;
     }
     .element-holder-active {
