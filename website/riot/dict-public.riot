@@ -211,6 +211,9 @@
          },
 
          isLayoutSchemaChange() {
+            if (window.nvhFormattingEditor.global === null) {
+               return;
+            }
             let oldLayout = window.nvhFormattingEditor.global.activeLayout;
             window.nvhFormattingEditor.changeLayoutSchema();
             let newLayout = window.nvhFormattingEditor.global.activeLayout;
