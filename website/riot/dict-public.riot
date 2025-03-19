@@ -114,8 +114,11 @@
                         <template if={nvhData.entry}>
                            <div if={!nvhData.customEditor}
                                  class="nvh-editor-view-items">
-                              <nvh-editor-view-item element={nvhData.entry}
-                                    read-only={true}/>
+                              <example-section-item if={window.nvhFormattingEditor.currentLayout.schema !== null}
+                                 schema={window.nvhFormattingEditor.currentLayout.schema.children[0]}
+                                 entry={nvhData.entry}/>
+                              <!--<nvh-editor-view-item element={nvhData.entry}
+                                    read-only={true}/>-->
                            </div>
                            <nvh-custom-editor if={nvhData.customEditor}
                                  read-only={true}/>
