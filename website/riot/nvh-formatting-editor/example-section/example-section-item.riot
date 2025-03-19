@@ -7,7 +7,7 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.fullName}
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== ""}
             class="element-holder-content
             {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
           {getPunc(props.schema.content.fullName, "left", "outerPunc")}
@@ -30,7 +30,7 @@
       <template if={props.schema.content.area !== childSchema.content.area
                     && childSchema.content.name !== ""}
                 each={childEntry in window.nvhFormattingEditor.getEntryChildren(props.entry, [])}>
-        <example-section-item if={childSchema.content.fullName === childEntry.fullName}
+        <example-section-item if={childSchema.content.fullName === childEntry.path}
                               schema={childSchema}
                               entry={childEntry}/>
       </template>

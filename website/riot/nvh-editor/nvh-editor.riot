@@ -10,8 +10,9 @@
             <nvh-element-style-editor if={dictData.userAccess.canEdit}/>
             <nvh-editor-item-toolbar if={dictData.userAccess.canEdit}/>
             <div class="nvh-editor-view-items {nvhData.revision ? 'pointerEventsNone' : ''}">
-               <nvh-editor-view-item element={nvhData.entry}
-                     read-only={isReadOnly()}/>
+               <example-section-item if={window.nvhFormattingEditor.currentLayout.schema !== null}
+                  schema={window.nvhFormattingEditor.currentLayout.schema.children[0]}
+                  entry={nvhData.entry}/>
             </div>
          </template>
          <template if={dictData.editorMode == "edit"}>
