@@ -17,6 +17,25 @@ class NVHFormattingEditorClass {
     observable(this);
   }
 
+  changeLayoutSchema() {
+    if (window.innerWidth < 440) {
+      if (window.nvhFormattingEditor.global.activeLayout !== "mobile") {
+        window.nvhFormattingEditor.global.activeLayout = "mobile";
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
+      }
+    } else if (window.innerWidth < 1020) {
+      if (window.nvhFormattingEditor.global.activeLayout !== "tablet") {
+        window.nvhFormattingEditor.global.activeLayout = "tablet";
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+      }
+    } else {
+      if (window.nvhFormattingEditor.global.activeLayout !== "desktop") {
+        window.nvhFormattingEditor.global.activeLayout = "desktop";
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+      }
+    }
+  }
+
   async createPDF(html_string) {
     return window.connection.post({
        url: `${window.API_URL}createPDF`,

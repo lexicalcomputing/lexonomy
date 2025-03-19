@@ -147,6 +147,7 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
+            window.onresize = this.isLayoutSchemaChange;
          },
 
          onMounted(){
@@ -159,10 +160,20 @@
                window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".nvh-editor-view-items")
             }
             window.scrollTo(0, 0)
+            this.isLayoutSchemaChange();
          },
 
          onBeforeUnmount(){
             window.CustomStyles.remove("nvhEditorCustomStyles")
+         },
+
+         isLayoutSchemaChange() {
+            let oldLayout = window.nvhFormattingEditor.global.activeLayout;
+            window.nvhFormattingEditor.changeLayoutSchema();
+            let newLayout = window.nvhFormattingEditor.global.activeLayout;
+            if (oldLayout !== newLayout) {
+               this.update()
+            }
          },
 
          isDictionaryExamplesLoadingChanged(){
