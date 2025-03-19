@@ -65,7 +65,7 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            window.onresize = this.isLayoutSchemaChange;
+            window.addEventListener("resize", this.isLayoutSchemaChange);
          },
 
          onMounted(){
@@ -73,12 +73,17 @@
             if(this.dictData.config.formatting.customCss){
                window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".nvh-editor-view-items")
             }
+            if (window.nvhFormattingEditor.currentLayout.schema === null) {
+               window.nvhFormattingEditor.initializeSchemas();
+               window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+            }
             this.isLayoutSchemaChange();
          },
 
          onBeforeUnmount(){
             this.removeEventListeners()
              window.CustomStyles.remove("nvhEditorCustomStyles")
+             window.removeEventListener("resize", this.isLayoutSchemaChange);
          },
 
          isLayoutSchemaChange() {
@@ -86,7 +91,7 @@
             window.nvhFormattingEditor.changeLayoutSchema();
             let newLayout = window.nvhFormattingEditor.global.activeLayout;
             if (oldLayout !== newLayout) {
-               this.update()
+               this.update();
             }
          },
 

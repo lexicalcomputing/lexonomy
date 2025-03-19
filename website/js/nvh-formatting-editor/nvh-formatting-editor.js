@@ -2,7 +2,7 @@ class NVHFormattingEditorClass {
   constructor() {
     this.formattingEditorComponent = null,
     this.elementsSchema = null,
-    this.global = null,
+    this.global = this.initializeGlobalAttributes(),
     this.currentLayout = {
       schema: null,
       schemaHistory: null,
@@ -15,6 +15,27 @@ class NVHFormattingEditorClass {
       pdf: null,
     }
     observable(this);
+  }
+
+  initializeGlobalAttributes() {
+    return {
+      canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
+      canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
+      canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
+      draggedElementFullName: "",
+      draggedPlaceholder: null,
+      dropInfo: {
+        wasSuccessful: false,
+        index: null,
+      },
+      canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
+      selectedPlaceholderAreaFullName: "",
+      selectedPlaceholderFullName: "",
+      selectedPlaceholder: null,
+      selectedPlaceholderParentAreaFullName: "",
+      parent: null,
+      activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
+    }
   }
 
   changeLayoutSchema() {
