@@ -145,28 +145,11 @@
           this.setSchemaFromImportedFile(this.state.fileReader.result);
         }.bind(this),
         window.nvhFormattingEditor.formattingEditorComponent = this;
-        window.nvhFormattingEditor.global = {
-          canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
-          canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
-          canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
-          draggedElementFullName: "",
-          draggedPlaceholder: null,
-          dropInfo: {
-            wasSuccessful: false,
-            index: null,
-          },
-          canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
-          selectedPlaceholderAreaFullName: "",
-          selectedPlaceholderFullName: "",
-          selectedPlaceholder: null,
-          selectedPlaceholderParentAreaFullName: "",
-          parent: null,
-          activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
-        };
-        window.nvhFormattingEditor.initializeSchemas();
-        window.nvhFormattingEditor.currentLayout.schema = window.nvhFormattingEditor.layout.desktop.schema;
-        window.nvhFormattingEditor.currentLayout.schemaHistory = window.nvhFormattingEditor.layout.desktop.schemaHistory;
-        window.nvhFormattingEditor.currentLayout.schemaHistoryIndex = window.nvhFormattingEditor.layout.desktop.schemaHistoryIndex;
+        window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
+        if (window.nvhFormattingEditor.currentLayout.schema === null) {
+          window.nvhFormattingEditor.initializeSchemas();
+          window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+        }
       },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {

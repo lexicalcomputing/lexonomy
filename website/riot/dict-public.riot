@@ -202,6 +202,10 @@
             if(this.dictData.config.formatting.customCss){
                window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".nvh-editor-view-items")
             }
+            if (window.nvhFormattingEditor.currentLayout.schema === null) {
+               window.nvhFormattingEditor.initializeSchemas();
+               window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+            }
             window.scrollTo(0, 0)
             this.isLayoutSchemaChange();
          },
