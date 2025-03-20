@@ -187,7 +187,7 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
-            window.onresize = this.isLayoutSchemaChange;
+            window.addEventListener("resize", this.isLayoutSchemaChange);
          },
 
          onMounted(){
@@ -212,17 +212,15 @@
 
          onBeforeUnmount(){
             window.CustomStyles.remove("nvhEditorCustomStyles")
+            window.removeEventListener("resize", this.isLayoutSchemaChange);
          },
 
          isLayoutSchemaChange() {
-            if (window.nvhFormattingEditor.global === null) {
-               return;
-            }
             let oldLayout = window.nvhFormattingEditor.global.activeLayout;
             window.nvhFormattingEditor.changeLayoutSchema();
             let newLayout = window.nvhFormattingEditor.global.activeLayout;
             if (oldLayout !== newLayout) {
-               this.update()
+               this.update();
             }
          },
 
