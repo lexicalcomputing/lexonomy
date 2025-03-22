@@ -58,7 +58,8 @@
       },
       getCssStyleClass(fullName) {
         /* NOTE: Inspiration from: nvh-editor-view-item.riot */
-        let styles = window.nvhStore.getElementStyle(fullName);
+        let styles = window.nvhFormattingEditor.currentLayout.elements === undefined || window.nvhFormattingEditor.currentLayout.elements === null
+                    ? window.nvhStore.getElementStyle(fullName) : window.nvhFormattingEditor.currentLayout.elements[fullName];
         let result_classes = "";
         for (let i = 0; i < Object.keys(styles).length; i++) {
           let option = Object.keys(styles)[i];
