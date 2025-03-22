@@ -1,4 +1,5 @@
 <dict-config-formatting>
+  <loading-overlay if={state.isLoading || state.isSaving}/>
   <h1 class="formatting-page-title">Entry Formatting</h1>
   <div class="formatting-page-layout-container">
     <div onclick={onLayoutClick.bind(this, "desktop")}
@@ -93,12 +94,15 @@
                 <i class="material-icons">file_download</i>
               </label>
             </div>
-            <a href={createSchemaURL()} download="schema.json" id="export-link">
-              <div id="export-json-wrapper"
-                  title="Export schema to JSON">
-                <i class="material-icons">file_upload</i>
-              </div>
-            </a>
+            <div id="export-json-wrapper"
+                title="Export schema to JSON"
+                onclick={onExportJSON}>
+              <i class="material-icons">file_upload</i>
+            </div>
+            <div id="save-button-wrapper"
+                onclick={saveSchemas}>
+              SAVE
+            </div>
             <div style="width: 250px;"></div>
             <div id="reset-icon-wrapper"
                 onclick={window.nvhFormattingEditor.resetSchema}>
@@ -132,6 +136,8 @@
   <script>
     export default {
       state: {
+        isSaving: false,
+        isLoading: true,
         showElements: true,
         showStyle: false,
         showEditing: true,
@@ -147,9 +153,44 @@
         window.nvhFormattingEditor.formattingEditorComponent = this;
         window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
         if (window.nvhFormattingEditor.currentLayout.schema === null) {
-          window.nvhFormattingEditor.initializeSchemas();
+          window.nvhFormattingEditor.initializeBlankSchemas();
           window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
         }
+      },
+      onMounted() {
+        this.store.loadDictionaryConfig("formatting")
+          .done(response => {
+              if (response.content.layout) {
+                window.nvhFormattingEditor.layout = {
+                  desktop: {
+                    schema: response.content.layout.desktop.schema,
+                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.desktop.schema))],
+                    schemaHistoryIndex: 0,
+                  },
+                  tablet: {
+                    schema: response.content.layout.tablet.schema,
+                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.tablet.schema))],
+                    schemaHistoryIndex: 0,
+                  },
+                  mobile: {
+                    schema: response.content.layout.mobile.schema,
+                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.mobile.schema))],
+                    schemaHistoryIndex: 0,
+                  },
+                  pdf: {
+                    schema: response.content.layout.pdf.schema,
+                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.pdf.schema))],
+                    schemaHistoryIndex: 0,
+                  }
+                }
+              } else {
+                window.nvhFormattingEditor.initializeSchemas();
+              }
+              window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+          })
+          .always(() => {
+              this.update({isLoading: false})
+          })
       },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {
@@ -256,7 +297,7 @@
 
         return false;
       },
-      createSchemaURL() {
+      onExportJSON() {
         /*
         I do not export first "entry" placeholder, because it is default.
         I export only "orientation" and "fullName" of each placeholder because I can derive
@@ -267,7 +308,15 @@
         let blobContent = [JSON.stringify(exportSchema)];
         let blob = new Blob(blobContent, { type: "application/json" });
         let schemaURL = URL.createObjectURL(blob);
-        return schemaURL;
+
+        const tmpLink = document.createElement("a");
+        tmpLink.href = schemaURL;
+        tmpLink.download = "schema.json"
+        document.body.appendChild(tmpLink)
+        tmpLink.click();
+        document.body.removeChild(tmpLink)
+
+        URL.revokeObjectURL(schemaURL);
       },
       importSchema(event) {
         let file = event.target.files[0];
@@ -382,9 +431,30 @@
         tmpLink.click();
         document.body.removeChild(tmpLink)
 
-        URL.revokeObjectURL(blobUrl)
-
-        return blobUrl;
+        URL.revokeObjectURL(blobUrl);
+      },
+      saveSchemas() {
+        this.update({isSaving: true});
+        let elementsConfig = window.nvhStore.data.formatting.elements;
+        let layoutConfig = {
+          desktop: {
+            schema: window.nvhFormattingEditor.layout.desktop.schema,
+          },
+          tablet: {
+            schema: window.nvhFormattingEditor.layout.tablet.schema,
+          },
+          mobile: {
+            schema: window.nvhFormattingEditor.layout.mobile.schema,
+          },
+          pdf: {
+            schema: window.nvhFormattingEditor.layout.pdf.schema,
+          },
+        };
+        this.store.updateDictionaryConfig("formatting", {
+          elements: elementsConfig,
+          layout: layoutConfig,
+        })
+              .always(() => this.update({isSaving: false}));
       }
     }
   </script>
@@ -498,13 +568,6 @@
       transform: scale(1.1);
     }
 
-    #export-link {
-      text-decoration: none;
-    }
-    #export-link:hover {
-      color: black;
-    }
-
     #import-json-input {
       display: none;
     }
@@ -518,7 +581,7 @@
       margin-left: 10px;
     }
 
-    #export-json-wrapper, #import-json-wrapper, #export-pdf {
+    #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -527,12 +590,12 @@
       background-color: rgb(188, 223, 219);
     }
 
-    #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover {
+    #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover {
       transform: scale(1.05);
       background-color: rgb(174, 203, 199);
       cursor: pointer;
     }
-    #export-json-wrapper:active, #import-json-wrapper:active, #export-pdf:active {
+    #export-json-wrapper:active, #import-json-wrapper:active, #export-pdf:active, #save-button-wrapper:active {
       transform: scale(1.1);
     }
 

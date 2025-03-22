@@ -160,6 +160,35 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
   }
 
+  initializeBlankSchemas() {
+    let initialBlankSchema = window.nvhFormattingEditor.createBlankSchema();
+
+    window.nvhFormattingEditor.layout.desktop = {
+      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.layout.tablet = {
+      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.layout.mobile = {
+      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.layout.pdf = {
+      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
+      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
+      schemaHistoryIndex: 0,
+    }
+    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+    window.nvhFormattingEditor.global.selectedPlaceholder = null;
+    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+  }
+
   initializeSchemas() {
     let initialSchema = window.nvhFormattingEditor.createSchema();
 
@@ -211,6 +240,14 @@ class NVHFormattingEditorClass {
           children: [],
         }
       ]
+    }
+    return schema;
+  }
+
+  createBlankSchema() {
+    let schema = {
+      orientation: "column",
+      children: []
     }
     return schema;
   }
