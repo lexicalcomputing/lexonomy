@@ -5,8 +5,8 @@ class NVHFormattingEditorClass {
     this.global = this.initializeGlobalAttributes(),
     this.currentLayout = {
       schema: null,
-      schemaHistory: null,
-      schemaHistoryIndex: null,
+      elements: null,
+      history: null,
     }
     this.layout = {
       desktop: null,
@@ -160,57 +160,45 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
   }
 
-  initializeBlankSchemas() {
-    let initialBlankSchema = window.nvhFormattingEditor.createBlankSchema();
-
-    window.nvhFormattingEditor.layout.desktop = {
-      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
-      schemaHistoryIndex: 0,
-    }
-    window.nvhFormattingEditor.layout.tablet = {
-      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
-      schemaHistoryIndex: 0,
-    }
-    window.nvhFormattingEditor.layout.mobile = {
-      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
-      schemaHistoryIndex: 0,
-    }
-    window.nvhFormattingEditor.layout.pdf = {
-      schema: JSON.parse(JSON.stringify(initialBlankSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialBlankSchema))],
-      schemaHistoryIndex: 0,
-    }
-    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholder = null;
-    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-  }
-
   initializeSchemas() {
     let initialSchema = window.nvhFormattingEditor.createSchema();
+    let defaultElements = window.store.data.config.formatting.elements;
 
     window.nvhFormattingEditor.layout.desktop = {
       schema: JSON.parse(JSON.stringify(initialSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
-      schemaHistoryIndex: 0,
+      elements: JSON.parse(JSON.stringify(defaultElements)),
+      history: {
+        index: 0,
+        schema: [JSON.parse(JSON.stringify(initialSchema))],
+        elements: [JSON.parse(JSON.stringify(defaultElements))],
+      }
     }
     window.nvhFormattingEditor.layout.tablet = {
       schema: JSON.parse(JSON.stringify(initialSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
-      schemaHistoryIndex: 0,
+      elements: JSON.parse(JSON.stringify(defaultElements)),
+      history: {
+        index: 0,
+        schema: [JSON.parse(JSON.stringify(initialSchema))],
+        elements: [JSON.parse(JSON.stringify(defaultElements))],
+      }
     }
     window.nvhFormattingEditor.layout.mobile = {
       schema: JSON.parse(JSON.stringify(initialSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
-      schemaHistoryIndex: 0,
+      elements: JSON.parse(JSON.stringify(defaultElements)),
+      history: {
+        index: 0,
+        schema: [JSON.parse(JSON.stringify(initialSchema))],
+        elements: [JSON.parse(JSON.stringify(defaultElements))],
+      }
     }
     window.nvhFormattingEditor.layout.pdf = {
       schema: JSON.parse(JSON.stringify(initialSchema)),
-      schemaHistory: [JSON.parse(JSON.stringify(initialSchema))],
-      schemaHistoryIndex: 0,
+      elements: JSON.parse(JSON.stringify(defaultElements)),
+      history: {
+        index: 0,
+        schema: [JSON.parse(JSON.stringify(initialSchema))],
+        elements: [JSON.parse(JSON.stringify(defaultElements))],
+      }
     }
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
@@ -244,14 +232,6 @@ class NVHFormattingEditorClass {
     return schema;
   }
 
-  createBlankSchema() {
-    let schema = {
-      orientation: "column",
-      children: []
-    }
-    return schema;
-  }
-
   clearStatuses(state) {
     if (state === null) {
       return;
@@ -265,9 +245,10 @@ class NVHFormattingEditorClass {
   }
 
   undoSchema() {
-    if (window.nvhFormattingEditor.currentLayout.schemaHistoryIndex > 0) {
-      window.nvhFormattingEditor.currentLayout.schemaHistoryIndex -= 1;
-      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schemaHistory.at(window.nvhFormattingEditor.currentLayout.schemaHistoryIndex)));
+    if (window.nvhFormattingEditor.currentLayout.history.index > 0) {
+      window.nvhFormattingEditor.currentLayout.history.index -= 1;
+      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.schema.at(window.nvhFormattingEditor.currentLayout.history.index)));
+      window.nvhFormattingEditor.currentLayout.elements = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.elements.at(window.nvhFormattingEditor.currentLayout.history.index)));
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
@@ -278,9 +259,10 @@ class NVHFormattingEditorClass {
   }
 
   redoSchema() {
-    if (window.nvhFormattingEditor.currentLayout.schemaHistoryIndex < window.nvhFormattingEditor.currentLayout.schemaHistory.length - 1) {
-      window.nvhFormattingEditor.currentLayout.schemaHistoryIndex += 1;
-      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schemaHistory.at(window.nvhFormattingEditor.currentLayout.schemaHistoryIndex)));
+    if (window.nvhFormattingEditor.currentLayout.history.index < window.nvhFormattingEditor.currentLayout.history.schema.length - 1) {
+      window.nvhFormattingEditor.currentLayout.history.index += 1;
+      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.schema.at(window.nvhFormattingEditor.currentLayout.history.index)));
+      window.nvhFormattingEditor.currentLayout.elements = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.elements.at(window.nvhFormattingEditor.currentLayout.history.index)));
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
       window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";

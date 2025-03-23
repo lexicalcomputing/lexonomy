@@ -1,5 +1,5 @@
 <dict-config-formatting>
-  <loading-overlay if={state.isLoading || state.isSaving}/>
+  <loading-overlay if={state.isSaving}/>
   <h1 class="formatting-page-title">Entry Formatting</h1>
   <div class="formatting-page-layout-container">
     <div onclick={onLayoutClick.bind(this, "desktop")}
@@ -137,7 +137,6 @@
     export default {
       state: {
         isSaving: false,
-        isLoading: true,
         showElements: true,
         showStyle: false,
         showEditing: true,
@@ -152,45 +151,61 @@
         }.bind(this),
         window.nvhFormattingEditor.formattingEditorComponent = this;
         window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
-        if (window.nvhFormattingEditor.currentLayout.schema === null) {
-          window.nvhFormattingEditor.initializeBlankSchemas();
-          window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
-        }
-      },
-      onMounted() {
-        this.store.loadDictionaryConfig("formatting")
-          .done(response => {
-              if (response.content.layout) {
-                window.nvhFormattingEditor.layout = {
-                  desktop: {
-                    schema: response.content.layout.desktop.schema,
-                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.desktop.schema))],
-                    schemaHistoryIndex: 0,
-                  },
-                  tablet: {
-                    schema: response.content.layout.tablet.schema,
-                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.tablet.schema))],
-                    schemaHistoryIndex: 0,
-                  },
-                  mobile: {
-                    schema: response.content.layout.mobile.schema,
-                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.mobile.schema))],
-                    schemaHistoryIndex: 0,
-                  },
-                  pdf: {
-                    schema: response.content.layout.pdf.schema,
-                    schemaHistory: [JSON.parse(JSON.stringify(response.content.layout.pdf.schema))],
-                    schemaHistoryIndex: 0,
-                  }
-                }
-              } else {
-                window.nvhFormattingEditor.initializeSchemas();
+
+        let formatting = window.store.data.config.formatting;
+
+        if (formatting.layout !== undefined && formatting.layout !== null) {
+          let desktopElements = formatting.layout.desktop.elements !== undefined && formatting.layout.desktop.elements !== null
+                                  ? formatting.layout.desktop.elements : formatting.elements;
+          let tabletElements = formatting.layout.tablet.elements !== undefined && formatting.layout.tablet.elements !== null
+                                  ? formatting.layout.tablet.elements : formatting.elements;
+          let mobileElements = formatting.layout.mobile.elements !== undefined && formatting.layout.mobile.elements !== null
+                                  ? formatting.layout.mobile.elements : formatting.elements;
+          let pdfElements = formatting.layout.pdf.elements !== undefined && formatting.layout.pdf.elements !== null
+                                  ? formatting.layout.pdf.elements : formatting.elements;
+
+          window.nvhFormattingEditor.layout = {
+            desktop: {
+              schema: formatting.layout.desktop.schema,
+              elements: JSON.parse(JSON.stringify(desktopElements)),
+              history: {
+                index: 0,
+                schema: [JSON.parse(JSON.stringify(formatting.layout.desktop.schema))],
+                elements: [JSON.parse(JSON.stringify(desktopElements))],
               }
-              window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
-          })
-          .always(() => {
-              this.update({isLoading: false})
-          })
+            },
+            tablet: {
+              schema: formatting.layout.tablet.schema,
+              elements: JSON.parse(JSON.stringify(tabletElements)),
+              history: {
+                index: 0,
+                schema: [JSON.parse(JSON.stringify(formatting.layout.tablet.schema))],
+                elements: [JSON.parse(JSON.stringify(tabletElements))],
+              }
+            },
+            mobile: {
+              schema: formatting.layout.mobile.schema,
+              elements: JSON.parse(JSON.stringify(mobileElements)),
+              history: {
+                index: 0,
+                schema: [JSON.parse(JSON.stringify(formatting.layout.mobile.schema))],
+                elements: [JSON.parse(JSON.stringify(mobileElements))],
+              }
+            },
+            pdf: {
+              schema: formatting.layout.pdf.schema,
+              elements: JSON.parse(JSON.stringify(pdfElements)),
+              history: {
+                index: 0,
+                schema: [JSON.parse(JSON.stringify(formatting.layout.pdf.schema))],
+                elements: [JSON.parse(JSON.stringify(pdfElements))],
+              }
+            }
+          }
+        } else {
+          window.nvhFormattingEditor.initializeSchemas();
+        }
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
       },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {
@@ -214,10 +229,13 @@
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
         */
-        if (this.isSchemaChanged(window.nvhFormattingEditor.currentLayout.schemaHistory.at(window.nvhFormattingEditor.currentLayout.schemaHistoryIndex), window.nvhFormattingEditor.currentLayout.schema)) {
-          window.nvhFormattingEditor.currentLayout.schemaHistory.length = window.nvhFormattingEditor.currentLayout.schemaHistoryIndex + 1;
-          window.nvhFormattingEditor.currentLayout.schemaHistory.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schema)));
-          window.nvhFormattingEditor.currentLayout.schemaHistoryIndex += 1;
+        if (this.isElementsStyleChanged(window.nvhFormattingEditor.currentLayout.history.elements.at(window.nvhFormattingEditor.currentLayout.history.index), window.nvhFormattingEditor.currentLayout.elements)
+            || this.isSchemaChanged(window.nvhFormattingEditor.currentLayout.history.schema.at(window.nvhFormattingEditor.currentLayout.history.index), window.nvhFormattingEditor.currentLayout.schema)) {
+          window.nvhFormattingEditor.currentLayout.history.elements.length = window.nvhFormattingEditor.currentLayout.history.index + 1;
+          window.nvhFormattingEditor.currentLayout.history.schema.length = window.nvhFormattingEditor.currentLayout.history.index + 1;
+          window.nvhFormattingEditor.currentLayout.history.elements.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.elements)));
+          window.nvhFormattingEditor.currentLayout.history.schema.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schema)));
+          window.nvhFormattingEditor.currentLayout.history.index += 1;
         }
       },
 
@@ -295,6 +313,23 @@
           }
         }
 
+        return false;
+      },
+      isElementsStyleChanged(oldElements, newElements) {
+        for (let element of Object.entries(oldElements)) {
+          let path = element[0];
+
+          if (Object.entries(oldElements[path]).length !== Object.entries(newElements[path]).length) {
+            return true;
+          }
+
+          for (let style of Object.entries(oldElements[path])) {
+            let styleName = style[0];
+            if (oldElements[path][styleName] !== newElements[path][styleName]) {
+              return true;
+            }
+          }
+        }
         return false;
       },
       onExportJSON() {
@@ -439,15 +474,19 @@
         let layoutConfig = {
           desktop: {
             schema: window.nvhFormattingEditor.layout.desktop.schema,
+            elements: window.nvhFormattingEditor.layout.desktop.elements,
           },
           tablet: {
             schema: window.nvhFormattingEditor.layout.tablet.schema,
+            elements: window.nvhFormattingEditor.layout.tablet.elements,
           },
           mobile: {
             schema: window.nvhFormattingEditor.layout.mobile.schema,
+            elements: window.nvhFormattingEditor.layout.mobile.elements,
           },
           pdf: {
             schema: window.nvhFormattingEditor.layout.pdf.schema,
+            elements: window.nvhFormattingEditor.layout.pdf.elements,
           },
         };
         this.store.updateDictionaryConfig("formatting", {

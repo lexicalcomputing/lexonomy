@@ -266,8 +266,8 @@
         if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
           return;
         }
-        window.nvhStore.changeElementStyleOption(window.nvhFormattingEditor.global.selectedPlaceholderFullName, option, value);
-        window.nvhStore.saveStyle();
+        let fullName = window.nvhFormattingEditor.global.selectedPlaceholderFullName;
+        window.nvhFormattingEditor.currentLayout.elements[fullName][option] = value
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onSelectChange(value) {
