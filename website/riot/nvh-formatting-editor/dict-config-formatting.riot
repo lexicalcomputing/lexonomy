@@ -267,6 +267,7 @@
 
       onLayoutClick(layoutName) {
         window.nvhFormattingEditor.global.activeLayout = layoutName;
+        window.nvhFormattingEditor.global.selectedPlaceholder = null;
         /*TODO: Is there a way how to simplify this?*/
         switch(layoutName) {
           case "desktop":
@@ -470,6 +471,8 @@
       },
       saveSchemas() {
         this.update({isSaving: true});
+        window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+        window.nvhFormattingEditor.global.selectedPlaceholder = null;
         let elementsConfig = window.nvhStore.data.formatting.elements;
         let layoutConfig = {
           desktop: {

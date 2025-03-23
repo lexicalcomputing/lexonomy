@@ -485,7 +485,7 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholder = null;
-    window.nvhFormattingEditor.formattingEditorComponent.update(); // NOTE: here was updated only edit-layout, but maybe does not matter
+    window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
   }
 
   childWithInheritedArea(child, state) {
