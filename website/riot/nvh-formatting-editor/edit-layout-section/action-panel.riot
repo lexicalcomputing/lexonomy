@@ -14,12 +14,6 @@
         onclick={duplicateElement}>
       <i class="small material-icons">control_point_duplicate</i>
     </div>
-    <div class="action"
-        id="action-delete"
-        title="Delete"
-        onclick={() => window.nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
-      <i class="small material-icons">delete</i>
-    </div>
     <div if={props.parentState.orientation === "column"} 
         class="action"
         id="action-moveup"
@@ -52,6 +46,12 @@
         title={props.state.orientation === "column" ? "Content of this area is VERTICALLY aligned" : "Content of this area is HORIZONTALLY aligned"}
         onclick={changeOrientation}>
         <div class="action-orientation-label">{props.state.orientation === "column" ? "V" : "H"}</div>
+    </div>
+    <div class="action"
+        id="action-delete"
+        title="Delete"
+        onclick={() => window.nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
+      <i class="small material-icons">delete</i>
     </div>
   </div>
 
