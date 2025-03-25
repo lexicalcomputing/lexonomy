@@ -350,7 +350,7 @@
         all the attributes from them.
         */
         let exportSchema = {children: []};
-        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.currentLayout.schema.children[0]);
+        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.currentLayout.schema);
         let blobContent = [JSON.stringify(exportSchema)];
         let blob = new Blob(blobContent, { type: "application/json" });
         let schemaURL = URL.createObjectURL(blob);
@@ -370,15 +370,13 @@
       },
       setSchemaFromImportedFile(importedSchemaString) {
         let importedSchema = JSON.parse(importedSchemaString);
-        if (!this.isImportedSchemaValid(importedSchema, "entry")) {
+        if (!this.isImportedSchemaValid(importedSchema, "")) {
           console.log("Imported schema is not valid");
           return;
         }
-        let defaultNewSchema = window.nvhFormattingEditor.createSchema();
         let newSchema = {children: []};
-        this.recreateImportedSchema(newSchema, importedSchema, "entry");
-        defaultNewSchema.children[0].children = newSchema.children;
-        window.nvhFormattingEditor.currentLayout.schema = defaultNewSchema;
+        this.recreateImportedSchema(newSchema, importedSchema, "");
+        window.nvhFormattingEditor.currentLayout.schema = newSchema;
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       createExportedSchema(exportSchema, editingSchema) {

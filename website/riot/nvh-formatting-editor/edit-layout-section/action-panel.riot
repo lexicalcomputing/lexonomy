@@ -1,6 +1,7 @@
 <action-panel>
   <div class="action-panel-wrapper">
-    <div class="action"
+    <div if={!props.isBaseLevel} 
+        class="action"
         id="action-drag"
         title="Drag"
         draggable="true"
@@ -8,34 +9,35 @@
         ondragend={(event) => onDragEnd(props.index, props.parentState, props.state)}>
       <i class="small material-icons">drag_handle</i>
     </div>
-    <div class="action"
+    <div if={!props.isBaseLevel}
+        class="action"
         id="action-duplicate"
         title="Duplicate"
         onclick={duplicateElement}>
       <i class="small material-icons">content_copy</i>
     </div>
-    <div if={props.parentState.orientation === "column"} 
+    <div if={props.parentState.orientation === "column" && !props.isBaseLevel} 
         class="action"
         id="action-moveup"
         title="Move up"
         onclick={decreaseElementIndex}>
       <i class="small material-icons">arrow_upward</i>
     </div>
-    <div if={props.parentState.orientation === "column"} 
+    <div if={props.parentState.orientation === "column" && !props.isBaseLevel} 
         class="action"
         id="action-movedown"
         title="Move down"
         onclick={increaseElementIndex}>
       <i class="small material-icons">arrow_downward</i>
     </div>
-    <div if={props.parentState.orientation === "row"} 
+    <div if={props.parentState.orientation === "row" && !props.isBaseLevel} 
         class="action"
         id="action-moveleft"
         title="Move left"
         onclick={decreaseElementIndex}>
       <i class="small material-icons">arrow_back</i>
     </div>
-    <div if={props.parentState.orientation === "row"} 
+    <div if={props.parentState.orientation === "row" && !props.isBaseLevel} 
         class="action"
         id="action-moveright"
         title="Move right"
@@ -50,7 +52,8 @@
       <i class="small material-icons" if={props.state.orientation === "column"}>swap_vert</i>
       <i class="small material-icons" if={props.state.orientation === "row"}>swap_horiz</i>
     </div>
-    <div class="action"
+    <div if={!props.isBaseLevel}
+        class="action"
         id="action-delete"
         title="Delete"
         onclick={() => window.nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
