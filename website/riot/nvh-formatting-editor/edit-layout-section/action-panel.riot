@@ -12,7 +12,7 @@
         id="action-duplicate"
         title="Duplicate"
         onclick={duplicateElement}>
-      <i class="small material-icons">control_point_duplicate</i>
+      <i class="small material-icons">content_copy</i>
     </div>
     <div if={props.parentState.orientation === "column"} 
         class="action"
@@ -43,9 +43,12 @@
       <i class="small material-icons">arrow_forward</i>
     </div>
     <div class="action action-orientation-{props.state.orientation}"
-        title={props.state.orientation === "column" ? "Content of this area is VERTICALLY aligned" : "Content of this area is HORIZONTALLY aligned"}
+        title={props.state.orientation === "column"
+          ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
+            : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
         onclick={changeOrientation}>
-        <div class="action-orientation-label">{props.state.orientation === "column" ? "V" : "H"}</div>
+      <i class="small material-icons" if={props.state.orientation === "column"}>swap_vert</i>
+      <i class="small material-icons" if={props.state.orientation === "row"}>swap_horiz</i>
     </div>
     <div class="action"
         id="action-delete"
