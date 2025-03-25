@@ -33,6 +33,8 @@
         <example-section-item if={childSchema.content.fullName === childEntry.path}
                               schema={childSchema}
                               entry={childEntry}/>
+      <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
+          class="element-holder-hovered-empty-entry"></div>
       </template>
     </div>
   </div>
@@ -128,6 +130,9 @@
       outline: none;
     }
     .element-holder-hovered:has(.element-holder-hovered-empty) {
+      outline: none;
+    }
+    .element-holder-hovered:has( > .element-holder > .element-holder-hovered-empty-entry) {
       outline: none;
     }
     .element-holder-active {
