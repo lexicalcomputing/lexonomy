@@ -1,40 +1,50 @@
 <dict-config-formatting>
   <loading-overlay if={state.isSaving}/>
   <h1 class="formatting-page-title">Entry Formatting</h1>
-  <div class="formatting-page-layout-container">
-    <div onclick={onLayoutClick.bind(this, "desktop")}
-        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : ""}">
-      <i class="small material-icons">desktop_windows</i>
+  <div class="formatting-page-containers">
+    <div class="formatting-page-layout-container">
+      <div onclick={onLayoutClick.bind(this, "desktop")}
+          title="Desktop layout"
+          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : ""}">
+        <i class="small material-icons">desktop_windows</i>
+      </div>
+      <div onclick={onLayoutClick.bind(this, "tablet")}
+          title="Tablet layout"
+          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : ""}">
+        <i class="small material-icons">tablet</i>
+      </div>
+      <div onclick={onLayoutClick.bind(this, "mobile")}
+          title="Mobile phone layout"
+          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : ""}">
+        <i class="small material-icons">phone_android</i>
+      </div>
+      <div onclick={onLayoutClick.bind(this, "pdf")}
+          title="Export to PDF layout"
+          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : ""}">
+        <i class="small material-icons">picture_as_pdf</i>
+      </div>
     </div>
-    <div onclick={onLayoutClick.bind(this, "tablet")}
-        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : ""}">
-      <i class="small material-icons">tablet</i>
-    </div>
-    <div onclick={onLayoutClick.bind(this, "mobile")}
-        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : ""}">
-      <i class="small material-icons">phone_android</i>
-    </div>
-    <div onclick={onLayoutClick.bind(this, "pdf")}
-        class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : ""}">
-      <i class="small material-icons">picture_as_pdf</i>
-    </div>
-  </div>
-  <div class="formatting-page-visibility-container">
-    <div onclick={onSectionClick.bind(this, "showElements")}
-        class="formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
-      <i class="small material-icons">sort</i>
-    </div>
-    <div onclick={onSectionClick.bind(this, "showStyle")}
-        class="formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
-      <i class="small material-icons">format_paint</i>
-    </div>
-    <div onclick={onSectionClick.bind(this, "showEditing")}
-        class="formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
-      <i class="small material-icons">edit</i>
-    </div>
-    <div onclick={onSectionClick.bind(this, "showExample")}
-        class="formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
-      <i class="small material-icons">view_compact</i>
+    <div class="formatting-page-visibility-container">
+      <div onclick={onSectionClick.bind(this, "showElements")}
+          title="Element list panel"
+          class="formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
+        <i class="small material-icons">sort</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "showStyle")}
+          title="Style panel"
+          class="formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
+        <i class="small material-icons">format_paint</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "showEditing")}
+          title="Layout panel"
+          class="formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
+        <i class="small material-icons">edit</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "showExample")}
+          title="Preview panel"
+          class="formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
+        <i class="small material-icons">view_compact</i>
+      </div>
     </div>
   </div>
   <div class="formatting-page-wrapper-container">
@@ -91,13 +101,13 @@
                   accept=".json"
                   onchange={importSchema}/>
               <label id="import-json-label" for="import-json-input">
-                <i class="material-icons">file_download</i>
+                <i class="material-icons" style="color: white">file_download</i>
               </label>
             </div>
             <div id="export-json-wrapper"
                 title="Export schema to JSON"
                 onclick={onExportJSON}>
-              <i class="material-icons">file_upload</i>
+              <i class="material-icons" style="color: white">file_upload</i>
             </div>
             <div id="save-button-wrapper"
                 onclick={saveSchemas}>
@@ -510,6 +520,13 @@
       --color-is-dragged-over-light: rgb(255, 245, 217);
       --color-is-active: rgb(21, 93, 225);
       --color-is-hovered: rgb(132, 155, 237);
+      --color-grey-light: #ebebeb;
+      --color-grey-very-light: #f5f5f5;
+      --color-grey-normal: #d3d3d3;
+      --color-black-normal: #231f20;
+      --color-black-dark: #000;
+      --color-red-normal: #c62132;
+      --color-red-dark: #a61423;
     }
 
 
@@ -559,55 +576,24 @@
       background-color: rgb(240, 247, 246)
     }
 
-    #reset-icon-wrapper {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper, #reset-icon-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid black;
-      padding: 2px 4px;
-      background-color: rgb(232, 108, 102);
+      padding: 4px 8px;
+      color: white;
+      background-color: var(--color-black-normal);
     }
-    #reset-icon-wrapper:hover {
-      transform: scale(1.05);
-      background-color: rgb(240, 94, 87);
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, #reset-icon-wrapper:hover {
+      background-color: var(--color-black-dark);
       cursor: pointer;
-    }
-    #reset-icon-wrapper:active {
-      transform: scale(1.1);
     }
 
-    #undo-icon-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid black;
-      padding: 2px 4px;
-      background-color: rgb(166, 227, 240);
+    #save-button-wrapper {
+      background-color: var(--color-red-normal);
     }
-    #undo-icon-wrapper:hover {
-      transform: scale(1.05);
-      background-color: rgb(147, 219, 235);
-      cursor: pointer;
-    }
-    #undo-icon-wrapper:active {
-      transform: scale(1.1);
-    }
-
-    #redo-icon-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid black;
-      padding: 2px 4px;
-      background-color: rgb(166, 240, 202);
-    }
-    #redo-icon-wrapper:hover {
-      transform: scale(1.05);
-      background-color: rgb(146, 235, 189);
-      cursor: pointer;
-    }
-    #redo-icon-wrapper:active {
-      transform: scale(1.1);
+    #save-button-wrapper:hover {
+      background-color: var(--color-red-dark);
     }
 
     #import-json-input {
@@ -623,27 +609,12 @@
       margin-left: 10px;
     }
 
-    #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid black;
-      padding: 2px 4px;
-      background-color: rgb(188, 223, 219);
-    }
-
-    #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover {
-      transform: scale(1.05);
-      background-color: rgb(174, 203, 199);
-      cursor: pointer;
-    }
-    #export-json-wrapper:active, #import-json-wrapper:active, #export-pdf:active, #save-button-wrapper:active {
-      transform: scale(1.1);
-    }
-
-
     .formatting-page-title {
       text-wrap: nowrap;
+    }
+    .formatting-page-containers {
+      display: flex;
+      gap: 10px;
     }
     .formatting-page-visibility-container, .formatting-page-layout-container {
       display: flex;
@@ -685,26 +656,22 @@
     }
     .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover {
       cursor: pointer;
-      transform: scale(1.05);
-    }
-    .formatting-page-layout-item:active, .formatting-page-visibility-item:active {
-      transform: scale(1.1);
     }
     .formatting-page-layout-item {
-      background-color:rgb(230, 147, 64);
+      background-color: var(--color-grey-light);
     }
     .formatting-page-layout-item:hover {
-      background-color:rgb(214, 153, 32);
+      background-color: var(--color-grey-normal);
     }
     .formatting-page-visibility-item {
-      background-color:rgb(64, 230, 117);
+      background-color: var(--color-grey-light);
     }
     .formatting-page-visibility-item:hover {
-      background-color:rgb(32, 214, 90);
+      background-color: var(--color-grey-normal);
     }
 
     .item-inactive {
-      background-color:rgb(211, 232, 217);
+      background-color: var(--color-grey-very-light);
     }
 
 
