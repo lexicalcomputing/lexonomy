@@ -34,7 +34,7 @@
                               schema={childSchema}
                               entry={childEntry}/>
       <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
-          class="element-holder-hovered-empty-entry"></div>
+          class="element-holder-hovered-empty-entry" style="display: none"></div>
       </template>
     </div>
   </div>
