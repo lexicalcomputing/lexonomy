@@ -525,6 +525,8 @@
       --color-grey-normal: #d3d3d3;
       --color-black-normal: #231f20;
       --color-black-dark: #000;
+      --color-red-normal: #c62132;
+      --color-red-dark: #a61423;
     }
 
 
@@ -585,6 +587,13 @@
     #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, #reset-icon-wrapper:hover {
       background-color: var(--color-black-dark);
       cursor: pointer;
+    }
+
+    #save-button-wrapper {
+      background-color: var(--color-red-normal);
+    }
+    #save-button-wrapper:hover {
+      background-color: var(--color-red-dark);
     }
 
     #import-json-input {
