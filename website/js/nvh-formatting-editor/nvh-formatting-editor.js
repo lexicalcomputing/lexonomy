@@ -62,25 +62,19 @@ class NVHFormattingEditorClass {
     let tabletConfigured = window.nvhFormattingEditor.layout.tablet.configured === undefined ? false : window.nvhFormattingEditor.layout.tablet.configured;
     if (activeLayout === "mobile") {
       if (mobileConfigured) {
-        console.log("Layout mobile, set mobile");
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
       } else if (tabletConfigured) {
-        console.log("Layout mobile, set tablet");
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
       } else {
-        console.log("Layout mobile, set desktop");
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
       }
     } else if (activeLayout === "tablet") {
       if (tabletConfigured) {
-        console.log("Layout tablet, set tablet");
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
       } else {
-        console.log("Layout tablet, set desktop");
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
       }
     } else {
-      console.log("Layout desktop, set desktop");
       window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
     }
   }

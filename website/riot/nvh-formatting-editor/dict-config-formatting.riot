@@ -46,6 +46,10 @@
         <i class="small material-icons">view_compact</i>
       </div>
     </div>
+    <div id="save-button-wrapper"
+        onclick={saveSchemas}>
+      SAVE
+    </div>
   </div>
   <div class="formatting-page-wrapper-container">
     <div if={state.showElements}
@@ -109,11 +113,19 @@
                 onclick={onExportJSON}>
               <i class="material-icons" style="color: white">file_upload</i>
             </div>
-            <div id="save-button-wrapper"
-                onclick={saveSchemas}>
-              SAVE
+            <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
+                    && window.nvhFormattingEditor.currentLayout.configured === false}
+                class="configure-button-wrapper"
+                onclick={saveAndConfigureSchema}>
+              CONFIGURE
             </div>
-            <div style="width: 250px;"></div>
+            <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
+                    && window.nvhFormattingEditor.currentLayout.configured === true}
+                class="configure-button-wrapper"
+                onclick={saveAndUnconfigureSchema}>
+              UNCONFIGURE
+            </div>
+            <div style="width: 100px;"></div>
             <div id="reset-icon-wrapper"
                 onclick={window.nvhFormattingEditor.resetSchema}>
               RESET
@@ -509,12 +521,38 @@
             configured: window.nvhFormattingEditor.layout.pdf.configured,
           },
         };
-        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = true;
         this.store.updateDictionaryConfig("formatting", {
           elements: elementsConfig,
           layout: layoutConfig,
         })
-              .always(() => this.update({isSaving: false}));
+              .always(() => {
+                this.state.isSaving = false;
+                this.update();
+              });
+      },
+      saveAndConfigureSchema() {
+        this.update({isSaving: true});
+        let formatting = window.nvhStore.data.formatting;
+        let layoutConfig = formatting.layout;
+        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = true;
+        this.store.updateDictionaryConfig("formatting", formatting)
+              .always(() => {
+                this.state.isSaving = false;
+                window.nvhFormattingEditor.currentLayout.configured = true;
+                this.update();
+              });
+      },
+      saveAndUnconfigureSchema() {
+        this.update({isSaving: true});
+        let formatting = window.nvhStore.data.formatting;
+        let layoutConfig = formatting.layout;
+        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = false;
+        this.store.updateDictionaryConfig("formatting", formatting)
+              .always(() => {
+                this.state.isSaving = false;
+                window.nvhFormattingEditor.currentLayout.configured = false;
+                this.update();
+              });
       }
     }
   </script>
@@ -584,23 +622,24 @@
       background-color: rgb(240, 247, 246)
     }
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper, #reset-icon-wrapper {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper, .configure-button-wrapper, #reset-icon-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 4px 8px;
+      text-wrap: nowrap;
       color: white;
       background-color: var(--color-black-normal);
     }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, #reset-icon-wrapper:hover {
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, .configure-button-wrapper:hover, #reset-icon-wrapper:hover {
       background-color: var(--color-black-dark);
       cursor: pointer;
     }
 
-    #save-button-wrapper {
+    #save-button-wrapper, .configure-button-wrapper {
       background-color: var(--color-red-normal);
     }
-    #save-button-wrapper:hover {
+    #save-button-wrapper:hover, .configure-button-wrapper:hover {
       background-color: var(--color-red-dark);
     }
 
