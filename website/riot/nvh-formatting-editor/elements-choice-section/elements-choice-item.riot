@@ -25,10 +25,6 @@
 
         window.nvhFormattingEditor.global.draggedElementFullName = this.props.state.data.fullName;
 
-        let insideAdders = document.getElementsByClassName("inside-adder");
-        for (let insideAdder of insideAdders) {
-          insideAdder.classList.add("inside-adder-highligth");
-        }
         let adders = document.getElementsByClassName("adder");
         for (let adder of adders) {
           adder.classList.add("adder-highligth-plus");
@@ -38,10 +34,6 @@
       onDragEnd(event) {
         window.nvhFormattingEditor.global.draggedElementFullName = "";
 
-        let insideAdders = document.getElementsByClassName("inside-adder");
-        for (let insideAdder of insideAdders) {
-          insideAdder.classList.remove("inside-adder-highligth");
-        }
         let adders = document.getElementsByClassName("adder");
         for (let adder of adders) {
           adder.classList.remove("adder-highligth-plus");
