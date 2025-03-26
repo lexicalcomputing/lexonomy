@@ -24,28 +24,10 @@
         event.dataTransfer.setData("text/plain", data);
 
         window.nvhFormattingEditor.global.draggedElementFullName = this.props.state.data.fullName;
-
-        let adders = document.getElementsByClassName("adder");
-        for (let adder of adders) {
-          adder.classList.add("adder-highligth-plus");
-        }
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onDragEnd(event) {
         window.nvhFormattingEditor.global.draggedElementFullName = "";
-
-        let adders = document.getElementsByClassName("adder");
-        for (let adder of adders) {
-          adder.classList.remove("adder-highligth-plus");
-          /*
-          This is how I get the "adderIcon" and change its css.
-          It is not possible via getElementsByClassName, because the element
-          is not present in the markup anymore.
-          */
-          let adderIcon = adder.children[0].children[0].children[0].children[0];
-          adderIcon.classList.remove("adder-icon-wrapper-highligth-dragged");
-        }
-
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
