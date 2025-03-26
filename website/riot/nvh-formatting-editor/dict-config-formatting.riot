@@ -47,7 +47,8 @@
       </div>
     </div>
     <div id="save-button-wrapper"
-        onclick={saveSchemas}>
+        onclick={saveSchemas}
+        title="Save formatting (including layout and styles)">
       SAVE
     </div>
   </div>
@@ -91,11 +92,13 @@
           <h2>Editing</h2>
           <div id="buttons-box">
             <div id="undo-icon-wrapper"
-                onclick={window.nvhFormattingEditor.undoSchema}>
+                onclick={window.nvhFormattingEditor.undoSchema}
+                title="Step back">
               UNDO
             </div>
             <div id="redo-icon-wrapper"
-                onclick={window.nvhFormattingEditor.redoSchema}>
+                onclick={window.nvhFormattingEditor.redoSchema}
+                title="Step forward">
               REDO
             </div>
             <div id="import-json-wrapper"
@@ -116,18 +119,21 @@
             <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
                     && window.nvhFormattingEditor.currentLayout.configured === false}
                 class="configure-button-wrapper"
+                title={"Layout for this device is not configured.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}
                 onclick={saveAndConfigureSchema}>
               CONFIGURE
             </div>
             <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
                     && window.nvhFormattingEditor.currentLayout.configured === true}
                 class="configure-button-wrapper"
+                title={"Layout for this device is configured.\nWhen viewing the dictionary on this device, current layout will be seen."}
                 onclick={saveAndUnconfigureSchema}>
               UNCONFIGURE
             </div>
             <div style="width: 100px;"></div>
             <div id="reset-icon-wrapper"
-                onclick={window.nvhFormattingEditor.resetSchema}>
+                onclick={window.nvhFormattingEditor.resetSchema}
+                title="Reset current layout">
               RESET
             </div>
           </div>
