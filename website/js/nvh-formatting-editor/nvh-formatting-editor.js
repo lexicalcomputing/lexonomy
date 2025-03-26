@@ -42,18 +42,46 @@ class NVHFormattingEditorClass {
     if (window.innerWidth < 440) {
       if (window.nvhFormattingEditor.global.activeLayout !== "mobile") {
         window.nvhFormattingEditor.global.activeLayout = "mobile";
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
+        this.setClosestConfiguredLayout("mobile");
       }
     } else if (window.innerWidth < 1020) {
       if (window.nvhFormattingEditor.global.activeLayout !== "tablet") {
         window.nvhFormattingEditor.global.activeLayout = "tablet";
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+        this.setClosestConfiguredLayout("tablet");
       }
     } else {
       if (window.nvhFormattingEditor.global.activeLayout !== "desktop") {
         window.nvhFormattingEditor.global.activeLayout = "desktop";
+        this.setClosestConfiguredLayout("desktop");
+      }
+    }
+  }
+
+  setClosestConfiguredLayout(activeLayout) {
+    let mobileConfigured = window.nvhFormattingEditor.layout.mobile.configured === undefined ? false : window.nvhFormattingEditor.layout.mobile.configured;
+    let tabletConfigured = window.nvhFormattingEditor.layout.tablet.configured === undefined ? false : window.nvhFormattingEditor.layout.tablet.configured;
+    if (activeLayout === "mobile") {
+      if (mobileConfigured) {
+        console.log("Layout mobile, set mobile");
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
+      } else if (tabletConfigured) {
+        console.log("Layout mobile, set tablet");
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+      } else {
+        console.log("Layout mobile, set desktop");
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
       }
+    } else if (activeLayout === "tablet") {
+      if (tabletConfigured) {
+        console.log("Layout tablet, set tablet");
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+      } else {
+        console.log("Layout tablet, set desktop");
+        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+      }
+    } else {
+      console.log("Layout desktop, set desktop");
+      window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
     }
   }
 
@@ -165,6 +193,7 @@ class NVHFormattingEditorClass {
     let defaultElements = window.store.data.config.formatting.elements;
 
     window.nvhFormattingEditor.layout.desktop = {
+      configured: true,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
       history: {
@@ -174,6 +203,7 @@ class NVHFormattingEditorClass {
       }
     }
     window.nvhFormattingEditor.layout.tablet = {
+      configured: false,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
       history: {
@@ -183,6 +213,7 @@ class NVHFormattingEditorClass {
       }
     }
     window.nvhFormattingEditor.layout.mobile = {
+      configured: false,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
       history: {
@@ -192,6 +223,7 @@ class NVHFormattingEditorClass {
       }
     }
     window.nvhFormattingEditor.layout.pdf = {
+      configured: false,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
       history: {

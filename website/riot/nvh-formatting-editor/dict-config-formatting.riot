@@ -176,6 +176,7 @@
 
           window.nvhFormattingEditor.layout = {
             desktop: {
+              configured: true,
               schema: formatting.layout.desktop.schema,
               elements: JSON.parse(JSON.stringify(desktopElements)),
               history: {
@@ -185,6 +186,7 @@
               }
             },
             tablet: {
+              configured: formatting.layout.tablet.configured === undefined ? false : formatting.layout.tablet.configured,
               schema: formatting.layout.tablet.schema,
               elements: JSON.parse(JSON.stringify(tabletElements)),
               history: {
@@ -194,6 +196,7 @@
               }
             },
             mobile: {
+              configured: formatting.layout.mobile.configured === undefined ? false : formatting.layout.mobile.configured,
               schema: formatting.layout.mobile.schema,
               elements: JSON.parse(JSON.stringify(mobileElements)),
               history: {
@@ -203,6 +206,7 @@
               }
             },
             pdf: {
+              configured: formatting.layout.pdf.configured === undefined ? false : formatting.layout.pdf.configured,
               schema: formatting.layout.pdf.schema,
               elements: JSON.parse(JSON.stringify(pdfElements)),
               history: {
@@ -451,6 +455,7 @@
         /*
           Exported PDF file is prepared on backend via pdfkit library
         */
+        // TODO: If pdf layout not configured use desktop.
         let stringHTML = await window.nvhFormattingEditor.parseAllEntries();
         let response = await window.nvhFormattingEditor.createPDF(stringHTML);
         const encodedPDFString = response.pdf_string;
@@ -486,20 +491,25 @@
           desktop: {
             schema: window.nvhFormattingEditor.layout.desktop.schema,
             elements: window.nvhFormattingEditor.layout.desktop.elements,
+            configured: true,
           },
           tablet: {
             schema: window.nvhFormattingEditor.layout.tablet.schema,
             elements: window.nvhFormattingEditor.layout.tablet.elements,
+            configured: window.nvhFormattingEditor.layout.tablet.configured,
           },
           mobile: {
             schema: window.nvhFormattingEditor.layout.mobile.schema,
             elements: window.nvhFormattingEditor.layout.mobile.elements,
+            configured: window.nvhFormattingEditor.layout.mobile.configured,
           },
           pdf: {
             schema: window.nvhFormattingEditor.layout.pdf.schema,
             elements: window.nvhFormattingEditor.layout.pdf.elements,
+            configured: window.nvhFormattingEditor.layout.pdf.configured,
           },
         };
+        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = true;
         this.store.updateDictionaryConfig("formatting", {
           elements: elementsConfig,
           layout: layoutConfig,
