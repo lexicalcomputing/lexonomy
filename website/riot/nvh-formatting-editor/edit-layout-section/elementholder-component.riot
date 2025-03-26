@@ -6,43 +6,39 @@
       draggable={!props.isBaseLevel ? "true" : "false"}
       ondragstart={onDragStart}
       ondragend={onDragEnd}>
-    <div if={props.state.children.length === 0 && props.canHaveAdders
-            && isDraggedElementOk()} 
-        class="inside-adder inside-adder-horizontal"
-        ondragenter={onDragEnterHorizontal}
-        ondragleave={onDragLeaveHorizontal}
-        ondragover={onDragOver}
-        ondrop={(event) => onDrop(event, 1)}>
-    </div>
-    <div class="content-box-wrapper-2">
-      <div if={props.state.children.length === 0 && props.canHaveAdders
+    <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
               && isDraggedElementOk()}
-          class="inside-adder inside-adder-vertical"
-          ondragenter={onDragEnterVertical}
-          ondragleave={onDragLeaveVertical}
-          ondragover={onDragOver}
-          ondrop={(event) => onDrop(event, 2)}>
-      </div>
+      class="small material-icons inside-adder-icon"
+      ondragenter={onDragEnter}
+      ondragleave={onDragLeave}
+      ondragover={onDragOver}
+      ondrop={(event) => onDrop(event, 1)}>add_box</i>
+    <div class="content-box-wrapper-2">
+      <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+                && isDraggedElementOk()}
+        class="small material-icons inside-adder-icon"
+        ondragenter={onDragEnter}
+        ondragleave={onDragLeave}
+        ondragover={onDragOver}
+        ondrop={(event) => onDrop(event, 2)}>add_box</i>
       <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-left"}">
         {props.state.children.length === 0 ? props.state.content.name : props.state.content.name + " (wrapper)"}
       </div>
-      <div if={props.state.children.length === 0 && props.canHaveAdders
-              && isDraggedElementOk()}
-          class="inside-adder inside-adder-vertical"
-          ondragenter={onDragEnterVertical}
-          ondragleave={onDragLeaveVertical}
-          ondragover={onDragOver}
-          ondrop={(event) => onDrop(event, 3)}>
-      </div>
-    </div>
-    <div if={props.state.children.length === 0 && props.canHaveAdders
-            && isDraggedElementOk()}
-        class="inside-adder inside-adder-horizontal"
-        ondragenter={onDragEnterHorizontal}
-        ondragleave={onDragLeaveHorizontal}
+      <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+                && isDraggedElementOk()}
+        class="small material-icons inside-adder-icon"
+        ondragenter={onDragEnter}
+        ondragleave={onDragLeave}
         ondragover={onDragOver}
-        ondrop={(event) => onDrop(event, 4)}>
+        ondrop={(event) => onDrop(event, 3)}>add_box</i>
     </div>
+    <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+              && isDraggedElementOk()}
+      class="small material-icons inside-adder-icon"
+      ondragenter={onDragEnter}
+      ondragleave={onDragLeave}
+      ondragover={onDragOver}
+      ondrop={(event) => onDrop(event, 4)}>add_box</i>
   </div>
 
 <script>
@@ -74,25 +70,15 @@
       trash.classList.remove("trash-enabled");
       window.nvhFormattingEditor.formattingEditorComponent.update();
     },
-    onDragEnterHorizontal(event) {
+    onDragEnter(event) {
       const rawData = event.dataTransfer.getData("text/plain");
       const data = JSON.parse(rawData);
       if (data.type === "choice-item") {
-        event.target.classList.add("inside-adder-horizontal-highligth-dragged");
+        event.target.classList.add("inside-adder-highligth-dragged-icon");
       }
     },
-    onDragLeaveHorizontal(event) {
-      event.target.classList.remove("inside-adder-horizontal-highligth-dragged");
-    },
-    onDragEnterVertical(event) {
-      const rawData = event.dataTransfer.getData("text/plain");
-      const data = JSON.parse(rawData);
-      if (data.type === "choice-item") {
-        event.target.classList.add("inside-adder-vertical-highligth-dragged");
-      }
-    },
-    onDragLeaveVertical(event) {
-      event.target.classList.remove("inside-adder-vertical-highligth-dragged");
+    onDragLeave(event) {
+      event.target.classList.remove("inside-adder-highligth-dragged-icon");
     },
     onDragOver(event) {
       event.preventDefault();
@@ -128,8 +114,7 @@
             this.addElementInside("row", this.props.state.content, newContent);
         }
       }
-      event.target.classList.remove("inside-adder-horizontal-highligth-dragged");
-      event.target.classList.remove("inside-adder-vertical-highligth-dragged");
+      event.target.classList.remove("inside-adder-highligth-dragged-icon");
       window.nvhFormattingEditor.global.canBeDropped = false;
     },
 
@@ -180,28 +165,11 @@
     flex-direction: row;
     width: 100%;
   }
-  .inside-adder-horizontal {
-    padding: 2px 0;
-    background-color: transparent;
-    width: calc(100% - 20px);
+  .inside-adder-icon {
+    color: var(--color-is-dragged-over) !important;
   }
-  .inside-adder-vertical {
-    padding: 0 2px;
-    background-color: transparent;
-  }
-  .inside-adder-highligth {
-    background-color: var(--color-can-be-dropped);
-    transition: all 500ms ease;
-  }
-  .inside-adder-horizontal-highligth-dragged {
-    background-color: var(--color-is-dragged-over) !important;
-    padding: 10px 0;
-    transition: all 500ms ease;
-  }
-  .inside-adder-vertical-highligth-dragged {
-    background-color: var(--color-is-dragged-over) !important;
-    padding: 0 15px;
-    transition: all 500ms ease;
+  .inside-adder-highligth-dragged-icon {
+    color: var(--color-can-be-dropped) !important;
   }
 </style>
 
