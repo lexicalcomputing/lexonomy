@@ -7,7 +7,7 @@
           ondragleave={onDragLeave}
           ondragover={onDragOver}
           ondrop={onDrop}>
-        <i class="small material-icons">add_box</i>
+        <i class="small material-icons adder-icon">add_box</i>
       <div>
     </div>
   <div>
@@ -58,7 +58,7 @@
     }
 
     .adder-line {
-      background-color: black;
+      background-color: var(--color-is-dragged-over);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -78,6 +78,9 @@
       justify-content: center;
       height: 20px;
       width: 20px;
+    }
+    .adder-icon {
+      color: var(--color-is-dragged-over);
     }
   </style>
 </adder-component>
