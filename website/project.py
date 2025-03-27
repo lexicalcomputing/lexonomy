@@ -557,8 +557,8 @@ def makeStage(project_id, stage, user_email):
 def assignProjectDict(projectID, assignees): # TODO store channges to hystory?
     mainDB = ops.getMainDB()
     for dictID, user_email in assignees: # TODO can batch has more than one assignee?
-        user_credentials = {user_email: {'canView': 1, 'canEdit': 1,
-                                        'canConfig': 0, 'canDownload': 0, 'canUpload': 0}}
+        user_credentials = {user_email: {'canView': 1, 'canEdit': 1, 'canAdd': 0, 'canDelete': 0,
+                                         'canEditSource': 0, 'canConfig': 0, 'canDownload': 0, 'canUpload': 0}}
         old_users = ops.updateDictAccess(dictID, user_credentials)
         ops.notifyUsers(old_users, user_credentials, {'title': dictID}, dictID)
 

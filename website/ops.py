@@ -35,9 +35,6 @@ for datadir in ["dicts", "uploads", "sqlite_tmp"]:
     pathlib.Path(os.path.join(siteconfig["dataDir"], datadir)).mkdir(parents=True, exist_ok=True)
 os.environ["SQLITE_TMPDIR"] = os.path.join(siteconfig["dataDir"], "sqlite_tmp")
 
-with open(os.path.join(currdir, 'version.txt')) as v_f:
-    version = v_f.readline().strip()
-
 DEFAULT_ENTRY_LIMIT = 5000
 defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
@@ -49,6 +46,10 @@ defaultDictConfig = {"editing": {},
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
 phases_re = re.compile('^#\s+phases\s*:\s*(.*?)$')
+
+def get_version():
+    with open(os.path.join(currdir, 'version.txt')) as v_f:
+        return v_f.readline().strip()
 
 # db management
 def getDB(dictID):
@@ -114,21 +115,27 @@ def readDictConfigs(dictDB):
     conn = getMainDB()
     c2 = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (dictID,))
     for r in c2.fetchall():
-        configs['users'][r['user_email']] = {"canEdit": 1 if r['can_edit'] else 0,
-                                             "canView": 1 if r['can_view'] else 0,
-                                             "canConfig": 1 if r['can_config'] else 0,
-                                             "canDownload": 1 if r['can_download'] else 0,
-                                             "canUpload": 1 if r['can_upload'] else 0}
+        configs['users'][r['user_email']] = {"canView": r['canView'],
+                                             "canEdit": r['canEdit'],
+                                             "canAdd": r['canAdd'],
+                                             "canDelete": r['canDelete'],
+                                             "canEditSource": r['canEditSource'],
+                                             "canConfig": r['canConfig'],
+                                             "canDownload": r['canDownload'],
+                                             "canUpload": r['canUpload']
+                                             }
 
     # alow access to all managers of project to all dicts that belong to the project
     c3 = conn.execute("SELECT DISTINCT u.user_email FROM user_projects AS u INNER JOIN project_dicts AS d ON u.project_id=d.project_id WHERE d.dict_id=? AND u.role=?", (dictID, 'manager'))
     for r2 in c3.fetchall():
-        configs['users'][r2['user_email']] = {"canEdit": 1,
-                                             "canView": 1,
-                                             "canConfig": 1,
-                                             "canDownload": 1,
-                                             "canUpload": 1}
-
+        configs['users'][r2['user_email']] = {"canView": 1,
+                                              "canEdit": 1,
+                                              "canAdd": 1,
+                                              "canDelete": 1,
+                                              "canEditSource": 1,
+                                              "canConfig": 1,
+                                              "canDownload": 1,
+                                              "canUpload": 1}
 
     # admin configs like dict limit form 'dicts' table
     c4 = conn.execute("SELECT configs FROM dicts WHERE id=?", (dictID,))
@@ -208,13 +215,19 @@ def verifyLogin(email, sessionkey):
 def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     ret = verifyLogin(email, sessionkey)
     configs = readDictConfigs(dictDB)
-    dictAccess = configs["users"].get(email, {"canEdit": False, "canConfig": False,
-                                              "canDownload": False, "canUpload": False,
-                                              "canView": False})
+    dictAccess = configs["users"].get(email, {"canView": 0,
+                                              "canEdit": 0,
+                                              "canAdd": 0,
+                                              "canDelete": 0,
+                                              "canEditSource": 0,
+                                              "canConfig": 0,
+                                              "canDownload": 0,
+                                              "canUpload": 0})
 
     ret["dictAccess"] = dictAccess
     # Admin full access
-    for r in ["canEdit", "canConfig", "canDownload", "canUpload", "canView"]:
+    for r in ["canView", "canEdit", "canAdd", "canDelete", "canEditSource",
+              "canConfig", "canDownload", "canUpload"]:
         ret["dictAccess"][r] = ret.get("isAdmin", False) or dictAccess.get(r, False)
 
     if configs['publico']['public']:
@@ -235,6 +248,14 @@ def verifyLoginAndProjectAccess(email, sessionkey):
         else:
             configs['annotator_of'].append(r['project_id'])
     return ret, configs
+
+
+def get_sqlite_key(row, key, default=None):
+    try:
+        return row[key]
+    except KeyError:
+        return default
+
 
 def getDmlLexSchemaItems(modules, xlingual_langs=[], linking_relations=[], etymology_langs=[]):
     with open(os.path.join(currdir, "dictTemplates/dmlex_modules.txt"), 'r') as f:
@@ -680,7 +701,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
 
     #update dictionary info
     dictDB = getDB(dictID)
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": version, "creator": email})))
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": get_version(), "creator": email})))
 
     ident = {"title": title, "blurb": blurb, "lang": lang}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
@@ -743,7 +764,14 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
 
     dictDB.commit()
 
-    users = {email: {"canEdit": 1, "canConfig": 1, "canDownload": 1, "canUpload": 1, "canView": 1}}
+    users = {email: {"canView": 1,
+                     "canEdit": 1,
+                     "canAdd": 1,
+                     "canDelete": 1,
+                     "canEditSource": 1,
+                     "canConfig": 1,
+                     "canDownload": 1,
+                     "canUpload": 1}}
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
     attachDict(dictDB, dictID, users, dict_config)
 
@@ -797,9 +825,10 @@ def attachDict(dictDB, dictID, users, dict_config):
     conn.execute("insert into dicts (id, title, language, creator, configs) values (?, ?, ?, ?, ?)", (dictID, title, lang, configs["metadata"]["creator"], json.dumps(dict_config)))
 
     for email, access_rights in users.items():
-        conn.execute("insert into user_dict (dict_id, user_email, can_view, can_edit, can_config, can_download, can_upload) values (?,?,?,?,?,?,?)",
-                     (dictID, email.lower(), access_rights.get('canView', False), access_rights.get('canEdit', False), access_rights.get('canConfig', False),
-                      access_rights.get('canDownload', False), access_rights.get('canUpload', False)))
+        conn.execute("insert into user_dict (dict_id, user_email, canView, canEdit, canAdd, canDelete, canEditSource, canConfig, canDownload, canUpload) values (?,?,?,?,?,?,?,?,?,?)",
+                     (dictID, email.lower(), get_sqlite_key(access_rights, 'canView', 0), get_sqlite_key(access_rights, 'canEdit', 0), get_sqlite_key(access_rights, 'canAdd', 0),
+                      get_sqlite_key(access_rights, 'canDelete', 0), get_sqlite_key(access_rights, 'canEditSource', 0), get_sqlite_key(access_rights, 'canConfig', 0),
+                      get_sqlite_key(access_rights, 'canDownload', 0), get_sqlite_key(access_rights, 'canUpload', 0)))
     conn.commit()
 
 def listDictUsers(dictID):
@@ -807,9 +836,14 @@ def listDictUsers(dictID):
     conn = getMainDB()
     c = conn.execute("SELECT * FROM user_dict where dict_id=?", (dictID,))
     for r in c.fetchall():
-        users[r['user_email']] = {"canEdit": bool(r['can_edit']), "canConfig": bool(r['can_config']),
-                                  "canDownload": bool(r['can_download']), "canUpload": bool(r['can_upload']),
-                                  "canView": bool(r['can_view'])}
+        users[r['user_email']] = {"canView": r['canView'],
+                                  "canEdit": r['canEdit'],
+                                  "canAdd": r['canAdd'],
+                                  "canDelete": r['canDelete'],
+                                  "canEditSource": r['canEditSource'],
+                                  "canConfig": r['canConfig'],
+                                  "canDownload": r['canDownload'],
+                                  "canUpload": r['canUpload']}
     return users
 
 def updateDictIdent(dictDB, dictID):
@@ -848,7 +882,14 @@ def cloneDict(dictID, email):
     newDB.execute("update configs set json=? where id='ident'", (json.dumps(ident),))
     newDB.commit()
 
-    users = {email: {"canEdit": 1, "canConfig": 1, "canDownload": 1, "canUpload": 1, "canView": 1}}
+    users = {email: {"canView": 1,
+                     "canEdit": 1,
+                     "canAdd": 1,
+                     "canDelete": 1,
+                     "canEditSource": 1,
+                     "canConfig": 1,
+                     "canDownload": 1,
+                     "canUpload": 1}}
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT if size < DEFAULT_ENTRY_LIMIT else size}}
     attachDict(newDB, newID,users, dict_config)
 
@@ -880,11 +921,18 @@ def moveDict(oldID, newID):
     dict_config = json.loads(c.fetchone()['configs'])
 
     conn.execute("DELETE FROM dicts WHERE id=?", (oldID,))
-    c2 = conn.execute("SELECT user_email, can_view, can_edit, can_config, can_download, can_upload FROM user_dict WHERE dict_id=?", (oldID,))
+    c2 = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (oldID,))
 
     users = {}
     for r in c2.fetchall():
-        users[r['user_email']] = {"canEdit": r['can_edit'], "canConfig": r['can_config'], "canDownload": r['can_download'], "canUpload": r['can_upload'], "canView": r['can_view']}
+        users[r['user_email']] = {"canView": r['canView'],
+                                  "canEdit": r['canEdit'],
+                                  "canAdd": r['canAdd'],
+                                  "canDelete": r['canDelete'],
+                                  "canEditSource": r['canEditSource'],
+                                  "canConfig": r['canConfig'],
+                                  "canDownload": r['canDownload'],
+                                  "canUpload": r['canUpload']}
 
     conn.execute("DELETE FROM user_dict WHERE dict_id=?", (oldID,))
     conn.commit()
@@ -1794,15 +1842,22 @@ def updateDictAccess(dictID, users):
     c = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (dictID,))
     old_users = {}
     for r in c.fetchall():
-        old_users[r['user_email']] = {'canView': r['can_view'], 'canEdit': r['can_edit'],
-                                      'canConfig': r['can_config'], 'canDownload': r['can_download'],
-                                      'canUpload': r['can_upload']}
+        old_users[r['user_email']] = {"canView": r['canView'],
+                                      "canEdit": r['canEdit'],
+                                      "canAdd": r['canAdd'],
+                                      "canDelete": r['canDelete'],
+                                      "canEditSource": r['canEditSource'],
+                                      "canConfig": r['canConfig'],
+                                      "canDownload": r['canDownload'],
+                                      "canUpload": r['canUpload']}
 
     conn.execute("DELETE FROM user_dict WHERE dict_id=?", (dictID,))
 
     for user, rights in users.items():
-        conn.execute("INSERT INTO user_dict(dict_id, user_email, can_view, can_edit, can_config, can_download, can_upload) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                     (dictID, user, rights['canView'], rights['canEdit'], rights['canConfig'], rights['canDownload'], rights['canUpload']))
+        conn.execute("INSERT INTO user_dict(dict_id, user_email, canView, canEdit, canAdd, canDelete, canEditSource, "
+                     "canConfig, canDownload, canUpload) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                     (dictID, user, get_sqlite_key(rights, 'canView', 0), get_sqlite_key(rights, 'canEdit', 0), get_sqlite_key(rights, 'canAdd', 0), get_sqlite_key(rights, 'canDelete', 0),
+                      get_sqlite_key(rights, 'canEditSource', 0), get_sqlite_key(rights, 'canConfig', 0), get_sqlite_key(rights, 'canDownload', 0), get_sqlite_key(rights, 'canUpload', 0)))
     conn.commit()
 
     return old_users

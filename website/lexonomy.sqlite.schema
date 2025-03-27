@@ -5,7 +5,7 @@ CREATE TABLE users (email TEXT PRIMARY KEY, passwordHash TEXT, sessionKey TEXT, 
 CREATE INDEX email_password ON users (email, passwordHash);
 CREATE INDEX email_session ON users (email, sessionKey, sessionLast);
 
-CREATE TABLE user_dict (id INTEGER PRIMARY KEY AUTOINCREMENT, dict_id TEXT, user_email TEXT, can_view INTEGER, can_edit INTEGER, can_config INTEGER, can_download INTEGER, can_upload INTEGER, public INTEGER);
+CREATE TABLE user_dict (id INTEGER PRIMARY KEY AUTOINCREMENT, dict_id TEXT, user_email TEXT, canView INTEGER DEFAULT 0, canEdit INTEGER DEFAULT 0, canAdd INTEGER DEFAULT 0, canDelete INTEGER DEFAULT 0, canEditSource INTEGER DEFAULT 0, canConfig INTEGER DEFAULT 0, canDownload INTEGER DEFAULT 0, canUpload INTEGER DEFAULT 0);
 CREATE INDEX dict_id ON user_dict (dict_id);
 CREATE INDEX user_email ON user_dict (user_email);
 
@@ -33,3 +33,5 @@ CREATE INDEX fav_dict_id on dict_fav (dict_id);
 CREATE INDEX fav_user_email on dict_fav (user_email);
 
 CREATE TABLE annotator_roles (name TEXT PRIMARY KEY, description TEXT);
+
+CREATE TABLE configs (id TEXT PRIMARY KEY, value TEXT);

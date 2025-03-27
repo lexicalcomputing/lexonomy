@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))[
 import ops
 
 main_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-siteconfig_file_path = os.environ.get("LEXONOMY_SITECONFIG", os.path.join(main_dir, "siteconfig.json"))
+siteconfig_file_path = os.path.join(main_dir, "siteconfig.json")
 siteconfig = json.load(open(siteconfig_file_path, encoding="utf-8"))
 lexonomy_db_file = os.path.join(siteconfig["dataDir"], 'lexonomy.sqlite')
 Xref_db_file = os.path.join(siteconfig["dataDir"], 'crossref.sqlite')
@@ -31,6 +31,7 @@ def init_main_db():
         schema = open(siteconfig["dbSchemaFile"], 'r').read()
         try:
             conn.executescript(schema)
+            conn.execute('INSERT INTO configs (id, value) VALUES (?,?)', ('version', ops.get_version()))
             conn.commit()
             print("Initialized %s with: %s" % (lexonomy_db_file, siteconfig["dbSchemaFile"]))
         except sqlite3.Error as e:
@@ -82,40 +83,93 @@ def get_db(file_path):
         return None
 
 
+def versiontuple(v):
+    return tuple(map(int, (v.split("."))))
+
+
+def get_key(key, sqlite_row, default=None):
+    try:
+        return sqlite_row[key]
+    except IndexError:
+        return default
+
+
 def update_main_db():
-    # ========================
-    # UPDATING MAIN LEXONOMY DB
-    # ========================
-    def get_table_column_names(conn, table):
-        r = conn.execute("PRAGMA table_info(%s)" % table)
-        return set([x[1] for x in r.fetchall()])
+    def access_rights_3_24(conn):
+        # from: 'can_edit', 'can_view', 'can_config', 'can_download', 'can_upload'
+        # to: 'canView', 'canEdit', 'canAdd', 'canDelete', 'canEditSource', 'canConfig', 'canDownload', 'canUpload'
 
-    def do_query(conn, q):
-        try:
-            conn.execute(q)
-        except sqlite3.Error as e:
-            print("Database error: %s" % e)
-            print("Query was: '%s'" % q)
+        # add new
+        for j in ['canView', 'canEdit', 'canAdd', 'canDelete', 'canEditSource', 'canConfig', 'canDownload', 'canUpload']:
+            try:
+                conn.execute(f'ALTER TABLE user_dict ADD COLUMN {j} INTEGER DEFAULT 0')
+            except sqlite3.OperationalError:
+                pass
 
-    print("Updating lexonomy database: %s" % lexonomy_db_file)
-    upgrades = {}
-    if upgrades:
-        conn = get_db(lexonomy_db_file)
+        for user_access in conn.execute('SELECT * FROM user_dict').fetchall():
+            rid = user_access['id']
+            # all rights in DB skip
+            if get_key('can_view', user_access, None) == None:
+                return
+            else: # need to modify DB
+                # New
+                add = 0
+                delete = 0
+                edit_source = 0
 
-        for db, newcols in upgrades.items():
-            db_columns = get_table_column_names(conn, db)
-            for column in newcols:
-                if column[0] not in db_columns:
-                    do_query(conn, "ALTER TABLE %s ADD COLUMN %s %s" % (db, column[0], column[1]))
+                # From old
+                config_update = get_key('can_config', user_access, 0)
+                view = get_key('can_view', user_access, 0)
+                edit = get_key('can_edit', user_access, 0)
+                download = get_key('can_download', user_access, 0)
+                upload = get_key('can_upload', user_access, 0)
+
+                # update rights
+                conn.execute('UPDATE user_dict SET canView=?, canEdit=?, canAdd=?, canDelete=?, canEditSource=?, '
+                             'canConfig=?, canDownload=?, canUpload=? WHERE id=?',
+                             (view, edit, add, delete, edit_source, config_update, download, upload, rid))
+
+        # remove old
+        for i in ['can_edit', 'can_view', 'can_config', 'can_download', 'can_upload']:
+            conn.execute(f'ALTER TABLE user_dict DROP COLUMN {i}')
 
         conn.commit()
-        conn.close()
+
+    # ==========================================
+    # main
+    # ==========================================
+    print("Updating main db ...")
+    conn = get_db(os.path.join(dicts_path, lexonomy_db_file))
+
+    try:
+        r = conn.execute("SELECT value FROM configs WHERE id='version'").fetchone()
+    except sqlite3.OperationalError:
+        # table does not exists
+        conn.execute("CREATE TABLE IF NOT EXISTS configs (id TEXT PRIMARY KEY, value TEXT)")
+        r = {'value': '0.0.0'}
+
+    version = r['value']
+    new_version = None
+    # ========================
+    # UPDATES
+    # ========================
+    try:
+        if versiontuple(version) < versiontuple('3.24'):
+            new_version = '3.24'
+            access_rights_3_24(conn)
+            print(f'OK ({new_version})')
+
+        if new_version:
+            # Update version
+            conn.execute('INSERT OR REPLACE INTO configs (id, value) VALUES (?,?)', ('version', new_version))
+            conn.commit()
+    except Exception as e:
+        print(f'ERROR ({new_version}) {type(e).__name__}: {e}')
+
+    conn.close()
 
 
 def update_dict_db():
-    def versiontuple(v):
-        return tuple(map(int, (v.split("."))))
-
     #Updates all json entry parts to new format with paths in names -> tag 2.153
     def update_json_2_153(conn):
         update_payload = []
@@ -151,9 +205,54 @@ def update_dict_db():
         try:
             conn.execute("SELECT * FROM entries LIMIT 1").fetchone()['doctype']
             conn.execute("ALTER TABLE entries DROP COLUMN doctype")
-        except IndexError:
+        except (IndexError, TypeError):
             pass
 
+    def formatting_path_keys_3_2(conn):
+        from nvh import nvh
+        def key2path(key, structure_elements, entry_element):
+            for path in structure_elements.keys():
+                if path.split('.')[-1] == key:
+                    return path
+            return f'{entry_element}.{key}'
+
+        def path_format_keys(old_keys):
+            for k in old_keys:
+                if '.' in k:
+                    return True
+            return False
+
+        formatting = conn.execute("SELECT json FROM configs WHERE id='formatting'").fetchone()
+        if formatting:
+            formatting_json = json.loads(formatting['json'])
+            if not formatting_json.get('elements', False):
+                formatting_json = {'elements': formatting_json}
+
+            old_keys = list(formatting_json['elements'].keys())
+
+            if not path_format_keys(old_keys):
+                structure_json = json.loads(conn.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
+                if structure_json.get('nvhSchema', False):
+                    structure = structure_json['nvhSchema']
+                    entry_element = structure_json['root']
+                    structure_elements = nvh.schema_nvh2json(structure)
+
+                    formatting_json['__elements__'] = {}
+                    for key in old_keys:
+                        new_key = key2path(key, structure_elements, entry_element)
+                        formatting_json['__elements__'][new_key] = formatting_json['elements'].pop(key)
+                    formatting_json['elements'] = formatting_json['__elements__']
+                    formatting_json.pop('__elements__')
+
+                    new_formatting_json = json.dumps(formatting_json)
+                    conn.execute("UPDATE configs SET json=? WHERE id='formatting'", (new_formatting_json,))
+                    conn.commit()
+                else:
+                    raise Exception('schema not in NVH format')
+
+    # ===========================================
+    # main
+    # ===========================================
     print("Updating dicts ...")
     for file in os.listdir(dicts_path):
         if file.endswith('.sqlite'):
@@ -184,13 +283,18 @@ def update_dict_db():
                     rm_doctype_3_1(conn)
                     print(f'OK ({new_version}): {file}')
 
+                if versiontuple(version) < versiontuple('3.2'):
+                    new_version = '3.2'
+                    formatting_path_keys_3_2(conn)
+                    print(f'OK ({new_version}): {file}')
+
                 if new_version:
                     # Update version
                     metadata['version'] = new_version
                     conn.execute('INSERT OR REPLACE INTO configs (id, json) VALUES (?,?)', ('metadata', json.dumps(metadata)))
                     conn.commit()
             except Exception as e:
-                print(f'ERROR ({new_version}) {e}: {file}')
+                print(f'ERROR ({new_version}) {type(e).__name__}: {e}|{file}')
 
             conn.close()
 

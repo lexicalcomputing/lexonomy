@@ -1,4 +1,4 @@
-all: clean test_create test_import test_clean_nvh test_configs test_projects test_dict_from_template
+all: clean test_create test_import test_clean_nvh test_configs test_projects test_dict_from_template test_access
 
 test_import.nvh:
 	@for i in example_nvh/test_*.nvh; do (cat $$i; echo) >> $@; done
@@ -33,6 +33,9 @@ test_projects:
 
 test_dict_from_template:
 	./dict_form_template_test.py
+
+test_access:
+	./dict_access_test.py
 
 clean:
 	rm -rf test_import.nvh test_import.xml

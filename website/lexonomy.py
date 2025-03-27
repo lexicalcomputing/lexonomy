@@ -78,7 +78,7 @@ def profiler(callback):
 install(profiler)
 
 # authentication decorator
-# use @authDict(["canEdit", "canConfig", "canUpload", "canDownload"]) before any handler
+# use @authDict(['canView', 'canEdit', 'canAdd', 'canDelete', 'canEditSource', 'canConfig', 'canDownload', 'canUpload']) before any handler
 # to ensure that user has appropriate access to the dictionary. Empty list checks read access only.
 # assumes <dictID> in route and "dictID", "user", "dictDB", "configs" as parameters in the decorated function
 # <dictID> gets open and passed as dictDB alongside the configs
@@ -212,7 +212,7 @@ def listuserdicts(user):
     return {"dicts": dicts}
 
 @post(siteconfig["rootPath"] + "<dictID>/entrydelete.json")
-@authDict(["canEdit"])
+@authDict(["canDelete"])
 def entrydelete(dictID, user, dictDB, configs):
     ops.deleteEntry(dictDB, request.forms.id, user["email"])
     return {"success": True, "id": request.forms.id}
@@ -225,7 +225,7 @@ def entryread(dictID, user, dictDB, configs):
     return {"success": (adjustedEntryID > 0), "id": adjustedEntryID, "nvh": nvh, "json": json}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryupdate.json")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def entryupdate(dictID, user, dictDB, configs):
     adjustedEntryID, adjustedNvh, changed, feedback = ops.updateEntry(dictDB, configs, request.forms.id, request.forms.nvh, user["email"], {})
     result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
@@ -234,7 +234,7 @@ def entryupdate(dictID, user, dictDB, configs):
     return result
 
 @post(siteconfig["rootPath"]+"<dictID>/entrycreate.json")
-@authDict(["canEdit"])
+@authDict(["canAdd"])
 def entrycreate(dictID, user, dictDB, configs):
     adjustedEntryID, adjustedNvh, feedback = ops.createEntry(dictDB, configs, None, request.forms.nvh, user["email"], {})
     result = {"success": True, "id": adjustedEntryID, "content": adjustedNvh}
@@ -243,7 +243,7 @@ def entrycreate(dictID, user, dictDB, configs):
     return result
 
 @post(siteconfig["rootPath"]+"<dictID>/entryflag.json")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def entryflag(dictID, user, dictDB, configs):
     success, error = ops.flagEntry(dictDB, configs, request.forms.id, json.loads(request.forms.flags), user["email"], {})
     return {"success": success, "id": request.forms.id, 'error': error}
@@ -266,7 +266,7 @@ def save_consent(user):
     return {"success": res}
 
 @get(siteconfig["rootPath"] + "<dictID>/getmedia/<query>")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def getmedia(dictID, query, user, dictDB, configs):
     res = media.get_images(configs, query)
     return {"images": res}
@@ -296,7 +296,7 @@ def user_corpora(user):
     return ske_response
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/examples")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def skeget_xampl(dictID, user, dictDB, configs):
     url = request.query.url
     url += "/view"
@@ -320,7 +320,7 @@ def skeget_xampl(dictID, user, dictDB, configs):
     return data
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/thesaurus")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def skeget_thes(dictID, user, dictDB, configs):
     url = request.query.url
     url += "/thes"
@@ -337,7 +337,7 @@ def skeget_thes(dictID, user, dictDB, configs):
     return data
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/collocations")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def skeget_collx(dictID, user, dictDB, configs):
     url = request.query.url
     url += "/wsketch"
@@ -355,7 +355,7 @@ def skeget_collx(dictID, user, dictDB, configs):
     return data
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/definitions")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def skeget_defo(dictID, user, dictDB, configs):
     url = request.query.url
     url += "/view"
@@ -1036,7 +1036,7 @@ def dict_settings_update(dictID, user):
     return {"success": True}
 
 @post(siteconfig["rootPath"]+"<dictID>/autoimage.json")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def autoimage(dictID, user, dictDB, configs):
     res = ops.autoImage(dictDB, dictID, configs, request.forms.addElem, request.forms.addNumber)
     return res
@@ -1050,7 +1050,7 @@ def autoimagestatus(dictID, user, dictDB, configs):
     return res
 
 @post(siteconfig["rootPath"]+"<dictID>/resave.json")
-@authDict(["canEdit","canConfig","canUpload"])
+@authDict(["canEdit","canConfig","canUpload", "canEditSource"])
 def resavejson(dictID, user, dictDB, configs):
     count = 0
     stats = ops.getDictStats(dictDB)
@@ -1182,7 +1182,7 @@ def publicdicts():
     return {"entries": dicts, "success": True}
 
 @get(siteconfig["rootPath"] + "<dictID>/links/add")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def linksadd(dictID, user, dictDB, configs):
     source_dict = dictID
     source_el = request.query.source_el
@@ -1198,7 +1198,7 @@ def linksadd(dictID, user, dictDB, configs):
         return {"success": True, "links": res}
 
 @get(siteconfig["rootPath"] + "<dictID>/links/delete/<linkID>")
-@authDict(["canEdit"])
+@authDict(["canEdit", "canEditSource"])
 def linksdelete(dictID, linkID, user, dictDB, configs):
     res = ops.links_delete(dictID, linkID)
     return {"success": res}
