@@ -2,49 +2,34 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "colour", "")}>
-          <i class="material-icons tiny">block</i>
-      </div>
-      <div class="value-item value-item-colour-red"
-          onclick={onChangeStyle.bind(this, "colour", "red")}>
-      </div>
-      <div class="value-item value-item-colour-green"
-          onclick={onChangeStyle.bind(this, "colour", "green")}>
-      </div>
-      <div class="value-item value-item-colour-blue"
-          onclick={onChangeStyle.bind(this, "colour", "blue")}>
-      </div>
-      <div class="value-item value-item-colour-grey"
-          onclick={onChangeStyle.bind(this, "colour", "grey")}>
-      </div>
+      <input type="color" style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Text size:</div>
     <div class="value-wrapper">
       <div class="value-item value-item-textsize-1"
-          onclick={onChangeStyle.bind(this, "textsize", "1")}>
+          onclick={onChangeStyle.bind(this, "font-size", "0.8em")}>
           1
       </div>
       <div class="value-item value-item-textsize-2"
-          onclick={onChangeStyle.bind(this, "textsize", "2")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1em")}>
           2
       </div>
       <div class="value-item value-item-textsize-3"
-          onclick={onChangeStyle.bind(this, "textsize", "3")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1.2em")}>
           3
       </div>
       <div class="value-item value-item-textsize-4"
-          onclick={onChangeStyle.bind(this, "textsize", "4")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1.5em")}>
           4
       </div>
       <div class="value-item value-item-textsize-5"
-          onclick={onChangeStyle.bind(this, "textsize", "5")}>
+          onclick={onChangeStyle.bind(this, "font-size", "2em")}>
           5
       </div>
       <div class="value-item value-item-textsize-6"
-          onclick={onChangeStyle.bind(this, "textsize", "6")}>
+          onclick={onChangeStyle.bind(this, "font-size", "2.5em")}>
           6
       </div>
     </div>
@@ -53,11 +38,11 @@
     <div class="label">Text weight:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "weight", "")}>
+          onclick={onChangeStyle.bind(this, "font-weight", "")}>
           a
       </div>
       <div class="value-item value-item-weight-bold"
-          onclick={onChangeStyle.bind(this, "weight", "bold")}>
+          onclick={onChangeStyle.bind(this, "font-weight", "bold")}>
           a
       </div>
     </div>
@@ -66,11 +51,11 @@
     <div class="label">Text slant:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "slant", "")}>
+          onclick={onChangeStyle.bind(this, "font-style", "")}>
           a
       </div>
       <div class="value-item value-item-slant-italic"
-          onclick={onChangeStyle.bind(this, "slant", "italic")}>
+          onclick={onChangeStyle.bind(this, "font-style", "italic")}>
           a
       </div>
     </div>
@@ -83,122 +68,134 @@
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item value-item-border-solid"
-          onclick={onChangeStyle.bind(this, "border", "solid")}>
+          onclick={onChangeStyle.bind(this, "border", "1px solid black")}>
       </div>
       <div class="value-item value-item-border-thick"
-          onclick={onChangeStyle.bind(this, "border", "thick")}>
+          onclick={onChangeStyle.bind(this, "border", "2px solid black")}>
       </div>
       <div class="value-item value-item-border-dotted"
-          onclick={onChangeStyle.bind(this, "border", "dotted")}>
+          onclick={onChangeStyle.bind(this, "border", "2px dotted black")}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Outline:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outline", "")}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-border-solid"
+          onclick={onChangeStyle.bind(this, "outline", "1px solid black")}>
+      </div>
+      <div class="value-item value-item-border-thick"
+          onclick={onChangeStyle.bind(this, "outline", "2px solid black")}>
+      </div>
+      <div class="value-item value-item-border-dotted"
+          onclick={onChangeStyle.bind(this, "outline", "2px dotted black")}>
       </div>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "borderRadius", "")}>
-          <i class="material-icons tiny">block</i>
-      </div>
-      <div class="value-item value-item-borderRadius-small"
-          onclick={onChangeStyle.bind(this, "borderRadius", "small")}>
-      </div>
-      <div class="value-item value-item-borderRadius-medium"
-          onclick={onChangeStyle.bind(this, "borderRadius", "medium")}>
-      </div>
-      <div class="value-item value-item-borderRadius-large"
-          onclick={onChangeStyle.bind(this, "borderRadius", "large")}>
-      </div>
+      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Margin:</div>
+    <div class="value-wrapper">
+      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Padding:</div>
+    <div class="value-wrapper">
+      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Box shadow:</div>
+    <div class="value-wrapper">
+      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Background:</div>
     <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "background", "")}>
-          <i class="material-icons tiny">block</i>
-      </div>
-      <div class="value-item value-item-background-yellow"
-          onclick={onChangeStyle.bind(this, "background", "yellow")}>
-      </div>
-      <div class="value-item value-item-background-blue"
-          onclick={onChangeStyle.bind(this, "background", "blue")}>
-      </div>
-      <div class="value-item value-item-background-grey"
-          onclick={onChangeStyle.bind(this, "background", "grey")}>
-      </div>
+      <input type="color" style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
-    <div class="label">Inner punctuation:</div>
+    <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "")}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "roundBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "roundBrackets")}>
           &lpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "squareBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "squareBrackets")}>
           &lsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "curlyBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "curlyBrackets")}>
           &lcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "colon")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "colon")}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "comma")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "comma")}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "dot")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "dot")}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "semicolon")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "semicolon")}>
           &semi;
       </div>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
-    <div class="label">Outer punctuation:</div>
+    <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "")}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "roundBrackets")}>
-          &lpar;
+          onclick={onChangeStyle.bind(this, "rightPunc", "roundBrackets")}>
+          &rpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "squareBrackets")}>
-          &lsqb;
+          onclick={onChangeStyle.bind(this, "rightPunc", "squareBrackets")}>
+          &rsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "curlyBrackets")}>
-          &lcub;
+          onclick={onChangeStyle.bind(this, "rightPunc", "curlyBrackets")}>
+          &rcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "colon")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "colon")}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "comma")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "comma")}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "dot")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "dot")}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "semicolon")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "semicolon")}>
           &semi;
       </div>
     </div>
@@ -260,6 +257,15 @@
       },
 
       onChangeStyle(option, value, event) {
+        if (value === null) {
+          if (option === "border-radius" || option === "padding" || option === "margin") {
+            value = event.target.value + "px";
+          } else if (option === "box-shadow") {
+            value = event.target.value + "px " + event.target.value + "px " + event.target.value + "px " + "grey";
+          }else {
+            value = event.target.value;
+          }
+        }
         this.onChangeStyle2(option, value);
       },
       onChangeStyle2(option, value) {
@@ -374,7 +380,7 @@
       border: 2px solid black;
     }
     .value-item-border-dotted {
-      border: 1px dotted black;
+      border: 2px dotted black;
     }
 
     /*

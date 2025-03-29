@@ -8,13 +8,11 @@
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
         <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== ""}
-            class="element-holder-content
-            {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
-          {getPunc(props.schema.content.fullName, "left", "innerPunc")}
+            class="element-holder-content"
+            style={props.schema.content.fullName !== "" ? getCssStyles() : ""}>
+          {getPunc(props.schema.content.fullName, "leftPunc")}
           {props.entry.value}
-          {getPunc(props.schema.content.fullName, "right", "innerPunc")}
-          {getPunc(props.schema.content.fullName, "right", "outerPunc")}
+          {getPunc(props.schema.content.fullName, "rightPunc")}
         </div>
       </div>
     </div>
@@ -58,24 +56,23 @@
       isEmptyPlaceholder() {
         return this.props.schema.content.name === "";
       },
-      getCssStyleClass(fullName) {
-        /* NOTE: Inspiration from: nvh-editor-view-item.riot */
+      getCssStyles() {
         let styles = this.props.schema.styles;
         if (styles === undefined) {
           return;
         }
-        let result_classes = "";
+        let result_css = "";
         for (let i = 0; i < Object.keys(styles).length; i++) {
           let option = Object.keys(styles)[i];
           let value = styles[option];
           if (value === null || value === undefined) {
             continue;
           }
-          result_classes += "example_section_item_" + option + "_" + value + " ";
+          result_css += option + ":" + value + ";";
         }
-        return result_classes;
+        return result_css;
       },
-      getPunc(fullName, side, option) {
+      getPunc(fullName, option) {
         if (fullName === "") {
           return "";
         }
@@ -89,19 +86,19 @@
         }
         switch (punc) {
           case "roundBrackets":
-            return side === "left" ? "(" : ")";
+            return option === "leftPunc" ? "(" : ")";
           case "squareBrackets":
-            return side === "left" ? "[" : "]";
+            return option === "leftPunc" ? "[" : "]";
           case "curlyBrackets":
-            return side === "left" ? "{" : "}";
+            return option === "leftPunc" ? "{" : "}";
           case "colon":
-            return side === "left" ? "" : ":";
+            return option === "leftPunc" ? ":" : ":";
           case "comma":
-            return side === "left" ? "" : ",";
+            return option === "leftPunc" ? "," : ",";
           case "dot":
-            return side === "left" ? "" : ".";
+            return option === "leftPunc" ? "." : ".";
           case "semicolon":
-            return side === "left" ? "" : ";";
+            return option === "leftPunc" ? ";" : ";";
           default:
             return ""
         }
@@ -144,76 +141,5 @@
     .element-holder-active {
       outline: 2px solid var(--color-is-active) !important;
     }
-
-    .example_section_item_colour_red {
-      color: red;
-    }
-    .example_section_item_colour_green {
-      color: green;
-    }
-    .example_section_item_colour_blue {
-      color: blue;
-    }
-    .example_section_item_colour_grey {
-      color: grey;
-    }
-
-    .example_section_item_weight_bold {
-      font-weight: bold;
-    }
-
-    .example_section_item_textsize_1 {
-      font-size: 0.8em;
-    }
-    .example_section_item_textsize_2 {
-      font-size: 1em;
-    }
-    .example_section_item_textsize_3 {
-      font-size: 1.2em;
-    }
-    .example_section_item_textsize_4 {
-      font-size: 1.5em;
-    }
-    .example_section_item_textsize_5 {
-      font-size: 2em;
-    }
-    .example_section_item_textsize_6 {
-      font-size: 2.5em;
-    }
-
-    .example_section_item_slant_italic {
-      font-style: italic;
-    }
-
-    .example_section_item_border_solid {
-      border: 1px solid black;
-    }
-    .example_section_item_border_thick {
-      border: 2px solid black;
-    }
-    .example_section_item_border_dotted {
-      border: 1px dotted black;
-    }
-
-    .example_section_item_borderRadius_small {
-      border-radius: 5px;
-    }
-    .example_section_item_borderRadius_medium {
-      border-radius: 10px;
-    }
-    .example_section_item_borderRadius_large {
-      border-radius: 15px;
-    }
-
-    .example_section_item_background_yellow {
-      background-color: yellow;
-    }
-    .example_section_item_background_blue {
-      background-color: blue;
-    }
-    .example_section_item_background_grey {
-      background-color: grey;
-    }
-
   </style>
 </example-section-item>
