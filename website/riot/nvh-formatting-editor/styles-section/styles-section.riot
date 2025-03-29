@@ -1,6 +1,7 @@
 <styles-section>
   <div class="styles-section-container">
-    <styles-section-item class="styles-section-container-divider"/>
+    <div if={window.nvhFormattingEditor.global.selectedPlaceholder === null}>No element selected.  Select element in layout selection to style it.</div>
+    <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null} class="styles-section-container-divider"/>
   </div>
 
   <script></script>

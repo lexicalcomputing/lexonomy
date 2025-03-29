@@ -2,49 +2,40 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "colour", "")}>
-          <i class="material-icons tiny">block</i>
-      </div>
-      <div class="value-item value-item-colour-red"
-          onclick={onChangeStyle.bind(this, "colour", "red")}>
-      </div>
-      <div class="value-item value-item-colour-green"
-          onclick={onChangeStyle.bind(this, "colour", "green")}>
-      </div>
-      <div class="value-item value-item-colour-blue"
-          onclick={onChangeStyle.bind(this, "colour", "blue")}>
-      </div>
-      <div class="value-item value-item-colour-grey"
-          onclick={onChangeStyle.bind(this, "colour", "grey")}>
-      </div>
+      <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Text size:</div>
     <div class="value-wrapper">
       <div class="value-item value-item-textsize-1"
-          onclick={onChangeStyle.bind(this, "textsize", "1")}>
+          onclick={onChangeStyle.bind(this, "font-size", "0.8em")}
+          style={getStyleOptionValue("font-size") === "0.8em" ? `background-color:var(--color-grey-normal);` : ""}>
           1
       </div>
       <div class="value-item value-item-textsize-2"
-          onclick={onChangeStyle.bind(this, "textsize", "2")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1em")}
+          style={getStyleOptionValue("font-size") === "1em" || getStyleOptionValue("font-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
           2
       </div>
       <div class="value-item value-item-textsize-3"
-          onclick={onChangeStyle.bind(this, "textsize", "3")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1.2em")}
+          style={getStyleOptionValue("font-size") === "1.2em" ? `background-color:var(--color-grey-normal);` : ""}>
           3
       </div>
       <div class="value-item value-item-textsize-4"
-          onclick={onChangeStyle.bind(this, "textsize", "4")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1.5em")}
+          style={getStyleOptionValue("font-size") === "1.5em" ? `background-color:var(--color-grey-normal);` : ""}>
           4
       </div>
       <div class="value-item value-item-textsize-5"
-          onclick={onChangeStyle.bind(this, "textsize", "5")}>
+          onclick={onChangeStyle.bind(this, "font-size", "2em")}
+          style={getStyleOptionValue("font-size") === "2em" ? `background-color:var(--color-grey-normal);` : ""}>
           5
       </div>
       <div class="value-item value-item-textsize-6"
-          onclick={onChangeStyle.bind(this, "textsize", "6")}>
+          onclick={onChangeStyle.bind(this, "font-size", "2.5em")}
+          style={getStyleOptionValue("font-size") === "2.5em" ? `background-color:var(--color-grey-normal);` : ""}>
           6
       </div>
     </div>
@@ -53,11 +44,13 @@
     <div class="label">Text weight:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "weight", "")}>
+          onclick={onChangeStyle.bind(this, "font-weight", "")}
+          style={getStyleOptionValue("font-weight") === "" || getStyleOptionValue("font-weight") === null ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
       <div class="value-item value-item-weight-bold"
-          onclick={onChangeStyle.bind(this, "weight", "bold")}>
+          onclick={onChangeStyle.bind(this, "font-weight", "bold")}
+          style={getStyleOptionValue("font-weight") === "bold" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
     </div>
@@ -66,11 +59,33 @@
     <div class="label">Text slant:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "slant", "")}>
+          onclick={onChangeStyle.bind(this, "font-style", "")}
+          style={getStyleOptionValue("font-style") === "" || getStyleOptionValue("font-style") === null ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
       <div class="value-item value-item-slant-italic"
-          onclick={onChangeStyle.bind(this, "slant", "italic")}>
+          onclick={onChangeStyle.bind(this, "font-style", "italic")}
+          style={getStyleOptionValue("font-style") === "italic" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Text decoration:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "text-decoration", "")}
+          style={getStyleOptionValue("text-decoration") === "" || getStyleOptionValue("text-decoration") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-text-decoration-underline"
+          onclick={onChangeStyle.bind(this, "text-decoration", "underline")}
+          style={getStyleOptionValue("text-decoration") === "underline" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-text-decoration-strikethrough"
+          onclick={onChangeStyle.bind(this, "text-decoration", "line-through")}
+          style={getStyleOptionValue("text-decoration") === "line-through" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
     </div>
@@ -79,126 +94,174 @@
     <div class="label">Border:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "border", "")}>
+          onclick={onChangeStyle.bind(this, "border", "")}
+          style={getStyleOptionValue("border") === "" || getStyleOptionValue("border") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item value-item-border-solid"
-          onclick={onChangeStyle.bind(this, "border", "solid")}>
+          onclick={onChangeStyle.bind(this, "border", "1px solid black")}
+          style={getStyleOptionValue("border") === "1px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
       <div class="value-item value-item-border-thick"
-          onclick={onChangeStyle.bind(this, "border", "thick")}>
+          onclick={onChangeStyle.bind(this, "border", "2px solid black")}
+          style={getStyleOptionValue("border") === "2px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
       <div class="value-item value-item-border-dotted"
-          onclick={onChangeStyle.bind(this, "border", "dotted")}>
+          onclick={onChangeStyle.bind(this, "border", "2px dotted black")}
+          style={getStyleOptionValue("border") === "2px dotted black" ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Outline:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "outline", "")}
+          style={getStyleOptionValue("outline") === "" || getStyleOptionValue("outline") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item value-item-border-solid"
+          onclick={onChangeStyle.bind(this, "outline", "1px solid black")}
+          style={getStyleOptionValue("outline") === "1px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+      <div class="value-item value-item-border-thick"
+          onclick={onChangeStyle.bind(this, "outline", "2px solid black")}
+          style={getStyleOptionValue("outline") === "2px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+      <div class="value-item value-item-border-dotted"
+          onclick={onChangeStyle.bind(this, "outline", "2px dotted black")}
+          style={getStyleOptionValue("outline") === "2px dotted black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "borderRadius", "")}>
-          <i class="material-icons tiny">block</i>
-      </div>
-      <div class="value-item value-item-borderRadius-small"
-          onclick={onChangeStyle.bind(this, "borderRadius", "small")}>
-      </div>
-      <div class="value-item value-item-borderRadius-medium"
-          onclick={onChangeStyle.bind(this, "borderRadius", "medium")}>
-      </div>
-      <div class="value-item value-item-borderRadius-large"
-          onclick={onChangeStyle.bind(this, "borderRadius", "large")}>
-      </div>
+      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Margin:</div>
+    <div class="value-wrapper">
+      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Padding:</div>
+    <div class="value-wrapper">
+      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Box shadow:</div>
+    <div class="value-wrapper">
+      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Background:</div>
     <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "background", "")}>
-          <i class="material-icons tiny">block</i>
-      </div>
-      <div class="value-item value-item-background-yellow"
-          onclick={onChangeStyle.bind(this, "background", "yellow")}>
-      </div>
-      <div class="value-item value-item-background-blue"
-          onclick={onChangeStyle.bind(this, "background", "blue")}>
-      </div>
-      <div class="value-item value-item-background-grey"
-          onclick={onChangeStyle.bind(this, "background", "grey")}>
-      </div>
+      <input type="color" value={getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
-    <div class="label">Inner punctuation:</div>
+    <div class="label">Decimal place divider:</div>
+    <div class="value-wrapper">
+      <input type="text" value={getStyleOptionValue("decimalPlaceDivider") === null ? "." : getStyleOptionValue("decimalPlaceDivider")} style="" onchange={onChangeStyle.bind(this, "decimalPlaceDivider", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Thousands divider:</div>
+    <div class="value-wrapper">
+      <input type="text" value={getStyleOptionValue("thousandsDivider") === null ? " " : getStyleOptionValue("thousandsDivider")} style="" onchange={onChangeStyle.bind(this, "thousandsDivider", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "")}
+          style={getStyleOptionValue("leftPunc") === "" || getStyleOptionValue("leftPunc") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "roundBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "roundBrackets")}
+          style={getStyleOptionValue("leftPunc") === "roundBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &lpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "squareBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "squareBrackets")}
+          style={getStyleOptionValue("leftPunc") === "squareBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &lsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "curlyBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "curlyBrackets")}
+          style={getStyleOptionValue("leftPunc") === "curlyBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &lcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "colon")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "colon")}
+          style={getStyleOptionValue("leftPunc") === "colon" ? `background-color:var(--color-grey-normal);` : ""}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "comma")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "comma")}
+          style={getStyleOptionValue("leftPunc") === "comma" ? `background-color:var(--color-grey-normal);` : ""}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "dot")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "dot")}
+          style={getStyleOptionValue("leftPunc") === "dot" ? `background-color:var(--color-grey-normal);` : ""}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "innerPunc", "semicolon")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "semicolon")}
+          style={getStyleOptionValue("leftPunc") === "semicolon" ? `background-color:var(--color-grey-normal);` : ""}>
           &semi;
       </div>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
-    <div class="label">Outer punctuation:</div>
+    <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "")}
+          style={getStyleOptionValue("rightPunc") === "" || getStyleOptionValue("rightPunc") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "roundBrackets")}>
-          &lpar;
+          onclick={onChangeStyle.bind(this, "rightPunc", "roundBrackets")}
+          style={getStyleOptionValue("rightPunc") === "roundBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          &rpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "squareBrackets")}>
-          &lsqb;
+          onclick={onChangeStyle.bind(this, "rightPunc", "squareBrackets")}
+          style={getStyleOptionValue("rightPunc") === "squareBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          &rsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "curlyBrackets")}>
-          &lcub;
+          onclick={onChangeStyle.bind(this, "rightPunc", "curlyBrackets")}
+          style={getStyleOptionValue("rightPunc") === "curlyBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          &rcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "colon")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "colon")}
+          style={getStyleOptionValue("rightPunc") === "colon" ? `background-color:var(--color-grey-normal);` : ""}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "comma")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "comma")}
+          style={getStyleOptionValue("rightPunc") === "comma" ? `background-color:var(--color-grey-normal);` : ""}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "dot")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "dot")}
+          style={getStyleOptionValue("rightPunc") === "dot" ? `background-color:var(--color-grey-normal);` : ""}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outerPunc", "semicolon")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "semicolon")}
+          style={getStyleOptionValue("rightPunc") === "semicolon" ? `background-color:var(--color-grey-normal);` : ""}>
           &semi;
       </div>
     </div>
@@ -259,7 +322,22 @@
         }
       },
 
+      getStyleOptionValue(option) {
+        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+          return null;
+        }
+        if (window.nvhFormattingEditor.global.selectedPlaceholder.styles === undefined) {
+          return null;
+        }
+        if (window.nvhFormattingEditor.global.selectedPlaceholder.styles[option] === undefined) {
+          return null;
+        }
+        return window.nvhFormattingEditor.global.selectedPlaceholder.styles[option];
+      },
       onChangeStyle(option, value, event) {
+        if (value === null) {
+          value = event.target.value;
+        }
         this.onChangeStyle2(option, value);
       },
       onChangeStyle2(option, value) {
@@ -362,9 +440,14 @@
     .value-item-weight-bold {
       font-weight: bold;
     }
-
     .value-item-slant-italic {
       font-style: italic;
+    }
+    .value-item-text-decoration-strikethrough {
+      text-decoration: line-through;
+    }
+    .value-item-text-decoration-underline {
+      text-decoration: underline;
     }
 
     .value-item-border-solid {
@@ -374,7 +457,7 @@
       border: 2px solid black;
     }
     .value-item-border-dotted {
-      border: 1px dotted black;
+      border: 2px dotted black;
     }
 
     /*

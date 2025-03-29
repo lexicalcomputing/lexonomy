@@ -1,5 +1,5 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation}
+  <div if={!isMarkupTypeChild(props.schema.content.fullName)} class="element-holder element-holder-{props.schema.orientation}
               {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
@@ -7,15 +7,28 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== ""}
-            class="element-holder-content
-            {props.schema.content.fullName !== "" ? getCssStyleClass(props.schema.content.fullName) : ""}">
-          {getPunc(props.schema.content.fullName, "left", "outerPunc")}
-          {getPunc(props.schema.content.fullName, "left", "innerPunc")}
-          {props.entry.value}
-          {getPunc(props.schema.content.fullName, "right", "innerPunc")}
-          {getPunc(props.schema.content.fullName, "right", "outerPunc")}
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type !== "markup"}
+            class="element-holder-content"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
+          {this.state.value}
         </div>
+        <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
+            class="element-holder-content"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
+          {this.state.value.prefix}
+        </pre>
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.markup !== ""}
+            class="element-holder-content
+                  {props.schema.markupStatus.isHovered ? "element-holder-hovered" : ""}
+                  {props.schema.markupStatus.isActive ? "element-holder-active" : ""}"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.markupStyles) : ""}>
+          {this.state.value.markup}
+        </div>
+        <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.suffix !== ""}
+            class="element-holder-content"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
+          {this.state.value.suffix}
+        </pre>
       </div>
     </div>
     <div each={childSchema in props.schema.children}
@@ -33,14 +46,40 @@
         <example-section-item if={childSchema.content.fullName === childEntry.path}
                               schema={childSchema}
                               entry={childEntry}/>
-      <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
-          class="element-holder-hovered-empty-entry" style="display: none"></div>
+        <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
+            class="element-holder-hovered-empty-entry" style="display: none"></div>
       </template>
     </div>
   </div>
 
   <script>
     export default {
+      state: {
+        type: null,
+        value: null,
+      },
+
+      onBeforeMount() {
+        let fullName = this.props.schema.content.fullName;
+        if (fullName === "") {
+          return;
+        }
+        if (window.nvhStore.getElementConfig(fullName).type === "markup" && this.props.schema.children.length === 2) {
+          this.connectMarkupElementWithChildren(this.props.schema);
+        }
+        this.formatValue(fullName);
+      },
+      onBeforeUpdate() {
+        let fullName = this.props.schema.content.fullName;
+        if (fullName === "") {
+          return;
+        }
+        if (window.nvhStore.getElementConfig(fullName).type === "markup" && this.props.schema.children.length === 2) {
+          this.connectMarkupElementWithChildren(this.props.schema);
+        }
+        this.formatValue(fullName);
+      },
+
       hasChildWithContent(state) {
         for (let child of state.children) {
           if (child.content.name !== "" && child.children.length === 0) {
@@ -58,50 +97,149 @@
       isEmptyPlaceholder() {
         return this.props.schema.content.name === "";
       },
-      getCssStyleClass(fullName) {
-        /* NOTE: Inspiration from: nvh-editor-view-item.riot */
-        let styles = this.props.schema.styles;
+      connectMarkupElementWithChildren(schema) {
+        /* Markup type will always have two children:
+          first one will be markup element child
+          second one will be the markup element itself
+        */
+        let displayMarkupPlaceholder = this.props.schema.children[1];
+        let styleMarkupPlaceholder = this.props.schema.children[0];
+        let markupValue = { value: null };
+        displayMarkupPlaceholder["markupStyles"] = styleMarkupPlaceholder.styles;
+        displayMarkupPlaceholder["markupStatus"] = styleMarkupPlaceholder.status;
+        displayMarkupPlaceholder["markupValue"] = markupValue;
+        styleMarkupPlaceholder["markupValue"] = markupValue;
+      },
+      isMarkupTypeChild(fullName) {
+        if (fullName === "") {
+          return false;
+        }
+        let pathArray = fullName.split('.');
+        if (pathArray.length === 1) {
+          return false;
+        }
+        pathArray.length -= 1;
+        let parentPath = pathArray.join('.');
+        return window.nvhStore.getElementConfig(parentPath).type === "markup";
+      },
+      formatValue(fullName) {
+        this.state.type = window.nvhStore.getElementConfig(fullName).type;
+        let leftPunc = this.getPunc("leftPunc", this.props.schema.styles);
+        let rightPunc = this.getPunc("rightPunc", this.props.schema.styles);
+
+        if (this.state.type === "markup") {
+          if (this.props.schema.markupValue !== undefined) {
+            let valueObject = this.formatMarkup(this.props.entry.value, this.props.schema, leftPunc, rightPunc);
+            this.state.value = valueObject;
+            return;
+          }
+        } else if (this.state.type === "int") {
+          let value = this.formatInt(this.props.schema.content.fullName);
+          this.state.value = leftPunc + value + rightPunc;
+        } else {
+          if (this.props.schema.markupValue !== undefined) {
+            this.props.schema.markupValue.value = this.props.entry.value;
+          }
+          let value = this.props.entry.value;
+          this.state.value = leftPunc + value + rightPunc;
+        }
+      },
+      createValueObject(prefix, markup, suffix) {
+        return {
+          prefix: prefix,
+          markup: markup,
+          suffix: suffix,
+        };
+      },
+      formatMarkup(value, schema, leftPunc, rightPunc) {
+        let leftMarkupPunc = this.getPunc("leftPunc", schema.markupStyles);
+        let rightMarkupPunc = this.getPunc("rightPunc", schema.markupStyles);
+        let markupValue = schema.markupValue.value;
+        let values = value.split(markupValue);
+        let prefix = values[0];
+
+        if (markupValue === "") {
+          return this.createValueObject(leftPunc + value, "", rightPunc);
+        } else if (values.length > 1) {
+          let suffix = values.slice(1).join(markupValue);
+          return this.createValueObject(leftPunc + prefix, leftMarkupPunc + markupValue + rightMarkupPunc, suffix + rightPunc);
+        } else { /*markupChildValue is not present in markupValue*/
+          return this.createValueObject(leftPunc + prefix, "", rightPunc);
+        }
+      },
+      /*TODO: refactor*/
+      formatInt(fullName) {
+        if (fullName === "") {
+          return "";
+        }
+
+        let thousandsDivider = this.props.schema.styles === undefined || this.props.schema.styles.thousandsDivider === undefined ? " " : this.props.schema.styles.thousandsDivider;
+        let decimalPlaceDivider = this.props.schema.styles === undefined || this.props.schema.styles.decimalPlaceDivider === undefined ? "." : this.props.schema.styles.decimalPlaceDivider;
+
+        var numberSplitted = this.props.entry.value.split('.');
+        var numberNonDecimalReversed = numberSplitted[0].split('').reverse().join('');
+        var numberDecimal = numberSplitted[1];
+
+        var result = "";
+        for (let i = 0; i < numberNonDecimalReversed.length; i++) {
+          if (i !== 0 && i % 3 === 0) {
+            result += thousandsDivider;
+          }
+          result += numberNonDecimalReversed[i]
+        }
+
+        result = result.split('').reverse().join('');
+        if (numberDecimal !== undefined) {
+          result += decimalPlaceDivider + numberDecimal;
+        }
+        return result;
+      },
+      getCssStyles(styles) {
         if (styles === undefined) {
           return;
         }
-        let result_classes = "";
+        let result_css = "";
         for (let i = 0; i < Object.keys(styles).length; i++) {
           let option = Object.keys(styles)[i];
           let value = styles[option];
           if (value === null || value === undefined) {
             continue;
           }
-          result_classes += "example_section_item_" + option + "_" + value + " ";
+          if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc") {
+            continue;
+          }
+          if (option === "border-radius" || option === "padding" || option === "margin") {
+            value = value + "px";
+          } else if (option === "box-shadow") {
+            value = value + "px " + value + "px " + value + "px " + "grey";
+          }
+          result_css += option + ":" + value + ";";
         }
-        return result_classes;
+        return result_css;
       },
-      getPunc(fullName, side, option) {
-        if (fullName === "") {
-          return "";
-        }
-        let styles = this.props.schema.styles;
+      getPunc(option, styles) {
         if (styles === undefined) {
           return "";
         }
-        let punc = this.props.schema.styles[option];
+        let punc = styles[option];
         if (punc === undefined) {
           return "";
         }
         switch (punc) {
           case "roundBrackets":
-            return side === "left" ? "(" : ")";
+            return option === "leftPunc" ? "(" : ")";
           case "squareBrackets":
-            return side === "left" ? "[" : "]";
+            return option === "leftPunc" ? "[" : "]";
           case "curlyBrackets":
-            return side === "left" ? "{" : "}";
+            return option === "leftPunc" ? "{" : "}";
           case "colon":
-            return side === "left" ? "" : ":";
+            return option === "leftPunc" ? ":" : ":";
           case "comma":
-            return side === "left" ? "" : ",";
+            return option === "leftPunc" ? "," : ",";
           case "dot":
-            return side === "left" ? "" : ".";
+            return option === "leftPunc" ? "." : ".";
           case "semicolon":
-            return side === "left" ? "" : ";";
+            return option === "leftPunc" ? ";" : ";";
           default:
             return ""
         }
@@ -110,6 +248,10 @@
   </script>
 
   <style>
+    pre {
+      margin: 0;
+      font-family: "Roboto Condensed", sans-serif;
+    } 
     .element-holder-used-placeholder {
       margin: 3px;
     }
@@ -125,6 +267,8 @@
     }
     .element-holder-content-block {
       display: flex;
+      align-items: baseline;
+      line-height: 1;
     }
     .element-holder-column {
       flex-direction: column;
@@ -144,76 +288,11 @@
     .element-holder-active {
       outline: 2px solid var(--color-is-active) !important;
     }
-
-    .example_section_item_colour_red {
-      color: red;
+    .element-holder-content-hovered {
+      outline: 2px solid var(--color-is-hovered);
     }
-    .example_section_item_colour_green {
-      color: green;
+    .element-holder-content-active {
+      outline: 2px solid var(--color-is-active) !important;
     }
-    .example_section_item_colour_blue {
-      color: blue;
-    }
-    .example_section_item_colour_grey {
-      color: grey;
-    }
-
-    .example_section_item_weight_bold {
-      font-weight: bold;
-    }
-
-    .example_section_item_textsize_1 {
-      font-size: 0.8em;
-    }
-    .example_section_item_textsize_2 {
-      font-size: 1em;
-    }
-    .example_section_item_textsize_3 {
-      font-size: 1.2em;
-    }
-    .example_section_item_textsize_4 {
-      font-size: 1.5em;
-    }
-    .example_section_item_textsize_5 {
-      font-size: 2em;
-    }
-    .example_section_item_textsize_6 {
-      font-size: 2.5em;
-    }
-
-    .example_section_item_slant_italic {
-      font-style: italic;
-    }
-
-    .example_section_item_border_solid {
-      border: 1px solid black;
-    }
-    .example_section_item_border_thick {
-      border: 2px solid black;
-    }
-    .example_section_item_border_dotted {
-      border: 1px dotted black;
-    }
-
-    .example_section_item_borderRadius_small {
-      border-radius: 5px;
-    }
-    .example_section_item_borderRadius_medium {
-      border-radius: 10px;
-    }
-    .example_section_item_borderRadius_large {
-      border-radius: 15px;
-    }
-
-    .example_section_item_background_yellow {
-      background-color: yellow;
-    }
-    .example_section_item_background_blue {
-      background-color: blue;
-    }
-    .example_section_item_background_grey {
-      background-color: grey;
-    }
-
   </style>
 </example-section-item>
