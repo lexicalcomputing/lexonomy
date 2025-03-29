@@ -68,6 +68,11 @@
           if (value === null || value === undefined) {
             continue;
           }
+          if (option === "border-radius" || option === "padding" || option === "margin") {
+            value = value + "px";
+          } else if (option === "box-shadow") {
+            value = value + "px " + value + "px " + value + "px " + "grey";
+          }
           result_css += option + ":" + value + ";";
         }
         return result_css;

@@ -2,34 +2,40 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
-      <input type="color" style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
+      <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Text size:</div>
     <div class="value-wrapper">
       <div class="value-item value-item-textsize-1"
-          onclick={onChangeStyle.bind(this, "font-size", "0.8em")}>
+          onclick={onChangeStyle.bind(this, "font-size", "0.8em")}
+          style={getStyleOptionValue("font-size") === "0.8em" ? `background-color:var(--color-grey-normal);` : ""}>
           1
       </div>
       <div class="value-item value-item-textsize-2"
-          onclick={onChangeStyle.bind(this, "font-size", "1em")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1em")}
+          style={getStyleOptionValue("font-size") === "1em" ? `background-color:var(--color-grey-normal);` : ""}>
           2
       </div>
       <div class="value-item value-item-textsize-3"
-          onclick={onChangeStyle.bind(this, "font-size", "1.2em")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1.2em")}
+          style={getStyleOptionValue("font-size") === "1.2em" ? `background-color:var(--color-grey-normal);` : ""}>
           3
       </div>
       <div class="value-item value-item-textsize-4"
-          onclick={onChangeStyle.bind(this, "font-size", "1.5em")}>
+          onclick={onChangeStyle.bind(this, "font-size", "1.5em")}
+          style={getStyleOptionValue("font-size") === "1.5em" ? `background-color:var(--color-grey-normal);` : ""}>
           4
       </div>
       <div class="value-item value-item-textsize-5"
-          onclick={onChangeStyle.bind(this, "font-size", "2em")}>
+          onclick={onChangeStyle.bind(this, "font-size", "2em")}
+          style={getStyleOptionValue("font-size") === "2em" ? `background-color:var(--color-grey-normal);` : ""}>
           5
       </div>
       <div class="value-item value-item-textsize-6"
-          onclick={onChangeStyle.bind(this, "font-size", "2.5em")}>
+          onclick={onChangeStyle.bind(this, "font-size", "2.5em")}
+          style={getStyleOptionValue("font-size") === "2.5em" ? `background-color:var(--color-grey-normal);` : ""}>
           6
       </div>
     </div>
@@ -38,11 +44,13 @@
     <div class="label">Text weight:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "font-weight", "")}>
+          onclick={onChangeStyle.bind(this, "font-weight", "")}
+          style={getStyleOptionValue("font-weight") === "" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
       <div class="value-item value-item-weight-bold"
-          onclick={onChangeStyle.bind(this, "font-weight", "bold")}>
+          onclick={onChangeStyle.bind(this, "font-weight", "bold")}
+          style={getStyleOptionValue("font-weight") === "bold" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
     </div>
@@ -51,11 +59,13 @@
     <div class="label">Text slant:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "font-style", "")}>
+          onclick={onChangeStyle.bind(this, "font-style", "")}
+          style={getStyleOptionValue("font-style") === "" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
       <div class="value-item value-item-slant-italic"
-          onclick={onChangeStyle.bind(this, "font-style", "italic")}>
+          onclick={onChangeStyle.bind(this, "font-style", "italic")}
+          style={getStyleOptionValue("font-style") === "italic" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
     </div>
@@ -64,17 +74,21 @@
     <div class="label">Border:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "border", "")}>
+          onclick={onChangeStyle.bind(this, "border", "")}
+          style={getStyleOptionValue("border") === "" ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item value-item-border-solid"
-          onclick={onChangeStyle.bind(this, "border", "1px solid black")}>
+          onclick={onChangeStyle.bind(this, "border", "1px solid black")}
+          style={getStyleOptionValue("border") === "1px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
       <div class="value-item value-item-border-thick"
-          onclick={onChangeStyle.bind(this, "border", "2px solid black")}>
+          onclick={onChangeStyle.bind(this, "border", "2px solid black")}
+          style={getStyleOptionValue("border") === "2px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
       <div class="value-item value-item-border-dotted"
-          onclick={onChangeStyle.bind(this, "border", "2px dotted black")}>
+          onclick={onChangeStyle.bind(this, "border", "2px dotted black")}
+          style={getStyleOptionValue("border") === "2px dotted black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
@@ -82,48 +96,52 @@
     <div class="label">Outline:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "outline", "")}>
+          onclick={onChangeStyle.bind(this, "outline", "")}
+          style={getStyleOptionValue("outline") === "" ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item value-item-border-solid"
-          onclick={onChangeStyle.bind(this, "outline", "1px solid black")}>
+          onclick={onChangeStyle.bind(this, "outline", "1px solid black")}
+          style={getStyleOptionValue("outline") === "1px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
       <div class="value-item value-item-border-thick"
-          onclick={onChangeStyle.bind(this, "outline", "2px solid black")}>
+          onclick={onChangeStyle.bind(this, "outline", "2px solid black")}
+          style={getStyleOptionValue("outline") === "2px solid black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
       <div class="value-item value-item-border-dotted"
-          onclick={onChangeStyle.bind(this, "outline", "2px dotted black")}>
+          onclick={onChangeStyle.bind(this, "outline", "2px dotted black")}
+          style={getStyleOptionValue("outline") === "2px dotted black" ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
-      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="range" value={getStyleOptionValue("border-radius")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Margin:</div>
     <div class="value-wrapper">
-      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="range" value={getStyleOptionValue("margin")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Padding:</div>
     <div class="value-wrapper">
-      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="range" value={getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow:</div>
     <div class="value-wrapper">
-      <input type="range" min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="range" value={getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Background:</div>
     <div class="value-wrapper">
-      <input type="color" style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
+      <input type="color" value={getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
@@ -256,15 +274,18 @@
         }
       },
 
+      getStyleOptionValue(option) {
+        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+          return;
+        }
+        if (window.nvhFormattingEditor.global.selectedPlaceholder.styles === undefined) {
+          return;
+        }
+        return window.nvhFormattingEditor.global.selectedPlaceholder.styles[option];
+      },
       onChangeStyle(option, value, event) {
         if (value === null) {
-          if (option === "border-radius" || option === "padding" || option === "margin") {
-            value = event.target.value + "px";
-          } else if (option === "box-shadow") {
-            value = event.target.value + "px " + event.target.value + "px " + event.target.value + "px " + "grey";
-          }else {
-            value = event.target.value;
-          }
+          value = event.target.value;
         }
         this.onChangeStyle2(option, value);
       },
