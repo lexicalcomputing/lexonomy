@@ -15,7 +15,7 @@
       </div>
       <div class="value-item value-item-textsize-2"
           onclick={onChangeStyle.bind(this, "font-size", "1em")}
-          style={getStyleOptionValue("font-size") === "1em" ? `background-color:var(--color-grey-normal);` : ""}>
+          style={getStyleOptionValue("font-size") === "1em" || getStyleOptionValue("font-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
           2
       </div>
       <div class="value-item value-item-textsize-3"
@@ -45,7 +45,7 @@
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "font-weight", "")}
-          style={getStyleOptionValue("font-weight") === "" ? `background-color:var(--color-grey-normal);` : ""}>
+          style={getStyleOptionValue("font-weight") === "" || getStyleOptionValue("font-weight") === null ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
       <div class="value-item value-item-weight-bold"
@@ -60,7 +60,7 @@
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "font-style", "")}
-          style={getStyleOptionValue("font-style") === "" ? `background-color:var(--color-grey-normal);` : ""}>
+          style={getStyleOptionValue("font-style") === "" || getStyleOptionValue("font-style") === null ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
       <div class="value-item value-item-slant-italic"
@@ -71,11 +71,31 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
+    <div class="label">Text decoration:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "text-decoration", "")}
+          style={getStyleOptionValue("text-decoration") === "" || getStyleOptionValue("text-decoration") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-text-decoration-underline"
+          onclick={onChangeStyle.bind(this, "text-decoration", "underline")}
+          style={getStyleOptionValue("text-decoration") === "underline" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-text-decoration-strikethrough"
+          onclick={onChangeStyle.bind(this, "text-decoration", "line-through")}
+          style={getStyleOptionValue("text-decoration") === "line-through" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Border:</div>
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "border", "")}
-          style={getStyleOptionValue("border") === "" ? `background-color:var(--color-grey-normal);` : ""}>
+          style={getStyleOptionValue("border") === "" || getStyleOptionValue("border") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item value-item-border-solid"
@@ -97,7 +117,7 @@
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "outline", "")}
-          style={getStyleOptionValue("outline") === "" ? `background-color:var(--color-grey-normal);` : ""}>
+          style={getStyleOptionValue("outline") === "" || getStyleOptionValue("outline") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item value-item-border-solid"
@@ -117,25 +137,25 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("border-radius")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("outline")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Margin:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("margin")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Padding:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
@@ -148,35 +168,43 @@
     <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "")}
+          style={getStyleOptionValue("leftPunc") === "" || getStyleOptionValue("leftPunc") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "roundBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "roundBrackets")}
+          style={getStyleOptionValue("leftPunc") === "roundBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &lpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "squareBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "squareBrackets")}
+          style={getStyleOptionValue("leftPunc") === "squareBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &lsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "curlyBrackets")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "curlyBrackets")}
+          style={getStyleOptionValue("leftPunc") === "curlyBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &lcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "colon")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "colon")}
+          style={getStyleOptionValue("leftPunc") === "colon" ? `background-color:var(--color-grey-normal);` : ""}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "comma")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "comma")}
+          style={getStyleOptionValue("leftPunc") === "comma" ? `background-color:var(--color-grey-normal);` : ""}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "dot")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "dot")}
+          style={getStyleOptionValue("leftPunc") === "dot" ? `background-color:var(--color-grey-normal);` : ""}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "semicolon")}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "semicolon")}
+          style={getStyleOptionValue("leftPunc") === "semicolon" ? `background-color:var(--color-grey-normal);` : ""}>
           &semi;
       </div>
     </div>
@@ -185,35 +213,43 @@
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "")}
+          style={getStyleOptionValue("rightPunc") === "" || getStyleOptionValue("rightPunc") === null ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "roundBrackets")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "roundBrackets")}
+          style={getStyleOptionValue("rightPunc") === "roundBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &rpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "squareBrackets")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "squareBrackets")}
+          style={getStyleOptionValue("rightPunc") === "squareBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &rsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "curlyBrackets")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "curlyBrackets")}
+          style={getStyleOptionValue("rightPunc") === "curlyBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
           &rcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "colon")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "colon")}
+          style={getStyleOptionValue("rightPunc") === "colon" ? `background-color:var(--color-grey-normal);` : ""}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "comma")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "comma")}
+          style={getStyleOptionValue("rightPunc") === "comma" ? `background-color:var(--color-grey-normal);` : ""}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "dot")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "dot")}
+          style={getStyleOptionValue("rightPunc") === "dot" ? `background-color:var(--color-grey-normal);` : ""}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "semicolon")}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "semicolon")}
+          style={getStyleOptionValue("rightPunc") === "semicolon" ? `background-color:var(--color-grey-normal);` : ""}>
           &semi;
       </div>
     </div>
@@ -276,10 +312,10 @@
 
       getStyleOptionValue(option) {
         if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
-          return;
+          return null;
         }
         if (window.nvhFormattingEditor.global.selectedPlaceholder.styles === undefined) {
-          return;
+          return null;
         }
         return window.nvhFormattingEditor.global.selectedPlaceholder.styles[option];
       },
@@ -389,9 +425,14 @@
     .value-item-weight-bold {
       font-weight: bold;
     }
-
     .value-item-slant-italic {
       font-style: italic;
+    }
+    .value-item-text-decoration-strikethrough {
+      text-decoration: line-through;
+    }
+    .value-item-text-decoration-underline {
+      text-decoration: underline;
     }
 
     .value-item-border-solid {
