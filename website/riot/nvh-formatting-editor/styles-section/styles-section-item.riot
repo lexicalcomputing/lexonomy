@@ -263,17 +263,24 @@
         this.onChangeStyle2(option, value);
       },
       onChangeStyle2(option, value) {
-        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
+        /* If selected placeholder is wrapper, then selectedPlaceholderFullName = "" */
+        /*TODO: selectedPlaceholderFullName should not be "" even for wrappers in the future*/
+        // let fullName = window.nvhFormattingEditor.global.selectedPlaceholderFullName;
+
+        let selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
+        if (selectedPlaceholder === null) {
+          console.log("There is no selected placeholder");
           return;
         }
-        let fullName = window.nvhFormattingEditor.global.selectedPlaceholderFullName;
-        window.nvhFormattingEditor.currentLayout.elements[fullName][option] = value
+        if (selectedPlaceholder.styles === undefined) {
+          selectedPlaceholder.styles = {};
+        }
+        selectedPlaceholder.styles[option] = value;
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onSelectChange(value) {
         this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
         this.state.selectedOption = value;
-        // TODO: Store to nvh store
         this.update();
       },
       onSelectOpen() {

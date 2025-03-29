@@ -173,6 +173,10 @@
       },
 
       onBeforeMount() {
+        // TODO: make a script that converts current styles, to new styling of each converter, for back compatibility
+        /* TODO: Find out type of element and style it accordingly
+        console.log(window.nvhStore.getElementConfig("entry.sense.example.soundFile"));
+        */
         this.state.fileReader = new FileReader();
         this.state.fileReader.onload = function(e) {
           this.setSchemaFromImportedFile(this.state.fileReader.result);

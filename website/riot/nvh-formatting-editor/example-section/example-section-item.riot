@@ -60,8 +60,10 @@
       },
       getCssStyleClass(fullName) {
         /* NOTE: Inspiration from: nvh-editor-view-item.riot */
-        let styles = window.nvhFormattingEditor.currentLayout.elements === undefined || window.nvhFormattingEditor.currentLayout.elements === null
-                    ? window.nvhStore.getElementStyle(fullName) : window.nvhFormattingEditor.currentLayout.elements[fullName];
+        let styles = this.props.schema.styles;
+        if (styles === undefined) {
+          return;
+        }
         let result_classes = "";
         for (let i = 0; i < Object.keys(styles).length; i++) {
           let option = Object.keys(styles)[i];
@@ -77,11 +79,15 @@
         if (fullName === "") {
           return "";
         }
-        let innerPunc = window.nvhStore.getElementStyle(fullName)[option];
-        if (innerPunc === undefined) {
+        let styles = this.props.schema.styles;
+        if (styles === undefined) {
           return "";
         }
-        switch (innerPunc) {
+        let punc = this.props.schema.styles[option];
+        if (punc === undefined) {
+          return "";
+        }
+        switch (punc) {
           case "roundBrackets":
             return side === "left" ? "(" : ")";
           case "squareBrackets":
