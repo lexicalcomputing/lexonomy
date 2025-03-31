@@ -117,6 +117,9 @@
       },
       onAdderDragEnter(event) {
         const rawData = event.dataTransfer.getData("text/plain");
+        if (rawData === "") {
+          return;
+        }
         const data = JSON.parse(rawData);
         if (data.type === "placeholder") {
           event.target.classList.add("adder-highligth-dragged");
@@ -124,6 +127,9 @@
       },
       onAdderDragLeave(event) {
         const rawData = event.dataTransfer.getData("text/plain");
+        if (rawData === "") {
+          return;
+        }
         const data = JSON.parse(rawData);
         if (data.type === "placeholder") {
           event.target.classList.remove("adder-highligth-dragged");
