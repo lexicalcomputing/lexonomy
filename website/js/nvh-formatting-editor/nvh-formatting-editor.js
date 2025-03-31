@@ -376,7 +376,7 @@ class NVHFormattingEditorClass {
     return child.includes(parent);
   }
 
-  isChildOfParent(child, parent) { // NOTE
+  isChildOfParent(child, parent) {
     if (window.nvhFormattingEditor.global.draggedPlaceholder !== null) {
       return window.nvhFormattingEditor.isChildObjectOfParent(window.nvhFormattingEditor.global.draggedPlaceholder, parent);
     }
