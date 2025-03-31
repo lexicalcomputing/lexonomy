@@ -376,7 +376,7 @@ class NVHFormattingEditorClass {
     return child.includes(parent);
   }
 
-  isChildOfParent(child, parent) { // NOTE
+  isChildOfParent(child, parent) {
     if (window.nvhFormattingEditor.global.draggedPlaceholder !== null) {
       return window.nvhFormattingEditor.isChildObjectOfParent(window.nvhFormattingEditor.global.draggedPlaceholder, parent);
     }
@@ -507,7 +507,14 @@ class NVHFormattingEditorClass {
     return newElement;
   }
 
-  deleteElement(indexToDelete, parentState) {
+  deleteElement(indexToDelete, parentState, state) {
+    if (this.isMarkupTypeChild(state.content.fullName)) {
+      state.styles = false;
+      if (state.markupValue !== undefined) {
+        state.markupValue.value = null;
+      }
+    }
+    window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
     window.nvhFormattingEditor.global.canOpenActionPanel = false;
     window.nvhFormattingEditor.global.draggedElementFullName = "";
@@ -515,7 +522,26 @@ class NVHFormattingEditorClass {
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholder = null;
-    window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+  }
+
+  isMarkupTypeChild(fullName) {
+    if (fullName === "") {
+      return false;
+    }
+    let pathArray = fullName.split('.');
+    if (pathArray.length === 1) {
+      return false;
+    }
+    pathArray.length -= 1;
+    let parentPath = pathArray.join('.');
+    return window.nvhStore.getElementConfig(parentPath).type === "markup";
+  }
+
+  isMarkupType(fullName) {
+    if (fullName === "") {
+      return false;
+    }
+    return window.nvhStore.getElementConfig(fullName).type === "markup";
   }
 
   childWithInheritedArea(child, state) {
