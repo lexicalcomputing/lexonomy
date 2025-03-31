@@ -174,9 +174,6 @@
 
       onBeforeMount() {
         // TODO: make a script that converts current styles, to new styling of each converter, for back compatibility
-        /* TODO: Find out type of element and style it accordingly
-        console.log(window.nvhStore.getElementConfig("entry.number"));
-        */
         this.state.fileReader = new FileReader();
         this.state.fileReader.onload = function(e) {
           this.setSchemaFromImportedFile(this.state.fileReader.result);
@@ -434,6 +431,7 @@
               color: window.nvhStore.getElementColor(child.fullName),
               canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
             },
+            styles: {},
             children: [],
           });
           this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);

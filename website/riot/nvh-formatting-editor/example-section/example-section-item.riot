@@ -1,5 +1,5 @@
 <example-section-item>
-  <div class="element-holder element-holder-{props.schema.orientation}
+  <div if={!isMarkupTypeChild(props.schema.content.fullName)} class="element-holder element-holder-{props.schema.orientation}
               {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
@@ -7,11 +7,28 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== ""}
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type !== "markup"}
             class="element-holder-content"
-            style={props.schema.content.fullName !== "" ? getCssStyles() : ""}>
-          {formatValue(props.schema.content.fullName)}
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
+          {this.state.value}
         </div>
+        <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
+            class="element-holder-content"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
+          {this.state.value.prefix}
+        </pre>
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.markup !== ""}
+            class="element-holder-content
+                  {props.schema.markupStatus.isHovered ? "element-holder-hovered" : ""}
+                  {props.schema.markupStatus.isActive ? "element-holder-active" : ""}"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.markupStyles) : ""}>
+          {this.state.value.markup}
+        </div>
+        <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.suffix !== ""}
+            class="element-holder-content"
+            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
+          {this.state.value.suffix}
+        </pre>
       </div>
     </div>
     <div each={childSchema in props.schema.children}
@@ -29,14 +46,40 @@
         <example-section-item if={childSchema.content.fullName === childEntry.path}
                               schema={childSchema}
                               entry={childEntry}/>
-      <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
-          class="element-holder-hovered-empty-entry" style="display: none"></div>
+        <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
+            class="element-holder-hovered-empty-entry" style="display: none"></div>
       </template>
     </div>
   </div>
 
   <script>
     export default {
+      state: {
+        type: null,
+        value: null,
+      },
+
+      onBeforeMount() {
+        let fullName = this.props.schema.content.fullName;
+        if (fullName === "") {
+          return;
+        }
+        if (window.nvhStore.getElementConfig(fullName).type === "markup" && this.props.schema.children.length === 2) {
+          this.connectMarkupElementWithChildren(this.props.schema);
+        }
+        this.formatValue(fullName);
+      },
+      onBeforeUpdate() {
+        let fullName = this.props.schema.content.fullName;
+        if (fullName === "") {
+          return;
+        }
+        if (window.nvhStore.getElementConfig(fullName).type === "markup" && this.props.schema.children.length === 2) {
+          this.connectMarkupElementWithChildren(this.props.schema);
+        }
+        this.formatValue(fullName);
+      },
+
       hasChildWithContent(state) {
         for (let child of state.children) {
           if (child.content.name !== "" && child.children.length === 0) {
@@ -54,17 +97,75 @@
       isEmptyPlaceholder() {
         return this.props.schema.content.name === "";
       },
-      formatValue(fullName) {
-        var result = this.getPunc(this.props.schema.content.fullName, "leftPunc");
-
-        if (window.nvhStore.getElementConfig(fullName).type === "int") {
-          result += this.formatInt(this.props.schema.content.fullName);
-        } else {
-          result += this.props.entry.value
+      connectMarkupElementWithChildren(schema) {
+        /* Markup type will always have two children:
+          first one will be markup element child
+          second one will be the markup element itself
+        */
+        let displayMarkupPlaceholder = this.props.schema.children[1];
+        let styleMarkupPlaceholder = this.props.schema.children[0];
+        let markupValue = { value: null };
+        displayMarkupPlaceholder["markupStyles"] = styleMarkupPlaceholder.styles;
+        displayMarkupPlaceholder["markupStatus"] = styleMarkupPlaceholder.status;
+        displayMarkupPlaceholder["markupValue"] = markupValue;
+        styleMarkupPlaceholder["markupValue"] = markupValue;
+      },
+      isMarkupTypeChild(fullName) {
+        if (fullName === "") {
+          return false;
         }
+        let pathArray = fullName.split('.');
+        if (pathArray.length === 1) {
+          return false;
+        }
+        pathArray.length -= 1;
+        let parentPath = pathArray.join('.');
+        return window.nvhStore.getElementConfig(parentPath).type === "markup";
+      },
+      formatValue(fullName) {
+        this.state.type = window.nvhStore.getElementConfig(fullName).type;
+        let leftPunc = this.getPunc("leftPunc", this.props.schema.styles);
+        let rightPunc = this.getPunc("rightPunc", this.props.schema.styles);
 
-        result += this.getPunc(this.props.schema.content.fullName, "rightPunc");
-        return result;
+        if (this.state.type === "markup") {
+          if (this.props.schema.markupValue !== undefined) {
+            let valueObject = this.formatMarkup(this.props.entry.value, this.props.schema, leftPunc, rightPunc);
+            this.state.value = valueObject;
+            return;
+          }
+        } else if (this.state.type === "int") {
+          let value = this.formatInt(this.props.schema.content.fullName);
+          this.state.value = leftPunc + value + rightPunc;
+        } else {
+          if (this.props.schema.markupValue !== undefined) {
+            this.props.schema.markupValue.value = this.props.entry.value;
+          }
+          let value = this.props.entry.value;
+          this.state.value = leftPunc + value + rightPunc;
+        }
+      },
+      createValueObject(prefix, markup, suffix) {
+        return {
+          prefix: prefix,
+          markup: markup,
+          suffix: suffix,
+        };
+      },
+      formatMarkup(value, schema, leftPunc, rightPunc) {
+        let leftMarkupPunc = this.getPunc("leftPunc", schema.markupStyles);
+        let rightMarkupPunc = this.getPunc("rightPunc", schema.markupStyles);
+        let markupValue = schema.markupValue.value;
+        let values = value.split(markupValue);
+        let prefix = values[0];
+
+        if (markupValue === "") {
+          return this.createValueObject(leftPunc + value, "", rightPunc);
+        } else if (values.length > 1) {
+          let suffix = values.slice(1).join(markupValue);
+          return this.createValueObject(leftPunc + prefix, leftMarkupPunc + markupValue + rightMarkupPunc, suffix + rightPunc);
+        } else { /*markupChildValue is not present in markupValue*/
+          return this.createValueObject(leftPunc + prefix, "", rightPunc);
+        }
       },
       /*TODO: refactor*/
       formatInt(fullName) {
@@ -91,11 +192,9 @@
         if (numberDecimal !== undefined) {
           result += decimalPlaceDivider + numberDecimal;
         }
-        
         return result;
       },
-      getCssStyles() {
-        let styles = this.props.schema.styles;
+      getCssStyles(styles) {
         if (styles === undefined) {
           return;
         }
@@ -118,15 +217,11 @@
         }
         return result_css;
       },
-      getPunc(fullName, option) {
-        if (fullName === "") {
-          return "";
-        }
-        let styles = this.props.schema.styles;
+      getPunc(option, styles) {
         if (styles === undefined) {
           return "";
         }
-        let punc = this.props.schema.styles[option];
+        let punc = styles[option];
         if (punc === undefined) {
           return "";
         }
@@ -153,6 +248,10 @@
   </script>
 
   <style>
+    pre {
+      margin: 0;
+      font-family: "Roboto Condensed", sans-serif;
+    } 
     .element-holder-used-placeholder {
       margin: 3px;
     }
@@ -168,6 +267,8 @@
     }
     .element-holder-content-block {
       display: flex;
+      align-items: baseline;
+      line-height: 1;
     }
     .element-holder-column {
       flex-direction: column;
@@ -185,6 +286,12 @@
       outline: none;
     }
     .element-holder-active {
+      outline: 2px solid var(--color-is-active) !important;
+    }
+    .element-holder-content-hovered {
+      outline: 2px solid var(--color-is-hovered);
+    }
+    .element-holder-content-active {
       outline: 2px solid var(--color-is-active) !important;
     }
   </style>

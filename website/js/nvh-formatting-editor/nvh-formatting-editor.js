@@ -251,6 +251,7 @@ class NVHFormattingEditorClass {
             color: window.nvhStore.getElementColor("entry"),
             canHaveChildren: true,
           },
+          styles: {},
           children: [],
         }
       ]
@@ -421,6 +422,7 @@ class NVHFormattingEditorClass {
         color: label == null ? "": label.color,
         canHaveChildren: true, /*NOTE: really always true ?*/
       },
+      styles: {},
       children: []
     };
     window.nvhFormattingEditor.closeActionPanel();
@@ -455,6 +457,7 @@ class NVHFormattingEditorClass {
         color: label.color,
         canHaveChildren: label.canHaveChildren !== undefined ? label.canHaveChildren : label.children.length !== 0,
       },
+      styles: {},
       children: []
     };
 
@@ -488,6 +491,7 @@ class NVHFormattingEditorClass {
             color: label.color,
             canHaveChildren: false,
           },
+          styles: {},
           children: []
         };
         newElement.children.push(selfDisplayElement);
