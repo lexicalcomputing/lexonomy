@@ -626,6 +626,22 @@ class NVHFormattingEditorClass {
     }
     return true;
   }
+
+  applyStylesFromElements() {
+    for (let child of window.nvhFormattingEditor.currentLayout.schema.children) {
+      this.applyStylesFromElementsRec(child);
+    }
+  }
+  applyStylesFromElementsRec(state) {
+    let fullName = state.content.fullName;
+    if (fullName !== "" && state.styles === undefined) {
+      // TODO: apply styles from elements to each individual container
+    }
+
+    for (let child of state.children) {
+      this.applyStylesFromElementsRec(child);
+    }
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();
