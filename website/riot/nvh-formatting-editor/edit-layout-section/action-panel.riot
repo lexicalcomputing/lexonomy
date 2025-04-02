@@ -1,6 +1,6 @@
 <action-panel>
   <div class="action-panel-wrapper">
-    <div if={!props.isBaseLevel} 
+    <div if={!props.isBaseLevel && !props.isMarkupTypeChild} 
         class="action"
         id="action-drag"
         title="Drag"
@@ -9,7 +9,7 @@
         ondragend={(event) => onDragEnd(event, props.index, props.parentState, props.state)}>
       <i class="small material-icons">drag_handle</i>
     </div>
-    <div if={!props.isBaseLevel}
+    <div if={!props.isBaseLevel && !props.isMarkupTypeChild}
         class="action"
         id="action-duplicate"
         title="Duplicate"
@@ -44,7 +44,8 @@
         onclick={increaseElementIndex}>
       <i class="small material-icons">arrow_forward</i>
     </div>
-    <div class="action action-orientation-{props.state.orientation}"
+    <div if={!props.isMarkupTypeChild}
+        class="action action-orientation-{props.state.orientation}"
         title={props.state.orientation === "column"
           ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
             : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}

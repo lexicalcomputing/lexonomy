@@ -13,7 +13,9 @@
                               parentState={window.nvhFormattingEditor.currentLayout.schema}
                               isBaseLevel={true}
                               index={index}
-                              canHaveAdders={true}/>
+                              canHaveAdders={true}
+                              isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}
+                              isMarkupTypeChild={false}/>
       </template>
     </div>
   </div>

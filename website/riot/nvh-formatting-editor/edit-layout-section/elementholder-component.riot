@@ -3,7 +3,7 @@
       style="border: 1px solid {props.state.content.color};
             color: {props.state.children.length === 0 ? "white" : props.state.content.color};
             background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}"
-      draggable={!props.isBaseLevel ? "true" : "false"}
+      draggable={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? "true" : "false"}
       ondragstart={onDragStart}
       ondragend={onDragEnd}>
     <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
@@ -118,6 +118,10 @@
       window.nvhFormattingEditor.global.canBeDropped = false;
     },
 
+    isMarkupTypeOrMarkupTypeChild() {
+      return window.nvhFormattingEditor.isMarkupType(this.props.state.content.fullName)
+             || window.nvhFormattingEditor.isMarkupTypeChild(this.props.state.content.fullName)
+    },
     addElementInside(undesiredOrientation, firstLabel, secondLabel) {
       if (this.props.state.orientation === undesiredOrientation) {
         let desiredOrientation = undesiredOrientation == "column" ? "row" : "column";
@@ -132,7 +136,8 @@
     },
     isDraggedElementOk() {
       return window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.fullName)
-              && window.nvhFormattingEditor.global.draggedElementFullName !== this.props.state.content.fullName;
+              && window.nvhFormattingEditor.global.draggedElementFullName !== this.props.state.content.fullName
+              && !window.nvhFormattingEditor.isMarkupType(this.props.state.content.fullName); /*resolve problem with markup type somewhere else*/
     }
   }
 </script>
