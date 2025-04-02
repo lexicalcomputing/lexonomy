@@ -1,6 +1,10 @@
 <example-section-item>
-  <div if={!isMarkupTypeChild(props.schema.content.fullName)} class="element-holder element-holder-{props.schema.orientation}
+  <div class="element-holder element-holder-{props.schema.orientation}
               {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
+              {window.nvhFormattingEditor.isMarkupTypeChild(props.schema.content.fullName) ? "element-holder-markup-type-child" : ""}
+              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) ? "element-holder-markup-type" : ""}
+              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isHovered ? "element-holder-markup-type-hovered" : ""}
+              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}">
@@ -110,29 +114,14 @@
         displayMarkupPlaceholder["markupValue"] = markupValue;
         styleMarkupPlaceholder["markupValue"] = markupValue;
       },
-      isMarkupTypeChild(fullName) {
-        if (fullName === "") {
-          return false;
-        }
-        let pathArray = fullName.split('.');
-        if (pathArray.length === 1) {
-          return false;
-        }
-        pathArray.length -= 1;
-        let parentPath = pathArray.join('.');
-        return window.nvhStore.getElementConfig(parentPath).type === "markup";
-      },
       formatValue(fullName) {
         this.state.type = window.nvhStore.getElementConfig(fullName).type;
         let leftPunc = this.getPunc("leftPunc", this.props.schema.styles);
         let rightPunc = this.getPunc("rightPunc", this.props.schema.styles);
 
         if (this.state.type === "markup") {
-          if (this.props.schema.markupValue !== undefined) {
-            let valueObject = this.formatMarkup(this.props.entry.value, this.props.schema, leftPunc, rightPunc);
-            this.state.value = valueObject;
-            return;
-          }
+          let valueObject = this.formatMarkup(this.props.entry.value, this.props.schema, leftPunc, rightPunc);
+          this.state.value = valueObject;
         } else if (this.state.type === "int") {
           let value = this.formatInt(this.props.schema.content.fullName);
           this.state.value = leftPunc + value + rightPunc;
@@ -154,17 +143,22 @@
       formatMarkup(value, schema, leftPunc, rightPunc) {
         let leftMarkupPunc = this.getPunc("leftPunc", schema.markupStyles);
         let rightMarkupPunc = this.getPunc("rightPunc", schema.markupStyles);
+
+        if (schema.markupValue === undefined) {
+          return this.createValueObject(leftPunc + value + rightPunc, "", "");
+        }
+
         let markupValue = schema.markupValue.value;
         let values = value.split(markupValue);
         let prefix = values[0];
 
         if (markupValue === "") {
-          return this.createValueObject(leftPunc + value, "", rightPunc);
+          return this.createValueObject(leftPunc + value + rightPunc, "", "");
         } else if (values.length > 1) {
           let suffix = values.slice(1).join(markupValue);
           return this.createValueObject(leftPunc + prefix, leftMarkupPunc + markupValue + rightMarkupPunc, suffix + rightPunc);
         } else { /*markupChildValue is not present in markupValue*/
-          return this.createValueObject(leftPunc + prefix, "", rightPunc);
+          return this.createValueObject(leftPunc + prefix + rightPunc, "", "");
         }
       },
       /*TODO: refactor*/
@@ -272,6 +266,18 @@
     }
     .element-holder-column {
       flex-direction: column;
+    }
+    .element-holder-markup-type-child {
+      display: none;
+    }
+    .element-holder-markup-type:has(.element-holder-markup-type-child) {
+      outline: none;
+    }
+    .element-holder-markup-type-hovered:has(.element-holder-markup-type) {
+      outline: 2px solid var(--color-is-hovered);
+    }
+    .element-holder-markup-type-active:has(.element-holder-markup-type) {
+      outline: 2px solid var(--color-is-active);
     }
     .element-holder-hovered {
       outline: 2px solid var(--color-is-hovered);
