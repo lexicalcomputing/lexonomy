@@ -4,14 +4,15 @@
                 index={props.index}
                 parentState={props.parentState}
                 state={props.state}
-                isBaseLevel={props.isBaseLevel}/>
+                isBaseLevel={props.isBaseLevel}
+                isMarkupTypeChild={props.isMarkupTypeChild}/>
   <elementholder-component if={props.state.content.name !== ""}
                           class="elementholder"
                           state={props.state}
                           canHaveAdders={props.canHaveAdders}
                           isBaseLevel={props.isBaseLevel}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}">
-    <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
                         && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                     onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
                     ondragover={onAdderDragOver}
@@ -25,6 +26,7 @@
                     state={props.state}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => window.nvhFormattingEditor.openActionPanel(child, props.state)}
+                            title={getPlaceholderTitle(child)}
                             ondragover={onDragOver}
                             ondrop={(event) => onDrop(event, child)}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
@@ -34,13 +36,16 @@
                                   {child.status.isHovered ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
                                   {child.children.length === 0 ? "placeholder-no-children" : ""}
-                                  {child.status.isDragged ? "placeholder-dragged" : ""}"
+                                  {child.status.isDragged ? "placeholder-dragged" : ""}
+                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}"
                             state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             isBaseLevel={false}
                             index={index}
-                            canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
-      <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+                            canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}
+                            isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}
+                            isMarkupTypeChild={props.isMarkupType}/>
+      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
                           && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                       onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
                       ondragover={onAdderDragOver}
@@ -61,6 +66,9 @@
       },
       onDrop(event, state) {
         const rawData = event.dataTransfer.getData("text/plain");
+        if (rawData === "") {
+          return;
+        }
         const data = JSON.parse(rawData);
         if (window.nvhFormattingEditor.global.canBeDropped) {
           if (data.type === "choice-item") {
@@ -155,7 +163,56 @@
           }
         }
       },
-
+      markupTypeChildrenLimitReached() {
+        return this.props.isMarkupType && this.props.state.children.length === 2;
+      },
+      getPlaceholderTitle(state) {
+        if (!window.nvhFormattingEditor.isMarkupType(state.content.fullName)) {
+          return "";
+        }
+        if (state.children.length == 0) {
+          return "";
+        }
+        if (state.children.length !== 2) {
+          return "Container with element of markup type (red frame),\nshould have exactly two subcontainers.";
+        }
+        if (state.children[0].content.fullName === "" || state.children[1].content.fullName === "") {
+          return "Container with element of markup type (red frame)\nshould not have empty subcontainers.";
+        }
+        if (state.children[0].content.fullName === state.children[1].content.fullName) {
+          return "Container with element of markup type (red frame),\nshould not have two subcontainers with the same element name.";
+        }
+        if (this.areMarkupTypeChildrenSwapped(state)) {
+          return "Subcontainers of a container with element of a markup type (red frame),\n should be swapped.";
+        }
+        return "";
+      },
+      isContainerConfiguredCorrectly(state) {
+        if (!window.nvhFormattingEditor.isMarkupType(state.content.fullName)) {
+          return true;
+        }
+        if (state.children.length == 0) {
+          return true;
+        }
+        if (state.children.length !== 2) {
+          return false;
+        }
+        if (state.children[0].content.fullName === "" || state.children[1].content.fullName === "") {
+          return false;
+        }
+        if (state.children[0].content.fullName === state.children[1].content.fullName) {
+          return false;
+        }
+        if (this.areMarkupTypeChildrenSwapped(state)) {
+          return false;
+        }
+        return true;
+      },
+      areMarkupTypeChildrenSwapped(state) {
+        let firstType = window.nvhFormattingEditor.isMarkupType(state.children[0].content.fullName);
+        let secondType = window.nvhFormattingEditor.isMarkupTypeChild(state.children[1].content.fullName);
+        return firstType && secondType;
+      },
       onPlaceholderMouseEnter(event, state, parentState) {
         event.target.classList.add("placeholder-mouse-hover");
         state.status.isHovered = true;
@@ -253,6 +310,10 @@
     .placeholder:not(:has(.placeholder:hover)) .action-panel-hovered {
       display: block;
       opacity: 0.3;
+    }
+
+    .placeholder-configured-incorrectly {
+      outline: 4px solid var(--color-red-normal) !important;
     }
 
 
