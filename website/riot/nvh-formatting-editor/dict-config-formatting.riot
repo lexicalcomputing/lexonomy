@@ -339,6 +339,9 @@
         if (oldSchema.orientation !== newSchema.orientation) {
           return true;
         }
+        if (JSON.stringify(oldSchema.styles) !== JSON.stringify(newSchema.styles)) {
+          return true;
+        }
         if (oldSchema.content !== undefined && oldSchema.content !== undefined) {
           if (oldSchema.content.fullName !== newSchema.content.fullName) {
             return true;
@@ -417,6 +420,7 @@
           exportSchema.children.push({
             orientation: child.orientation,
             fullName: child.content.fullName,
+            styles: JSON.stringify(child.styles),
             children: [],
           });
           this.createExportedSchema(exportSchema.children.at(exportSchema.children.length - 1), child);
@@ -441,7 +445,7 @@
               color: window.nvhStore.getElementColor(child.fullName),
               canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
             },
-            styles: {},
+            styles: JSON.parse(child.styles),
             children: [],
           });
           this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);
