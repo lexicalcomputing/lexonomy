@@ -3,9 +3,7 @@
               {isValidToActivePlaceholder() ? "elements-choice-item-wrapper-valid" : ""}
               {isInvalidToActivePlaceholder() ? "elements-choice-item-wrapper-invalid" : ""}"
       style="padding-left: {props.indentationLevel}px"
-      draggable="true"
-      ondragstart={onDragStart}
-      ondragend={onDragEnd}>
+      onmousedown={() => onMouseDown(props.state)}>
     <div class="elements-choice-item-box"
         style="background-color: {props.state.data.color}">
     </div>
@@ -18,16 +16,9 @@
 
   <script>
     export default {
-      onDragStart(event) {
-        event.dataTransfer.clearData();
-        const data = JSON.stringify(this.props.state.data);
-        event.dataTransfer.setData("text/plain", data);
-
+      onMouseDown(state) {
+        window.nvhFormattingEditor.global.mouseData = this.props.state.data;
         window.nvhFormattingEditor.global.draggedElementFullName = this.props.state.data.fullName;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
-      },
-      onDragEnd(event) {
-        window.nvhFormattingEditor.global.draggedElementFullName = "";
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
@@ -53,6 +44,7 @@
       align-items: center;
       gap: 4px;
       cursor: grab;
+      user-select: none;
     }
     .elements-choice-item-wrapper:hover {
       background-color: #d7e4f7;

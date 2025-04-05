@@ -7,7 +7,7 @@
                               onmouseleave={(event) => onPlaceholderMouseLeave(event, child, null)}
                               class="placeholder placeholder-{child.orientation} placeholder-first
                                     {child.status.isActive ? "placeholder-selected" : ""}
-                                    {child.status.isHovered ? "placeholder-mouse-hover" : ""}
+                                    {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
                                     {child.children.length === 0 ? "placeholder-no-children" : ""}"
                               state={window.nvhFormattingEditor.childWithInheritedArea(child, null)}
                               parentState={window.nvhFormattingEditor.currentLayout.schema}
@@ -26,38 +26,42 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseEnter(event, state, parentState) {
-        event.target.classList.add("placeholder-mouse-hover");
-        state.status.isHovered = true;
-        /*
-          This is a work-around.
-          If I create a new placeholder inside of a placeholder,
-          the outer one will lose focus. In this way I assign a focus to parent
-          placeholder, which is expected behaviour. This is not true for base placeholder.
-        */
-        const classList = Array.from(event.target.parentElement.parentElement.classList);
-        if (classList.includes("placeholder")) {
-          event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-          parentState.status.isHovered = true;
+        if (window.nvhFormattingEditor.global.mouseData === null) {
+          event.currentTarget.classList.add("placeholder-mouse-hover");
+          state.status.isHovered = true;
+          /*
+            This is a work-around.
+            If I create a new placeholder inside of a placeholder,
+            the outer one will lose focus. In this way I assign a focus to parent
+            placeholder, which is expected behaviour. This is not true for base placeholder.
+          */
+          const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
+          if (classList.includes("placeholder")) {
+            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+            parentState.status.isHovered = true;
+          }
+          window.nvhFormattingEditor.formattingEditorComponent.update();
         }
-        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseLeave(event, state, parentState) {
-        event.target.classList.remove("placeholder-mouse-hover");
-        state.status.isHovered = false;
+        if (window.nvhFormattingEditor.global.mouseData === null) {
+          event.currentTarget.classList.remove("placeholder-mouse-hover");
+          state.status.isHovered = false;
 
-        /*
-          This is a work-around.
-          If I move a placeholder using arrows, sometimes I enter child placeholder
-          without entering parent placeholder. I need to assure that after leaving child placeholder,
-          the parent will be hovered which is expected behaviour. This is not true for base placeholder.
-        */
-        const classList = Array.from(event.target.parentElement.parentElement.classList);
-        if (classList.includes("placeholder")) {
-          event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-          parentState.status.isHovered = true;
+          /*
+            This is a work-around.
+            If I move a placeholder using arrows, sometimes I enter child placeholder
+            without entering parent placeholder. I need to assure that after leaving child placeholder,
+            the parent will be hovered which is expected behaviour. This is not true for base placeholder.
+          */
+          const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
+          if (classList.includes("placeholder")) {
+            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+            parentState.status.isHovered = true;
+          }
+
+          window.nvhFormattingEditor.formattingEditorComponent.update();
         }
-
-        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
     }
   </script>

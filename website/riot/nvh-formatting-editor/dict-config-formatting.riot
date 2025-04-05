@@ -60,10 +60,9 @@
         <i class="small material-icons">sort</i>
         <h2>Elements</h2>
         <div id="trash-icon-wrapper"
-            ondragenter={onDragEnter}
-            ondragleave={onDragLeave}
-            ondragover={onDragOver}
-            ondrop={onDrop}>
+            onmouseenter={onMouseEnter}
+            onmouseleave={onMouseLeave}
+            onmouseup={onMouseUp}>
           <i class="small material-icons trash-disabled" id="trash-icon">delete</i>
         </div>
       </div>
@@ -180,6 +179,8 @@
         }.bind(this),
         window.nvhFormattingEditor.formattingEditorComponent = this;
         window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
+        document.addEventListener("mouseup", this.globalOnMouseUp);
+        document.addEventListener("mousedown", this.globalOnMouseDown);
 
         let formatting = window.store.data.config.formatting;
 
@@ -240,6 +241,10 @@
         }
         window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
       },
+      onBeforeUnmount() {
+        document.removeEventListener("mouseup", this.globalOnMouseUp);
+        document.removeEventListener("mousedown", this.globalOnMouseDown);
+      },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {
           canBeRemovedIfHovered: true,
@@ -251,6 +256,7 @@
             wasSuccessful: false,
             index: null,
           },
+          mouseData: window.nvhFormattingEditor.global.mouseData,
           canOpenActionPanel: true,
           selectedPlaceholderAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName,
           selectedPlaceholderFullName: window.nvhFormattingEditor.global.selectedPlaceholderFullName,
@@ -272,33 +278,26 @@
         }
       },
 
-      onDragEnter() {
-        const rawData = event.dataTransfer.getData("text/plain");
-        if (rawData === "") {
-          return;
-        }
-        const data = JSON.parse(rawData);
-        if (data.type === "elementholder-label") {
+      onMouseEnter() {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data !== null && data.type === "elementholder-label") {
           let trashIcon = document.getElementById("trash-icon");
-          trashIcon.classList.add("trash-dragged-over");
+          if (Array.from(trashIcon.classList).includes("trash-enabled")) {
+            trashIcon.classList.add("trash-dragged-over");
+          }
         }
       },
-      onDragLeave() {
+      onMouseLeave() {
         let trashIcon = document.getElementById("trash-icon");
         trashIcon.classList.remove("trash-dragged-over");
       },
-      onDragOver(event) {
-        event.preventDefault();
-      },
-      onDrop() {
-        const rawData = event.dataTransfer.getData("text/plain");
-        if (rawData === "") {
+      onMouseUp() {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data === null) {
           return;
         }
-        const data = JSON.parse(rawData);
         if (data.type === "choice-item" || data.type === "elementholder-label") {
           window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
-          window.nvhFormattingEditor.closeActionPanel();
           window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
           window.nvhFormattingEditor.global.selectedPlaceholder = null;
@@ -306,6 +305,11 @@
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");
         }
+        if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
+          data.releaseFunction.run(...data.releaseFunction.parameters);
+          data.releaseFunction = null;
+        }
+        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
 
       onLayoutClick(layoutName) {
@@ -575,6 +579,42 @@
                 window.nvhFormattingEditor.currentLayout.configured = false;
                 this.update();
               });
+      },
+      globalOnMouseUp() {
+        if (window.nvhFormattingEditor.global.mouseData !== null) {
+          let adders = document.getElementsByClassName("adder");
+          for (let adder of adders) {
+            adder.classList.remove("adder-highligth");
+            adder.classList.remove("adder-highligth-dragged");
+            adder.style.display = "";
+          }
+
+          window.nvhFormattingEditor.global.draggedElementFullName = "";
+          window.nvhFormattingEditor.global.draggedPlaceholder = null;
+          window.nvhFormattingEditor.global.mouseData = null;
+
+          let trash = document.getElementById("trash-icon");
+          trash.classList.add("trash-disabled");
+          trash.classList.remove("trash-enabled");
+          trash.classList.remove("trash-dragged-over");
+
+          let allElements = document.querySelectorAll("*");
+          for (element of allElements) {
+            element.classList.remove("cursor-grabbing");
+          }
+
+          window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+          window.nvhFormattingEditor.formattingEditorComponent.update();
+        }
+      },
+      globalOnMouseDown() {
+        if (window.nvhFormattingEditor.global.mouseData !== null) {
+          let allElements = document.querySelectorAll("*");
+          for (element of allElements) {
+            element.classList.add("cursor-grabbing");
+          }
+          window.nvhFormattingEditor.formattingEditorComponent.update();
+        }
       }
     }
   </script>
@@ -790,6 +830,9 @@
       display: block;
       height: 100%;
       min-width: 100%;
+    }
+    .cursor-grabbing {
+      cursor: grabbing !important;
     }
   </style>
 </dict-config-formatting>

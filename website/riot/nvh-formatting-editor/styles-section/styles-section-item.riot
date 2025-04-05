@@ -336,7 +336,7 @@
       },
       onChangeStyle(option, value, event) {
         if (value === null) {
-          value = event.target.value;
+          value = event.currentTarget.value;
         }
         this.onChangeStyle2(option, value);
       },

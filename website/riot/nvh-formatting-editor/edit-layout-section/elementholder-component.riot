@@ -3,60 +3,57 @@
       style="border: 1px solid {props.state.content.color};
             color: {props.state.children.length === 0 ? "white" : props.state.content.color};
             background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}"
-      draggable={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? "true" : "false"}
-      ondragstart={onDragStart}
-      ondragend={onDragEnd}>
-    <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+      onmousedown={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? () => onMouseDown() : () => {}}>
+    <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
               && isDraggedElementOk()}
       class="small material-icons inside-adder-icon"
-      ondragenter={onDragEnter}
-      ondragleave={onDragLeave}
-      ondragover={onDragOver}
-      ondrop={(event) => onDrop(event, 1)}>add_box</i>
+      onmouseenter={onMouseEnter}
+      onmouseleave={onMouseLeave}
+      onmouseup={(event) => onMouseUp(event, 1)}>add_box</i>
     <div class="content-box-wrapper-2">
-      <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+      <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
                 && isDraggedElementOk()}
         class="small material-icons inside-adder-icon"
-        ondragenter={onDragEnter}
-        ondragleave={onDragLeave}
-        ondragover={onDragOver}
-        ondrop={(event) => onDrop(event, 2)}>add_box</i>
+        onmouseenter={onMouseEnter}
+        onmouseleave={onMouseLeave}
+        onmouseup={(event) => onMouseUp(event, 2)}>add_box</i>
       <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-left"}">
         {props.state.children.length === 0 ? props.state.content.name : props.state.content.name + " (wrapper)"}
       </div>
-      <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+      <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
                 && isDraggedElementOk()}
         class="small material-icons inside-adder-icon"
-        ondragenter={onDragEnter}
-        ondragleave={onDragLeave}
-        ondragover={onDragOver}
-        ondrop={(event) => onDrop(event, 3)}>add_box</i>
+        onmouseenter={onMouseEnter}
+        onmouseleave={onMouseLeave}
+        onmouseup={(event) => onMouseUp(event, 3)}>add_box</i>
     </div>
-    <i if={props.state.children.length === 0 && props.canHaveAdders && window.nvhFormattingEditor.global.draggedElementFullName !== ""
+    <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
               && isDraggedElementOk()}
       class="small material-icons inside-adder-icon"
-      ondragenter={onDragEnter}
-      ondragleave={onDragLeave}
-      ondragover={onDragOver}
-      ondrop={(event) => onDrop(event, 4)}>add_box</i>
+      onmouseenter={onMouseEnter}
+      onmouseleave={onMouseLeave}
+      onmouseup={(event) => onMouseUp(event, 4)}>add_box</i>
   </div>
 
 <script>
   export default {
-    onDragStart(event) {
-      event.dataTransfer.clearData();
+    onMouseDown() {
       transferObject = {
         type: "elementholder-label"
       };
-      const data = JSON.stringify(transferObject);
-      event.dataTransfer.setData("text/plain", data);
+      let releaseFunction = {
+        parameters: [],
+        run: this.onRelease,
+      };
+      transferObject["releaseFunction"] = releaseFunction;
+      window.nvhFormattingEditor.global.mouseData = transferObject;
 
       let trash = document.getElementById("trash-icon");
       trash.classList.add("trash-enabled");
       trash.classList.remove("trash-disabled");
       window.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
     },
-    onDragEnd(event) {
+    onRelease() {
       if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
         this.props.state.content.name = "";
         this.props.state.content.fullName = "";
@@ -65,27 +62,18 @@
         this.props.state.content.color = "";
         this.props.state.content.canHaveChildren = true;
       }
-      let trash = document.getElementById("trash-icon");
-      trash.classList.add("trash-disabled");
-      trash.classList.remove("trash-enabled");
-      window.nvhFormattingEditor.formattingEditorComponent.update();
     },
-    onDragEnter(event) {
-      const rawData = event.dataTransfer.getData("text/plain");
-      const data = JSON.parse(rawData);
-      if (data.type === "choice-item") {
-        event.target.classList.add("inside-adder-highligth-dragged-icon");
+    onMouseEnter(event) {
+      const data = window.nvhFormattingEditor.global.mouseData;
+      if (data !== null && data.type === "choice-item") {
+        event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
       }
     },
-    onDragLeave(event) {
-      event.target.classList.remove("inside-adder-highligth-dragged-icon");
+    onMouseLeave(event) {
+      event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
     },
-    onDragOver(event) {
-      event.preventDefault();
-    },
-    onDrop(event, adderIndex) {
-      const rawData = event.dataTransfer.getData("text/plain");
-      const data = JSON.parse(rawData);
+    onMouseUp(event, adderIndex) {
+      const data = window.nvhFormattingEditor.global.mouseData;
       if (data.type === "choice-item") {
         let newContent = {
           name: data.name,
@@ -114,7 +102,7 @@
             this.addElementInside("row", this.props.state.content, newContent);
         }
       }
-      event.target.classList.remove("inside-adder-highligth-dragged-icon");
+      event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
       window.nvhFormattingEditor.global.canBeDropped = false;
     },
 
@@ -161,6 +149,7 @@
     flex-direction: column;
     align-items: center;
     cursor: grab;
+    user-select: none;
   }
   .content-box-wrapper-base {
     cursor: default;
