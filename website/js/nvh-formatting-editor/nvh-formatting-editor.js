@@ -28,6 +28,7 @@ class NVHFormattingEditorClass {
         wasSuccessful: false,
         index: null,
       },
+      mouseData: null,
       canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
       selectedPlaceholderAreaFullName: "",
       selectedPlaceholderFullName: "",
@@ -333,24 +334,10 @@ class NVHFormattingEditorClass {
   }
 
   // RENAME ?
-  closeActionPanel() {
-    this.closeActionPanelRec(window.nvhFormattingEditor.currentLayout.schema);
-  }
-
-  // RENAME ?
-  closeActionPanelRec(state) {
-    if (state === null) {
-      return null;
-    }
-    Array.from(state.children).map(child => this.closeActionPanelRec(child));
-    state.children.map(child => child.status.isActive = false);
-  }
-
-  // RENAME ?
   openActionPanel(child, parent) {
     if (window.nvhFormattingEditor.global.canOpenActionPanel) {
       let currentIsActive = child.status.isActive
-      window.nvhFormattingEditor.closeActionPanel(); /*close actionPanel if any was opened*/
+      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
       if (child.status.isActive && child.children.length === 0) {
         window.nvhFormattingEditor.global.selectedPlaceholderFullName = child.content.fullName;
@@ -409,7 +396,7 @@ class NVHFormattingEditorClass {
     let newElement = {
       status: {
         isActive: true,
-        isHovered: true,
+        isHovered: false,
         isDragged: false,
       },
       orientation: editingMode,
@@ -425,8 +412,7 @@ class NVHFormattingEditorClass {
       styles: {},
       children: []
     };
-    window.nvhFormattingEditor.closeActionPanel();
-    window.nvhFormattingEditor.clearIsHoveredStatus();
+    window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
     window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
     window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
     window.nvhFormattingEditor.global.selectedPlaceholder = newElement;

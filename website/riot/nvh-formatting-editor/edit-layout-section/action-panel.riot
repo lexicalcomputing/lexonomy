@@ -4,9 +4,7 @@
         class="action"
         id="action-drag"
         title="Drag"
-        draggable="true"
-        ondragstart={(event) => onDragStart(event, props.state, props.index)}
-        ondragend={(event) => onDragEnd(event, props.index, props.parentState, props.state)}>
+        onmousedown={(event) => onMouseDown(event, props.state, props.index)}>
       <i class="small material-icons">drag_handle</i>
     </div>
     <div if={!props.isBaseLevel && !props.isMarkupTypeChild}
@@ -73,17 +71,20 @@
       this.parentLengthOriginal = props.parentState.children.length;
     },
   
-    onDragStart(event, state, indexToDrag) {
+    onMouseDown(event, state, indexToDrag) {
       if (window.nvhFormattingEditor.global.canBeDragged) {
-        event.dataTransfer.clearData();
-        const data = JSON.stringify(state);
-        event.dataTransfer.setData("text/plain", data);
+        let releaseFunction = {
+          parameters: [event.currentTarget.parentElement.parentElement.parentElement.parentElement, this.props.index, this.props.parentState, this.props.state],
+          run: this.onRelease,
+        };
+        state["releaseFunction"] = releaseFunction;
+        window.nvhFormattingEditor.global.mouseData = state;
 
         window.nvhFormattingEditor.global.draggedElementFullName = state.content.fullName;
         window.nvhFormattingEditor.global.draggedPlaceholder = state;
         state.status.isDragged = true;
 
-        this.hideCloseAdders(event.target.parentElement.parentElement.parentElement.parentElement, indexToDrag);
+        this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
 
         let adders = document.getElementsByClassName("adder");
         for (let adder of adders) {
@@ -93,7 +94,7 @@
       }
       window.nvhFormattingEditor.global.canBeDragged = false;
     },
-    onDragEnd(event, indexToDelete, parentState, state) {
+    onRelease(htmlElement, indexToDelete, parentState, state) {
       /*
       If placeholder was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
@@ -101,12 +102,6 @@
       */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
                                 && window.nvhFormattingEditor.global.dropInfo.index < indexToDelete;
-      
-      window.nvhFormattingEditor.global.draggedElementFullName = "";
-      window.nvhFormattingEditor.global.draggedPlaceholder = null;
-      state.status.isDragged = false;
-
-      this.displayCloseAdders(event.target.parentElement.parentElement.parentElement.parentElement, indexToDelete);
 
       if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
         if (wasIndexDecreased) {
@@ -115,13 +110,7 @@
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
         }
       }
-
-      let adders = document.getElementsByClassName("adder");
-      for (let adder of adders) {
-        adder.classList.remove("adder-highligth");
-      }
-
-      window.nvhFormattingEditor.formattingEditorComponent.update();
+      // window.nvhFormattingEditor.formattingEditorComponent.update(); // IMPORTANT, NOT TO HAVE HERE, BUT ONLY AFTER THIS FUNCTION FINISHES
     },
     hideCloseAdders(htmlElement, indexToDrag) {
       let htmlElementChildren = Array.from(htmlElement.children);
@@ -129,13 +118,6 @@
       let rightAdder = htmlElementChildren[indexToDrag * 2 + 2];
       leftAdder.style.display = "none";
       rightAdder.style.display = "none";
-    },
-    displayCloseAdders(htmlElement, indexToDrag) {
-      let htmlElementChildren = Array.from(htmlElement.children);
-      let leftAdder = htmlElementChildren[indexToDrag * 2];
-      let rightAdder = htmlElementChildren[indexToDrag * 2 + 2];
-      leftAdder.style.display = "";
-      rightAdder.style.display = "";
     },
     duplicateElement() {
       let copiedElement = JSON.parse(JSON.stringify(this.props.state)); /*deep copy*/
@@ -191,6 +173,7 @@
   }
   #action-drag {
     cursor: grab;
+    user-select: none;
   }
 
 

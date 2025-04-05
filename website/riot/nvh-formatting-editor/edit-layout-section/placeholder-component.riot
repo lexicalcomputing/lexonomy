@@ -1,5 +1,6 @@
 <placeholder-component>
-  <action-panel class="action-panel
+  <action-panel if={window.nvhFormattingEditor.global.mouseData === null}
+                class="action-panel
                       {props.state.status.isHovered ? "action-panel-hovered" : ""}"
                 index={props.index}
                 parentState={props.parentState}
@@ -12,13 +13,12 @@
                           canHaveAdders={props.canHaveAdders}
                           isBaseLevel={props.isBaseLevel}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}">
-    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
+    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild && (window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder")
                         && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                     onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
-                    ondragover={onAdderDragOver}
-                    ondragenter={onAdderDragEnter}
-                    ondragleave={onAdderDragLeave}
-                    ondrop={(event) => onAdderDrop(event, props.state, 0)}
+                    onmouseenter={onAdderMouseEnter}
+                    onmouseleave={onAdderMouseLeave}
+                    onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
                     class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
                           {props.state.children.length === 0 ? "adder-alone" : ""}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}
@@ -27,15 +27,14 @@
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => window.nvhFormattingEditor.openActionPanel(child, props.state)}
                             title={getPlaceholderTitle(child)}
-                            ondragover={onDragOver}
-                            ondrop={(event) => onDrop(event, child)}
+                            onmouseup={(event) => onMouseUp(event, child)}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
                             onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
                             class="placeholder placeholder-{child.orientation}
                                   {child.status.isActive ? "placeholder-selected" : ""}
-                                  {child.status.isHovered ? "placeholder-mouse-hover" : ""}
+                                  {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
-                                  {child.children.length === 0 ? "placeholder-no-children" : ""}
+                                  {child.children.length === 0 && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-no-children" : ""}
                                   {child.status.isDragged ? "placeholder-dragged" : ""}
                                   {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}"
                             state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
@@ -45,13 +44,12 @@
                             canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}
                             isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}
                             isMarkupTypeChild={props.isMarkupType}/>
-      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
+      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild && (window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder")
                           && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                       onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
-                      ondragover={onAdderDragOver}
-                      ondragenter={onAdderDragEnter}
-                      ondragleave={onAdderDragLeave}
-                      ondrop={(event) => onAdderDrop(event, props.state, index + 1)}
+                      onmouseenter={onAdderMouseEnter}
+                      onmouseleave={onAdderMouseLeave}
+                      onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
                       class="adder adder-{props.state.orientation}"
                       orientation={props.state.orientation}
                       index={index + 1}
@@ -61,18 +59,13 @@
 
   <script>
     export default {
-      onDragOver(event) {
-        event.preventDefault();
-      },
-      onDrop(event, state) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        if (rawData === "") {
-          return;
-        }
-        const data = JSON.parse(rawData);
+      onMouseUp(event, state) {
         if (window.nvhFormattingEditor.global.canBeDropped) {
+          const data = window.nvhFormattingEditor.global.mouseData;
+          if (data === null) {
+            return;
+          }
           if (data.type === "choice-item") {
-            window.nvhFormattingEditor.closeActionPanel();
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholder = null;
@@ -117,50 +110,47 @@
             state.content.color = data.color;
             state.content.canHaveChildren = data.children.length !== 0;
           }
-        }
-        window.nvhFormattingEditor.global.canBeDropped = false;
-      },
-      onAdderDragOver(event) {
-        event.preventDefault();
-      },
-      onAdderDragEnter(event) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        if (rawData === "") {
-          return;
-        }
-        const data = JSON.parse(rawData);
-        if (data.type === "placeholder") {
-          event.target.classList.add("adder-highligth-dragged");
+          if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
+            data.releaseFunction.run(...data.releaseFunction.parameters);
+            data.releaseFunction = null;
+          }
+          window.nvhFormattingEditor.global.canBeDropped = false;
         }
       },
-      onAdderDragLeave(event) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        if (rawData === "") {
-          return;
-        }
-        const data = JSON.parse(rawData);
-        if (data.type === "placeholder") {
-          event.target.classList.remove("adder-highligth-dragged");
+      onAdderMouseEnter(event) {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data !== null && data.type === "placeholder") {
+          event.currentTarget.classList.add("adder-highligth-dragged");
         }
       },
-      onAdderDrop(event, state, index) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
+      onAdderMouseLeave(event) {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data !== null && data.type === "placeholder") {
+          event.currentTarget.classList.remove("adder-highligth-dragged");
+        }
+      },
+      onAdderMouseUp(event, state, index) {
         if (window.nvhFormattingEditor.global.canBeDropped) {
+          const data = window.nvhFormattingEditor.global.mouseData;
+          if (data === null) {
+            return;
+          }
           if (data.type === "placeholder") {
-            window.nvhFormattingEditor.closeActionPanel();
             state.children.splice(index, 0, data);
-            state.children[index].status.isHovered = false;
-            state.children[index].status.isActive = false;
             window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
             window.nvhFormattingEditor.global.dropInfo.index = index;
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholder = null;
             window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-            event.target.classList.remove("adder-highligth-dragged");
             window.nvhFormattingEditor.global.canBeDropped = false;
           }
+          if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
+            data.releaseFunction.run(...data.releaseFunction.parameters);
+            data.releaseFunction = null;
+          }
+          //window.nvhFormattingEditor.global.mouseData = null; // KEY FIX, not necessary because done in global mouse up
+          window.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       markupTypeChildrenLimitReached() {
@@ -214,38 +204,40 @@
         return firstType && secondType;
       },
       onPlaceholderMouseEnter(event, state, parentState) {
-        event.target.classList.add("placeholder-mouse-hover");
-        state.status.isHovered = true;
-        /*
-          This is a work-around.
-          If I create a new placeholder inside of a placeholder,
-          the outer one will lose focus. In this way I assign a focus to parent
-          placeholder, which is expected behaviour. This is not true for base placeholder.
-        */
-        const classList = Array.from(event.target.parentElement.parentElement.classList);
-        if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
-          event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-          parentState.status.isHovered = true;
+        if (window.nvhFormattingEditor.global.mouseData === null) {
+          event.currentTarget.classList.add("placeholder-mouse-hover");
+          state.status.isHovered = true;
+          /*
+            This is a work-around.
+            If I create a new placeholder inside of a placeholder,
+            the outer one will lose focus. In this way I assign a focus to parent
+            placeholder, which is expected behaviour. This is not true for base placeholder.
+          */
+          const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
+          if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
+            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+            parentState.status.isHovered = true;
+          }
+          window.nvhFormattingEditor.formattingEditorComponent.update();
         }
-        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseLeave(event, state, parentState) {
-        event.target.classList.remove("placeholder-mouse-hover");
-        state.status.isHovered = false;
-
-        /*
-          This is a work-around.
-          If I move a placeholder using arrows, sometimes I enter child placeholder
-          without entering parent placeholder. I need to assure that after leaving child placeholder,
-          the parent will be hovered which is expected behaviour. This is not true for base placeholder.
-        */
-        const classList = Array.from(event.target.parentElement.parentElement.classList);
-        if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
-          event.target.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-          parentState.status.isHovered = true;
+        if (window.nvhFormattingEditor.global.mouseData === null) {
+          event.currentTarget.classList.remove("placeholder-mouse-hover");
+          state.status.isHovered = false;
+          /*
+            This is a work-around.
+            If I move a placeholder using arrows, sometimes I enter child placeholder
+            without entering parent placeholder. I need to assure that after leaving child placeholder,
+            the parent will be hovered which is expected behaviour. This is not true for base placeholder.
+          */
+          const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
+          if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
+            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+            parentState.status.isHovered = true;
+          }
+          window.nvhFormattingEditor.formattingEditorComponent.update();
         }
-
-        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
     }
   </script>
@@ -288,9 +280,14 @@
       padding: 5px !important;
       transition: all 500ms ease;
     }
+    .adder-highligth .adder-line * {
+      display: none;
+    }
     .adder-highligth-dragged {
       background-color: var(--color-is-dragged-over) !important;
-      transition: all 200ms ease;
+    }
+    .adder-highligth-dragged .adder-line * {
+      display: none;
     }
 
 

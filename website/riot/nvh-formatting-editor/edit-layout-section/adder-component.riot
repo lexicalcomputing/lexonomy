@@ -2,11 +2,10 @@
   <div class="plus-icon-wrapper">
     <div class="adder-line adder-line-{props.orientation}">
       <div class="adder-icon-wrapper"
-          title="Insert empty container"
-          ondragenter={onDragEnter}
-          ondragleave={onDragLeave}
-          ondragover={onDragOver}
-          ondrop={onDrop}>
+          title={window.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
+          onmouseenter={onMouseEnter}
+          onmouseleave={onMouseLeave}
+          onmousedown={onMouseDown}>
         <i class="small material-icons adder-icon">add_box</i>
       <div>
     </div>
@@ -14,23 +13,18 @@
   
   <script>
     export default {
-      onDragEnter(event) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
-        if (data.type === "choice-item") {
-          event.target.classList.add("adder-icon-wrapper-highligth-dragged");
+      onMouseEnter(event) {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data !== null && data.type === "choice-item") {
+          event.currentTarget.classList.add("adder-icon-wrapper-highligth-dragged");
         }
       },
-      onDragLeave(event) {
-        event.target.classList.remove("adder-icon-wrapper-highligth-dragged");
+      onMouseLeave(event) {
+        event.currentTarget.classList.remove("adder-icon-wrapper-highligth-dragged");
       },
-      onDragOver(event) {
-        event.preventDefault();
-      },
-      onDrop(event) {
-        const rawData = event.dataTransfer.getData("text/plain");
-        const data = JSON.parse(rawData);
-        if (window.nvhFormattingEditor.global.canBeDropped) {
+      onMouseDown(event) {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data !== null && window.nvhFormattingEditor.global.canBeDropped) {
           if (data.type === "choice-item") {
             let content = {
               name: data.name,
@@ -51,6 +45,7 @@
   <style>
     .plus-icon-wrapper {
       display: none;
+      user-select: none;
     }
     .adder-icon-wrapper-highligth-dragged {
       color: var(--color-is-dragged-over);
