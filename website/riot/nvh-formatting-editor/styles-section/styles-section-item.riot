@@ -267,6 +267,144 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
+    <div class="label">Original size:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "original-size", true)}
+          style={getStyleOptionValue("original-size") === true || getStyleOptionValue("original-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Exact size:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "original-size", false)}
+          style={getStyleOptionValue("original-size") === false ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+    <div class="label">Width (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+    <div class="label">Height (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Max width (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Max height (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Show url:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? true : !getStyleOptionValue("show-url"))}
+          style={getStyleOptionValue("show-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+    <div class="label">Make url clickable:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "make-url-clickable", getStyleOptionValue("make-url-clickable") === null ? true : !getStyleOptionValue("make-url-clickable"))}
+          style={getStyleOptionValue("make-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+    <div class="label">Show only url:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-only-url", getStyleOptionValue("show-only-url") === null ? true : !getStyleOptionValue("show-only-url"))}
+          style={getStyleOptionValue("show-only-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-url") && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
+    <div class="label">Show url as icon:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-url-as-icon", getStyleOptionValue("show-url-as-icon") === null ? true : !getStyleOptionValue("show-url-as-icon"))}
+          style={getStyleOptionValue("show-url-as-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Show audio player:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-audio-player", getStyleOptionValue("show-audio-player") === null ? true : !getStyleOptionValue("show-audio-player"))}
+          style={getStyleOptionValue("show-audio-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Show audio url:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-audio-url", getStyleOptionValue("show-audio-url") === null ? false : !getStyleOptionValue("show-audio-url"))}
+          style={getStyleOptionValue("show-audio-url") === true || getStyleOptionValue("show-audio-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null} class="styles-section-item-wrapper">
+    <div class="label">Make audio url clickable:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "make-audio-url-clickable", getStyleOptionValue("make-audio-url-clickable") === null ? true : !getStyleOptionValue("make-audio-url-clickable"))}
+          style={getStyleOptionValue("make-audio-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null} class="styles-section-item-wrapper">
+    <div class="label">Replace url with text:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "replace-url-with-text", getStyleOptionValue("replace-url-with-text") === null ? true : !getStyleOptionValue("replace-url-with-text"))}
+          style={getStyleOptionValue("replace-url-with-text") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("replace-url-with-text")} class="styles-section-item-wrapper">
+    <div class="label">Text replacement for url:</div>
+    <div class="value-wrapper">
+      <input type="text" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("replace-url-with-text")} class="styles-section-item-wrapper">
+    <div class="label">Set text as tooltip:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "text-as-url-tooltip", getStyleOptionValue("text-as-url-tooltip") === null ? true : !getStyleOptionValue("text-as-url-tooltip"))}
+          style={getStyleOptionValue("text-as-url-tooltip") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null} class="styles-section-item-wrapper">
+    <div class="label">Show icon:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-icon", getStyleOptionValue("show-icon") === null ? true : !getStyleOptionValue("show-icon"))}
+          style={getStyleOptionValue("show-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Indentation and bulleting:</div>
     <div>
       <div id="select-indentation-bulleting">
@@ -352,6 +490,13 @@
         }
         if (selectedPlaceholder.styles === undefined) {
           selectedPlaceholder.styles = {};
+        }
+        if (option === "original-size") {
+          if (value) {
+            selectedPlaceholder.styles[option] = value;
+            delete selectedPlaceholder.styles["width"];
+            delete selectedPlaceholder.styles["height"];
+          }
         }
         selectedPlaceholder.styles[option] = value;
         window.nvhFormattingEditor.formattingEditorComponent.update();

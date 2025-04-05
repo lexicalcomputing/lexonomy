@@ -82,8 +82,11 @@ import elements_choice_item from "./riot/nvh-formatting-editor/elements-choice-s
 import elements_choice_section from "./riot/nvh-formatting-editor/elements-choice-section/elements-choice-section.riot"
 import entry_dropdown from "./riot/entry-dropdown.riot"
 import entry_list from "./riot/entry-list.riot"
+import example_audio_item from "./riot/nvh-formatting-editor/example-section/example-audio-item.riot"
+import example_image_item from "./riot/nvh-formatting-editor/example-section/example-image-item.riot"
 import example_section from "./riot/nvh-formatting-editor/example-section/example-section.riot"
 import example_section_item from "./riot/nvh-formatting-editor/example-section/example-section-item.riot"
+import example_video_item from "./riot/nvh-formatting-editor/example-section/example-video-item.riot"
 import feedback_dialog from "./riot/feedback-dialog.riot"
 import forgot from "./riot/forgot.riot"
 import forgot_password from "./riot/forgot-password.riot"
@@ -192,8 +195,11 @@ riot_register("elements-choice-item", elements_choice_item)
 riot_register("elements-choice-section", elements_choice_section)
 riot_register("entry-dropdown", entry_dropdown)
 riot_register("entry-list", entry_list)
+riot_register("example-audio-item", example_audio_item)
+riot_register("example-image-item", example_image_item)
 riot_register("example-section", example_section)
 riot_register("example-section-item", example_section_item)
+riot_register("example-video-item", example_video_item)
 riot_register("feedback-dialog", feedback_dialog)
 riot_register("forgot", forgot)
 riot_register("forgot-password", forgot_password)

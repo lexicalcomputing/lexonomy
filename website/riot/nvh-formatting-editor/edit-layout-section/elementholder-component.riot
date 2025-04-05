@@ -49,8 +49,10 @@
       window.nvhFormattingEditor.global.mouseData = transferObject;
 
       let trash = document.getElementById("trash-icon");
-      trash.classList.add("trash-enabled");
-      trash.classList.remove("trash-disabled");
+      if (trash !== null) {
+        trash.classList.add("trash-enabled");
+        trash.classList.remove("trash-disabled");
+      }
       window.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
     },
     onRelease() {

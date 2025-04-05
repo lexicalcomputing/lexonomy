@@ -1,0 +1,83 @@
+<example-video-item>
+  <div class="example-video-item-wrapper">
+    <!-- Taken from nvh-item-media.riot -->
+    <video if={state.showAudioPlayer && !isYouTube()}
+          controls
+          src={props.value}
+          style={props.stylesCss}>
+    </video>
+    <iframe if={state.showAudioPlayer && isYouTube()}
+          style={props.stylesCss}
+          width="560"
+          height="315"
+          src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
+          frameborder="0"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+    <div class="example-video-item-url">
+      <i if={state.showAudioUrl && !state.makeAudioUrlClickable && state.showIcon} class="small material-icons">videocam</i>
+      <a if={state.showAudioUrl && state.makeAudioUrlClickable && state.showIcon} href={props.value}>
+        <i class="small material-icons">videocam</i>
+      </a>
+        <div if={state.showAudioUrl && !state.makeAudioUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</div>
+        <a if={state.showAudioUrl && state.makeAudioUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+    <div>
+  </div>
+
+  <script>
+    export default {
+      state: {
+        showAudioPlayer: null,
+        showAudioUrl: null,
+        makeAudioUrlClickable: null,
+        replaceUrlWithText: null,
+        textReplacementForUrl: null,
+        textAsUrlTooltip: null,
+        showIcon: null,
+      },
+
+      onBeforeMount() {
+        this.state = {
+          showAudioPlayer: this.props.styles["show-audio-player"],
+          showAudioUrl: this.props.styles["show-audio-url"] === undefined ? true : this.props.styles["show-audio-url"],
+          makeAudioUrlClickable: this.props.styles["make-audio-url-clickable"],
+          replaceUrlWithText: this.props.styles["replace-url-with-text"],
+          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
+          showIcon: this.props.styles["show-icon"],
+        };
+      },
+
+      onBeforeUpdate() {
+        this.state = {
+          showAudioPlayer: this.props.styles["show-audio-player"],
+          showAudioUrl: this.props.styles["show-audio-url"] === undefined ? true : this.props.styles["show-audio-url"],
+          makeAudioUrlClickable: this.props.styles["make-audio-url-clickable"],
+          replaceUrlWithText: this.props.styles["replace-url-with-text"],
+          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
+          showIcon: this.props.styles["show-icon"],
+        };
+      },
+
+      /*Taken from nvh-item-media.riot*/
+      isYouTube(){
+        return !!this.getYouTubeVideoId()
+      },
+      getYouTubeVideoId(){
+        let match = this.props.value.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/)
+        return match ? match[1] : null
+      }
+    }
+  </script>
+
+  <style>
+    .example-video-item-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+    .example-video-item-url {
+      display: flex;
+    }
+  </style>
+</example-video-item>
