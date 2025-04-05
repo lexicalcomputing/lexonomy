@@ -267,6 +267,48 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
+    <div class="label">Original size:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "original-size", true)}
+          style={getStyleOptionValue("original-size") === true || getStyleOptionValue("original-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Exact size:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "original-size", false)}
+          style={getStyleOptionValue("original-size") === false ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+    <div class="label">Width (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+    <div class="label">Height (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Max width (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
+    <div class="label">Max height (px):</div>
+    <div class="value-wrapper">
+      <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Indentation and bulleting:</div>
     <div>
       <div id="select-indentation-bulleting">
@@ -352,6 +394,13 @@
         }
         if (selectedPlaceholder.styles === undefined) {
           selectedPlaceholder.styles = {};
+        }
+        if (option === "original-size") {
+          if (value) {
+            selectedPlaceholder.styles[option] = value;
+            delete selectedPlaceholder.styles["width"];
+            delete selectedPlaceholder.styles["height"];
+          }
         }
         selectedPlaceholder.styles[option] = value;
         window.nvhFormattingEditor.formattingEditorComponent.update();

@@ -79,7 +79,7 @@
         <h2>Style</h2>
       </div>
       <div class="style-section-wrapper">
-        <styles-section />
+        <styles-section class="style-section"/>
       </div>
     </div>
     <div if={state.showEditing}
@@ -594,9 +594,11 @@
           window.nvhFormattingEditor.global.mouseData = null;
 
           let trash = document.getElementById("trash-icon");
-          trash.classList.add("trash-disabled");
-          trash.classList.remove("trash-enabled");
-          trash.classList.remove("trash-dragged-over");
+          if (trash != null) {
+            trash.classList.add("trash-disabled");
+            trash.classList.remove("trash-enabled");
+            trash.classList.remove("trash-dragged-over");
+          }
 
           let allElements = document.querySelectorAll("*");
           for (element of allElements) {
@@ -746,6 +748,16 @@
       height: 600px;
     }
 
+    .style-section {
+      width: fit-content;
+      display: block;
+      height: 100%;
+      min-width: 100%;
+    }
+    .style-section-wrapper {
+      width: 100%;
+      height: 600px;
+    }
 
     .example-section {
       width: fit-content;
