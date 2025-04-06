@@ -26,6 +26,11 @@
           styles={this.props.schema.styles}
           stylesCss={getCssStyles(this.props.schema.styles)}
         />
+        <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "video"}
+          value={this.state.value}
+          styles={this.props.schema.styles}
+          stylesCss={getCssStyles(this.props.schema.styles)}
+        />
         <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
             class="element-holder-content"
             style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
