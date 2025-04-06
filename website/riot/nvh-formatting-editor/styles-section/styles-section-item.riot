@@ -308,7 +308,7 @@
       <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
       <div class="value-item"
