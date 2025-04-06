@@ -1,5 +1,6 @@
 class NVHFormattingEditorClass {
   constructor() {
+    this.timeout = null,
     this.formattingEditorComponent = null,
     this.elementsSchema = null,
     this.global = this.initializeGlobalAttributes(),
@@ -272,6 +273,16 @@ class NVHFormattingEditorClass {
     });
   }
 
+  clearDraggedStatuses(state) {
+    if (state === null) {
+      return;
+    }
+    Array.from(state.children).map(child => this.clearDraggedStatuses(child));
+    state.children.map(child => {
+      child.status.isDragged = false;
+    });
+  }
+
   undoSchema() {
     if (window.nvhFormattingEditor.currentLayout.history.index > 0) {
       window.nvhFormattingEditor.currentLayout.history.index -= 1;
@@ -336,7 +347,7 @@ class NVHFormattingEditorClass {
   // RENAME ?
   openActionPanel(child, parent) {
     if (window.nvhFormattingEditor.global.canOpenActionPanel) {
-      let currentIsActive = child.status.isActive
+      let currentIsActive = child.status.isActive;
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
       if (child.status.isActive && child.children.length === 0) {

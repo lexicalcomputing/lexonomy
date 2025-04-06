@@ -581,6 +581,7 @@
               });
       },
       globalOnMouseUp() {
+        clearTimeout(window.nvhFormattingEditor.timeout);
         if (window.nvhFormattingEditor.global.mouseData !== null) {
           let adders = document.getElementsByClassName("adder");
           for (let adder of adders) {
@@ -604,8 +605,7 @@
           for (element of allElements) {
             element.classList.remove("cursor-grabbing");
           }
-
-          window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+          window.nvhFormattingEditor.clearDraggedStatuses(window.nvhFormattingEditor.currentLayout.schema);
           window.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
