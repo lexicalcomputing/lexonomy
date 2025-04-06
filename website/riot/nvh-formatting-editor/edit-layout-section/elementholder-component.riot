@@ -47,12 +47,13 @@
       };
       transferObject["releaseFunction"] = releaseFunction;
       window.nvhFormattingEditor.global.mouseData = transferObject;
-
-      let trash = document.getElementById("trash-icon");
-      if (trash !== null) {
-        trash.classList.add("trash-enabled");
-        trash.classList.remove("trash-disabled");
-      }
+      window.nvhFormattingEditor.timeout = setTimeout(() => {
+        let trash = document.getElementById("trash-icon");
+        if (trash !== null) {
+          trash.classList.add("trash-enabled");
+          trash.classList.remove("trash-disabled");
+        }
+      }, 200);
       window.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
     },
     onRelease() {

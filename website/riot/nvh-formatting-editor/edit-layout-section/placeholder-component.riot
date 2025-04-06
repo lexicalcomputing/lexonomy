@@ -13,14 +13,15 @@
                           canHaveAdders={props.canHaveAdders}
                           isBaseLevel={props.isBaseLevel}/>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}">
-    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild && (window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder")
+    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
                         && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                     onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
                     onmouseenter={onAdderMouseEnter}
                     onmouseleave={onAdderMouseLeave}
                     onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
                     class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
-                          {props.state.children.length === 0 ? "adder-alone" : ""}"
+                          {props.state.children.length === 0 ? "adder-alone" : ""}
+                          {window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : "adder-invisible"}"
                     orientation={props.state.children.length === 0 ? "column": props.state.orientation}
                     index={0}
                     state={props.state}/>
@@ -34,7 +35,7 @@
                                   {child.status.isActive ? "placeholder-selected" : ""}
                                   {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
-                                  {child.children.length === 0 && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-no-children" : ""}
+                                  {child.children.length === 0 ? "placeholder-no-children" : ""}
                                   {child.status.isDragged ? "placeholder-dragged" : ""}
                                   {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}"
                             state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
@@ -44,13 +45,14 @@
                             canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}
                             isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}
                             isMarkupTypeChild={props.isMarkupType}/>
-      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild && (window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder")
+      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
                           && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                       onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
                       onmouseenter={onAdderMouseEnter}
                       onmouseleave={onAdderMouseLeave}
                       onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
-                      class="adder adder-{props.state.orientation}"
+                      class="adder adder-{props.state.orientation}
+                            {window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : "adder-invisible"}"
                       orientation={props.state.orientation}
                       index={index + 1}
                       state={props.state}/>
@@ -322,6 +324,9 @@
     .adder-alone {
       padding: 0;
       margin: 5px;
+    }
+    .adder-invisible {
+      visibility: hidden;
     }
   </style>
 </placeholder-component>
