@@ -18,7 +18,8 @@
         </div>
         <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
           value={this.state.value}
-          styles={getCssStyles(this.props.schema.styles)}
+          styles={this.props.schema.styles}
+          stylesCss={getCssStyles(this.props.schema.styles)}
         />
         <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
             class="element-holder-content"

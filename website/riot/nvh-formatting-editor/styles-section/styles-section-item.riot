@@ -309,6 +309,42 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
+    <div class="label">Show url:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? true : !getStyleOptionValue("show-url"))}
+          style={getStyleOptionValue("show-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+    <div class="label">Make url clickable:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "make-url-clickable", getStyleOptionValue("make-url-clickable") === null ? true : !getStyleOptionValue("make-url-clickable"))}
+          style={getStyleOptionValue("make-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+    <div class="label">Show only url:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-only-url", getStyleOptionValue("show-only-url") === null ? true : !getStyleOptionValue("show-only-url"))}
+          style={getStyleOptionValue("show-only-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={getStyleOptionValue("show-url") && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
+    <div class="label">Show url as icon:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-url-as-icon", getStyleOptionValue("show-url-as-icon") === null ? true : !getStyleOptionValue("show-url-as-icon"))}
+          style={getStyleOptionValue("show-url-as-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Indentation and bulleting:</div>
     <div>
       <div id="select-indentation-bulleting">

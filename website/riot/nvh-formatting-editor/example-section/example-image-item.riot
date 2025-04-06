@@ -1,13 +1,47 @@
 <example-image-item>
-  <img src={props.value} style={props.styles}/>
+  <div class="example-image-item-wrapper">
+    <img if={!state.showUrl || state.showUrl && !state.showOnlyUrl} src={props.value} style={props.stylesCss}/>
+    <div if={state.showUrl && !state.makeUrlClickable && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)}>{props.value}</div>
+    <a if={state.showUrl && state.makeUrlClickable && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)} href={props.value}>{props.value}</a>
+    <i if={state.showUrl && !state.makeUrlClickable && state.showOnlyUrl && state.showUrlAsIcon} class="small material-icons">image</i>
+    <a if={state.showUrl && state.makeUrlClickable && state.showOnlyUrl && state.showUrlAsIcon} href={props.value}>
+      <i class="small material-icons">image</i>
+    </a>
+  </div>
 
   <script>
     export default {
+      state: {
+        showUrl: null,
+        makeUrlClickable: null,
+        showOnlyUrl: null,
+        showUrlAsIcon: null,
+      },
+
+      onBeforeMount() {
+        this.state = {
+          showUrl: this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
+          showOnlyUrl: this.props.styles["show-only-url"],
+          showUrlAsIcon: this.props.styles["show-url-as-icon"],
+        }
+      },
+
       onBeforeUpdate() {
+        this.state = {
+          showUrl: this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
+          showOnlyUrl: this.props.styles["show-only-url"],
+          showUrlAsIcon: this.props.styles["show-url-as-icon"],
+        }
       }
     }
   </script>
 
   <style>
+    .example-image-item-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
   </style>
 </example-image-item>
