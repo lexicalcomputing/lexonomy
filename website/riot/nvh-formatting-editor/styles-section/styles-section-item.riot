@@ -1,93 +1,8 @@
 <styles-section-item>
   <div class="styles-section-item-wrapper">
-    <div class="label">Text color:</div>
+    <div class="label">Background:</div>
     <div class="value-wrapper">
-      <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
-    </div>
-  </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Text size:</div>
-    <div class="value-wrapper">
-      <div class="value-item value-item-textsize-1"
-          onclick={onChangeStyle.bind(this, "font-size", "0.8em")}
-          style={getStyleOptionValue("font-size") === "0.8em" ? `background-color:var(--color-grey-normal);` : ""}>
-          1
-      </div>
-      <div class="value-item value-item-textsize-2"
-          onclick={onChangeStyle.bind(this, "font-size", "1em")}
-          style={getStyleOptionValue("font-size") === "1em" || getStyleOptionValue("font-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
-          2
-      </div>
-      <div class="value-item value-item-textsize-3"
-          onclick={onChangeStyle.bind(this, "font-size", "1.2em")}
-          style={getStyleOptionValue("font-size") === "1.2em" ? `background-color:var(--color-grey-normal);` : ""}>
-          3
-      </div>
-      <div class="value-item value-item-textsize-4"
-          onclick={onChangeStyle.bind(this, "font-size", "1.5em")}
-          style={getStyleOptionValue("font-size") === "1.5em" ? `background-color:var(--color-grey-normal);` : ""}>
-          4
-      </div>
-      <div class="value-item value-item-textsize-5"
-          onclick={onChangeStyle.bind(this, "font-size", "2em")}
-          style={getStyleOptionValue("font-size") === "2em" ? `background-color:var(--color-grey-normal);` : ""}>
-          5
-      </div>
-      <div class="value-item value-item-textsize-6"
-          onclick={onChangeStyle.bind(this, "font-size", "2.5em")}
-          style={getStyleOptionValue("font-size") === "2.5em" ? `background-color:var(--color-grey-normal);` : ""}>
-          6
-      </div>
-    </div>
-  </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Text weight:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "font-weight", "")}
-          style={getStyleOptionValue("font-weight") === "" || getStyleOptionValue("font-weight") === null ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
-      <div class="value-item value-item-weight-bold"
-          onclick={onChangeStyle.bind(this, "font-weight", "bold")}
-          style={getStyleOptionValue("font-weight") === "bold" ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
-    </div>
-  </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Text slant:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "font-style", "")}
-          style={getStyleOptionValue("font-style") === "" || getStyleOptionValue("font-style") === null ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
-      <div class="value-item value-item-slant-italic"
-          onclick={onChangeStyle.bind(this, "font-style", "italic")}
-          style={getStyleOptionValue("font-style") === "italic" ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
-    </div>
-  </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Text decoration:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "text-decoration", "")}
-          style={getStyleOptionValue("text-decoration") === "" || getStyleOptionValue("text-decoration") === null ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
-      <div class="value-item value-item-text-decoration-underline"
-          onclick={onChangeStyle.bind(this, "text-decoration", "underline")}
-          style={getStyleOptionValue("text-decoration") === "underline" ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
-      <div class="value-item value-item-text-decoration-strikethrough"
-          onclick={onChangeStyle.bind(this, "text-decoration", "line-through")}
-          style={getStyleOptionValue("text-decoration") === "line-through" ? `background-color:var(--color-grey-normal);` : ""}>
-          a
-      </div>
+      <input type="color" value={getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
@@ -135,6 +50,12 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
+    <div class="label">Box shadow:</div>
+    <div class="value-wrapper">
+      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
       <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
@@ -152,31 +73,110 @@
       <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Box shadow:</div>
+  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+    <div class="label">Text color:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Background:</div>
+  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+    <div class="label">Text size:</div>
     <div class="value-wrapper">
-      <input type="color" value={getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
+      <div class="value-item value-item-textsize-1"
+          onclick={onChangeStyle.bind(this, "font-size", "0.8em")}
+          style={getStyleOptionValue("font-size") === "0.8em" ? `background-color:var(--color-grey-normal);` : ""}>
+          1
+      </div>
+      <div class="value-item value-item-textsize-2"
+          onclick={onChangeStyle.bind(this, "font-size", "1em")}
+          style={getStyleOptionValue("font-size") === "1em" || getStyleOptionValue("font-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          2
+      </div>
+      <div class="value-item value-item-textsize-3"
+          onclick={onChangeStyle.bind(this, "font-size", "1.2em")}
+          style={getStyleOptionValue("font-size") === "1.2em" ? `background-color:var(--color-grey-normal);` : ""}>
+          3
+      </div>
+      <div class="value-item value-item-textsize-4"
+          onclick={onChangeStyle.bind(this, "font-size", "1.5em")}
+          style={getStyleOptionValue("font-size") === "1.5em" ? `background-color:var(--color-grey-normal);` : ""}>
+          4
+      </div>
+      <div class="value-item value-item-textsize-5"
+          onclick={onChangeStyle.bind(this, "font-size", "2em")}
+          style={getStyleOptionValue("font-size") === "2em" ? `background-color:var(--color-grey-normal);` : ""}>
+          5
+      </div>
+      <div class="value-item value-item-textsize-6"
+          onclick={onChangeStyle.bind(this, "font-size", "2.5em")}
+          style={getStyleOptionValue("font-size") === "2.5em" ? `background-color:var(--color-grey-normal);` : ""}>
+          6
+      </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+    <div class="label">Text weight:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "font-weight", "")}
+          style={getStyleOptionValue("font-weight") === "" || getStyleOptionValue("font-weight") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-weight-bold"
+          onclick={onChangeStyle.bind(this, "font-weight", "bold")}
+          style={getStyleOptionValue("font-weight") === "bold" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+    <div class="label">Text slant:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "font-style", "")}
+          style={getStyleOptionValue("font-style") === "" || getStyleOptionValue("font-style") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-slant-italic"
+          onclick={onChangeStyle.bind(this, "font-style", "italic")}
+          style={getStyleOptionValue("font-style") === "italic" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+    <div class="label">Text decoration:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "text-decoration", "")}
+          style={getStyleOptionValue("text-decoration") === "" || getStyleOptionValue("text-decoration") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-text-decoration-underline"
+          onclick={onChangeStyle.bind(this, "text-decoration", "underline")}
+          style={getStyleOptionValue("text-decoration") === "underline" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+      <div class="value-item value-item-text-decoration-strikethrough"
+          onclick={onChangeStyle.bind(this, "text-decoration", "line-through")}
+          style={getStyleOptionValue("text-decoration") === "line-through" ? `background-color:var(--color-grey-normal);` : ""}>
+          a
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Decimal place divider:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("decimalPlaceDivider") === null ? "." : getStyleOptionValue("decimalPlaceDivider")} style="" onchange={onChangeStyle.bind(this, "decimalPlaceDivider", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Thousands divider:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("thousandsDivider") === null ? " " : getStyleOptionValue("thousandsDivider")} style="" onchange={onChangeStyle.bind(this, "thousandsDivider", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -221,7 +221,7 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -266,7 +266,7 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Original size:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -275,7 +275,7 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Exact size:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -284,31 +284,31 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
     <div class="label">Width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
     </div>
   </div>
-  <div if={getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
     <div class="label">Height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Max width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Max height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -317,7 +317,7 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
     <div class="label">Make url clickable:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -326,7 +326,7 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
     <div class="label">Show only url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -335,7 +335,7 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("show-url") && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && getStyleOptionValue("show-url") && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
     <div class="label">Show url as icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -344,7 +344,7 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "audio" || this.state.type === "video"} class="styles-section-item-wrapper">
     <div class="label">Show audio player:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -353,7 +353,7 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.type === "audio" || this.state.type === "video"} class="styles-section-item-wrapper">
     <div class="label">Show audio url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -362,7 +362,7 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Make audio url clickable:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -371,7 +371,7 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Replace url with text:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -380,13 +380,13 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("replace-url-with-text")} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-audio-url")} class="styles-section-item-wrapper">
     <div class="label">Text replacement for url:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
     </div>
   </div>
-  <div if={getStyleOptionValue("replace-url-with-text")} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-audio-url")} class="styles-section-item-wrapper">
     <div class="label">Set text as tooltip:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -395,7 +395,7 @@
       </div>
     </div>
   </div>
-  <div if={getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Show icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -404,59 +404,31 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
-    <div class="label">Indentation and bulleting:</div>
-    <div>
-      <div id="select-indentation-bulleting">
-        <div onclick={onSelectOpen} class="select-dropdown">
-          <div>{state.selectedOption}</div>
-          <i class="material-icons tiny">arrow_drop_down</i>
-        </div>
-        <div if={state.indentationBulletingOpened} class="select-dropdown-options">
-          <template each={key in Object.keys(state.options)}>
-            <div onclick={onSelectChange.bind(this, state.options[key])}
-                class="select-dropdown-option">
-              {state.options[key]}
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script>
     export default {
       state: {
-        indentationBulletingOpened: false,
-        /*Inspiration from element-style-options.riot*/
-        options: {
-          "": "None",
-          "disk": "Round bullet",
-          "square": "Square bullet",
-          "diamond": "Diamond bullet",
-          "arrow": "Arrow bullet",
-          "indent": "Indent",
-          "hanging": "Hanging indent",
-          "sensenum1": "Sense number 1, 2, 3...",
-          "sensenum2": "Sense number a, b, c...",
-          "sensenum3": "Sense number i, ii, iii...",
-          "sensenum0": "Sense number I, II, III...",
-        },
-        selectedOption: "None",
+        type: null,
+        selectedPlaceholder: null,
+        selectedOption: "",
       },
 
       onBeforeMount() {
+        this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "") {
+          this.state.type = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName).type;
+        }
         if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
       },
       onBeforeUpdate() {
+        this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "") {
+          this.state.type = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName).type;
+        }
         if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
-        }
-        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
-          this.state.indentationBulletingOpened = "";
-          this.state.selectedOption = "None";
         }
       },
 
