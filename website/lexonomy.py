@@ -91,12 +91,17 @@ def authDict(checkRights, errorRedirect=False):
                 abort(404, "No such dictionary")
 
             res, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, conn)
+
+            access_or_list = []
             for r in checkRights:
-                if not res['dictAccess'].get(r, False):
-                    if errorRedirect:
-                        redirect("/#"+kwargs["dictID"])
-                    else:
-                        return res
+                access_or_list.append(res['dictAccess'].get(r, False))
+
+            if not True in access_or_list:
+                if errorRedirect:
+                    redirect("/#"+kwargs["dictID"])
+                else:
+                    return res
+
             kwargs["user"] = res
             kwargs["dictDB"] = conn
             kwargs["configs"] = configs
@@ -272,7 +277,7 @@ def getmedia(dictID, query, user, dictDB, configs):
     return {"images": res}
 
 @get(siteconfig["rootPath"] + "<dictID>/skeget/corpora") # TODO fix for referene corpora for projects
-@authDict([])
+@authDict(["canView"])
 def skeget_corpora(dictID, user, dictDB, configs):
     import base64
     apiurl = "https://api.sketchengine.eu/"
@@ -375,7 +380,7 @@ def skeget_defo(dictID, user, dictDB, configs):
     return data
 
 @get(siteconfig["rootPath"] + "<dictID>/kontext/corpora")
-@authDict([])
+@authDict(["canView"])
 def kontext_corpora(dictID, user, dictDB, configs):
     kontexturl = "https://www.clarin.si/kontext/"
     if configs.get("kontext") and configs["kontext"].get("url") != "":
@@ -395,7 +400,7 @@ def kontext_corpora(dictID, user, dictDB, configs):
     return {"corpus_list": corpus_list}
 
 @get(siteconfig["rootPath"] + "<dictID>/kontext/conc")
-@authDict([])
+@authDict(["canView"])
 def kontext_xampl(dictID, user, dictDB, configs):
     kontexturl = configs["kontext"].get("url") + "query_submit?format=json"
     corpus = configs["kontext"].get("corpus")
@@ -1042,7 +1047,7 @@ def autoimage(dictID, user, dictDB, configs):
     return res
 
 @get(siteconfig["rootPath"]+"<dictID>/autoimageprogress.json")
-@authDict([])
+@authDict(["canView"])
 def autoimagestatus(dictID, user, dictDB, configs):
     res = ops.autoImageStatus(dictDB, dictID, request.query.jobid)
     if not res:
@@ -1204,14 +1209,14 @@ def linksdelete(dictID, linkID, user, dictDB, configs):
     return {"success": res}
 
 @get(siteconfig["rootPath"] + "<dictID>/links.json")
-@authDict([])
+@authDict(["canView"])
 def linksdict(dictID, user, dictDB, configs):
     resto = ops.links_get(dictID, '', '', '', '', '')
     resfrom = ops.links_get('', '', '', dictID, '', '')
     return {"links": {"to": resto, "from": resfrom}}
 
 @get(siteconfig["rootPath"] + "<dictID>/links/from")
-@authDict([])
+@authDict(["canView"])
 def linksfrom(dictID, user, dictDB, configs):
     source_el = request.query.source_el
     source_id = request.query.source_id
@@ -1222,7 +1227,7 @@ def linksfrom(dictID, user, dictDB, configs):
     return {"links": res}
 
 @get(siteconfig["rootPath"] + "<dictID>/links/to")
-@authDict([])
+@authDict(["canView"])
 def linksto(dictID, user, dictDB, configs):
     source_dict = request.query.source_dict
     source_el = request.query.source_el
@@ -1233,18 +1238,18 @@ def linksto(dictID, user, dictDB, configs):
     return {"links": res}
 
 @get(siteconfig["rootPath"]+"<dictID>/linkablelist.json")
-@authDict([])
+@authDict(["canView"])
 def linkablelist(dictID, user, dictDB, configs):
     res = ops.getDictLinkables(dictDB)
     return {"links": res}
 
 @get(siteconfig["rootPath"]+"<dictID>/linking.json")
-@authDict([])
+@authDict(["canView"])
 def linking(dictID, user, dictDB, configs):
     return ops.isLinking(dictDB)
 
 @get(siteconfig["rootPath"]+"<dictID>/entrylinks.json")
-@authDict([])
+@authDict(["canView"])
 def entrylinks(dictID, user, dictDB, configs):
     res = ops.getEntryLinks(dictDB, dictID, request.query.id)
     return {"links": res}
@@ -1329,7 +1334,7 @@ def elexgetlemma(dictID, headword):
         return json.dumps(lemmalist)
 
 @get(siteconfig["rootPath"] + "<dictID>/<entryID>.nvh") # OK
-@authDict([])
+@authDict(["canView"])
 def getentrynvh(dictID, user, dictDB, configs, entryID):
     entry = ops.getEntry(dictID, entryID, 'nvh')
     if entry is None:
@@ -1339,7 +1344,7 @@ def getentrynvh(dictID, user, dictDB, configs, entryID):
         return entry
 
 @get(siteconfig["rootPath"] + "<dictID>/<entryID>.json") # OK
-@authDict([])
+@authDict(["canView"])
 def getentryjson(dictID, user, dictDB, configs, entryID):
     entry = ops.getEntry(dictID, entryID, 'json')
     if entry is None:
