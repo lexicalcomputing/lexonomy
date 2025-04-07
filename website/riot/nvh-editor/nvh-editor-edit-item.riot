@@ -11,7 +11,8 @@
          <span class="nvh-label pointer"
                onclick={!props.readOnly && onLabelClick}
                style="color: {state.labelColor};">
-            <nvh-editor-new-element-button element={props.element}/>
+            <nvh-editor-new-element-button if={!props.readOnly}
+                  element={props.element}/>
             <span if={props.element.isValid}
                   class="nvh-bullet"
                   style="color: {state.labelColor};"></span>

@@ -15,7 +15,8 @@ class NVHStoreClass {
          isRevisionsOpen: false,
          draggedElement: null,
          rootElement: null,
-         collapsedElements: new Set() //  to collapse same elements after changing the entry
+         collapsedElements: new Set(), //  to collapse same elements after changing the entry
+         lastElementId: 0
       }
       observable(this)
       this.schema = window.store.schema
@@ -589,10 +590,10 @@ class NVHStoreClass {
       let isNewEntry = window.store.data.entryId == "new"
       let uA = window.store.data.userAccess
       return {
-         new: uA.canEdit
+         new: uA.canAdd
                && !isNewEntry
                && !revisions,
-         save: uA.canEdit
+         save: uA.canEdit || uA.canEditSource || (uA.canAdd && isNewEntry)
                && hasEntry
                && !this.data.isSaving
                // valid?
@@ -608,25 +609,26 @@ class NVHStoreClass {
                         )
                   )
                && !revisions,
-         undo: uA.canEdit
+         undo: (uA.canEdit || uA.canEditSource)
                && this.history.actualIdx > 0
                && !revisions,
-         redo: uA.canEdit
+         redo: (uA.canEdit || uA.canEditSource)
                && (this.history.actualIdx < this.history.states.length - 1)
                && !revisions,
-         add: uA.canEdit,
-         duplicate: uA.canEdit
+         duplicate: uA.canAdd
+               && uA.canEdit
                && hasEntry
                && !isNewEntry
                && !revisions,
-         delete: uA.canEdit
+         delete: uA.canDelete
                && !isNewEntry
                && !revisions,
-         view: hasEntry
+         view: uA.canView
+               && hasEntry
                && !isNewEntry,
-         edit: uA.canEdit
+         edit: (uA.canEdit || (uA.canAdd && isNewEntry))
                && hasEntry,
-         code: uA.canEdit
+         code: uA.canEditSource
                && (hasEntry || !!this.data.brokenEntryNvh),
          history: uA.canEdit
                && !isNewEntry
@@ -1284,7 +1286,7 @@ class NVHStoreClass {
 
    _getNewElementId(){
        // needed for riot to track changes properly
-      return Math.round(Math.random() * 1000000)
+      return this.data.lastElementId++
    }
 
    _getElementDefaultValue(elementPath){

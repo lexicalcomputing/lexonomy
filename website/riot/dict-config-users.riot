@@ -28,11 +28,14 @@
                </tr>
                <tr>
                   <th>User email</th>
-                  <th>View</th>
-                  <th>Edit</th>
-                  <th>Configure</th>
-                  <th>Download</th>
-                  <th>Upload</th>
+                  <th each={privilege in privileges}>
+                     <span class="displayFlex gap5 alignBaseline">
+                        {privilege.label}
+                        <i if={privilege.help}
+                              class="material-icons tooltipped grey-text text-darken-1 tiny help"
+                              data-tooltip={privilege.help}>help</i>
+                     </span>
+                  </th>
                   <th></th>
                </tr>
             </thead>
@@ -52,47 +55,12 @@
                         { user.email }
                      </span>
                   </td>
-                  <td>
+                  <td each={privilege in privileges}>
                      <label>
                         <input type="checkbox"
-                              name="canView"
-                              checked={ !!user.canView }
-                              onchange={onPermissionChange.bind(this, idx)}/>
-                        <span></span>
-                     </label>
-                  </td>
-                  <td>
-                     <label>
-                        <input type="checkbox"
-                              name="canEdit"
-                              checked={ !!user.canEdit }
-                              onchange={onPermissionChange.bind(this, idx)}/>
-                        <span></span>
-                     </label>
-                  </td>
-                  <td>
-                     <label>
-                        <input type="checkbox"
-                              name="canConfig"
-                              checked={ !!user.canConfig }
-                              onchange={onPermissionChange.bind(this, idx)}/>
-                        <span></span>
-                     </label>
-                  </td>
-                  <td>
-                     <label>
-                        <input type="checkbox"
-                              name="canDownload"
-                              checked={ !!user.canDownload }
-                              onchange={onPermissionChange.bind(this, idx)}/>
-                        <span></span>
-                     </label>
-                  </td>
-                  <td>
-                     <label>
-                        <input type="checkbox"
-                              name="canUpload"
-                              checked={ !!user.canUpload }
+                              disabled={privilege.required}
+                              name="{privilege.id}"
+                              checked={!!user[privilege.id] || privilege.required}
                               onchange={onPermissionChange.bind(this, idx)}/>
                         <span></span>
                      </label>
@@ -127,6 +95,43 @@
             data: {users: []}
          },
 
+         onBeforeMount(){
+            this.privileges = [{
+               id: "canView",
+               label: "View",
+               help: "Can view entry.",
+               required: true
+            }, {
+               id: "canAdd",
+               label: "Add",
+               help: "Can create new entry."
+            }, {
+               id: "canDelete",
+               label: "Delete",
+               help: "Can delete entry."
+            }, {
+               id: "canEdit",
+               label: "Edit",
+               help: "Can edit entry in standard editor."
+            }, {
+               id: "canConfig",
+               label: "Config",
+               help: "Can change dictionary configuration."
+            }, {
+               id: "canEditSource",
+               label: "Edit source",
+               help: "Can edit entry in source code editor."
+            }, {
+               id: "canDownload",
+               label: "Download",
+               help: "Can download dictionary."
+            }, {
+               id: "canUpload",
+               label: "Upload",
+               help: "Can upload dictionary."
+            }]
+         },
+
          onEmailInput(idx, evt){
             this.state.data.users[idx].email = evt.target.value
          },
@@ -144,7 +149,7 @@
             this.state.data.users.push({
                id: this.state.data.users.length,
                email: "",
-               canView: false,
+               canView: true,
                canEdit: false,
                canConfig: false,
                canDownload: false,
@@ -177,7 +182,7 @@
             if (!this.state.data.users.length) {
                window.showToast('Please, add at least one user.')
             } else if(this.state.data.users.find(row => row.canConfig) == undefined) {
-               window.showToast('At least one user must have <i>Configure</i> permission.')
+               window.showToast('At least one user must have "Configure" permission.')
             } else if(this.state.data.users.find(row => row.email == "")) {
                window.showToast('Email must not be empty.')
             } else {
@@ -190,20 +195,13 @@
                   window.showToast('Each email can only be used once.')
                   return
                }
-               invalidUser = this.state.data.users.find(row => !row.canView && !row.canEdit && !row.canConfig && !row.canDownload && !row.canUpload)
-               if (invalidUser){
-                  window.showToast(`User "${invalidUser.email}" should have assigned at least one privilege.`)
-                  return
-               }
+               let privilegeList = Object.values(this.privileges)
                let data = {}
                this.state.data.users.forEach(u => {
-                  data[u.email] = {
-                     canView: u.canView,
-                     canEdit: u.canEdit,
-                     canConfig: u.canConfig,
-                     canDownload: u.canDownload,
-                     canUpload: u.canUpload
-                  }
+                  data[u.email] = {}
+                  privilegeList.forEach(privilege => {
+                     data[u.email][privilege.id] = u[privilege.id] || privilege.required || false
+                  })
                })
                this.update({isSaving: true})
                this.store.updateDictionaryAccess(data)
@@ -217,5 +215,11 @@
          }
       }
    </script>
+
+   <style>
+      .labelWrapper{
+         gap: 5px;
+      }
+   </style>
 
 </dict-config-users>

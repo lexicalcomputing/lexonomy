@@ -11,7 +11,7 @@
             <nvh-editor-item-toolbar if={dictData.userAccess.canEdit}/>
             <div class="nvh-editor-view-items {nvhData.revision ? 'pointerEventsNone' : ''}">
                <nvh-editor-view-item element={nvhData.entry}
-                     read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
+                     read-only={isReadOnly()}/>
             </div>
          </template>
          <template if={dictData.editorMode == "edit"}>
@@ -21,13 +21,13 @@
             <div if={!nvhData.customEditor}
                   class="nvh-editor-edit-items {nvhData.revision ? 'pointerEventsNone' : ''}">
                <nvh-editor-edit-item element={nvhData.entry}
-                     read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>
+                     read-only={isReadOnly()}/>
             </div>
          </template>
       </template>
    </template>
    <nvh-source-code if={(nvhData.entry || nvhData.brokenEntryNvh) && dictData.editorMode == "code"}
-         read-only={!dictData.userAccess.canEdit}/>
+         read-only={!dictData.userAccess.canEditSource}/>
    <template if={!dictData.isEntryLoading && !nvhData.entry && dictData.editorMode != "code"}>
       <template if={!nvhData.brokenEntryNvh}>
          <div class="nvh-entry-status grey-text">
@@ -250,6 +250,11 @@
             if(this.dictData.entryList[idx + 1]){
                this.store.changeEntryId(this.dictData.entryList[idx + 1].id)
             }
+         },
+
+         isReadOnly(){
+            return (!this.dictData.userAccess.canEdit && this.dictData.entryId != "new")
+                  || !!this.nvhData.revision
          },
 
          refreshListeners(){
