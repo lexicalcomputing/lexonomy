@@ -507,7 +507,14 @@
           Convert encoded PDF string to array of bytes, and use it as an input for Blob to generate URL.
           https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
         */
-        const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString);
+        // const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString); // Not available on Chrome
+
+        /*
+          This should be available for both Mozilla and Chrome.
+          https://developer.mozilla.org/en-US/docs/Web/API/Window/atob
+          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+        */
+        const bytesArrayPDF = Uint8Array.from(atob(encodedPDFString), c => c.charCodeAt(0));
         const blob = new Blob([bytesArrayPDF], { type: 'application/pdf' });
         const blobUrl = URL.createObjectURL(blob);
         

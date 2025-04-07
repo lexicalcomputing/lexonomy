@@ -166,19 +166,24 @@
         };
       },
       getValueStylePair(value, markupValueStylePair, styles) {
+        let leftPunc = this.getPunc("leftPunc", styles);
+        let rightPunc = this.getPunc("rightPunc", styles);
+
         let result = [];
         for (let child of markupValueStylePair) {
           let splittedValue = value.split(child.value);
           if (splittedValue[0] !== "") {
             let normalObject = {
-              value: splittedValue[0],
+              value: result.length === 0 ? leftPunc + splittedValue[0] : splittedValue[0], /*prepend left punc only before first normalObject*/
               styles: styles,
             };
             result.push(normalObject);
           }
           if (child.value !== "") {
+            let leftMarkupPunc = this.getPunc("leftPunc", child.styles);
+            let rightMarkupPunc = this.getPunc("rightPunc", child.styles);
             let markupObject = {
-              value: child.value,
+              value: leftMarkupPunc + child.value + rightMarkupPunc,
               styles: child.styles,
             };
             result.push(markupObject);
@@ -187,7 +192,7 @@
         }
         if (value !== "") {
           let normalObject = {
-            value: value,
+            value: value + rightPunc,
             styles: styles,
           };
           result.push(normalObject);
@@ -198,11 +203,13 @@
         let result = [];
         let object;
         for (let child of this.props.entry.children) {
-          object = {
-            value: child.value,
-            styles: this.getStyleToFullName(child.path),
-          };
-          result.push(object);
+          if (window.nvhFormattingEditor.isMarkupType(child.path)) {
+            object = {
+              value: child.value,
+              styles: this.getStyleToFullName(child.path),
+            };
+            result.push(object);
+          }
         }
         return result;
       },
