@@ -411,6 +411,7 @@
         type: null,
         selectedPlaceholder: null,
         selectedOption: "",
+        styles: null, // styles can not be taken from selectedPlaceholder because of markup type exception
       },
 
       onBeforeMount() {
@@ -421,6 +422,7 @@
         if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
+        this.state.styles = this.props.styleOption.styles;
       },
       onBeforeUpdate() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
@@ -430,19 +432,20 @@
         if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
+        this.state.styles = this.props.styleOption.styles;
       },
 
       getStyleOptionValue(option) {
         if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
           return null;
         }
-        if (window.nvhFormattingEditor.global.selectedPlaceholder.styles === undefined) {
+        if (this.state.styles === undefined) {
           return null;
         }
-        if (window.nvhFormattingEditor.global.selectedPlaceholder.styles[option] === undefined) {
+        if (this.state.styles[option] === undefined) {
           return null;
         }
-        return window.nvhFormattingEditor.global.selectedPlaceholder.styles[option];
+        return this.state.styles[option];
       },
       onChangeStyle(option, value, event) {
         if (value === null) {
@@ -460,17 +463,17 @@
           console.log("There is no selected placeholder");
           return;
         }
-        if (selectedPlaceholder.styles === undefined) {
-          selectedPlaceholder.styles = {};
+        if (this.state.styles === undefined) {
+          this.state.styles = {};
         }
         if (option === "original-size") {
           if (value) {
-            selectedPlaceholder.styles[option] = value;
-            delete selectedPlaceholder.styles["width"];
-            delete selectedPlaceholder.styles["height"];
+            this.state.styles[option] = value;
+            delete this.state.styles["width"];
+            delete this.state.styles["height"];
           }
         }
-        selectedPlaceholder.styles[option] = value;
+        this.state.styles[option] = value;
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onSelectChange(value) {

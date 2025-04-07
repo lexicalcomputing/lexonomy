@@ -11,10 +11,18 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string")}
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string") && state.valueStylePairs === null}
             class="element-holder-content"
             style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
           {this.state.value}
+        </div>
+        <!-- TODO: Currently markup supports only text and in type, in future implement for all types-->
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string") && state.valueStylePairs !== null}
+            style="display: flex;">
+          <pre each={child in this.state.valueStylePairs}
+              style={getCssStyles(child.styles)}>
+            {child.value}
+          </pre>
         </div>
         <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
           value={this.state.value}
@@ -76,6 +84,7 @@
       state: {
         type: null,
         value: null,
+        valueStylePairs: null,
       },
 
       onBeforeMount() {
@@ -134,19 +143,17 @@
         let leftPunc = this.getPunc("leftPunc", this.props.schema.styles);
         let rightPunc = this.getPunc("rightPunc", this.props.schema.styles);
 
-        if (this.state.type === "markup") {
-          let valueObject = this.formatMarkup(this.props.entry.value, this.props.schema, leftPunc, rightPunc);
-          this.state.value = valueObject;
+        let markupValueStylesPair = null;
+        let valueStylesPair = null;
+        let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(fullName);
+        if (markupChildren.length !== 0) { /*means that has markup children*/
+          markupValueStylesPair = this.getMarkupValueStylePair();
+          valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
+          this.state.valueStylePairs = valueStylesPair;
         } else if (this.state.type === "int") {
           let value = this.formatInt(this.props.schema.content.fullName);
           this.state.value = leftPunc + value + rightPunc;
-        } else if (this.state.type === "image") {
-          let value = this.props.entry.value;
-          this.state.value = leftPunc + value + rightPunc;
         } else {
-          if (this.props.schema.markupValue !== undefined) {
-            this.props.schema.markupValue.value = this.props.entry.value;
-          }
           let value = this.props.entry.value;
           this.state.value = leftPunc + value + rightPunc;
         }
@@ -157,6 +164,54 @@
           markup: markup,
           suffix: suffix,
         };
+      },
+      getValueStylePair(value, markupValueStylePair, styles) {
+        let result = [];
+        for (let child of markupValueStylePair) {
+          let splittedValue = value.split(child.value);
+          if (splittedValue[0] !== "") {
+            let normalObject = {
+              value: splittedValue[0],
+              styles: styles,
+            };
+            result.push(normalObject);
+          }
+          if (child.value !== "") {
+            let markupObject = {
+              value: child.value,
+              styles: child.styles,
+            };
+            result.push(markupObject);
+          }
+          value = splittedValue.slice(1).join(child.value);
+        }
+        if (value !== "") {
+          let normalObject = {
+            value: value,
+            styles: styles,
+          };
+          result.push(normalObject);
+        }
+        return result;
+      },
+      getMarkupValueStylePair() {
+        let result = [];
+        let object;
+        for (let child of this.props.entry.children) {
+          object = {
+            value: child.value,
+            styles: this.getStyleToFullName(child.path),
+          };
+          result.push(object);
+        }
+        return result;
+      },
+      getStyleToFullName(fullName) {
+        for (let child of this.props.schema.markupStyles) {
+          if (child.fullName === fullName) {
+            return child.styles;
+          }
+        }
       },
       formatMarkup(value, schema, leftPunc, rightPunc) {
         let leftMarkupPunc = this.getPunc("leftPunc", schema.markupStyles);

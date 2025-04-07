@@ -111,6 +111,11 @@
             state.content.areaFullName = data.fullName;
             state.content.color = data.color;
             state.content.canHaveChildren = data.children.length !== 0;
+
+            let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
+            if (markupChildren.length !== 0) {
+              state["markupStyles"] = window.nvhFormattingEditor.createMarkupStyles(data.fullName);
+            }
           }
           if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
             data.releaseFunction.run(...data.releaseFunction.parameters);

@@ -1,10 +1,56 @@
 <styles-section>
   <div class="styles-section-container">
     <div if={window.nvhFormattingEditor.global.selectedPlaceholder === null}>No element selected.  Select element in layout selection to style it.</div>
-    <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null} class="styles-section-container-divider"/>
+    <div if={window.nvhFormattingEditor.global.selectedPlaceholder !== null} class="style-section-option-wrapper">
+      <div each={(child, index) in getStyleOptions()}
+          class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
+          onclick={() => changeStyleOption(child.fullName)}>
+        {child.name}
+      </div>
+    </div>
+    <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null}
+                        class="styles-section-container-divider"
+                        styleOption={currentStyleOption}/>
   </div>
 
-  <script></script>
+  <script>
+    export default {
+      currentStyleOption: null,
+
+      onBeforeMount() {
+        if (window.nvhFormattingEditor.global.selectedPlaceholder !== null) {
+          let styleOptions = this.getStyleOptions();
+          this.currentStyleOption = styleOptions[0];
+        }
+      },
+      onBeforeUpdate() {
+        if (window.nvhFormattingEditor.global.selectedPlaceholder !== null) {
+          let styleOptions = this.getStyleOptions();
+          if (this.currentStyleOption === null || !styleOptions.includes(this.currentStyleOption)) {
+            this.currentStyleOption = styleOptions[0];
+          }
+        }
+      },
+
+      getStyleOptions() {
+        let result = [...window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
+        let name = window.nvhFormattingEditor.global.selectedPlaceholder.content.name;
+        let fullName = window.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
+        let styles = window.nvhFormattingEditor.global.selectedPlaceholder.styles;
+        result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
+        return result;
+      },
+      changeStyleOption(fullName) {
+        for (let styleOption of this.getStyleOptions()) {
+          if (styleOption.fullName === fullName) {
+            this.currentStyleOption = styleOption;
+            this.update();
+            return;
+          }
+        }
+      }
+    }
+  </script>
   
   <style>
     .styles-section-container {
@@ -18,6 +64,22 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+    }
+    .style-section-option-item {
+      background-color: var(--color-grey-very-light);
+      border: 2px solid black;
+      border-top: none;
+      padding-left: 5px;
+      cursor: pointer;
+    }
+    .style-section-option-item:hover {
+      background-color: var(--color-grey-normal);
+    }
+    .style-section-option-item-current {
+      background-color: var(--color-grey-light);
+    }
+    .style-section-option-wrapper {
+      margin-bottom: 10px;
     }
   </style>
 </styles-section>
