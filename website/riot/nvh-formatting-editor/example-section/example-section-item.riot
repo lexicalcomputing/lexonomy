@@ -198,11 +198,13 @@
         let result = [];
         let object;
         for (let child of this.props.entry.children) {
-          object = {
-            value: child.value,
-            styles: this.getStyleToFullName(child.path),
-          };
-          result.push(object);
+          if (window.nvhFormattingEditor.isMarkupType(child.path)) {
+            object = {
+              value: child.value,
+              styles: this.getStyleToFullName(child.path),
+            };
+            result.push(object);
+          }
         }
         return result;
       },
