@@ -380,13 +380,13 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-audio-url")} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Text replacement for url:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-audio-url")} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Set text as tooltip:</div>
     <div class="value-wrapper">
       <div class="value-item"
