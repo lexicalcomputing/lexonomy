@@ -68,7 +68,7 @@
       </div>
       <div class="elements-choice-section-wrapper">
         <elements-choice-section class="elements-choice-section"
-                                elementsSchema={window.nvhFormattingEditor.createElementsSchema()}/>
+                                elementsSchema={window.nvhFormattingEditor.elementsSchema}/>
       </div>
     </div>
     <div if={state.showStyle}
@@ -172,7 +172,7 @@
       },
 
       onBeforeMount() {
-        // TODO: make a script that converts current styles, to new styling of each converter, for back compatibility
+        window.nvhFormattingEditor.elementsSchema = window.nvhFormattingEditor.createElementsSchema();
         this.state.fileReader = new FileReader();
         this.state.fileReader.onload = function(e) {
           this.setSchemaFromImportedFile(this.state.fileReader.result);
@@ -346,6 +346,9 @@
         if (JSON.stringify(oldSchema.styles) !== JSON.stringify(newSchema.styles)) {
           return true;
         }
+        if (JSON.stringify(oldSchema.markupStyles) !== JSON.stringify(newSchema.markupStyles)) {
+          return true;
+        }
         if (oldSchema.content !== undefined && oldSchema.content !== undefined) {
           if (oldSchema.content.fullName !== newSchema.content.fullName) {
             return true;
@@ -425,6 +428,7 @@
             orientation: child.orientation,
             fullName: child.content.fullName,
             styles: JSON.stringify(child.styles),
+            markupStyles: JSON.stringify(child.markupStyles),
             children: [],
           });
           this.createExportedSchema(exportSchema.children.at(exportSchema.children.length - 1), child);
@@ -450,6 +454,7 @@
               canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
             },
             styles: JSON.parse(child.styles),
+            markupStyles: JSON.parse(child.markupStyles),
             children: [],
           });
           this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);

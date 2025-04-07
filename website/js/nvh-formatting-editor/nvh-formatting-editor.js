@@ -254,6 +254,7 @@ class NVHFormattingEditorClass {
             canHaveChildren: true,
           },
           styles: {},
+          markupStyles: this.createMarkupStyles("entry"),
           children: [],
         }
       ]
@@ -421,6 +422,7 @@ class NVHFormattingEditorClass {
         canHaveChildren: true, /*NOTE: really always true ?*/
       },
       styles: {},
+      markupStyles: [],
       children: []
     };
     window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
@@ -455,6 +457,7 @@ class NVHFormattingEditorClass {
         canHaveChildren: label.canHaveChildren !== undefined ? label.canHaveChildren : label.children.length !== 0,
       },
       styles: {},
+      markupStyles: this.createMarkupStyles(label.fullName),
       children: []
     };
 
@@ -489,13 +492,16 @@ class NVHFormattingEditorClass {
             canHaveChildren: false,
           },
           styles: {},
+          markupStyles: this.createMarkupStyles(label.fullName),
           children: []
         };
         newElement.children.push(selfDisplayElement);
       }
       for(let child of label.children) {
-        let childElement = this.addElementWithChildren(null, null, null, newElement, child.data);
-        newElement.children.push(childElement);
+        if (!this.isMarkupType(child.data.fullName)) {
+          let childElement = this.addElementWithChildren(null, null, null, newElement, child.data);
+          newElement.children.push(childElement);
+        }
       }
     }
     if (component != null) {
@@ -638,6 +644,27 @@ class NVHFormattingEditorClass {
     for (let child of state.children) {
       this.applyStylesFromElementsRec(child);
     }
+  }
+
+  hasDirectMarkupChild(fullName) {
+    let result = [];
+    if (fullName === "") {
+      return result;
+    }
+    for (let child of window.store.schema.getElementByPath(fullName).children) {
+      if (window.nvhStore.getElementConfig(child.path).type === "markup") {
+        result.push({name: child.name, fullName: child.path, color: window.nvhStore.getElementColor(child.path)});
+      }
+    }
+    return result;
+  }
+  createMarkupStyles(fullName) {
+    let markupChildren = this.hasDirectMarkupChild(fullName);
+    let result = [];
+    for (let child of markupChildren) {
+      result.push({name: child.name, fullName: child.fullName, styles: {}});
+    }
+    return result;
   }
 }
 
