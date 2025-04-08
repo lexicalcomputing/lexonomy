@@ -20,7 +20,7 @@
 
       onBeforeMount() {
         this.state = {
-          showUrl: this.props.styles["show-url"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
           makeUrlClickable: this.props.styles["make-url-clickable"],
           showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
@@ -29,7 +29,7 @@
 
       onBeforeUpdate() {
         this.state = {
-          showUrl: this.props.styles["show-url"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
           makeUrlClickable: this.props.styles["make-url-clickable"],
           showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],

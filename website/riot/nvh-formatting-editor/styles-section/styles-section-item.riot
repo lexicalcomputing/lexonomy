@@ -254,7 +254,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Original size:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -263,7 +263,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Exact size:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -272,40 +272,40 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
     <div class="label">Width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
     <div class="label">Height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || this.state.type === "video" || this.state.type === "audio"} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? true : !getStyleOptionValue("show-url"))}
-          style={getStyleOptionValue("show-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? false : !getStyleOptionValue("show-url"))}
+          style={getStyleOptionValue("show-url") === true || getStyleOptionValue("show-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || this.state.type === "video" || this.state.type === "audio") && getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="styles-section-item-wrapper">
     <div class="label">Make url clickable:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -314,7 +314,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="styles-section-item-wrapper">
     <div class="label">Show only url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -332,34 +332,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "audio" || this.state.type === "video"} class="styles-section-item-wrapper">
-    <div class="label">Show audio player:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-audio-player", getStyleOptionValue("show-audio-player") === null ? true : !getStyleOptionValue("show-audio-player"))}
-          style={getStyleOptionValue("show-audio-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={this.state.type === "audio" || this.state.type === "video"} class="styles-section-item-wrapper">
-    <div class="label">Show audio url:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-audio-url", getStyleOptionValue("show-audio-url") === null ? false : !getStyleOptionValue("show-audio-url"))}
-          style={getStyleOptionValue("show-audio-url") === true || getStyleOptionValue("show-audio-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
-    <div class="label">Make audio url clickable:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "make-audio-url-clickable", getStyleOptionValue("make-audio-url-clickable") === null ? true : !getStyleOptionValue("make-audio-url-clickable"))}
-          style={getStyleOptionValue("make-audio-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Replace url with text:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -368,13 +341,13 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Text replacement for url:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Set text as tooltip:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -383,12 +356,30 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Show icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-icon", getStyleOptionValue("show-icon") === null ? true : !getStyleOptionValue("show-icon"))}
           style={getStyleOptionValue("show-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "audio"} class="styles-section-item-wrapper">
+    <div class="label">Show audio player:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
+          style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "video"} class="styles-section-item-wrapper">
+    <div class="label">Show video player:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
+          style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
