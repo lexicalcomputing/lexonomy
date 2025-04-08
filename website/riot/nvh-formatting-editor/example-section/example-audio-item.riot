@@ -1,22 +1,22 @@
 <example-audio-item>
   <div class="example-audio-item-wrapper">
-    <audio if={state.showAudioPlayer} controls src={props.value} style={props.stylesCss}></audio>
+    <audio if={state.showPlayer} controls src={props.value} style={props.getCssStyles(props.styles)}></audio>
     <div class="example-audio-item-url">
-      <i if={state.showAudioUrl && !state.makeAudioUrlClickable && state.showIcon} class="small material-icons">audiotrack</i>
-      <a if={state.showAudioUrl && state.makeAudioUrlClickable && state.showIcon} href={props.value}>
+      <i if={state.showUrl && !state.makeUrlClickable && state.showIcon} class="small material-icons">audiotrack</i>
+      <a if={state.showUrl && state.makeUrlClickable && state.showIcon} href={props.value}>
         <i class="small material-icons">audiotrack</i>
       </a>
-      <div if={state.showAudioUrl && !state.makeAudioUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</div>
-      <a if={state.showAudioUrl && state.makeAudioUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+      <div if={state.showUrl && !state.makeUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</div>
+      <a if={state.showUrl && state.makeUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
   </div>
 
   <script>
     export default {
       state: {
-        showAudioPlayer: null,
-        showAudioUrl: null,
-        makeAudioUrlClickable: null,
+        showPlayer: null,
+        showUrl: null,
+        makeUrlClickable: null,
         replaceUrlWithText: null,
         textReplacementForUrl: null,
         textAsUrlTooltip: null,
@@ -25,9 +25,9 @@
 
       onBeforeMount() {
         this.state = {
-          showAudioPlayer: this.props.styles["show-audio-player"],
-          showAudioUrl: this.props.styles["show-audio-url"] === undefined ? true : this.props.styles["show-audio-url"],
-          makeAudioUrlClickable: this.props.styles["make-audio-url-clickable"],
+          showPlayer: this.props.styles["show-player"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
@@ -37,9 +37,9 @@
 
       onBeforeUpdate() {
         this.state = {
-          showAudioPlayer: this.props.styles["show-audio-player"],
-          showAudioUrl: this.props.styles["show-audio-url"] === undefined ? true : this.props.styles["show-audio-url"],
-          makeAudioUrlClickable: this.props.styles["make-audio-url-clickable"],
+          showPlayer: this.props.styles["show-player"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],

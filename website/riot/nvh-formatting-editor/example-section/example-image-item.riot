@@ -1,6 +1,9 @@
 <example-image-item>
   <div class="example-image-item-wrapper">
-    <img if={!state.showUrl || state.showUrl && !state.showOnlyUrl} src={props.value} style={props.stylesCss}/>
+    <img id="example-image-item-image" if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
+    <a if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && state.makeImageClickable} href={props.value}>
+      <img src={props.value} style={props.getCssStyles(this.props.styles)}/>
+    </a>
     <div if={state.showUrl && !state.makeUrlClickable && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)}>{props.value}</div>
     <a if={state.showUrl && state.makeUrlClickable && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)} href={props.value}>{props.value}</a>
     <i if={state.showUrl && !state.makeUrlClickable && state.showOnlyUrl && state.showUrlAsIcon} class="small material-icons">image</i>
@@ -14,27 +17,39 @@
       state: {
         showUrl: null,
         makeUrlClickable: null,
+        makeImageClickable: null,
         showOnlyUrl: null,
         showUrlAsIcon: null,
       },
 
       onBeforeMount() {
+        this.setDefaultCss();
         this.state = {
-          showUrl: this.props.styles["show-url"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
           makeUrlClickable: this.props.styles["make-url-clickable"],
+          makeImageClickable: this.props.styles["make-image-clickable"],
+          showOnlyUrl: this.props.styles["show-only-url"],
+          showUrlAsIcon: this.props.styles["show-url-as-icon"],
+        }
+      },
+      onBeforeUpdate() {
+        this.state = {
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
+          makeImageClickable: this.props.styles["make-image-clickable"],
           showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
         }
       },
 
-      onBeforeUpdate() {
-        this.state = {
-          showUrl: this.props.styles["show-url"],
-          makeUrlClickable: this.props.styles["make-url-clickable"],
-          showOnlyUrl: this.props.styles["show-only-url"],
-          showUrlAsIcon: this.props.styles["show-url-as-icon"],
+      setDefaultCss() {
+        if (this.props.styles["margin"] === undefined) {
+          this.props.styles["margin"] = "20";
         }
-      }
+        if (this.props.styles["border-radius"] === undefined) {
+          this.props.styles["border-radius"] = "50";
+        }
+      },
     }
   </script>
 

@@ -1,13 +1,13 @@
 <example-video-item>
   <div class="example-video-item-wrapper">
     <!-- Taken from nvh-item-media.riot -->
-    <video if={state.showAudioPlayer && !isYouTube()}
+    <video if={state.showPlayer && !isYouTube()}
           controls
           src={props.value}
-          style={props.stylesCss}>
+          style={props.getCssStyles(props.styles)}>
     </video>
-    <iframe if={state.showAudioPlayer && isYouTube()}
-          style={props.stylesCss}
+    <iframe if={state.showPlayer && isYouTube()}
+          style={props.getCssStyles(props.styles)}
           width="560"
           height="315"
           src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
@@ -15,21 +15,21 @@
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen></iframe>
     <div class="example-video-item-url">
-      <i if={state.showAudioUrl && !state.makeAudioUrlClickable && state.showIcon} class="small material-icons">videocam</i>
-      <a if={state.showAudioUrl && state.makeAudioUrlClickable && state.showIcon} href={props.value}>
+      <i if={state.showUrl && !state.makeUrlClickable && state.showIcon} class="small material-icons">videocam</i>
+      <a if={state.showUrl && state.makeUrlClickable && state.showIcon} href={props.value}>
         <i class="small material-icons">videocam</i>
       </a>
-        <div if={state.showAudioUrl && !state.makeAudioUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</div>
-        <a if={state.showAudioUrl && state.makeAudioUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+        <div if={state.showUrl && !state.makeUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</div>
+        <a if={state.showUrl && state.makeUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     <div>
   </div>
 
   <script>
     export default {
       state: {
-        showAudioPlayer: null,
-        showAudioUrl: null,
-        makeAudioUrlClickable: null,
+        showPlayer: null,
+        showUrl: null,
+        makeUrlClickable: null,
         replaceUrlWithText: null,
         textReplacementForUrl: null,
         textAsUrlTooltip: null,
@@ -37,10 +37,13 @@
       },
 
       onBeforeMount() {
+        if (this.props.styles["margin"] === undefined) {
+          this.props.styles["margin"] = "20";
+        }
         this.state = {
-          showAudioPlayer: this.props.styles["show-audio-player"],
-          showAudioUrl: this.props.styles["show-audio-url"] === undefined ? true : this.props.styles["show-audio-url"],
-          makeAudioUrlClickable: this.props.styles["make-audio-url-clickable"],
+          showPlayer: this.props.styles["show-player"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
@@ -49,10 +52,13 @@
       },
 
       onBeforeUpdate() {
+        if (this.props.styles["margin"] === undefined) {
+          this.props.styles["margin"] = "20";
+        }
         this.state = {
-          showAudioPlayer: this.props.styles["show-audio-player"],
-          showAudioUrl: this.props.styles["show-audio-url"] === undefined ? true : this.props.styles["show-audio-url"],
-          makeAudioUrlClickable: this.props.styles["make-audio-url-clickable"],
+          showPlayer: this.props.styles["show-player"],
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          makeUrlClickable: this.props.styles["make-url-clickable"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],

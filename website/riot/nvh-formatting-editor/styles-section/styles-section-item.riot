@@ -52,34 +52,34 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Margin:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Padding:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
       <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Text size:</div>
     <div class="value-wrapper">
       <div class="value-item value-item-textsize-1"
@@ -114,7 +114,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Text weight:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -129,7 +129,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Text slant:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -144,7 +144,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
     <div class="label">Text decoration:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -162,18 +162,6 @@
           style={getStyleOptionValue("text-decoration") === "line-through" ? `background-color:var(--color-grey-normal);` : ""}>
           a
       </div>
-    </div>
-  </div>
-  <div if={this.state.type === "int"} class="styles-section-item-wrapper">
-    <div class="label">Decimal place divider:</div>
-    <div class="value-wrapper">
-      <input type="text" value={getStyleOptionValue("decimalPlaceDivider") === null ? "." : getStyleOptionValue("decimalPlaceDivider")} style="" onchange={onChangeStyle.bind(this, "decimalPlaceDivider", null)}>
-    </div>
-  </div>
-  <div if={this.state.type === "int"} class="styles-section-item-wrapper">
-    <div class="label">Thousands divider:</div>
-    <div class="value-wrapper">
-      <input type="text" value={getStyleOptionValue("thousandsDivider") === null ? " " : getStyleOptionValue("thousandsDivider")} style="" onchange={onChangeStyle.bind(this, "thousandsDivider", null)}>
     </div>
   </div>
   <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
@@ -266,58 +254,49 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
-    <div class="label">Original size:</div>
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+    <div class="label">Resize element:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "original-size", true)}
-          style={getStyleOptionValue("original-size") === true || getStyleOptionValue("original-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "exact-size", getStyleOptionValue("exact-size") === null ? true : !getStyleOptionValue("exact-size"))}
+          style={getStyleOptionValue("exact-size") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
-    <div class="label">Exact size:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "original-size", false)}
-          style={getStyleOptionValue("original-size") === false ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("exact-size")} class="styles-section-item-wrapper">
     <div class="label">Width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("exact-size")} class="styles-section-item-wrapper">
     <div class="label">Height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" || this.state.type === "video" || this.state.type === "audio"} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? true : !getStyleOptionValue("show-url"))}
-          style={getStyleOptionValue("show-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? false : !getStyleOptionValue("show-url"))}
+          style={getStyleOptionValue("show-url") === true || getStyleOptionValue("show-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || this.state.type === "video" || this.state.type === "audio") && getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="styles-section-item-wrapper">
     <div class="label">Make url clickable:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -326,7 +305,16 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("show-url")} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && !getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
+    <div class="label">Make image clickable:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "make-image-clickable", getStyleOptionValue("make-image-clickable") === null ? true : !getStyleOptionValue("make-image-clickable"))}
+          style={getStyleOptionValue("make-image-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "image" && getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="styles-section-item-wrapper">
     <div class="label">Show only url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -344,34 +332,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "audio" || this.state.type === "video"} class="styles-section-item-wrapper">
-    <div class="label">Show audio player:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-audio-player", getStyleOptionValue("show-audio-player") === null ? true : !getStyleOptionValue("show-audio-player"))}
-          style={getStyleOptionValue("show-audio-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={this.state.type === "audio" || this.state.type === "video"} class="styles-section-item-wrapper">
-    <div class="label">Show audio url:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-audio-url", getStyleOptionValue("show-audio-url") === null ? false : !getStyleOptionValue("show-audio-url"))}
-          style={getStyleOptionValue("show-audio-url") === true || getStyleOptionValue("show-audio-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
-    <div class="label">Make audio url clickable:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "make-audio-url-clickable", getStyleOptionValue("make-audio-url-clickable") === null ? true : !getStyleOptionValue("make-audio-url-clickable"))}
-          style={getStyleOptionValue("make-audio-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Replace url with text:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -380,13 +341,13 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Text replacement for url:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Set text as tooltip:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -395,12 +356,30 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-audio-url") || getStyleOptionValue("show-audio-url") == null)} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Show icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-icon", getStyleOptionValue("show-icon") === null ? true : !getStyleOptionValue("show-icon"))}
           style={getStyleOptionValue("show-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "audio"} class="styles-section-item-wrapper">
+    <div class="label">Show audio player:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
+          style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "video"} class="styles-section-item-wrapper">
+    <div class="label">Show video player:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
+          style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
@@ -466,8 +445,8 @@
         if (this.state.styles === undefined) {
           this.state.styles = {};
         }
-        if (option === "original-size") {
-          if (value) {
+        if (option === "exact-size") {
+          if (!value) {
             this.state.styles[option] = value;
             delete this.state.styles["width"];
             delete this.state.styles["height"];

@@ -27,17 +27,17 @@
         <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
           value={this.state.value}
           styles={this.props.schema.styles}
-          stylesCss={getCssStyles(this.props.schema.styles)}
+          get-css-styles={getCssStyles}
         />
         <example-audio-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "audio"}
           value={this.state.value}
           styles={this.props.schema.styles}
-          stylesCss={getCssStyles(this.props.schema.styles)}
+          get-css-styles={getCssStyles}
         />
         <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "video"}
           value={this.state.value}
           styles={this.props.schema.styles}
-          stylesCss={getCssStyles(this.props.schema.styles)}
+          get-css-styles={getCssStyles}
         />
         <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
             class="element-holder-content"
@@ -150,9 +150,6 @@
           markupValueStylesPair = this.getMarkupValueStylePair();
           valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
           this.state.valueStylePairs = valueStylesPair;
-        } else if (this.state.type === "int") {
-          let value = this.formatInt(this.props.schema.content.fullName);
-          this.state.value = leftPunc + value + rightPunc;
         } else {
           let value = this.props.entry.value;
           this.state.value = leftPunc + value + rightPunc;
@@ -240,33 +237,6 @@
         } else { /*markupChildValue is not present in markupValue*/
           return this.createValueObject(leftPunc + prefix + rightPunc, "", "");
         }
-      },
-      /*TODO: refactor*/
-      formatInt(fullName) {
-        if (fullName === "") {
-          return "";
-        }
-
-        let thousandsDivider = this.props.schema.styles === undefined || this.props.schema.styles.thousandsDivider === undefined ? " " : this.props.schema.styles.thousandsDivider;
-        let decimalPlaceDivider = this.props.schema.styles === undefined || this.props.schema.styles.decimalPlaceDivider === undefined ? "." : this.props.schema.styles.decimalPlaceDivider;
-
-        var numberSplitted = this.props.entry.value.split('.');
-        var numberNonDecimalReversed = numberSplitted[0].split('').reverse().join('');
-        var numberDecimal = numberSplitted[1];
-
-        var result = "";
-        for (let i = 0; i < numberNonDecimalReversed.length; i++) {
-          if (i !== 0 && i % 3 === 0) {
-            result += thousandsDivider;
-          }
-          result += numberNonDecimalReversed[i]
-        }
-
-        result = result.split('').reverse().join('');
-        if (numberDecimal !== undefined) {
-          result += decimalPlaceDivider + numberDecimal;
-        }
-        return result;
       },
       getCssStyles(styles) {
         if (styles === undefined) {
