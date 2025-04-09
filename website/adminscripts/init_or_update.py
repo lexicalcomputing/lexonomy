@@ -112,7 +112,7 @@ def update_main_db():
             if get_key('can_view', user_access, None) == None:
                 return
             else: # need to modify DB
-                # New
+                # New rights branched out from canEdit
                 add = 0
                 delete = 0
                 edit_source = 0
@@ -123,6 +123,12 @@ def update_main_db():
                 edit = get_key('can_edit', user_access, 0)
                 download = get_key('can_download', user_access, 0)
                 upload = get_key('can_upload', user_access, 0)
+
+                # if user had canEdit right he originally has also add, delete and edit source so keep it
+                if edit:
+                    add = 1
+                    delete = 1
+                    edit_source = 1
 
                 # update rights
                 conn.execute('UPDATE user_dict SET canView=?, canEdit=?, canAdd=?, canDelete=?, canEditSource=?, '
