@@ -240,7 +240,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             import_nvh = nvh.parse_file(fileinput.input(filename + ".xml2nvh.nvh"))
 
         elif filename.endswith('.nvh') or filename.endswith('.in'):
-            import_nvh = nvh.parse_file(fileinput.input(filename))
+            import_nvh = nvh.parse_file(fileinput.input(filename,  encoding='utf-8-sig'))
             if not entry_element:
                 entry_element = import_nvh.children[0].name
 
