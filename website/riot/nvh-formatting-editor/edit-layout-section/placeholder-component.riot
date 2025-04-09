@@ -37,7 +37,8 @@
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
                                   {child.children.length === 0 ? "placeholder-no-children" : ""}
                                   {child.status.isDragged ? "placeholder-dragged" : ""}
-                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}"
+                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}
+                                  {child.content.fullName === "" ? "placeholder-no-content" : ""}"
                             state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             isBaseLevel={false}
@@ -272,6 +273,9 @@
       border: 4px dashed rgb(234, 231, 200);
     }
 
+    .placeholder-no-content {
+      padding: 10px;
+    }
 
     .placeholder-dragged {
       opacity: 0.8;
@@ -322,13 +326,14 @@
 
 
     .elementholder {
-      width: 100%;
+      width: fit-content;
+      align-self: flex-start;
     }
 
 
     .adder-alone {
       padding: 0;
-      margin: 5px;
+      margin: 15px;
     }
     .adder-invisible {
       visibility: hidden;

@@ -4,35 +4,11 @@
             color: {props.state.children.length === 0 ? "white" : props.state.content.color};
             background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}"
       onmousedown={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? () => onMouseDown() : () => {}}>
-    <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
-              && isDraggedElementOk()}
-      class="small material-icons inside-adder-icon"
-      onmouseenter={onMouseEnter}
-      onmouseleave={onMouseLeave}
-      onmouseup={(event) => onMouseUp(event, 1)}>add_box</i>
     <div class="content-box-wrapper-2">
-      <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
-                && isDraggedElementOk()}
-        class="small material-icons inside-adder-icon"
-        onmouseenter={onMouseEnter}
-        onmouseleave={onMouseLeave}
-        onmouseup={(event) => onMouseUp(event, 2)}>add_box</i>
       <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-left"}">
-        {props.state.children.length === 0 ? props.state.content.name : props.state.content.name + " (wrapper)"}
+        {props.state.children.length === 0 ? props.state.content.name : props.state.content.name + " (group)"}
       </div>
-      <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
-                && isDraggedElementOk()}
-        class="small material-icons inside-adder-icon"
-        onmouseenter={onMouseEnter}
-        onmouseleave={onMouseLeave}
-        onmouseup={(event) => onMouseUp(event, 3)}>add_box</i>
     </div>
-    <i if={props.state.children.length === 0 && props.canHaveAdders && (window.nvhFormattingEditor.global.mouseData !== null && window.nvhFormattingEditor.global.mouseData.type === "choice-item")
-              && isDraggedElementOk()}
-      class="small material-icons inside-adder-icon"
-      onmouseenter={onMouseEnter}
-      onmouseleave={onMouseLeave}
-      onmouseup={(event) => onMouseUp(event, 4)}>add_box</i>
   </div>
 
 <script>
@@ -146,8 +122,7 @@
   }
   .content-box-wrapper {
     background-color: green;
-    padding: 2px;
-    margin-bottom: 10px;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
