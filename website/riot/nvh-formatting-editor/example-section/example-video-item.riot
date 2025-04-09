@@ -4,10 +4,10 @@
     <video if={state.showPlayer && !isYouTube()}
           controls
           src={props.value}
-          style={props.stylesCss}>
+          style={props.getCssStyles(props.styles)}>
     </video>
     <iframe if={state.showPlayer && isYouTube()}
-          style={props.stylesCss}
+          style={props.getCssStyles(props.styles)}
           width="560"
           height="315"
           src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"

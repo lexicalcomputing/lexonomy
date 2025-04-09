@@ -1,6 +1,6 @@
 <example-audio-item>
   <div class="example-audio-item-wrapper">
-    <audio if={state.showPlayer} controls src={props.value} style={props.stylesCss}></audio>
+    <audio if={state.showPlayer} controls src={props.value} style={props.getCssStyles(props.styles)}></audio>
     <div class="example-audio-item-url">
       <i if={state.showUrl && !state.makeUrlClickable && state.showIcon} class="small material-icons">audiotrack</i>
       <a if={state.showUrl && state.makeUrlClickable && state.showIcon} href={props.value}>

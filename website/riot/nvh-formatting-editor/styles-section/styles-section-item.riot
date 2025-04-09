@@ -52,25 +52,25 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Border radius:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Margin:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Padding:</div>
     <div class="value-wrapper">
-      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="20" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" style="margin:0;" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
   <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
@@ -255,30 +255,21 @@
     </div>
   </div>
   <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
-    <div class="label">Original size:</div>
+    <div class="label">Resize element:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "original-size", true)}
-          style={getStyleOptionValue("original-size") === true || getStyleOptionValue("original-size") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "exact-size", getStyleOptionValue("exact-size") === null ? true : !getStyleOptionValue("exact-size"))}
+          style={getStyleOptionValue("exact-size") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
-    <div class="label">Exact size:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "original-size", false)}
-          style={getStyleOptionValue("original-size") === false ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("exact-size")} class="styles-section-item-wrapper">
     <div class="label">Width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
     </div>
   </div>
-  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("original-size") === false} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("exact-size")} class="styles-section-item-wrapper">
     <div class="label">Height (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
@@ -311,6 +302,15 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "make-url-clickable", getStyleOptionValue("make-url-clickable") === null ? true : !getStyleOptionValue("make-url-clickable"))}
           style={getStyleOptionValue("make-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "image" && !getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
+    <div class="label">Make image clickable:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "make-image-clickable", getStyleOptionValue("make-image-clickable") === null ? true : !getStyleOptionValue("make-image-clickable"))}
+          style={getStyleOptionValue("make-image-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
@@ -445,8 +445,8 @@
         if (this.state.styles === undefined) {
           this.state.styles = {};
         }
-        if (option === "original-size") {
-          if (value) {
+        if (option === "exact-size") {
+          if (!value) {
             this.state.styles[option] = value;
             delete this.state.styles["width"];
             delete this.state.styles["height"];

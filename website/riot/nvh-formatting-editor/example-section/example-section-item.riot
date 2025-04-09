@@ -27,17 +27,17 @@
         <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
           value={this.state.value}
           styles={this.props.schema.styles}
-          stylesCss={getCssStyles(this.props.schema.styles)}
+          get-css-styles={getCssStyles}
         />
         <example-audio-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "audio"}
           value={this.state.value}
           styles={this.props.schema.styles}
-          stylesCss={getCssStyles(this.props.schema.styles)}
+          get-css-styles={getCssStyles}
         />
         <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "video"}
           value={this.state.value}
           styles={this.props.schema.styles}
-          stylesCss={getCssStyles(this.props.schema.styles)}
+          get-css-styles={getCssStyles}
         />
         <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
             class="element-holder-content"
