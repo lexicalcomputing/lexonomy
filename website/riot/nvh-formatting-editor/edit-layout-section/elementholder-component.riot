@@ -5,7 +5,7 @@
             background-color: {props.state.children.length === 0 ? props.state.content.color : "white"}"
       onmousedown={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? () => onMouseDown() : () => {}}>
     <div class="content-box-wrapper-2">
-      <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-left"}">
+      <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-parent"}">
         {props.state.children.length === 0 ? props.state.content.name : props.state.content.name + " (group)"}
       </div>
     </div>
@@ -116,9 +116,11 @@
     width: 100%;
     text-align: center;
     text-wrap: nowrap;
+
   }
-  .placeholder-content-box-left {
+  .placeholder-content-box-parent {
     text-align: left;
+    user-select: none;
   }
   .content-box-wrapper {
     background-color: green;
