@@ -637,6 +637,21 @@ class NVHFormattingEditorClass {
     }
     return result;
   }
+  /*NOTE: Inspired by getFlagTextColor from store.js*/
+  getColorLightVersion(colorHex) {
+    if (colorHex === null || colorHex === "") {
+      return "transparent";
+    }
+    let tmp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorHex);
+    let red = parseInt(tmp[1], 16);
+    let green = parseInt(tmp[2], 16);
+    let blue = parseInt(tmp[3], 16);
+
+    let newRed = Math.round(red + (255 - red) * 0.7).toString(16);
+    let newGreen = Math.round(green + (255 - green) * 0.7).toString(16);
+    let newBlue = Math.round(blue + (255 - blue) * 0.7).toString(16);
+    return "#" + newRed + newGreen + newBlue;
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();

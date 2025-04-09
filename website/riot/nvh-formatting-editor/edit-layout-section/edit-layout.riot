@@ -68,7 +68,6 @@
 
   <style>
     .edit-layout-container {
-      border: 1px black dashed;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -82,19 +81,18 @@
 
     .placeholder {
       position: relative;
-      border: 4px solid #f7f6ed;
+      border: 4px solid transparent;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-grow: 1;
       /*min-width: fit-content;*/ /*This was origin of vertical overflow bug, NEVER again*/
-      width: calc(100% - 20px);
-      margin: 10px;
+      width: 100%;
       cursor: pointer;
     }
     .placeholder-first {
       cursor: default; /*action-panel can not be displayed on the base placeholder*/
-      border: 4px solid #f7f6ed !important;
+      border: 4px solid transparent !important;
     }
 
     .placeholder-first > .action-panel {
@@ -115,8 +113,8 @@
     
 
     .placeholder > .placeholder-inside-wrapper > .placeholder {
-      height: calc(100% - 14px); /*ensure that all "placeholders" children will have correct height*/
-      width: calc(100% - 7px); /*ensure that all "placeholders" children will have correct width*/
+      height: 100%; /*ensure that all "placeholders" children will have correct height*/
+      width: 100%; /*ensure that all "placeholders" children will have correct width*/
     }
     /*
     both "placeholder-row" and "placeholder-column" have same flex-direction,
@@ -125,11 +123,9 @@
     */
     .placeholder-row {
       flex-direction: column;
-      padding: 7px;
     }
     .placeholder-column {
       flex-direction: column;
-      padding: 7px;
     }
 
     .placeholder-selected {
@@ -145,17 +141,17 @@
     and rows with no children, because it is easier to click
     */
     .adder-column {
-      padding: 5px;
-      width: calc(100% - 3px);
+      padding: 5px 0;
+      width: 100%;
       margin: 0 10px;
-      min-width: 100px;
+      min-width: 50px;
     }
     /*
     "adder-row" is present in rows
     */
     .adder-row {
-      height: calc(100% - 5px);
-      padding: 5px;
+      height: 100%;
+      padding: 0 5px;
       margin: 10px 0;
     }
     .adder:hover .plus-icon-wrapper {
@@ -166,9 +162,6 @@
       width: 100%;
     }
 
-    .placeholder-no-children {
-      padding: 14px;
-    }
     .placeholder-no-children:hover .adder-alone .plus-icon-wrapper {
       display: flex;
       align-items: center;
@@ -189,9 +182,11 @@
 
     .placeholder-mouse-hover {
       border: 4px solid var(--color-is-hovered) !important;
+      box-shadow: 5px 5px 5px black;
     }
     .placeholder-mouse-hover:has(.placeholder-mouse-hover) {
-      border: 4px solid #f7f6ed !important;
+      border: 4px solid transparent !important;
+      box-shadow: none;
     }
   </style>
 </edit-layout>
