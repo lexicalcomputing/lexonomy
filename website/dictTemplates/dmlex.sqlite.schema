@@ -4,7 +4,7 @@ INSERT INTO configs VALUES('publico','{	"public": false}');
 INSERT INTO configs VALUES('ske','{"exampleContainer": "entry.sense.example"}');
 INSERT INTO configs VALUES('titling','{"headword": "entry", "headwordSorting": "entry"}');
 INSERT INTO configs VALUES('entry_count', 0);
-INSERT INTO configs VALUES('completed_entries', 0);
+INSERT INTO configs VALUES('progress_tracking', '{"node": "__lexonomy__completed", "tracked": false}');
 CREATE TABLE searchables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, level INTEGER);
 CREATE TABLE history (
     id             INTEGER  PRIMARY KEY AUTOINCREMENT,
@@ -36,3 +36,7 @@ CREATE INDEX history_by_action ON history (
 );
 CREATE INDEX sortkey ON entries (sortkey);
 CREATE INDEX needs_re ON entries (needs_resave, needs_refresh, needs_refac);
+
+CREATE TABLE stats (id TEXT PRIMARY KEY, value INTEGER);
+INSERT INTO stats VALUES('entry_count', 0);
+INSERT INTO stats VALUES('completed_entries', 0);

@@ -312,7 +312,7 @@ def getProject(projectID):
                 dict_info = stage_dicts_info[dict_stage][0] # stages should have just one dict
 
                 dictDB = ops.getDB(dict_info['dict_id'])
-                q = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+                q = dictDB.execute("SELECT value FROM stats WHERE id='entry_count'")
                 r_q = q.fetchone()
                 dictDB.close()
 
@@ -320,11 +320,11 @@ def getProject(projectID):
                     input_dicts.append({'dictID': dict_info['dict_id'],
                                         'title': dict_info['title'],
                                         'remaining': dict_info['remaining'][stage],
-                                        'total': int(r_q['json'])})
+                                        'total': int(r_q['value'])})
                 else:
                     input_dicts.append({'dictID': dict_info['dict_id'],
                                         'title': dict_info['title'],
-                                        'total': int(r_q['json'])})
+                                        'total': int(r_q['value'])})
 
             else:
                 input_dicts.append({'dictID': None, 'title': f'{projectID}.{stage}'})
@@ -338,12 +338,12 @@ def getProject(projectID):
             dict_info = stage_dicts_info[f'{stage}_stage'][0] # stages should have just one dict
 
             dictDB = ops.getDB(dict_info['dict_id'])
-            q = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
+            q = dictDB.execute("SELECT value FROM stats WHERE id='entry_count'")
             r_q = q.fetchone()
             dictDB.close()
 
             output_dict = {'dictID': dict_info['dict_id'], 
-                           'total': int(r_q['json']), 
+                           'total': int(r_q['value']),
                            'title': dict_info['title'], 
                            'created': dict_info['created']}
         else:
@@ -356,12 +356,12 @@ def getProject(projectID):
 
         for b in stage_dicts_info.get(stage, []):
             dictDB = ops.getDB(b['dict_id'])
-            q = dictDB.execute("SELECT id, json FROM configs WHERE id IN ('entry_count', 'completed_entries')")
+            q = dictDB.execute("SELECT id, value FROM stats WHERE id IN ('entry_count', 'completed_entries')")
             r_q = q.fetchall()
             dictDB.close()
             
-            entry_count = int([x['json'] for x in r_q if x['id'] == 'entry_count'][0])
-            completed_entries = int([x['json'] for x in r_q if x['id'] == 'completed_entries'][0])
+            entry_count = int([x['value'] for x in r_q if x['id'] == 'entry_count'][0])
+            completed_entries = int([x['value'] for x in r_q if x['id'] == 'completed_entries'][0])
 
             if entry_count > 0 and b['status'] != 'creating':
                 batches.append({'dictID': b['dict_id'], 'title': b['title'],

@@ -32,7 +32,8 @@ def purge_dict(db, historiography, purge_all, email):
     db.execute("delete from entries")
     db.execute("delete from linkables")
     db.execute("delete from searchables")
-    db.execute("UPDATE configs SET json=? WHERE id=?", (0, 'entry_count'))
+    db.execute("UPDATE stats SET value=? WHERE id=?", (0, 'entry_count'))
+    db.execute("UPDATE stats SET value=? WHERE id=?", (0, 'completed_entries'))
     db.commit()
 
     log_info("Compressing database...")
@@ -337,7 +338,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dict_id,))
         limit = int(json.loads(d.fetchone()['configs'])['limits']['entries'])
 
-        max_import = limit - dict_stats["entryCount"]
+        max_import = limit - dict_stats["entry_count"]
         if max_import < entry_count:
             log_warning("Detected %d entries in '%s' element, only %d will be imported." % (entry_count, tl_name, max_import))
         else:
@@ -357,6 +358,12 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
 
         entries_inserted = 0
         completed_entries = 0
+        pr = db.execute("SELECT json FROM configs WHERE id='progress_tracking'")
+        r_pr =pr.fetchone()
+        if r_pr:
+            progress_config = json.loads(r_pr['json'])
+        else:
+            progress_config = {"node": "__lexonomy__completed", "tracked": False}
 
         # max entry id form DB is exists
         max_entryID = db.execute("SELECT MAX(id) AS max_ID FROM entries").fetchone()['max_ID']
@@ -397,7 +404,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
                     searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
                     searchables_payload.append((entryID, searchTitle_no_pos, 1))
 
-                if '__lexonomy__completed' in entry_str:
+                if progress_config['tracked'] and progress_config['node'] in entry_str:
                     completed_entries += 1
                 entries_inserted += 1
 
@@ -412,10 +419,8 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
                     searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
                     searchables_payload.append((r["id"], searchTitle_no_pos, 1))
 
-                if '__lexonomy__completed' in entry_str and '__lexonomy__completed' not in r['nvh']:
+                if progress_config['tracked'] and progress_config['node'] in entry_str and progress_config['node'] not in r['nvh']:
                     completed_entries += 1
-
-            entry_inserted += 1
 
             if entry_inserted % 100 == 0:
                 log_info("IMPORTED: PER:%.2d, COUNT:%d/%d" % ((entry_inserted/entry_count*100), entry_inserted, entry_count))
@@ -431,19 +436,20 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         db.executemany("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) VALUES (?,?,?,?,?,?)", history_payload)
         db.executemany("DELETE FROM searchables WHERE entry_id=? and level=?", searchables_delete_payload)
         db.executemany("INSERT INTO searchables(entry_id, txt, level) VALUES (?, ?, ?)", searchables_payload)
+        db.commit()
 
         # =============
         # Entry counts
         # =============
-        c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
+        c2 = db.execute("SELECT value FROM stats WHERE id='entry_count'")
         r2 = c2.fetchone()
         if r2:
-            db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + entries_inserted, 'entry_count'))
+            db.execute("UPDATE stats SET value=? WHERE id=?", (int(r2['value']) + entries_inserted, 'entry_count'))
 
-        c3 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
+        c3 = db.execute("SELECT value FROM stats WHERE id='completed_entries'")
         r3 = c3.fetchone()
-        if r3:
-            db.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + completed_entries, 'completed_entries'))
+        if progress_config['tracked']:
+            db.execute("UPDATE stats SET value=? WHERE id=?", (int(r3['value']) + completed_entries, 'completed_entries'))
 
         # =============
         # Import config

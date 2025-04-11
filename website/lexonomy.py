@@ -219,7 +219,7 @@ def listuserdicts(user):
 @post(siteconfig["rootPath"] + "<dictID>/entrydelete.json")
 @authDict(["canDelete"])
 def entrydelete(dictID, user, dictDB, configs):
-    ops.deleteEntry(dictDB, request.forms.id, user["email"])
+    ops.deleteEntry(dictDB, configs, request.forms.id, user["email"])
     return {"success": True, "id": request.forms.id}
 
 @post(siteconfig["rootPath"]+"<dictID>/entryread.json")
@@ -855,6 +855,7 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
+        dict_stats = ops.getDictStats(ops.getDB(dictID))
 
         # WARNING consider if new config item does show personal data, than add to this list
         hide_items = ["siteconfig", "download", "users"]
@@ -862,7 +863,7 @@ def dictconfig(dictID):
             configs.pop(item)
 
         res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]},
-               "userAccess": user["dictAccess"], "configs": configs}
+               "userAccess": user["dictAccess"], "configs": configs, 'stats': dict_stats}
 
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
@@ -1068,7 +1069,7 @@ def autoimagestatus(dictID, user, dictDB, configs):
 def resavejson(dictID, user, dictDB, configs):
     count = 0
     stats = ops.getDictStats(dictDB)
-    while stats["needResave"] and count <= 127:
+    while stats["need_resave"] and count <= 127:
         """
         if len(configs['subbing']) > 0:
             ops.refac(dictDB, dictID, configs)
@@ -1077,7 +1078,7 @@ def resavejson(dictID, user, dictDB, configs):
         ops.resave(dictDB, dictID, configs)
         stats = ops.getDictStats(dictDB)
         count += 1
-    return {"todo": stats["needResave"]}
+    return {"todo": stats["need_resave"]}
 
 
 @get(siteconfig["rootPath"] + "api")

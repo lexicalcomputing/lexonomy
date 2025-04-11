@@ -40,8 +40,7 @@ defaultDictConfig = {"editing": {},
                      "searchability": {"searchableElements": []},
                      "structure": {"nvhSchema": "", 'root': ''},
                      "titling": {"headwordAnnotations": []},
-                     "flagging": {"flag_element": "", "flags": []},
-                     "entry_count": 0}
+                     "flagging": {"flag_element": "", "flags": []}}
 
 prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepwd", "users", "dicts", "oneclick", "recoverpwd", "createaccount", "consent", "userprofile", "dictionaries", "about", "list", "lemma", "json", "ontolex", "tei"];
 
@@ -149,7 +148,7 @@ def readDictConfigs(dictDB):
     add_items = ["ident", "publico", "kontext", "titling", "flagging", "styles",
                  "searchability", "xampl", "thes", "collx", "defo", "structure",
                  "formatting", "editing", "download", "links", "gapi",
-                 "metadata", "entry_count"]
+                 "metadata"]
     for conf in set(add_items):
         if not conf in configs:
             configs[conf] = defaultDictConfig.get(conf, {})
@@ -266,31 +265,45 @@ def getDmlLexSchemaItems(modules, xlingual_langs=[], linking_relations=[], etymo
         return ''.join(schema), desc_dict, list(used_modules)
 
 
-def deleteEntry(db, entryID, email):
+def getDictStats(db):
+    stats = {}
+    c = db.execute("SELECT * FROM stats")
+    for i in c.fetchall():
+        stats[i['id']] = int(i['value'])
+    if stats.get('entry_count', False) and stats.get('completed_entries', False):
+        stats['completed_per'] = (int(stats['completed_entries']) / int(stats['entry_count'])) * 100
+
+    c = db.execute("select count(*) as need_resave from entries where needs_resave=1 or needs_refresh=1 or needs_refac=1")
+    r = c.fetchone()
+    stats["need_resave"] = r["need_resave"]
+    return stats
+
+
+def updateDictStats(db, key, value):
+    db.execute("UPDATE stats SET value=? WHERE id=?", (value, key))
+    db.commit()
+
+
+def deleteEntry(db, configs, entryID, email):
     # tell my parents that they need a refresh:
     db.execute ("update entries set needs_refresh=1 where id in (select parent_id from sub where child_id=?)", (entryID,))
     # update completed:
-    c = db.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
-    row = c.fetchone()
-    c2 = db.execute("SELECT json FROM configs WHERE id='completed_entries'")
-    r2 = c2.fetchone()
-    if '__lexonomy__completed' in row['nvh']:
-        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'completed_entries'))
+    c1 = db.execute("SELECT id, nvh FROM entries WHERE id=?", (entryID, ))
+    r1 = c1.fetchone()
+
+    # update stats
+    dict_stats = getDictStats(db)
+    if configs['progress_tracking'].get('tracked', False) and configs['progress_tracking']['node'] in r1['nvh']:
+        if dict_stats.get('completed_entries', False):
+            updateDictStats(db, 'completed_entries', dict_stats['completed_entries'] - 1)
+    if dict_stats.get('entry_count', False):
+        updateDictStats(db, 'entry_count', dict_stats['entry_count'] - 1)
+
     # delete me:
     db.execute ("delete from entries where id=?", (entryID,))
     # tell history that I have been deleted:
     db.execute ("insert into history(entry_id, action, [when], email, nvh) values(?,?,?,?,?)",
                 (entryID, "delete", datetime.datetime.utcnow(), email, None))
-
-    c2 = db.execute("SELECT json FROM configs WHERE id='entry_count'")
-    r2 = c2.fetchone()
-    if r2:
-        db.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) - 1, 'entry_count'))
-    else:
-        c2_1 = db.execute("SELECT COUNT(*) AS total FROM entries")
-        current_total = int(c2_1.fetchone()['total'])
-
-        db.execute("INSERT INTO configs (id, json) VALUES (?,?)", ('entry_count', current_total - 1))
 
     db.commit()
 
@@ -341,20 +354,13 @@ def createEntry(dictDB, configs, entryID, entryNvh, email, historiography):
     if configs["links"]:
         entryNvh = updateEntryLinkables(dictDB, entryID, nvhParsed, configs, False, False)
 
-    c2 = dictDB.execute("SELECT json FROM configs WHERE id='entry_count'")
-    r2 = c2.fetchone()
-    if r2:
-        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r2['json']) + 1, 'entry_count'))
-    else:
-        c2_1 = dictDB.execute("SELECT COUNT(*) AS total FROM entries")
-        current_total = int(c2_1.fetchone()['total'])
-
-        dictDB.execute("INSERT INTO configs (id, json) VALUES (?,?)", ('entry_count', current_total + 1))
-
-    if '__lexonomy__completed' in entryNvh:
-        c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
-        r3 = c3.fetchone()
-        dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1, 'completed_entries'))
+    # update stats
+    dict_stats = getDictStats(dictDB)
+    if configs['progress_tracking'].get('tracked', False) and configs['progress_tracking']['node'] in entryNvh:
+        if dict_stats.get('completed_entries', False):
+            updateDictStats(dictDB, 'completed_entries', dict_stats['completed_entries'] + 1)
+    if dict_stats.get('entry_count', False):
+        updateDictStats(dictDB, 'entry_count', dict_stats['entry_count'] + 1)
 
     dictDB.commit()
     return entryID, entryNvh, feedback
@@ -377,12 +383,13 @@ def updateEntry(dictDB, configs, entryID, entryNvh, email, historiography):
         dictDB.execute("UPDATE searchables SET txt=? WHERE entry_id=? AND level=1", (getEntryTitle(nvhParsed, configs["titling"], True), entryID))
         dictDB.execute("INSERT INTO history(entry_id, action, [when], email, nvh, historiography) values(?, ?, ?, ?, ?, ?)", (entryID, "update", str(datetime.datetime.utcnow()), email, entryNvh, json.dumps(historiography)))
 
-        c3 = dictDB.execute("SELECT json FROM configs WHERE id='completed_entries'")
-        r3 = c3.fetchone()
-        if '__lexonomy__completed' not in row['nvh'] and '__lexonomy__completed' in entryNvh:
-            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) + 1, 'completed_entries'))
-        elif '__lexonomy__completed' in row['nvh'] and '__lexonomy__completed' not in entryNvh:
-            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (int(r3['json']) - 1, 'completed_entries'))
+        # update completed entries
+        if configs['progress_tracking'].get('tracked', False):
+            dict_stats = getDictStats(dictDB)
+            if configs['progress_tracking']['node'] not in row['nvh'] and configs['progress_tracking']['node'] in entryNvh:
+                updateDictStats(dictDB, 'completed_entries', dict_stats['completed_entries'] + 1)
+            elif configs['progress_tracking']['node'] in row['nvh'] and configs['progress_tracking']['node'] not in entryNvh:
+                updateDictStats(dictDB, 'completed_entries', dict_stats['completed_entries'] - 1)
 
         dictDB.commit()
 
@@ -760,7 +767,7 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
                 dictDB.execute("INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (idx + 1, example["nvh"], json.dumps(example['json']), example["title"], example["sortkey"], 0, 0, 0))
                 dictDB.execute("INSERT INTO searchables (entry_id, txt, level) VALUES(?, ?, ?)", (idx + 1, example["sortkey"], 1))
 
-            dictDB.execute("UPDATE configs SET json=? WHERE id=?", (len(examples), 'entry_count'))
+            updateDictStats(dictDB,'entry_count', len(examples))
 
     dictDB.commit()
 
@@ -1736,15 +1743,6 @@ def extractFirstElementText(nvhChild):
         for c in nvhChild.children:
             return extractFirstElementText(c)
 
-def getDictStats(dictDB):
-    res = {"entryCount": 0, "needResave": 0}
-    c = dictDB.execute("select count(*) as entryCount from entries")
-    r = c.fetchone()
-    res["entryCount"] = r["entryCount"]
-    c = dictDB.execute("select count(*) as needResave from entries where needs_resave=1 or needs_refresh=1 or needs_refac=1")
-    r = c.fetchone()
-    res["needResave"] = r["needResave"]
-    return res
 
 def combine_dmlex_schemas(old_sch_nvh, new_sch_nvh):
     """Find all custom nodes in old dmlex schema and add it to new dmlex schema if perents exists"""
@@ -1789,6 +1787,16 @@ def updateDictConfig(dictDB, dictID, configID, content):
         if value.get('root', False):
             value['root'] = nvh.schema_get_root_name(content['nvhSchema'])
 
+    elif configID == 'progress_tracking':
+        completed_entries = 0
+        if content.get('tracked', False):
+            c2 = dictDB.execute("SELECT nvh FROM entries")
+            for entry in c2.fetchall():
+                if content['node'] in entry['nvh']:
+                    completed_entries += 1
+        updateDictStats(dictDB, 'completed_entries', completed_entries)
+        value = content
+
     else:
         value = content
 
@@ -1796,6 +1804,7 @@ def updateDictConfig(dictDB, dictID, configID, content):
     dictDB.execute("INSERT INTO configs(id, json) VALUES (?, ?)", (configID, json.dumps(value)))
     dictDB.commit()
 
+    # after effects
     if configID == "ident":
         updateDictIdent(dictDB, dictID)
         return content, False
