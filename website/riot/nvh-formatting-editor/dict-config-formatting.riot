@@ -181,6 +181,7 @@
         window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
+        document.addEventListener("mousemove", this.globalMouseMove, { passive: true });
 
         let formatting = window.store.data.config.formatting;
 
@@ -244,6 +245,7 @@
       onBeforeUnmount() {
         document.removeEventListener("mouseup", this.globalOnMouseUp);
         document.removeEventListener("mousedown", this.globalOnMouseDown);
+        document.removeEventListener("mousemove", this.globalMouseMove, { passive: true });
       },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {
@@ -629,6 +631,10 @@
           }
           window.nvhFormattingEditor.formattingEditorComponent.update();
         }
+      },
+      globalMouseMove() {
+        /* Specify if necessary.
+        I need custom mouse move to specify its options and to be able to remove it. */
       }
     }
   </script>
