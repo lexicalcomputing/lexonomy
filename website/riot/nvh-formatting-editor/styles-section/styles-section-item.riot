@@ -255,27 +255,6 @@
     </div>
   </div>
   <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
-    <div class="label">Resize element:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "exact-size", getStyleOptionValue("exact-size") === null ? true : !getStyleOptionValue("exact-size"))}
-          style={getStyleOptionValue("exact-size") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("exact-size")} class="styles-section-item-wrapper">
-    <div class="label">Width (px):</div>
-    <div class="value-wrapper">
-      <input type="number" value={getStyleOptionValue("width")} onchange={onChangeStyle.bind(this, "width", null)}>
-    </div>
-  </div>
-  <div if={(this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))) && getStyleOptionValue("exact-size")} class="styles-section-item-wrapper">
-    <div class="label">Height (px):</div>
-    <div class="value-wrapper">
-      <input type="number" value={getStyleOptionValue("height")} onchange={onChangeStyle.bind(this, "height", null)}>
-    </div>
-  </div>
-  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max width (px):</div>
     <div class="value-wrapper">
       <input type="number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
@@ -444,13 +423,6 @@
         }
         if (this.state.styles === undefined) {
           this.state.styles = {};
-        }
-        if (option === "exact-size") {
-          if (!value) {
-            this.state.styles[option] = value;
-            delete this.state.styles["width"];
-            delete this.state.styles["height"];
-          }
         }
         this.state.styles[option] = value;
         window.nvhFormattingEditor.formattingEditorComponent.update();
