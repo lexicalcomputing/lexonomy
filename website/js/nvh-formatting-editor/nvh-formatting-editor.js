@@ -345,8 +345,7 @@ class NVHFormattingEditorClass {
     state.children.map(child => child.status.isHovered = false);
   }
 
-  // RENAME ?
-  openActionPanel(child, parent) {
+  selectPlaceholder(child, parent) {
     if (window.nvhFormattingEditor.global.canOpenActionPanel) {
       let currentIsActive = child.status.isActive;
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
