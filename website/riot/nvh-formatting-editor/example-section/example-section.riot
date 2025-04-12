@@ -3,14 +3,20 @@
     <div class="scrollable-div-layout scrollable-div-layout-{window.nvhFormattingEditor.global.activeLayout}">
       <example-section-item
         each={child in window.nvhFormattingEditor.currentLayout.schema.children}
+        onclick={onExampleSectionItemClick}
         schema={child}
-        entry={this.exampleEntry}/>
+        entry={this.exampleEntry}
+        isFormatting={true}/>
     <div>
   </div>
 
   <script>
     /*Example entry for testing purposes*/
     export default {
+      onExampleSectionItemClick() {
+        window.nvhFormattingEditor.formattingEditorComponent.update();
+      },
+
       exampleEntry: {
         path: "entry",
         value: "car",

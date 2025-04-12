@@ -29,7 +29,7 @@
                     index={0}
                     state={props.state}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => window.nvhFormattingEditor.openActionPanel(child, props.state)}
+      <placeholder-component onclick={() => window.nvhFormattingEditor.selectPlaceholder(child, props.state)}
                             title={getPlaceholderTitle(child)}
                             onmouseup={(event) => onMouseUp(event, child)}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
@@ -329,10 +329,10 @@
     .action-panel:hover {
       opacity: 1 !important;
     }
-    .placeholder:has(.placeholder:hover) .action-panel-hovered {
+    .placeholder:has(.placeholder-mouse-hover) .action-panel-hovered {
       display: none;
     }
-    .placeholder:not(:has(.placeholder:hover)) .action-panel-hovered {
+    .placeholder:not(:has(.placeholder-mouse-hover)) .action-panel-hovered {
       display: block;
       opacity: 0.3;
     }

@@ -61,18 +61,33 @@
     <div each={childSchema in props.schema.children}
         class="element-holder element-holder-{childSchema.orientation}">
       <example-section-item if={childSchema.content.name === "" /*empty placeholder*/}
+                            onclick={() => onExampleItemClick(childSchema, props.schema)}
+                            onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
+                            onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                            class="{props.isFormatting ? "example-section-item" : ""}"
                             schema={childSchema}
-                            entry={props.entry}/>
+                            entry={props.entry}
+                            isFormatting={props.isFormatting}/>
       <example-section-item if={props.schema.content.area === childSchema.content.area
                                 && childSchema.content.name !== "" /*render parent label*/}
+                            onclick={() => onExampleItemClick(childSchema, props.schema)}
+                            onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
+                            onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                            class="{props.isFormatting ? "example-section-item" : ""}"
                             schema={childSchema}
-                            entry={props.entry}/>
+                            entry={props.entry}
+                            isFormatting={props.isFormatting}/>
       <template if={props.schema.content.area !== childSchema.content.area
                     && childSchema.content.name !== ""}
                 each={childEntry in window.nvhFormattingEditor.getEntryChildren(props.entry, [])}>
         <example-section-item if={childSchema.content.fullName === childEntry.path}
+                              onclick={() => onExampleItemClick(childSchema, props.schema)}
+                              onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
+                              onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                              class="{props.isFormatting ? "example-section-item" : ""}"
                               schema={childSchema}
-                              entry={childEntry}/>
+                              entry={childEntry}
+                              isFormatting={props.isFormatting}/>
         <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
             class="element-holder-hovered-empty-entry" style="display: none"></div>
       </template>
@@ -106,6 +121,32 @@
           this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
+      },
+
+      onExampleItemMouseEnter(event, state) {
+        if (!this.props.isFormatting) {
+          return;
+        }
+        if (window.nvhFormattingEditor.global.mouseData === null) {
+          event.currentTarget.classList.add("placeholder-mouse-hover");
+          state.status.isHovered = true;
+          window.nvhFormattingEditor.formattingEditorComponent.update();
+        }
+      },
+      onExampleItemMouseLeave(event, state) {
+        if (!this.props.isFormatting) {
+          return;
+        }
+        if (window.nvhFormattingEditor.global.mouseData === null) {
+          event.currentTarget.classList.remove("placeholder-mouse-hover");
+          state.status.isHovered = false;
+          window.nvhFormattingEditor.formattingEditorComponent.update();
+        }
+      },
+      onExampleItemClick(state, parentState) {
+        if (this.props.isFormatting) {
+          window.nvhFormattingEditor.selectPlaceholder(state, parentState)
+        }
       },
 
       hasChildWithContent(state) {
@@ -295,7 +336,10 @@
     pre {
       margin: 0;
       font-family: "Roboto Condensed", sans-serif;
-    } 
+    }
+    .example-section-item {
+      cursor: pointer;
+    }
     .element-holder-used-placeholder {
       margin: 3px;
     }
