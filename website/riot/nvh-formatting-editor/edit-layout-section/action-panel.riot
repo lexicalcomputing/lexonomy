@@ -14,34 +14,6 @@
         onclick={duplicateElement}>
       <i class="small material-icons">content_copy</i>
     </div>
-    <div if={props.parentState.orientation === "column" && !props.isBaseLevel} 
-        class="action"
-        id="action-moveup"
-        title="Move up"
-        onclick={decreaseElementIndex}>
-      <i class="small material-icons">arrow_upward</i>
-    </div>
-    <div if={props.parentState.orientation === "column" && !props.isBaseLevel} 
-        class="action"
-        id="action-movedown"
-        title="Move down"
-        onclick={increaseElementIndex}>
-      <i class="small material-icons">arrow_downward</i>
-    </div>
-    <div if={props.parentState.orientation === "row" && !props.isBaseLevel} 
-        class="action"
-        id="action-moveleft"
-        title="Move left"
-        onclick={decreaseElementIndex}>
-      <i class="small material-icons">arrow_back</i>
-    </div>
-    <div if={props.parentState.orientation === "row" && !props.isBaseLevel} 
-        class="action"
-        id="action-moveright"
-        title="Move right"
-        onclick={increaseElementIndex}>
-      <i class="small material-icons">arrow_forward</i>
-    </div>
     <div if={!props.isMarkupTypeChild}
         class="action action-orientation-{props.state.orientation}"
         title={props.state.orientation === "column"
@@ -125,24 +97,6 @@
       this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
       copiedElement.status.isHovered = false;
       window.nvhFormattingEditor.formattingEditorComponent.update();
-    },
-    decreaseElementIndex() {
-      if (this.props.index === 0) {
-        return;
-      }
-      this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
-      this.props.parentState.children.splice(this.props.index - 1, 0, this.props.state);
-      this.props.state.status.isHovered = false;
-      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
-    },
-    increaseElementIndex() {
-      if (this.props.index === this.props.parentState.children.length - 1) {
-        return;
-      }
-      this.props.parentState.children = Array.from(this.props.parentState.children).filter((child, index) => index !== this.props.index);
-      this.props.parentState.children.splice(this.props.index + 1, 0, this.props.state);
-      this.props.state.status.isHovered = false;
-      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
