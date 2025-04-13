@@ -227,15 +227,6 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "image" || this.state.type === "video" || this.state.type === "audio") && getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="styles-section-item-wrapper">
-    <div class="label">Make url clickable:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "make-url-clickable", getStyleOptionValue("make-url-clickable") === null ? true : !getStyleOptionValue("make-url-clickable"))}
-          style={getStyleOptionValue("make-url-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
   <div if={this.state.type === "image" && !getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
     <div class="label">Make image clickable:</div>
     <div class="value-wrapper">
@@ -245,7 +236,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null)} class="styles-section-item-wrapper">
     <div class="label">Show only url:</div>
     <div class="value-wrapper">
       <div class="value-item"
