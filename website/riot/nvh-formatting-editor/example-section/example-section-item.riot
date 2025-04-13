@@ -293,10 +293,24 @@
           if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc") {
             continue;
           }
-          if (option === "border-radius" || option === "padding" || option === "margin" || option === "width" || option === "height" || option === "max-width" || option === "max-height") {
+          if (option === "border-radius" || option === "padding" || option === "margin" || option === "max-width" || option === "max-height" || option === "font-size") {
             value = value + "px";
           } else if (option === "box-shadow") {
             value = value + "px " + value + "px " + value + "px " + "grey";
+          } else if (option === "text-decoration") {
+            let array = styles["text-decoration"];
+            if (array === undefined) {
+              continue;
+            }
+            let values = "";
+            for (let feature of array) {
+              values = values + " " + feature;
+            }
+            value = values;
+          } else if (option === "border") {
+            let borderColor = styles["border-color"] === undefined ? "black" : styles["border-color"];
+            let borderWidth = styles["border-width"] === undefined ? "1px" : styles["border-width"] + "px";
+            value = borderWidth + " " + value + " " + borderColor;
           }
           result_css += option + ":" + value + ";";
         }
