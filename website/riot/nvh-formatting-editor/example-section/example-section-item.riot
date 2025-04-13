@@ -24,6 +24,11 @@
             {child.value}
           </pre>
         </div>
+        <example-bool-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "bool"}
+          value={this.state.value}
+          styles={this.props.schema.styles}
+          get-css-styles={getCssStyles}
+        />
         <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
           value={this.state.value}
           styles={this.props.schema.styles}

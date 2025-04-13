@@ -15,12 +15,13 @@
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen></iframe>
     <div class="example-video-item-url">
-      <i if={state.showUrl && !state.makeUrlClickable && state.showIcon} class="small material-icons">videocam</i>
-      <a if={state.showUrl && state.makeUrlClickable && state.showIcon} href={props.value}>
-        <i class="small material-icons">videocam</i>
+      <a if={state.showUrl && state.showIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
       </a>
-        <div if={state.showUrl && !state.makeUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</div>
-        <a if={state.showUrl && state.makeUrlClickable} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+      <a if={state.showUrl && state.showIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+      </a>
+      <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     <div>
   </div>
 
@@ -29,11 +30,12 @@
       state: {
         showPlayer: null,
         showUrl: null,
-        makeUrlClickable: null,
         replaceUrlWithText: null,
         textReplacementForUrl: null,
         textAsUrlTooltip: null,
         showIcon: null,
+        iconItem: null,
+        unicodeIcon: null,
       },
 
       onBeforeMount() {
@@ -43,11 +45,12 @@
         this.state = {
           showPlayer: this.props.styles["show-player"],
           showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          makeUrlClickable: this.props.styles["make-url-clickable"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
           showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         };
       },
 
@@ -58,11 +61,12 @@
         this.state = {
           showPlayer: this.props.styles["show-player"],
           showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          makeUrlClickable: this.props.styles["make-url-clickable"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
           showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         };
       },
 
@@ -84,6 +88,7 @@
     }
     .example-video-item-url {
       display: flex;
+      align-items: center;
     }
   </style>
 </example-video-item>
