@@ -3,7 +3,10 @@
     <audio if={state.showPlayer} controls src={props.value} style={props.getCssStyles(props.styles)}></audio>
     <div class="example-audio-item-url">
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <i class="small material-icons">audiotrack</i>
+        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+      </a>
+      <a if={state.showUrl && state.showIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
@@ -18,6 +21,8 @@
         textReplacementForUrl: null,
         textAsUrlTooltip: null,
         showIcon: null,
+        iconItem: null,
+        unicodeIcon: null,
       },
 
       onBeforeMount() {
@@ -28,6 +33,8 @@
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
           showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         }
       },
 
@@ -39,6 +46,8 @@
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
           showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         }
       }
     }
@@ -51,6 +60,7 @@
     }
     .example-audio-item-url {
       display: flex;
+      align-items: center;
     }
   </style>
 </example-audio-item>

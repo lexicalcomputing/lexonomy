@@ -680,6 +680,38 @@ class NVHFormattingEditorClass {
     let newBlue = Math.round(blue + (255 - blue) * 0.7).toString(16);
     return "#" + newRed + newGreen + newBlue;
   }
+
+  getIcon(iconItem) {
+    switch (iconItem) {
+      case "link":
+        return "🔗";
+      case "speaker":
+        return "🔊";
+      case "load-speaker":
+        return "📢";
+      case "music-note":
+        return "♫";
+      case "camera":
+        return "📹";
+      case "film-frames":
+        return "🎞";
+      case "film-projector":
+        return "📽";
+      case "movie-camera":
+        return "🎥";
+      case "framed-picture":
+        return "🖼";
+      default:
+        return ""
+    }
+  }
+  getUnicodeIcon(unicodeIcon) {
+    if (unicodeIcon) {
+      return unicodeIcon;
+    } else {
+      return "";
+    }
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();

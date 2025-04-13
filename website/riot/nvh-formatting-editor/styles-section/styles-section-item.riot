@@ -245,7 +245,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && getStyleOptionValue("show-url") && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
+  <div if={this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
     <div class="label">Show url as icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -285,6 +285,62 @@
           onclick={onChangeStyle.bind(this, "show-icon", getStyleOptionValue("show-icon") === null ? true : !getStyleOptionValue("show-icon"))}
           style={getStyleOptionValue("show-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
+    </div>
+  </div>
+  <div if={(this.state.type === "audio" || this.state.type === "video") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-only-url") && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+    <div class="label">Choose icon:</div>
+    <div class="value-wrapper" style="width: 200px; flex-wrap: wrap;">
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "link")}
+          style={getStyleOptionValue("icon-item") === "link" ? `background-color:var(--color-grey-normal);` : ""}>
+          🔗
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "speaker")}
+          style={getStyleOptionValue("icon-item") === "speaker" ? `background-color:var(--color-grey-normal);` : ""}>
+          🔊
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "load-speaker")}
+          style={getStyleOptionValue("icon-item") === "load-speaker" ? `background-color:var(--color-grey-normal);` : ""}>
+          📢
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "music-note")}
+          style={getStyleOptionValue("icon-item") === "music-note" ? `background-color:var(--color-grey-normal);` : ""}>
+          ♫
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "camera")}
+          style={getStyleOptionValue("icon-item") === "camera" ? `background-color:var(--color-grey-normal);` : ""}>
+          📹
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "film-frames")}
+          style={getStyleOptionValue("icon-item") === "film-frames" ? `background-color:var(--color-grey-normal);` : ""}>
+          🎞
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "film-projector")}
+          style={getStyleOptionValue("icon-item") === "film-projector" ? `background-color:var(--color-grey-normal);` : ""}>
+          📽
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "movie-camera")}
+          style={getStyleOptionValue("icon-item") === "movie-camera" ? `background-color:var(--color-grey-normal);` : ""}>
+          🎥
+      </div>
+      <div class="value-item value-item-icon"
+          onclick={onChangeStyle.bind(this, "icon-item", "framed-picture")}
+          style={getStyleOptionValue("icon-item") === "framed-picture" ? `background-color:var(--color-grey-normal);` : ""}>
+          🖼
+      </div>
+    </div>
+  </div>
+  <div if={(this.state.type === "audio" || this.state.type === "video") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-only-url") && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+    <div class="label">Use unicode character as an icon:</div>
+    <div class="value-wrapper">
+      <input type="text" style="height: 30px;" value={getStyleOptionValue("unicode-icon") === null ? "" : getStyleOptionValue("unicode-icon")} onchange={onChangeStyle.bind(this, "unicode-icon", null)}>
     </div>
   </div>
   <div if={this.state.type === "audio"} class="styles-section-item-wrapper">
@@ -383,6 +439,12 @@
           } else {
             delete this.state.styles[option];
           }
+        } else if (option === "icon-item") {
+          if (this.state.styles[option] === undefined || this.state.styles[option] !== value) {
+            this.state.styles[option] = value;
+          } else {
+            delete this.state.styles[option];
+          }
         } else {
           this.state.styles[option] = value;
         }
@@ -429,6 +491,12 @@
     .value-item:hover {
       cursor: pointer;
       transform: scale(1.05);
+    }
+
+    .value-item-icon {
+      height: 35px;
+      width: 35px;
+      font-size: 28px;
     }
 
     #select-indentation-bulleting {

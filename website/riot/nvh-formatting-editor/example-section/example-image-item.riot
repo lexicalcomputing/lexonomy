@@ -4,10 +4,15 @@
     <a if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && state.makeImageClickable} href={props.value}>
       <img src={props.value} style={props.getCssStyles(this.props.styles)}/>
     </a>
-    <a if={state.showUrl && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)} href={props.value}>{props.value}</a>
-    <a if={state.showUrl && state.showOnlyUrl && state.showUrlAsIcon} href={props.value}>
-      <i class="small material-icons">image</i>
-    </a>
+    <div class="example-image-item-icons">
+      <a if={state.showUrl && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)} href={props.value}>{props.value}</a>
+      <a if={state.showUrl && state.showOnlyUrl && state.showUrlAsIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+      </a>
+      <a if={state.showUrl && state.showOnlyUrl && state.showUrlAsIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+      </a>
+    </div>
   </div>
 
   <script>
@@ -17,6 +22,8 @@
         makeImageClickable: null,
         showOnlyUrl: null,
         showUrlAsIcon: null,
+        iconItem: null,
+        unicodeIcon: null,
       },
 
       onBeforeMount() {
@@ -26,6 +33,8 @@
           makeImageClickable: this.props.styles["make-image-clickable"],
           showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         }
       },
       onBeforeUpdate() {
@@ -34,6 +43,8 @@
           makeImageClickable: this.props.styles["make-image-clickable"],
           showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         }
       },
 
@@ -52,6 +63,10 @@
     .example-image-item-wrapper {
       display: flex;
       flex-direction: column;
+    }
+    .example-image-item-icons {
+      display: flex;
+      align-items: center;
     }
   </style>
 </example-image-item>

@@ -16,7 +16,10 @@
           allowfullscreen></iframe>
     <div class="example-video-item-url">
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <i class="small material-icons">videocam</i>
+        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+      </a>
+      <a if={state.showUrl && state.showIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     <div>
@@ -31,6 +34,8 @@
         textReplacementForUrl: null,
         textAsUrlTooltip: null,
         showIcon: null,
+        iconItem: null,
+        unicodeIcon: null,
       },
 
       onBeforeMount() {
@@ -44,6 +49,8 @@
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
           showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         };
       },
 
@@ -58,6 +65,8 @@
           textReplacementForUrl: this.props.styles["text-replacement-for-url"],
           textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
           showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
         };
       },
 
@@ -79,6 +88,7 @@
     }
     .example-video-item-url {
       display: flex;
+      align-items: center;
     }
   </style>
 </example-video-item>
