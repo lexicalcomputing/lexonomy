@@ -994,6 +994,12 @@ def getDictsByUser(email):
             for user_email in configs["users"]:
                 if configs["users"][user_email]["canEdit"] and configs["users"][user_email]["canConfig"]:
                     info["owners"].append(user_email)
+            # dict stats
+            if configs['progress_tracking'].get('tracked', False):
+                info['stats'] = {}
+                c_stats = dictDB.execute('SELECT * FROM stats')
+                for r_stats in c_stats.fetchall():
+                    info['stats'][r_stats['id']] = r_stats['value']
         except:
             info["broken"] = True
         dicts.append(info)
