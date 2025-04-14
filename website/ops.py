@@ -1675,7 +1675,7 @@ def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howman
         sql1 = "SELECT s.txt, min(s.level) AS level, e.id, e.sortkey, e.title" + entryNVH + " FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE s.txt LIKE ? GROUP BY e.id ORDER BY s.level, e.sortkey %s %s LIMIT ? OFFSET ?" % (collate, orderby)
         params1 = (searchtext, howmany, offset)
         sql2 = "SELECT COUNT(distinct s.entry_id) AS total FROM searchables AS s INNER JOIN entries AS e ON e.id=s.entry_id WHERE s.txt LIKE ?"
-        params2 = (searchtext)
+        params2 = (searchtext,)
     c1 = dictDB.execute(sql1, params1)
     entries = []
     for r1 in c1.fetchall():
