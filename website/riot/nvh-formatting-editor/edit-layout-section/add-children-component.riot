@@ -1,5 +1,7 @@
 <add-children-component>
-    <div if={props.canHaveAdders && props.state.content.fullName !== ""} class="add-children-component-wrapper" style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};">
+    <div if={props.canHaveAdders && props.state.content.fullName !== "" && getChildrenList(null, props.state.content.fullName).length !== 0}
+        class="add-children-component-wrapper"
+        style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};">
       <div class="add-children-component-label">Add:</div>
       <template each={child in getChildrenList(2, props.state.content.fullName)}>
         <div class="add-children-component-child"
@@ -35,6 +37,7 @@
         return [];
       }
       let children = window.nvhStore.getElementConfig(fullName).children;
+      children = children.filter(child => !window.nvhFormattingEditor.isMarkupType(child.path)); // exclude markup type elements
       if (count === null) {
         return children;
       }
@@ -79,6 +82,7 @@
   .add-children-component-dropdown-icon {
     border: 1px solid black;
     background-color: white;
+    cursor: pointer;
   }
   .add-children-component-dropdown-child {
     cursor: pointer;
