@@ -88,6 +88,7 @@ import example_bool_item from "./riot/nvh-formatting-editor/example-section/exam
 import example_image_item from "./riot/nvh-formatting-editor/example-section/example-image-item.riot"
 import example_section from "./riot/nvh-formatting-editor/example-section/example-section.riot"
 import example_section_item from "./riot/nvh-formatting-editor/example-section/example-section-item.riot"
+import example_url_item from "./riot/nvh-formatting-editor/example-section/example-url-item.riot"
 import example_video_item from "./riot/nvh-formatting-editor/example-section/example-video-item.riot"
 import feedback_dialog from "./riot/feedback-dialog.riot"
 import forgot from "./riot/forgot.riot"
@@ -203,6 +204,7 @@ riot_register("example-bool-item", example_bool_item)
 riot_register("example-image-item", example_image_item)
 riot_register("example-section", example_section)
 riot_register("example-section-item", example_section_item)
+riot_register("example-url-item", example_url_item)
 riot_register("example-video-item", example_video_item)
 riot_register("feedback-dialog", feedback_dialog)
 riot_register("forgot", forgot)

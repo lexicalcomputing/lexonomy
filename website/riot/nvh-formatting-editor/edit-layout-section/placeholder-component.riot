@@ -78,7 +78,8 @@
           if (data.type === "choice-item") {
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-            window.nvhFormattingEditor.global.selectedPlaceholder = null;
+            // Remove following line during selected placeholder refactor
+            //window.nvhFormattingEditor.global.selectedPlaceholder = null;
             window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
             if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
               /*Can not drop label to be a wrapper, if it can not have children*/
@@ -119,6 +120,7 @@
             state.content.areaFullName = data.fullName;
             state.content.color = data.color;
             state.content.canHaveChildren = data.children.length !== 0;
+            state.styles = {};
 
             let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
             if (markupChildren.length !== 0) {
@@ -156,7 +158,8 @@
             window.nvhFormattingEditor.global.dropInfo.index = index;
             window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
             window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-            window.nvhFormattingEditor.global.selectedPlaceholder = null;
+            // Remove following line during selected placeholder refactor
+            //window.nvhFormattingEditor.global.selectedPlaceholder = null;
             window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
             window.nvhFormattingEditor.global.canBeDropped = false;
           }

@@ -7,23 +7,29 @@
               {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
-              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}">
+              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
+        style={props.schema.children.length !== 0 ? getCssStyles(this.props.schema.styles) : ""}>
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string") && state.valueStylePairs === null}
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list" || this.state.type === "empty") && state.valueStylePairs === null}
             class="element-holder-content"
             style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
           {this.state.value}
         </div>
         <!-- TODO: Currently markup supports only text and in type, in future implement for all types-->
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string") && state.valueStylePairs !== null}
+        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list" || this.state.type === "empty") && state.valueStylePairs !== null}
             style="display: flex;">
           <pre each={child in this.state.valueStylePairs}
               style={getCssStyles(child.styles)}>
             {child.value}
           </pre>
         </div>
+        <example-url-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "url"}
+          value={this.state.value}
+          styles={this.props.schema.styles}
+          get-css-styles={getCssStyles}
+        />
         <example-bool-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "bool"}
           value={this.state.value}
           styles={this.props.schema.styles}
@@ -295,7 +301,7 @@
           if (value === null || value === undefined) {
             continue;
           }
-          if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc") {
+          if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc" || option === "border-color" || option === "border-width") {
             continue;
           }
           if (option === "border-radius" || option === "padding" || option === "margin" || option === "max-width" || option === "max-height" || option === "font-size") {

@@ -1,5 +1,7 @@
 <add-children-component>
-    <div if={props.canHaveAdders && props.state.content.fullName !== ""} class="add-children-component-wrapper" style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};">
+    <div if={props.canHaveAdders && props.state.content.fullName !== "" && getChildrenList(null, props.state.content.fullName).length !== 0}
+        class="add-children-component-wrapper"
+        style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};">
       <div class="add-children-component-label">Add:</div>
       <template each={child in getChildrenList(2, props.state.content.fullName)}>
         <div class="add-children-component-child"
@@ -10,6 +12,7 @@
       </template>
       <div>
         <i class="material-icons tiny add-children-component-dropdown-icon"
+          style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};"
           onclick={() => this.update({showDropdown: !this.state.showDropdown})}>
           arrow_drop_down
         </i>
@@ -35,6 +38,7 @@
         return [];
       }
       let children = window.nvhStore.getElementConfig(fullName).children;
+      children = children.filter(child => !window.nvhFormattingEditor.isMarkupType(child.path)); // exclude markup type elements
       if (count === null) {
         return children;
       }
@@ -60,6 +64,7 @@
   }
   .add-children-component-label {
     padding-left: 7px;
+    user-select: none;
   }
   .add-children-component-child {
     text-shadow:
@@ -68,6 +73,7 @@
       -1px 1px 0 white,
       -1px -1px 0 white;
     cursor: pointer;
+    user-select: none;
   }
   .add-children-component-dropdown {
     position: absolute;
@@ -79,9 +85,13 @@
   .add-children-component-dropdown-icon {
     border: 1px solid black;
     background-color: white;
+    cursor: pointer;
+    margin-top: 2px;
+    user-select: none;
   }
   .add-children-component-dropdown-child {
     cursor: pointer;
+    user-select: none;
   }
   .add-children-component-dropdown-child:hover {
     background-color: var(--color-grey-light);

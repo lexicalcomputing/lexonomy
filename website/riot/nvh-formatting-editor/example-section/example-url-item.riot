@@ -1,0 +1,63 @@
+<example-url-item>
+  <div class="example-url-item-wrapper">
+    <div class="example-url-item-url" style={props.getCssStyles(props.styles)}>
+      <a if={state.showUrl && state.showIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+      </a>
+      <a if={state.showUrl && state.showIcon} href={props.value}>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+      </a>
+      <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+    </div>
+  </div>
+  
+  <script>
+    export default {
+      state: {
+        showUrl: null,
+        replaceUrlWithText: null,
+        textReplacementForUrl: null,
+        textAsUrlTooltip: null,
+        showIcon: null,
+        iconItem: null,
+        unicodeIcon: null,
+      },
+
+      onBeforeMount() {
+        this.state = {
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          replaceUrlWithText: this.props.styles["replace-url-with-text"],
+          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
+          showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
+        }
+      },
+
+      onBeforeUpdate() {
+        this.state = {
+          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
+          replaceUrlWithText: this.props.styles["replace-url-with-text"],
+          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
+          showIcon: this.props.styles["show-icon"],
+          iconItem: this.props.styles["icon-item"],
+          unicodeIcon: this.props.styles["unicode-icon"],
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    .example-url-item-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+    .example-url-item-url {
+      display: flex;
+      align-items: center;
+    }
+  </style>
+
+</example-url-item>
