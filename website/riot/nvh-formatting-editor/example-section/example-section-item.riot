@@ -7,7 +7,8 @@
               {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
-              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}">
+              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
+        style={props.schema.children.length !== 0 ? getCssStyles(this.props.schema.styles) : ""}>
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
