@@ -11,6 +11,11 @@
                           state={props.state}
                           canHaveAdders={props.canHaveAdders}
                           isBaseLevel={props.isBaseLevel}/>
+  <add-children-component getBackgroundColor={getBackgroundColor}
+                          class="add-children-component"
+                          state={props.state}
+                          canHaveAdders={props.canHaveAdders}>
+  </add-children-component>
   <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}
               {props.state.content.fullName === "" ? "placeholder-inside-wrapper-no-content" : ""}
               {props.state.content.fullName === "" && props.state.children.length !== 0 ? "placeholder-inside-wrapper-group" : ""}"
@@ -345,6 +350,9 @@
     .elementholder {
       width: fit-content;
       align-self: flex-start;
+    }
+    .add-children-component {
+      width: 100%;
     }
 
 

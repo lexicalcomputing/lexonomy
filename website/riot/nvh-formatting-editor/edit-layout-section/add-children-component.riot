@@ -1,0 +1,91 @@
+<add-children-component>
+    <div if={props.canHaveAdders && props.state.content.fullName !== ""} class="add-children-component-wrapper" style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};">
+      <div class="add-children-component-label">Add:</div>
+      <template each={child in getChildrenList(2, props.state.content.fullName)}>
+        <div class="add-children-component-child"
+            style="color: {window.nvhStore.getElementColor(child.path)};"
+            onclick={() => window.nvhFormattingEditor.addElement(props.state.children.length, null, props.state, "row", getLabel(child.name, child.path))}>
+          {child.name}
+        </div>
+      </template>
+      <div>
+        <i class="material-icons tiny add-children-component-dropdown-icon"
+          onclick={() => this.update({showDropdown: !this.state.showDropdown})}>
+          arrow_drop_down
+        </i>
+        <div if={this.state.showDropdown} class="add-children-component-dropdown">
+          <template each={child in getChildrenList(null, props.state.content.fullName)}>
+            <div style="color: {window.nvhStore.getElementColor(child.path)};"
+                class="add-children-component-dropdown-child"
+                onclick={() => window.nvhFormattingEditor.addElement(props.state.children.length, null, props.state, "row", getLabel(child.name, child.path))}> 
+              {child.name}
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+<script>
+  export default {
+    state: {
+      showDropdown: false,
+    },
+    getChildrenList(count, fullName) {
+      if (fullName === "") {
+        return [];
+      }
+      let children = window.nvhStore.getElementConfig(fullName).children;
+      if (count === null) {
+        return children;
+      }
+      return children.slice(0, count);
+    },
+    getLabel(name, fullName) {
+      return {
+        name: name,
+        fullName: fullName,
+        area: name,
+        areaFullName: fullName,
+        color: window.nvhStore.getElementColor(fullName),
+      };
+    }
+  }
+</script>
+
+<style>
+  .add-children-component-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 5px;
+  }
+  .add-children-component-label {
+    padding-left: 7px;
+  }
+  .add-children-component-child {
+    text-shadow:
+      1px -1px 0 white,
+      1px 1px 0 white,
+      -1px 1px 0 white,
+      -1px -1px 0 white;
+    cursor: pointer;
+  }
+  .add-children-component-dropdown {
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    border: 2px solid black;
+    padding: 0 5px;
+  }
+  .add-children-component-dropdown-icon {
+    border: 1px solid black;
+    background-color: white;
+  }
+  .add-children-component-dropdown-child {
+    cursor: pointer;
+  }
+  .add-children-component-dropdown-child:hover {
+    background-color: var(--color-grey-light);
+  }
+</style>
+
+</add-children-component>
