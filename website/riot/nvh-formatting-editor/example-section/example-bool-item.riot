@@ -1,0 +1,32 @@
+<example-bool-item>
+  <div class="example-bool-item-wrapper">
+    <div style={props.getCssStyles(this.props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</div>
+  </div>
+
+<script>
+  export default {
+    state: {
+      yesValueText: null,
+      noValueText: null,
+    },
+
+    onBeforeMount() {
+      console.log("value", this.props.value);
+      this.state = {
+        yesValueText: this.props.styles["yes-value-text"],
+        noValueText: this.props.styles["no-value-text"],
+      }
+    },
+    onBeforeUpdate() {
+      this.state = {
+        yesValueText: this.props.styles["yes-value-text"],
+        noValueText: this.props.styles["no-value-text"],
+      }
+    }
+  }
+</script>
+
+<style>
+</style>
+
+</example-bool-item>

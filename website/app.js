@@ -83,6 +83,7 @@ import elements_choice_section from "./riot/nvh-formatting-editor/elements-choic
 import entry_dropdown from "./riot/entry-dropdown.riot"
 import entry_list from "./riot/entry-list.riot"
 import example_audio_item from "./riot/nvh-formatting-editor/example-section/example-audio-item.riot"
+import example_bool_item from "./riot/nvh-formatting-editor/example-section/example-bool-item.riot"
 import example_image_item from "./riot/nvh-formatting-editor/example-section/example-image-item.riot"
 import example_section from "./riot/nvh-formatting-editor/example-section/example-section.riot"
 import example_section_item from "./riot/nvh-formatting-editor/example-section/example-section-item.riot"
@@ -196,6 +197,7 @@ riot_register("elements-choice-section", elements_choice_section)
 riot_register("entry-dropdown", entry_dropdown)
 riot_register("entry-list", entry_list)
 riot_register("example-audio-item", example_audio_item)
+riot_register("example-bool-item", example_bool_item)
 riot_register("example-image-item", example_image_item)
 riot_register("example-section", example_section)
 riot_register("example-section-item", example_section_item)

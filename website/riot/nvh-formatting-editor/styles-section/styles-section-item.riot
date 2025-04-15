@@ -361,6 +361,18 @@
       </div>
     </div>
   </div>
+  <div if={(this.state.type === "bool")} class="label">Set text (value = YES):</div>
+  <div if={(this.state.type === "bool")} class="styles-section-item-wrapper">
+    <div class="value-wrapper">
+      <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("yes-value-text") === null ? "" : getStyleOptionValue("yes-value-text")} onchange={onChangeStyle.bind(this, "yes-value-text", null)}></textarea>
+    </div>
+  </div>
+  <div if={(this.state.type === "bool")} class="label">Set text (value = NO):</div>
+  <div if={(this.state.type === "bool")} class="styles-section-item-wrapper">
+    <div class="value-wrapper">
+      <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("no-value-text") === null ? "" : getStyleOptionValue("no-value-text")} onchange={onChangeStyle.bind(this, "no-value-text", null)}></textarea>
+    </div>
+  </div>
 
   <script>
     export default {
