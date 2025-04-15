@@ -402,7 +402,6 @@ class NVHFormattingEditorClass {
     return true;
   }
 
-  /*TODO: it seems like label is here always null, figure out why*/
   addElement(index, component, state, editingMode, label) {
     let newElement = {
       status: {
@@ -413,12 +412,12 @@ class NVHFormattingEditorClass {
       orientation: editingMode,
       type: "placeholder",
       content: {
-        name: label == null ? "" : label.name,
-        fullName: label == null ? "" : label.fullName,
-        area: label == null ? "" : label.area,
-        areaFullName: label == null ? "" : label.areaFullName,
-        color: label == null ? "": label.color,
-        canHaveChildren: true, /*NOTE: really always true ?*/
+        name: label === null ? "" : label.name,
+        fullName: label === null ? "" : label.fullName,
+        area: label === null ? "" : label.area,
+        areaFullName: label === null ? "" : label.areaFullName,
+        color: label === null ? "": label.color,
+        canHaveChildren: label === null ? true : window.store.schema.getElementByPath(label.fullName).children.length !== 0
       },
       styles: {},
       markupStyles: [],

@@ -32,6 +32,7 @@ import './app.styles.scss'
 
 
 import action_panel from "./riot/nvh-formatting-editor/edit-layout-section/action-panel.riot"
+import add_children_component from "./riot/nvh-formatting-editor/edit-layout-section/add-children-component.riot"
 import adder_component from "./riot/nvh-formatting-editor/edit-layout-section/adder-component.riot"
 import admin_dicts from "./riot/admin-dicts.riot"
 import admin_users from "./riot/admin-users.riot"
@@ -146,6 +147,7 @@ import user_dropdown from "./riot/user-dropdown.riot"
 import user_profile from "./riot/user-profile.riot"
 import welcome from "./riot/welcome.riot"
 riot_register("action-panel", action_panel)
+riot_register("add-children-component", add_children_component)
 riot_register("adder-component", adder_component)
 riot_register("admin-dicts", admin_dicts)
 riot_register("admin-users", admin_users)
