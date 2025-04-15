@@ -82,22 +82,27 @@
     </div>
   </div>
   <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
-    <div class="label">Text weight:</div>
+    <div class="label">Text format:</div>
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "font-weight", "bold")}
           style={getStyleOptionValue("font-weight") === "bold" ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="tiny material-icons">format_bold</i>
       </div>
-    </div>
-  </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
-    <div class="label">Text slant:</div>
-    <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "font-style", "italic")}
           style={getStyleOptionValue("font-style") === "italic" ? `background-color:var(--color-grey-normal);` : ""}>
           <i class="tiny material-icons">format_italic</i>
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "text-decoration", "underline")}
+          style={getStyleOptionValue("text-decoration") !== null && getStyleOptionValue("text-decoration").includes("underline") ? `background-color:var(--color-grey-normal);` : ""}>
+          <i class="tiny material-icons">format_underlined</i>
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "text-decoration", "line-through")}
+          style={getStyleOptionValue("text-decoration") !== null && getStyleOptionValue("text-decoration").includes("line-through") ? `background-color:var(--color-grey-normal);` : ""}>
+          <i class="tiny material-icons">format_strikethrough</i>
       </div>
     </div>
   </div>
@@ -116,21 +121,6 @@
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "serif")}>serif</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "monospace")}>monospace</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "cursive")}>cursive</div>
-      </div>
-    </div>
-  </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
-    <div class="label">Text decoration:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "text-decoration", "underline")}
-          style={getStyleOptionValue("text-decoration") !== null && getStyleOptionValue("text-decoration").includes("underline") ? `background-color:var(--color-grey-normal);` : ""}>
-          <i class="tiny material-icons">format_underlined</i>
-      </div>
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "text-decoration", "line-through")}
-          style={getStyleOptionValue("text-decoration") !== null && getStyleOptionValue("text-decoration").includes("line-through") ? `background-color:var(--color-grey-normal);` : ""}>
-          <i class="tiny material-icons">format_strikethrough</i>
       </div>
     </div>
   </div>
