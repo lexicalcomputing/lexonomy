@@ -33,17 +33,17 @@
       <div onclick={onSectionClick.bind(this, "showStyle")}
           title="Style panel"
           class="formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
-        <i class="small material-icons">format_paint</i>
+        <i class="small material-icons">palette</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showEditing")}
           title="Layout panel"
           class="formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
-        <i class="small material-icons">edit</i>
+        <i class="small material-icons">view_compact</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showExample")}
           title="Preview panel"
           class="formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
-        <i class="small material-icons">view_compact</i>
+        <i class="small material-icons">visibility</i>
       </div>
     </div>
     <div id="save-button-wrapper"
@@ -75,7 +75,7 @@
         id="style-container"
         class="formatting-page-container">
       <div class="header-box">
-        <i class="small material-icons">format_paint</i>
+        <i class="small material-icons">palette</i>
         <h2>Style</h2>
       </div>
       <div class="style-section-wrapper">
@@ -87,7 +87,7 @@
         class="formatting-page-container">
       <div class="editing-header">
         <div class="header-box">
-          <i class="small material-icons">edit</i>
+          <i class="small material-icons">view_compact</i>
           <h2>Editing</h2>
           <div id="buttons-box">
             <div id="undo-icon-wrapper"
@@ -146,7 +146,7 @@
         id="example-container"
         class="formatting-page-container">
       <div class="header-box">
-        <i class="small material-icons">view_compact</i>
+        <i class="small material-icons">visibility</i>
         <h2>Example</h2>
         <div id="export-pdf"
             title="Export all entries of dictionary to PDF"
