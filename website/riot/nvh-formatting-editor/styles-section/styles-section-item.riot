@@ -394,7 +394,7 @@
 
       onBeforeMount() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && this.state.selectedPlaceholder.children.length === 0) {
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "") {
           this.state.type = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName).type;
         }
         if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
@@ -404,7 +404,7 @@
       },
       onBeforeUpdate() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && this.state.selectedPlaceholder.children.length === 0) {
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "") {
           this.state.type = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName).type;
         } else {
           this.state.type = null;
