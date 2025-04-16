@@ -1,6 +1,7 @@
 class NVHFormattingEditorClass {
   constructor() {
     this.timeout = null,
+    this.dropdownTimeout = null,
     this.formattingEditorComponent = null,
     this.elementsSchema = null,
     this.global = this.initializeGlobalAttributes(),
