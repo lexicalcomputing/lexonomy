@@ -12,6 +12,7 @@
       </template>
       <div>
         <i class="material-icons tiny add-children-component-dropdown-icon"
+          style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};"
           onclick={() => this.update({showDropdown: !this.state.showDropdown})}>
           arrow_drop_down
         </i>
@@ -83,6 +84,7 @@
     border: 1px solid black;
     background-color: white;
     cursor: pointer;
+    margin-top: 2px;
   }
   .add-children-component-dropdown-child {
     cursor: pointer;
