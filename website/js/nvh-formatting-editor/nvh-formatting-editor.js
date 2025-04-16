@@ -117,7 +117,7 @@ class NVHFormattingEditorClass {
 
   getEntryStructure(entry, fullName) {
     let objectHolder = {
-      fullName: fullName,
+      path: fullName,
       value: "",
       children: []
     };
@@ -137,8 +137,8 @@ class NVHFormattingEditorClass {
   }
 
   getEntryHTML(schema, entry) {
-    if (schema.children.length === 0 && schema.content.fullName === entry.fullName) {
-      let entryStyle = entry.fullName === "entry" ? " color: red; font-weight: bold; font-size: 30px;" : ""
+    if (schema.children.length === 0 && schema.content.fullName === entry.path) {
+      let entryStyle = entry.path === "entry" ? " color: red; font-weight: bold; font-size: 30px;" : ""
       return `<div style="padding: 3px;${entryStyle}">${entry.value}</div>`;
     }
 
@@ -151,7 +151,7 @@ class NVHFormattingEditorClass {
       } else {
         stringHTML += `<div style="display: flex; flex-direction: ${childSchema.orientation}; flex-wrap: wrap;">`;
         for (let childEntry of this.getEntryChildren(entry, [])) {
-          if (childSchema.content.fullName === childEntry.fullName) {
+          if (childSchema.content.fullName === childEntry.path) {
             stringHTML += this.getEntryHTML(childSchema, childEntry);
           }
         }

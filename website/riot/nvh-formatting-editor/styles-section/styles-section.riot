@@ -34,6 +34,7 @@
       },
 
       getStyleOptions() {
+        // FIX if markupStyles is not iterable
         let result = [...window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
         let name = window.nvhFormattingEditor.global.selectedPlaceholder.content.name;
         let fullName = window.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
