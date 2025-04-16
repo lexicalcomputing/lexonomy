@@ -1,27 +1,40 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div-layout scrollable-div-layout-{window.nvhFormattingEditor.global.activeLayout}">
-      <example-section-item
+      <example-section-item if={this.state.exampleEntry !== null}
         each={child in window.nvhFormattingEditor.currentLayout.schema.children}
         onclick={onExampleSectionItemClick}
         schema={child}
-        entry={this.exampleEntry}
+        entry={this.state.exampleEntry}
         isFormatting={true}/>
     <div>
   </div>
 
   <script>
-    /*Example entry for testing purposes*/
     export default {
+      state: {
+        exampleEntry: null
+      },
+
+      async getEntry() {
+        let entriesList = await window.store.loadEntryList();
+        window.store.changeEntryId(entriesList.entries[0].id);
+        return await window.store.loadEntry();
+      },
+
       onBeforeMount() {
-        // TODO: Use this if necessary
-        // window.nvhFormattingEditor.applyStylesFromElements();
+        this.getEntry().then(res => {
+          let entryObject = Object.entries(JSON.parse(res.json).entry[0]);
+          this.state.exampleEntry = window.nvhFormattingEditor.getEntryStructure(entryObject, "entry");
+          this.update();
+        });
       },
 
       onExampleSectionItemClick() {
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
 
+      /*Example entry for testing purposes*/
       exampleEntry: {
         path: "entry",
         value: "car",
