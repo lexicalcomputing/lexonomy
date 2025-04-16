@@ -258,6 +258,10 @@
         return result;
       },
       getStyleToFullName(fullName) {
+        if (!Array.isArray(this.props.schema.markupStyles)) {
+          console.log("this.props.schema.markupStyles is not iterable, this.props.schema.markupStyles = '", this.props.schema.markupStyles, "'.");
+          return {};
+        }
         for (let child of this.props.schema.markupStyles) {
           if (child.fullName === fullName) {
             return child.styles;
