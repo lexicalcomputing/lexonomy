@@ -1,13 +1,13 @@
 <example-url-item>
   <div class="example-url-item-wrapper">
     <div class="example-url-item-url" style={props.getCssStyles(props.styles)}>
-      <a if={state.showUrl && state.showIcon} href={props.value}>
+      <a if={state.showUrl && state.showIcon} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>
         <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
       </a>
-      <a if={state.showUrl && state.showIcon} href={props.value}>
+      <a if={state.showUrl && state.showIcon} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>
         <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
-      <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+      <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
   </div>
   
@@ -21,6 +21,7 @@
         showIcon: null,
         iconItem: null,
         unicodeIcon: null,
+        openUrlNewTab: null,
       },
 
       onBeforeMount() {
@@ -32,6 +33,7 @@
           showIcon: this.props.styles["show-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
+          openUrlNewTab: this.props.styles["open-url-new-tab"]
         }
       },
 
@@ -44,6 +46,7 @@
           showIcon: this.props.styles["show-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
+          openUrlNewTab: this.props.styles["open-url-new-tab"]
         }
       }
     }

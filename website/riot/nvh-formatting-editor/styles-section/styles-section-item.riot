@@ -226,6 +226,15 @@
       <input type="number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
+  <div if={this.state.type === "url"} class="styles-section-item-wrapper">
+    <div class="label">Open url in new tab:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "open-url-new-tab", getStyleOptionValue("open-url-new-tab") === null ? true : !getStyleOptionValue("open-url-new-tab"))}
+          style={getStyleOptionValue("open-url-new-tab") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
   <div if={this.state.type === "image" || this.state.type === "video" || this.state.type === "audio" || this.state.type === "url"} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
