@@ -2,7 +2,8 @@
   <div class="content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
       style="color: {getColor()};
             background-color: {getBackgroundColor()};
-            border: 1px solid {props.isBaseLevel ? props.state.content.color : "transparent"};"
+            border: 1px solid {props.isBaseLevel ? props.state.content.color : "transparent"};"7
+      title={props.state.content.fullName}
       onmousedown={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? () => onMouseDown() : () => {}}>
     <div class="content-box-wrapper-2">
       <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-parent"}">

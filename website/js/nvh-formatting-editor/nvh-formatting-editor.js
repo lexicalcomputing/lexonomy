@@ -351,6 +351,7 @@ class NVHFormattingEditorClass {
       let currentIsActive = child.status.isActive;
       window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
       child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
+      child.status.isHovered = true;
       if (child.status.isActive && child.children.length === 0) {
         window.nvhFormattingEditor.global.selectedPlaceholderFullName = child.content.fullName;
       } else {
