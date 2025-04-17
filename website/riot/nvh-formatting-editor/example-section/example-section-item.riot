@@ -12,13 +12,13 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list" || this.state.type === "empty") && state.valueStylePairs === null}
+        <div if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs === null}
             class="element-holder-content"
             style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
           {this.state.value}
         </div>
         <!-- TODO: Currently markup supports only text and in type, in future implement for all types-->
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list" || this.state.type === "empty") && state.valueStylePairs !== null}
+        <div if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs !== null}
             style="display: flex;">
           <pre each={child in this.state.valueStylePairs}
               style={getCssStyles(child.styles)}>
@@ -202,6 +202,8 @@
           markupValueStylesPair = this.getMarkupValueStylePair();
           valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
           this.state.valueStylePairs = valueStylesPair;
+        } else if (this.state.type === "empty") {
+          this.state.value = this.props.schema.styles["text-value"];
         } else {
           let value = this.props.entry.value;
           this.state.value = leftPunc + value + rightPunc;
@@ -351,7 +353,7 @@
           case "semicolon":
             return option === "leftPunc" ? ";" : ";";
           default:
-            return ""
+            return punc;
         }
       },
     }
