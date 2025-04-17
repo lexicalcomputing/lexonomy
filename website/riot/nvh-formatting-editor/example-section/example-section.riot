@@ -1,7 +1,9 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div-layout scrollable-div-layout-{window.nvhFormattingEditor.global.activeLayout}">
-      <example-section-item if={this.state.exampleEntry !== null}
+      <div if={this.state.exampleEntry === undefined}>Preview is loading ...</div>
+      <div if={this.state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary.</div>
+      <example-section-item if={this.state.exampleEntry !== null && this.state.exampleEntry !== undefined}
         each={child in window.nvhFormattingEditor.currentLayout.schema.children}
         onclick={onExampleSectionItemClick}
         schema={child}
@@ -13,19 +15,26 @@
   <script>
     export default {
       state: {
-        exampleEntry: null
+        exampleEntry: undefined
       },
 
       async getEntry() {
         let entriesList = await window.store.loadEntryList();
+        if (entriesList.entries.length === 0) {
+          return null;
+        }
         window.store.changeEntryId(entriesList.entries[0].id);
         return await window.store.loadEntry();
       },
 
       onBeforeMount() {
         this.getEntry().then(res => {
-          let entryObject = Object.entries(JSON.parse(res.json).entry[0]);
-          this.state.exampleEntry = window.nvhFormattingEditor.getEntryStructure(entryObject, "entry");
+          if (res === null) {
+            this.state.exampleEntry = null;
+          } else {
+            let entryObject = Object.entries(JSON.parse(res.json).entry[0]);
+            this.state.exampleEntry = window.nvhFormattingEditor.getEntryStructure(entryObject, "entry");
+          }
           this.update();
         });
       },
@@ -34,7 +43,7 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
 
-      /*Example entry for testing purposes*/
+      /*Example entry for testing purposes (remove later)*/
       exampleEntry: {
         path: "entry",
         value: "car",
