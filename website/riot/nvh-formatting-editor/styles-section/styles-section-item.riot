@@ -133,40 +133,46 @@
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "roundBrackets")}
-          style={getStyleOptionValue("leftPunc") === "roundBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "(")}
+          style={getStyleOptionValue("leftPunc") === "(" ? `background-color:var(--color-grey-normal);` : ""}>
           &lpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "squareBrackets")}
-          style={getStyleOptionValue("leftPunc") === "squareBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "[")}
+          style={getStyleOptionValue("leftPunc") === "[" ? `background-color:var(--color-grey-normal);` : ""}>
           &lsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "curlyBrackets")}
-          style={getStyleOptionValue("leftPunc") === "curlyBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", "{")}
+          style={getStyleOptionValue("leftPunc") === "{" ? `background-color:var(--color-grey-normal);` : ""}>
           &lcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "colon")}
-          style={getStyleOptionValue("leftPunc") === "colon" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", ":")}
+          style={getStyleOptionValue("leftPunc") === ":" ? `background-color:var(--color-grey-normal);` : ""}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "comma")}
-          style={getStyleOptionValue("leftPunc") === "comma" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", ",")}
+          style={getStyleOptionValue("leftPunc") === "," ? `background-color:var(--color-grey-normal);` : ""}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "dot")}
-          style={getStyleOptionValue("leftPunc") === "dot" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", ".")}
+          style={getStyleOptionValue("leftPunc") === "." ? `background-color:var(--color-grey-normal);` : ""}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "leftPunc", "semicolon")}
-          style={getStyleOptionValue("leftPunc") === "semicolon" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "leftPunc", ";")}
+          style={getStyleOptionValue("leftPunc") === ";" ? `background-color:var(--color-grey-normal);` : ""}>
           &semi;
       </div>
+    </div>
+  </div>
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+    <div class="label">Left punctuation (custom):</div>
+    <div class="value-wrapper" style="gap: 10px;">
+      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
   <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
@@ -178,40 +184,46 @@
           <i class="material-icons tiny">block</i>
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "roundBrackets")}
-          style={getStyleOptionValue("rightPunc") === "roundBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", ")")}
+          style={getStyleOptionValue("rightPunc") === ")" ? `background-color:var(--color-grey-normal);` : ""}>
           &rpar;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "squareBrackets")}
-          style={getStyleOptionValue("rightPunc") === "squareBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "]")}
+          style={getStyleOptionValue("rightPunc") === "]" ? `background-color:var(--color-grey-normal);` : ""}>
           &rsqb;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "curlyBrackets")}
-          style={getStyleOptionValue("rightPunc") === "curlyBrackets" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", "}")}
+          style={getStyleOptionValue("rightPunc") === "}" ? `background-color:var(--color-grey-normal);` : ""}>
           &rcub;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "colon")}
-          style={getStyleOptionValue("rightPunc") === "colon" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", ":")}
+          style={getStyleOptionValue("rightPunc") === ":" ? `background-color:var(--color-grey-normal);` : ""}>
           &colon;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "comma")}
-          style={getStyleOptionValue("rightPunc") === "comma" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", ",")}
+          style={getStyleOptionValue("rightPunc") === "," ? `background-color:var(--color-grey-normal);` : ""}>
           &comma;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "dot")}
-          style={getStyleOptionValue("rightPunc") === "dot" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", ".")}
+          style={getStyleOptionValue("rightPunc") === "." ? `background-color:var(--color-grey-normal);` : ""}>
           &period;
       </div>
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "rightPunc", "semicolon")}
-          style={getStyleOptionValue("rightPunc") === "semicolon" ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "rightPunc", ";")}
+          style={getStyleOptionValue("rightPunc") === ";" ? `background-color:var(--color-grey-normal);` : ""}>
           &semi;
       </div>
+    </div>
+  </div>
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+    <div class="label">Right punctuation (custom):</div>
+    <div class="value-wrapper" style="gap: 10px;">
+      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
     </div>
   </div>
   <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
