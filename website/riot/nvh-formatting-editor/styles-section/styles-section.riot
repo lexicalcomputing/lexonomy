@@ -27,19 +27,21 @@
       onBeforeUpdate() {
         if (window.nvhFormattingEditor.global.selectedPlaceholder !== null) {
           let styleOptions = this.getStyleOptions();
-          if (this.currentStyleOption === null || !styleOptions.includes(this.currentStyleOption)) {
+          let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);
+          if (this.currentStyleOption === null || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
             this.currentStyleOption = styleOptions[0];
           }
         }
       },
 
       getStyleOptions() {
-        // FIX if markupStyles is not iterable
         let result = [...window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
         let name = window.nvhFormattingEditor.global.selectedPlaceholder.content.name;
         let fullName = window.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
         let styles = window.nvhFormattingEditor.global.selectedPlaceholder.styles;
+        let labelStyles = window.nvhFormattingEditor.global.selectedPlaceholder.labelStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
+        result.splice(1, 0, {name: name + " (label)", fullName: fullName + " (label)", styles: labelStyles});
         return result;
       },
       changeStyleOption(fullName) {
