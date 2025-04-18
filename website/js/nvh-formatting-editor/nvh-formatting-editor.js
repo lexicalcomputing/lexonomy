@@ -108,7 +108,7 @@ class NVHFormattingEditorClass {
     let entry = await window.store.loadEntry();
     let entryObject = Object.entries(JSON.parse(entry.json).entry[0]);
 
-    let parsedEntry = this.getEntryStructure(entryObject, "entry");
+    let parsedEntry = this.getEntryStructure(entryObject, null);
     let schema = window.nvhFormattingEditor.layout.pdf.schema;
     
     let entryHTML = this.getEntryHTML(schema.children[0], parsedEntry);
@@ -116,20 +116,22 @@ class NVHFormattingEditorClass {
     return entryHTML;
   }
 
-  getEntryStructure(entry, fullName) {
+  // DO NOT USE THIS !!!, use 'window.nvhStore.data.entry' instead
+  getEntryStructure(entry, parentPath) {
     let objectHolder = {
-      path: fullName,
+      path: "",
       value: "",
       children: []
     };
     for (let element of entry) {
       if (element[0] === "_name") {
+        objectHolder.path = parentPath == null ? element[1] : parentPath + "." + element[1];
         continue;
       } else if (element[0] === "_value") {
         objectHolder.value = element[1];
       } else {
         for (let childHolder of element[1]) {
-          let child = this.getEntryStructure(Object.entries(childHolder), element[0]);
+          let child = this.getEntryStructure(Object.entries(childHolder), objectHolder.path);
           objectHolder.children.push(child);
         }
       }
@@ -256,6 +258,7 @@ class NVHFormattingEditorClass {
           },
           styles: {},
           markupStyles: this.createMarkupStyles("entry"),
+          labelStyles: {},
           children: [],
         }
       ]
@@ -423,6 +426,7 @@ class NVHFormattingEditorClass {
       },
       styles: {},
       markupStyles: [],
+      labelStyles: {},
       children: []
     };
     window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
@@ -458,6 +462,7 @@ class NVHFormattingEditorClass {
       },
       styles: {},
       markupStyles: this.createMarkupStyles(label.fullName),
+      labelStyles: {},
       children: []
     };
 
@@ -493,6 +498,7 @@ class NVHFormattingEditorClass {
           },
           styles: {},
           markupStyles: this.createMarkupStyles(label.fullName),
+          labelStyles: {},
           children: []
         };
         newElement.children.push(selfDisplayElement);
