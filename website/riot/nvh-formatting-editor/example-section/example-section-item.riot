@@ -12,19 +12,17 @@
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <div if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs === null}
-            class="element-holder-content"
-            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
-          {this.state.value}
-        </div>
-        <!-- TODO: Currently markup supports only text and in type, in future implement for all types-->
-        <div if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs !== null}
-            style="display: flex;">
-          <pre each={child in this.state.valueStylePairs}
-              style={getCssStyles(child.styles)}>
-            {child.value}
-          </pre>
-        </div>
+        <example-basic-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs === null}
+          value={this.state.value}
+          styles={this.props.schema.styles}
+          labelStyles={this.props.schema.labelStyles}
+          get-css-styles={getCssStyles}
+        />
+        <example-markup-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs !== null}
+          valueStylePairs={this.state.valueStylePairs}
+          labelStyles={this.props.schema.labelStyles}
+          get-css-styles={getCssStyles}
+        />
         <example-url-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "url"}
           value={this.state.value}
           styles={this.props.schema.styles}
@@ -50,23 +48,6 @@
           styles={this.props.schema.styles}
           get-css-styles={getCssStyles}
         />
-        <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.prefix !== ""}
-            class="element-holder-content"
-            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
-          {this.state.value.prefix}
-        </pre>
-        <div if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.markup !== ""}
-            class="element-holder-content
-                  {props.schema.markupStatus.isHovered ? "element-holder-hovered" : ""}
-                  {props.schema.markupStatus.isActive ? "element-holder-active" : ""}"
-            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.markupStyles) : ""}>
-          {this.state.value.markup}
-        </div>
-        <pre if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "markup" && this.state.value.suffix !== ""}
-            class="element-holder-content"
-            style={props.schema.content.fullName !== "" ? getCssStyles(this.props.schema.styles) : ""}>
-          {this.state.value.suffix}
-        </pre>
       </div>
     </div>
     <div each={childSchema in props.schema.children}
