@@ -1,5 +1,9 @@
 <example-image-item>
   <div class="example-image-item-wrapper">
+    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
     <img id="example-image-item-image" if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
     <a if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && state.makeImageClickable} href={props.value}>
       <img src={props.value} style={props.getCssStyles(this.props.styles)}/>
@@ -13,6 +17,10 @@
         <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
     </div>
+    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
   </div>
 
   <script>
@@ -24,6 +32,8 @@
         showUrlAsIcon: null,
         iconItem: null,
         unicodeIcon: null,
+        labelTextValue: null,
+        showLabelBefore: null,
       },
 
       onBeforeMount() {
@@ -35,6 +45,8 @@
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
         }
       },
       onBeforeUpdate() {
@@ -45,6 +57,8 @@
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
         }
       },
 

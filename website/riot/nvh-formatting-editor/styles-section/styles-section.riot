@@ -11,7 +11,8 @@
     </div>
     <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null}
                         class="styles-section-container-divider"
-                        styleOption={currentStyleOption}/>
+                        styleOption={currentStyleOption}
+                        isLabelOptionStyle={currentStyleOption.name.includes("(label)")}/>
   </div>
 
   <script>

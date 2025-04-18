@@ -1,7 +1,15 @@
 <example-basic-item>
   <div class="example-basic-item-wrapper">
+    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
     <div style={props.getCssStyles(props.styles)}>
       {props.value}
+    </div>
+    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
     </div>
   </div>
   
@@ -9,11 +17,31 @@
 
   <script>
     export default {
+      state: {
+        labelTextValue: null,
+        showLabelBefore: null,
+      },
 
+      onBeforeMount() {
+        this.state = {
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
+        }
+      },
+      onBeforeUpdate() {
+        this.state = {
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
+        }
+      }
     }
   </script>
 
   <style>
+    .example-basic-item-wrapper {
+      display: flex;
+      align-items: end;
+    }
   </style>
 
 </example-basic-item>

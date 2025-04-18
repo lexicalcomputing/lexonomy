@@ -1,6 +1,10 @@
 <example-url-item>
   <div class="example-url-item-wrapper">
     <div class="example-url-item-url" style={props.getCssStyles(props.styles)}>
+      <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+          style={props.getCssStyles(props.labelStyles)}>
+        {state.labelTextValue}
+      </div>
       <a if={state.showUrl && state.showIcon} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>
         <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
       </a>
@@ -8,6 +12,10 @@
         <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+      <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+          style={props.getCssStyles(props.labelStyles)}>
+        {state.labelTextValue}
+      </div>
     </div>
   </div>
   
@@ -22,6 +30,8 @@
         iconItem: null,
         unicodeIcon: null,
         openUrlNewTab: null,
+        labelTextValue: null,
+        showLabelBefore: null,
       },
 
       onBeforeMount() {
@@ -33,7 +43,9 @@
           showIcon: this.props.styles["show-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
-          openUrlNewTab: this.props.styles["open-url-new-tab"]
+          openUrlNewTab: this.props.styles["open-url-new-tab"],
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
         }
       },
 
@@ -46,7 +58,9 @@
           showIcon: this.props.styles["show-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
-          openUrlNewTab: this.props.styles["open-url-new-tab"]
+          openUrlNewTab: this.props.styles["open-url-new-tab"],
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
         }
       }
     }

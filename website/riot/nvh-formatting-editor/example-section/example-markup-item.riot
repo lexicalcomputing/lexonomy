@@ -1,16 +1,40 @@
 <example-markup-item>
   <div class="example-item-markup-wrapper">
     <div style="display: flex;">
+      <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+          style={props.getCssStyles(props.labelStyles)}>
+        {state.labelTextValue}
+      </div>
       <pre each={child in props.valueStylePairs}
           style={props.getCssStyles(child.styles)}>
         {child.value}
       </pre>
+      <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+          style={props.getCssStyles(props.labelStyles)}>
+        {state.labelTextValue}
+      </div>
     </div>
   </div>
 
   <script>
     export default {
+      state: {
+        labelTextValue: null,
+        showLabelBefore: null,
+      },
 
+      onBeforeMount() {
+        this.state = {
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
+        }
+      },
+      onBeforeUpdate() {
+        this.state = {
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
+        };
+      },
     }
   </script>
 

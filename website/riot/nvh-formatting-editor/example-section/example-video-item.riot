@@ -1,5 +1,9 @@
 <example-video-item>
   <div class="example-video-item-wrapper">
+    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
     <!-- Taken from nvh-item-media.riot -->
     <video if={state.showPlayer && !isYouTube()}
           controls
@@ -22,7 +26,11 @@
         <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
-    <div>
+    </div>
+    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
   </div>
 
   <script>
@@ -36,6 +44,8 @@
         showIcon: null,
         iconItem: null,
         unicodeIcon: null,
+        labelTextValue: null,
+        showLabelBefore: null,
       },
 
       onBeforeMount() {
@@ -51,6 +61,8 @@
           showIcon: this.props.styles["show-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
         };
       },
 
@@ -67,6 +79,8 @@
           showIcon: this.props.styles["show-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
+          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
         };
       },
 
