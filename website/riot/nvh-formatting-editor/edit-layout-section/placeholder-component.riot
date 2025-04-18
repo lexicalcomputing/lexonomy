@@ -136,6 +136,7 @@
             state.content.color = data.color;
             state.content.canHaveChildren = data.children.length !== 0;
             state.styles = {};
+            state.labelStyles = {};
 
             let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
             if (markupChildren.length !== 0) {
