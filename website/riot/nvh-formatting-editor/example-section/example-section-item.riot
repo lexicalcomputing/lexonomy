@@ -26,26 +26,31 @@
         <example-url-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "url"}
           value={this.state.value}
           styles={this.props.schema.styles}
+          labelStyles={this.props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
         <example-bool-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "bool"}
           value={this.state.value}
           styles={this.props.schema.styles}
+          labelStyles={this.props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
         <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
           value={this.state.value}
           styles={this.props.schema.styles}
+          labelStyles={this.props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
         <example-audio-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "audio"}
           value={this.state.value}
           styles={this.props.schema.styles}
+          labelStyles={this.props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
         <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "video"}
           value={this.state.value}
           styles={this.props.schema.styles}
+          labelStyles={this.props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
       </div>
@@ -405,6 +410,18 @@
     }
     .element-holder-content-active {
       outline: 2px solid var(--color-is-active) !important;
+    }
+
+    .example-item-label-vertical {
+      width: fit-content;
+    }
+    .example-item-label-before {
+      margin-right: 5px !important;
+      width: fit-content;
+    }
+    .example-item-label-after {
+      margin-left: 5px !important;
+      width: fit-content;
     }
   </style>
 </example-section-item>

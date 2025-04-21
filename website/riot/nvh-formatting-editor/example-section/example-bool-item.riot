@@ -1,6 +1,14 @@
 <example-bool-item>
   <div class="example-bool-item-wrapper">
+    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
     <div style={props.getCssStyles(this.props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</div>
+    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+        style={props.getCssStyles(props.labelStyles)}>
+      {state.labelTextValue}
+    </div>
   </div>
 
 <script>
@@ -8,24 +16,33 @@
     state: {
       yesValueText: null,
       noValueText: null,
+      labelTextValue: null,
+      showLabelBefore: null,
     },
 
     onBeforeMount() {
       this.state = {
         yesValueText: this.props.styles["yes-value-text"],
         noValueText: this.props.styles["no-value-text"],
+        labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
       }
     },
     onBeforeUpdate() {
       this.state = {
         yesValueText: this.props.styles["yes-value-text"],
         noValueText: this.props.styles["no-value-text"],
+        labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
+        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
       }
     }
   }
 </script>
 
 <style>
+  .example-bool-item-wrapper {
+    display: flex;
+  }
 </style>
 
 </example-bool-item>
