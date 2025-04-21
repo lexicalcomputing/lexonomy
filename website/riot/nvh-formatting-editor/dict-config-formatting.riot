@@ -71,6 +71,8 @@
                                 elementsSchema={window.nvhFormattingEditor.elementsSchema}/>
       </div>
     </div>
+    <div if={state.showElements} class="resizeHandle"
+        onmousedown={(event) => onResizeHandleMouseDown(event, ".elements-choice-section-wrapper", 200, 400)}></div>
     <div if={state.showStyle}
         id="style-container"
         class="formatting-page-container">
@@ -82,6 +84,8 @@
         <styles-section class="style-section"/>
       </div>
     </div>
+    <div if={state.showStyle} class="resizeHandle"
+        onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 300, 800)}></div>
     <div if={state.showEditing}
         id="editing-container"
         class="formatting-page-container">
@@ -169,6 +173,12 @@
         showEditing: true,
         showExample: true,
         fileReader: null,
+        mousePos: null,
+        leftContainer: {
+          className: null,
+          minWidth: null,
+          maxWidth: null,
+        }
       },
 
       onBeforeMount() {
@@ -641,7 +651,36 @@
       globalMouseMove() {
         /* Specify if necessary.
         I need custom mouse move to specify its options and to be able to remove it. */
-      }
+      },
+
+      /*Taken from dict-edit.riot*/
+      onResizeHandleMouseDown(evt, leftContainerClassName, minWidth, maxWidth) {
+        this.state.leftContainer.className = leftContainerClassName;
+        this.state.leftContainer.minWidth = minWidth;
+        this.state.leftContainer.maxWidth = maxWidth;
+
+        this.state.mousePos = evt.x
+        document.addEventListener("mouseup", this.onDocumentMouseUp, false)
+        document.addEventListener("mousemove", this.resizeColumn, false)
+        $("body").css("user-select", "none")
+        $(leftContainerClassName).css("transition", "unset")
+      },
+      onDocumentMouseUp() {
+        document.removeEventListener("mousemove", this.resizeColumn, false)
+        document.removeEventListener("mouseup", this.onDocumentMouseUp, false)
+        this.state.leftContainer.className = null;
+        this.state.leftContainer.minWidth = null;
+        this.state.leftContainer.maxWidth = null;
+        $("body").css("user-select", "")
+        $(this.state.leftContainer.className).css("transition", "")
+      },
+      resizeColumn(evt, leftContainerClassName) {
+        const distance = evt.x - this.state.mousePos
+        this.state.mousePos = evt.x
+        let leftColWidth = $(this.state.leftContainer.className).width()
+        let width = Math.min(this.state.leftContainer.maxWidth, Math.max(this.state.leftContainer.minWidth, leftColWidth + distance))
+        $(this.state.leftContainer.className).css("width", width + "px")
+      },
     }
   </script>
 
@@ -768,7 +807,7 @@
       min-width: 100%;
     }
     .elements-choice-section-wrapper {
-      width: 100%;
+      width: 200px;
       height: 600px;
     }
 
@@ -779,7 +818,7 @@
       min-width: 100%;
     }
     .style-section-wrapper {
-      width: 100%;
+      width: 430px;
       height: 600px;
     }
 
@@ -821,20 +860,20 @@
 
 
     .formatting-page-container {
-      width: 100%;
+      /*width: 100%;*/
     }
     #elements-container {
-      border-right: 1px solid #dcdee3;
+      /*border-right: 1px solid #dcdee3;*/
       padding-right: 1.5em;
-      width: 220px;
-      min-width: 220px;
+      /*width: 220px;
+      min-width: 220px;*/
     }
     #style-container {
-      border-right: 1px solid #dcdee3;
+      /*border-right: 1px solid #dcdee3;*/
       padding-left: 1.5em;
       padding-right: 1.5em;
-      width: 430px;
-      min-width: 430px;
+      /*width: 430px;
+      min-width: 430px;*/
     }
     #editing-container {
       border-right: 1px solid #dcdee3;
@@ -869,6 +908,19 @@
     }
     .cursor-grabbing {
       cursor: grabbing !important;
+    }
+
+    /*Taken from dict-edit.riot*/
+    .resizeHandle{
+        cursor: ew-resize;
+        width: 5px;
+        min-width: 5px;
+        min-height: 100%;
+        background-color: whitesmoke;
+        margin: 0 10px;
+    }
+    .resizeHandle:hover{
+        background-color: #cfcfcf;
     }
   </style>
 </dict-config-formatting>

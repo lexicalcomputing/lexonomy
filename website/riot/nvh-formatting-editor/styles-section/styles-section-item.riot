@@ -1,5 +1,29 @@
 <styles-section-item>
   <div class="styles-section-item-wrapper">
+    <div class="label">Container max width:</div>
+    <div class="value-wrapper">
+      <input type="number"
+            style="margin:0; width: 75px; height: 25px;"
+            value={getStyleOptionValue("container-width") === null ? 0 : getStyleOptionValue("container-width")}
+            min="0" onchange={onChangeStyle.bind(this, "container-width", null)}>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "container-width-unit", "")}
+          style={getStyleOptionValue("container-width-unit") === "" || getStyleOptionValue("container-width-unit") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          <i class="material-icons tiny">block</i>
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "container-width-unit", "px")}
+          style={getStyleOptionValue("container-width-unit") === "px" ? `background-color:var(--color-grey-normal);` : ""}>
+        px
+      </div>
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "container-width-unit", "%")}
+          style={getStyleOptionValue("container-width-unit") === "%" ? `background-color:var(--color-grey-normal);` : ""}>
+        %
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Background:</div>
     <div class="value-wrapper">
       <input type="color" value={getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
@@ -37,35 +61,35 @@
     <div class="label">Border width (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" max="10" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "border-width", null)}>
-      <input type="number" style="margin:0; width: 75px; height: 30px;" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" onchange={onChangeStyle.bind(this, "border-width", null)}>
+      <input type="number" style="margin:0; width: 75px; height: 25px;" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" onchange={onChangeStyle.bind(this, "border-width", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
-      <input type="number" style="margin:0; width: 75px; height: 30px;" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="number" style="margin:0; width: 75px; height: 25px;" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Rounded corners (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
-      <input type="number" style="margin:0; width: 75px; height: 30px;" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="number" style="margin:0; width: 75px; height: 25px;" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Margin (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "margin", null)}>
-      <input type="number" style="margin:0; width: 75px; height: 30px;" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="number" style="margin:0; width: 75px; height: 25px;" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Inner margin (padding) (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "padding", null)}>
-      <input type="number" style="margin:0; width: 75px; height: 30px;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="number" style="margin:0; width: 75px; height: 25px;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
   <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
@@ -78,7 +102,7 @@
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "font-size", null)}>
-      <input type="number" style="margin:0; width: 75px; height: 30px;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
+      <input type="number" style="margin:0; width: 75px; height: 25px;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
   <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
@@ -110,17 +134,22 @@
     <div class="label">Text font:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
-        <div class="text-dropdown-value">{getStyleOptionValue("font-family") === null || getStyleOptionValue("font-family") === "" ? "None" : getStyleOptionValue("font-family")}</div>
+        <div class="text-dropdown-value">{getStyleOptionValue("font-family") === null || getStyleOptionValue("font-family") === "" ? "None" : getStyleOptionValue("font-family").split(",")[0]}</div>
         <i class="material-icons tiny text-dropdown-icon" onclick={() => this.update({showFontDropdown: !this.state.showFontDropdown})}>
           arrow_drop_down
         </i>
       </div>
       <div if={this.state.showFontDropdown} class="text-dropdown">
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "")}>None</div>
-        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "sans-serif")}>sans-serif</div>
-        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "serif")}>serif</div>
-        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "monospace")}>monospace</div>
-        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "cursive")}>cursive</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Arial, sans-serif")}>Arial</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Verdana, sans-serif")}>Verdana</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Tahoma, sans-serif")}>Tahoma</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Trebuchet MS, sans-serif")}>Trebuchet MS</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Times New Roman, serif")}>Times New Roman</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Georgia, serif")}>Georgia</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Garamond, serif")}>Garamond</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Courier New, monospace")}>Courier New</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Brush Script MT, cursive")}>Brush Script MT</div>
       </div>
     </div>
   </div>
@@ -558,6 +587,7 @@
     }
     .text-dropdown-value {
       overflow-x: auto;
+      text-wrap: nowrap;
     }
     .text-dropdown-option {
       overflow-x: auto;
@@ -574,6 +604,8 @@
       padding: 0 5px;
       width: 100%;
       top: 24px;
+      height: 150px;
+      overflow-y: auto;
     }
     .text-dropdown-icon {
       cursor: pointer;
