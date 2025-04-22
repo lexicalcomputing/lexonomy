@@ -362,7 +362,9 @@ class NVHFormattingEditorClass {
       }
       if (child.status.isActive) {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
-        window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+        if (parent !== null) {
+          window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+        }
         window.nvhFormattingEditor.global.selectedPlaceholder = child;
       } else {
         window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";

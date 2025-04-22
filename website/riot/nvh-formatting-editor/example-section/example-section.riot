@@ -5,9 +5,10 @@
       <div if={this.state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary.</div>
       <example-section-item if={this.state.exampleEntry !== null && this.state.exampleEntry !== undefined}
         each={child in window.nvhFormattingEditor.currentLayout.schema.children}
-        onclick={onExampleSectionItemClick}
+        onclick={() => onExampleSectionItemClick(child)}
         schema={child}
         entry={this.state.exampleEntry}
+        class="example-section-item"
         isFormatting={true}/>
     <div>
   </div>
@@ -42,7 +43,8 @@
         });
       },
 
-      onExampleSectionItemClick() {
+      onExampleSectionItemClick(state) {
+        window.nvhFormattingEditor.selectPlaceholder(state, null);
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
 
@@ -444,6 +446,10 @@
     }
     .scrollable-div-layout-mobile {
       width: 440px !important;
+    }
+
+    .example-section-item {
+      cursor: pointer;
     }
   </style>
 </example-section>
