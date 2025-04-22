@@ -2,7 +2,7 @@
   <div class="edit-layout-container">
     <div class="scrollable-div">
       <template each={(child, index) in window.nvhFormattingEditor.currentLayout.schema.children}>
-        <placeholder-component onclick={onPlaceholderClick}
+        <placeholder-component onclick={() => onPlaceholderClick(child)}
                               onmouseenter={(event) => onPlaceholderMouseEnter(event, child, null)}
                               onmouseleave={(event) => onPlaceholderMouseLeave(event, child, null)}
                               class="placeholder placeholder-{child.orientation} placeholder-first
@@ -22,7 +22,8 @@
 
   <script>
     export default {
-      onPlaceholderClick() {
+      onPlaceholderClick(child) {
+        window.nvhFormattingEditor.selectPlaceholder(child, null);
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseEnter(event, state, parentState) {
@@ -91,7 +92,6 @@
       cursor: pointer;
     }
     .placeholder-first {
-      cursor: default; /*action-panel can not be displayed on the base placeholder*/
       border: 4px solid transparent !important;
     }
 
