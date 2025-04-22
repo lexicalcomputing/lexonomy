@@ -293,7 +293,7 @@
           if (value === null || value === undefined) {
             continue;
           }
-          if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc" || option === "border-color" || option === "border-width") {
+          if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc" || option === "border-color" || option === "border-width" || option === "container-width") {
             continue;
           }
           if (option === "border-radius" || option === "padding" || option === "margin" || option === "max-width" || option === "max-height" || option === "font-size") {
@@ -314,6 +314,20 @@
             let borderColor = styles["border-color"] === undefined ? "black" : styles["border-color"];
             let borderWidth = styles["border-width"] === undefined ? "1px" : styles["border-width"] + "px";
             value = borderWidth + " " + value + " " + borderColor;
+          } else if (option === "container-width-unit") {
+            if (styles["container-width"] !== undefined && styles["container-width"] !== 0) {
+              if (styles[option] === "px") {
+                option = "width";
+                value = "min(" + styles["container-width"] + "px" + "," + "100%)";
+              } else if (styles[option] === "%") {
+                option = "width";
+                value = "min(" + styles["container-width"] + "%" + "," + "100%)";
+              } else {
+                continue;
+              }
+            } else {
+              continue;
+            }
           }
           result_css += option + ":" + value + ";";
         }

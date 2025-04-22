@@ -42,7 +42,9 @@
         let styles = window.nvhFormattingEditor.global.selectedPlaceholder.styles;
         let labelStyles = window.nvhFormattingEditor.global.selectedPlaceholder.labelStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
-        result.splice(1, 0, {name: name + " (label)", fullName: fullName + " (label)", styles: labelStyles});
+        if (window.nvhFormattingEditor.global.selectedPlaceholder !== null && window.nvhFormattingEditor.global.selectedPlaceholder.children.length === 0) {
+          result.splice(1, 0, {name: name + " (label)", fullName: fullName + " (label)", styles: labelStyles});
+        }
         return result;
       },
       changeStyleOption(fullName) {
