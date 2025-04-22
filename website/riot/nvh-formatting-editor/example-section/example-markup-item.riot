@@ -6,7 +6,7 @@
         {state.labelTextValue}
       </div>
       <pre each={child in props.valueStylePairs}
-          style={props.getCssStyles(child.styles)}>
+          style={props.getCssStyles(child.styles) + "text-wrap: wrap;"}>
         {child.value}
       </pre>
       <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"

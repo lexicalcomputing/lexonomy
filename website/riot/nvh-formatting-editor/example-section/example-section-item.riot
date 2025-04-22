@@ -296,7 +296,7 @@
           if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc" || option === "rightPunc" || option === "border-color" || option === "border-width" || option === "container-width") {
             continue;
           }
-          if (option === "border-radius" || option === "padding" || option === "margin" || option === "max-width" || option === "max-height" || option === "font-size") {
+          if (option === "border-radius" || option === "padding" || option === "margin" || option === "max-height" || option === "font-size") {
             value = value + "px";
           } else if (option === "box-shadow") {
             value = value + "px " + value + "px " + value + "px " + "grey";
@@ -328,9 +328,17 @@
             } else {
               continue;
             }
+          } else if (option === "max-width") {
+            value = "min(" + styles["max-width"] + "px" + "," + "100%)";
           }
           result_css += option + ":" + value + ";";
         }
+
+        if (styles["max-width"] === undefined) {
+          value = "100%";
+          result_css += "max-width" + ":" + value + ";";
+        }
+
         return result_css;
       },
       getPunc(option, styles) {
