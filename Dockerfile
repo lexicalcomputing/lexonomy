@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.10.17-alpine3.20
 
 ARG VER
 
@@ -13,4 +13,4 @@ RUN apk add --no-cache --virtual .build-deps gcc g++ libxslt-dev libffi-dev open
     apk del .build-deps && \
     [ -z "$VER" ] || echo "$VER" > version.txt
 
-ENTRYPOINT ["python3", "lexonomy.py", "0.0.0.0:8000"]
+ENTRYPOINT ["python3", "lexonomy.py", "0.0.0.0:8080"]
