@@ -45,7 +45,8 @@
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
                                   {child.children.length === 0 ? "placeholder-no-children" : ""}
                                   {child.status.isDragged ? "placeholder-dragged" : ""}
-                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}"
+                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}
+                                  {canBeDropped(child) ? "placeholder-can-be-dropped" : ""}"
                             state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             isBaseLevel={false}
@@ -288,6 +289,41 @@
           return "transparent";
         }
         return window.nvhFormattingEditor.getColorLightVersion(this.props.state.content.color);
+      },
+      canBeDropped(state) {
+        const data = window.nvhFormattingEditor.global.mouseData;
+        if (data === null || data.type !== "choice-item") {
+          return false;
+        }
+
+        if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
+          /*Can not drop label to be a wrapper, if it can not have children*/
+          return false;
+        }
+        if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.fullName, state)) {
+          /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
+          return false;
+        }
+        for (let child of state.children) {
+          if (!window.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
+            /*Can not place label to placeholder, because not all children labels are valid*/
+            return false;
+          }
+        }
+        for (let child of state.children) {
+          if (window.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
+            /*Can not create redundant parent wrapper*/
+            return false;
+          }
+        }
+        if (!window.nvhFormattingEditor.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+          /*
+          Dragged element can not be dropped because,
+          it is not a child element of the parent placeholder where I want to drop him.
+          */
+          return false;
+        }
+        return true;
       }
     }
   </script>
@@ -377,6 +413,16 @@
     }
     .adder-invisible {
       visibility: hidden;
+    }
+
+    .placeholder-can-be-dropped {
+      background-color: var(--color-grey-light);
+    }
+    .placeholder-can-be-dropped:hover {
+      background-color:var(--color-grey-normal);
+    }
+    .placeholder-can-be-dropped:hover:has(.placeholder-can-be-dropped:hover) {
+      background-color: var(--color-grey-light);
     }
   </style>
 </placeholder-component>
