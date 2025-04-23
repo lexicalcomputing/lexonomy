@@ -6,7 +6,7 @@
           class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
           style="color: {window.nvhStore.getElementColor(child.fullName)};"
           onclick={() => changeStyleOption(child.fullName)}>
-        {child.name === "" ? "empty container": child.name}
+        {child.name === "" ? "container": child.name}
       </div>
     </div>
     <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null}
