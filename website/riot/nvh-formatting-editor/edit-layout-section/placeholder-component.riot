@@ -35,11 +35,11 @@
                     state={props.state}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => window.nvhFormattingEditor.selectPlaceholder(child, props.state)}
-                            title={getPlaceholderTitle(child)}
+                            data-tooltip={getPlaceholderTitle(child)}
                             onmouseup={(event) => onMouseUp(event, child)}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
                             onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
-                            class="placeholder placeholder-{child.orientation}
+                            class="tooltipped placeholder placeholder-{child.orientation}
                                   {child.status.isActive ? "placeholder-selected" : ""}
                                   {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}

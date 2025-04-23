@@ -12,7 +12,7 @@
       <a if={state.showUrl && state.showIcon} href={props.value}>
         <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
-      <a if={state.showUrl} title={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+      <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
     <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
