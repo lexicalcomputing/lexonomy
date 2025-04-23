@@ -4,51 +4,52 @@
   <div class="formatting-page-containers">
     <div class="formatting-page-layout-container">
       <div onclick={onLayoutClick.bind(this, "desktop")}
-          title="Desktop layout"
-          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : ""}">
+          data-tooltip="Desktop layout"
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : ""}">
         <i class="small material-icons">desktop_windows</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "tablet")}
-          title="Tablet layout"
-          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : ""}">
+          data-tooltip="Tablet layout"
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : ""}">
         <i class="small material-icons">tablet</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "mobile")}
-          title="Mobile phone layout"
-          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : ""}">
+          data-tooltip="Mobile phone layout"
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : ""}">
         <i class="small material-icons">phone_android</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "pdf")}
-          title="Export to PDF layout"
-          class="formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : ""}">
+          data-tooltip="Export to PDF layout"
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : ""}">
         <i class="small material-icons">picture_as_pdf</i>
       </div>
     </div>
     <div class="formatting-page-visibility-container">
       <div onclick={onSectionClick.bind(this, "showElements")}
-          title="Element list panel"
-          class="formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
+          data-tooltip="Element list panel"
+          class="tooltipped formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
         <i class="small material-icons">sort</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showStyle")}
-          title="Style panel"
-          class="formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
+          data-tooltip="Style panel"
+          class="tooltipped formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
         <i class="small material-icons">palette</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showEditing")}
-          title="Layout panel"
-          class="formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
+          data-tooltip="Layout panel"
+          class="tooltipped formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
         <i class="small material-icons">view_compact</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showExample")}
-          title="Preview panel"
-          class="formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
+          data-tooltip="Preview panel"
+          class="tooltipped formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
         <i class="small material-icons">visibility</i>
       </div>
     </div>
     <div id="save-button-wrapper"
         onclick={saveSchemas}
-        title="Save formatting (including layout and styles)">
+        data-tooltip="Save formatting (including layout and styles)"
+        class="tooltipped">
       SAVE
     </div>
   </div>
@@ -96,16 +97,19 @@
           <div id="buttons-box">
             <div id="undo-icon-wrapper"
                 onclick={window.nvhFormattingEditor.undoSchema}
-                title="Step back">
+                data-tooltip="Step back"
+                class="tooltipped">
               UNDO
             </div>
             <div id="redo-icon-wrapper"
                 onclick={window.nvhFormattingEditor.redoSchema}
-                title="Step forward">
+                data-tooltip="Step forward"
+                class="tooltipped">
               REDO
             </div>
             <div id="import-json-wrapper"
-                title="Import schema from JSON">
+                data-tooltip="Import schema from JSON"
+                class="tooltipped">
               <input id="import-json-input"
                   type="file"
                   accept=".json"
@@ -115,28 +119,30 @@
               </label>
             </div>
             <div id="export-json-wrapper"
-                title="Export schema to JSON"
-                onclick={onExportJSON}>
+                data-tooltip="Export schema to JSON"
+                onclick={onExportJSON}
+                class="tooltipped">
               <i class="material-icons" style="color: white">file_upload</i>
             </div>
             <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
                     && window.nvhFormattingEditor.currentLayout.configured === false}
-                class="configure-button-wrapper"
-                title={"Layout for this device is not configured.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}
+                class="tooltipped configure-button-wrapper"
+                data-tooltip={"Layout for this device is not configured.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}
                 onclick={saveAndConfigureSchema}>
               CONFIGURE
             </div>
             <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
                     && window.nvhFormattingEditor.currentLayout.configured === true}
-                class="configure-button-wrapper"
-                title={"Layout for this device is configured.\nWhen viewing the dictionary on this device, current layout will be seen."}
+                class="tooltipped configure-button-wrapper"
+                data-tooltip={"Layout for this device is configured.\nWhen viewing the dictionary on this device, current layout will be seen."}
                 onclick={saveAndUnconfigureSchema}>
               UNCONFIGURE
             </div>
             <div style="width: 100px;"></div>
             <div id="reset-icon-wrapper"
                 onclick={window.nvhFormattingEditor.resetSchema}
-                title="Reset current layout">
+                data-tooltip="Reset current layout"
+                class="tooltipped">
               RESET
             </div>
           </div>
@@ -153,8 +159,9 @@
         <i class="small material-icons">visibility</i>
         <h2>Preview</h2>
         <div id="export-pdf"
-            title="Export all entries of dictionary to PDF"
-            onclick={onExportPDF}>
+            data-tooltip="Export all entries of dictionary to PDF"
+            onclick={onExportPDF}
+            class="tooltipped">
           Export to PDF
         </div>
       </div>

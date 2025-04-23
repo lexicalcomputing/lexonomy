@@ -1,22 +1,22 @@
 <action-panel>
   <div class="action-panel-wrapper">
     <div if={!props.isBaseLevel && !props.isMarkupTypeChild} 
-        class="action"
+        class="tooltipped action"
         id="action-drag"
-        title="Drag"
+        data-tooltip="Drag"
         onmousedown={(event) => onMouseDown(event, props.state, props.index)}>
       <i class="small material-icons">drag_handle</i>
     </div>
     <div if={!props.isBaseLevel && !props.isMarkupTypeChild}
-        class="action"
+        class="tooltipped action"
         id="action-duplicate"
-        title="Duplicate"
+        data-tooltip="Duplicate"
         onclick={duplicateElement}>
       <i class="small material-icons">content_copy</i>
     </div>
     <div if={!props.isMarkupTypeChild}
-        class="action action-orientation-{props.state.orientation}"
-        title={props.state.orientation === "column"
+        class="tooltipped action action-orientation-{props.state.orientation}"
+        data-tooltip={props.state.orientation === "column"
           ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
             : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
         onclick={changeOrientation}>
@@ -24,9 +24,9 @@
       <i class="small material-icons" if={props.state.orientation === "row"}>swap_horiz</i>
     </div>
     <div if={!props.isBaseLevel}
-        class="action"
+        class="tooltipped action"
         id="action-delete"
-        title="Delete"
+        data-tooltip="Delete"
         onclick={() => window.nvhFormattingEditor.deleteElement(props.index, props.parentState, props.state)}>
       <i class="small material-icons">delete</i>
     </div>

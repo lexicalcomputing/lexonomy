@@ -1,8 +1,8 @@
 <adder-component>
   <div class="plus-icon-wrapper">
     <div class="adder-line adder-line-{props.orientation}">
-      <div class="adder-icon-wrapper"
-          title={window.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
+      <div class="tooltipped adder-icon-wrapper"
+          data-tooltip={window.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
           onmouseenter={onMouseEnter}
           onmouseleave={onMouseLeave}
           onmousedown={onMouseDown}>
