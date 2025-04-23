@@ -92,15 +92,12 @@
     getElementHolderLabel() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
+      if (name === "") {
+        return "container";
+      }
       if (childrenCount === 0) {
-        if (name === "") {
-          return "empty container";
-        }
         return name;
       } else {
-        if (name === "") {
-          return "empty group";
-        }
         return name + " group";
       }
     },
