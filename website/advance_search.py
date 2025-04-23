@@ -1,4 +1,4 @@
-#!/usr/bin/python3.10
+#!/usr/bin/python3
 # coding: utf-8
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import re
@@ -30,33 +30,31 @@ def condition2sql(condition, all_json_trees, tl_element, queried_trees=[]):
     json_tree = all_json_trees.pop(0)
     key_not_exists = "(entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) WHERE json_tree.key='" + key + "'))"
 
-
-    match operator:
-        case '=':
-            if key == '.*':
-                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '\\b" + value + "\\b')"
-            else:
-                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value = '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
-        case '!=':
-            if key == '.*':
-                sql = "(entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) WHERE json_tree.key='_value' AND json_tree.value REGEXP '\\b" + value + "\\b'))"
-            else:
-                sql = "((" + json_tree + ".key='_value' AND " + json_tree + ".value != '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "') OR " + key_not_exists + ")"
-        case 'exist':
-            sql = "(" + json_tree + ".key='" + key + "')"
-        case 'not_exist':
-            sql = key_not_exists
-        case '~=':
-            if key == '.*':
-                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "')"
-            else:
-                sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
-        case '#=':
-            sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)=" + value + ")"
-        case '#>':
-            sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)>" + value + ")"
-        case '#<':
-            sql = "((" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)<" + value + ") OR " + key_not_exists + ")"
+    if operator == '=':
+        if key == '.*':
+            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '\\b" + value + "\\b')"
+        else:
+            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value = '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
+    elif operator == '!=':
+        if key == '.*':
+            sql = "(entries.id NOT IN (SELECT DISTINCT entries.id from entries, json_tree(entries.json) WHERE json_tree.key='_value' AND json_tree.value REGEXP '\\b" + value + "\\b'))"
+        else:
+            sql = "((" + json_tree + ".key='_value' AND " + json_tree + ".value != '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "') OR " + key_not_exists + ")"
+    elif operator == 'exist':
+        sql = "(" + json_tree + ".key='" + key + "')"
+    elif operator == 'not_exist':
+        sql = key_not_exists
+    elif operator == '~=':
+        if key == '.*':
+            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "')"
+        else:
+            sql = "(" + json_tree + ".key='_value' AND " + json_tree + ".value REGEXP '" + value + "' AND " + json_tree + ".fullkey LIKE '" + path + "')"
+    elif operator == '#=':
+        sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)=" + value + ")"
+    elif operator == '#>':
+        sql = "(" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)>" + value + ")"
+    elif operator == '#<':
+        sql = "((" + json_tree + ".key='" + key + "' AND json_array_length(" + json_tree + ".value)<" + value + ") OR " + key_not_exists + ")"
 
     queried_trees.append("SUBSTR(" + json_tree + ".key, 0, INSTR(" + json_tree + ".key, '" + valkey + "'))")
     return sql

@@ -1,4 +1,4 @@
-#!/usr/bin/python3.10
+#!/usr/bin/python3
 # coding: utf-8
 # usage: project_gen_next_batch.py BATCH_SIZE [MAX_BATCHES] [EXISTING_BATCHES_FILEMASK] [USER_EMAIL]
 import os
