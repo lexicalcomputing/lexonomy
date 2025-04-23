@@ -72,19 +72,25 @@
       gap: 2px;
     }
     .style-section-option-item {
-      border: 2px solid black;
-      border-top: none;
-      padding-left: 5px;
+      padding: 0 5px;
+      width: fit-content;
       cursor: pointer;
+      background-color: var(--color-grey-very-light);
+      text-wrap: nowrap;
     }
     .style-section-option-item:hover {
       background-color: var(--color-grey-normal);
     }
     .style-section-option-item-current {
       background-color: var(--color-grey-light);
+      border: 2px solid black;
+      border-top: none;
     }
     .style-section-option-wrapper {
       margin-bottom: 10px;
+      display: flex;
+      width: 100%;
+      overflow-x: scroll;
     }
   </style>
 </styles-section>
