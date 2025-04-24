@@ -35,18 +35,19 @@
                     state={props.state}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => window.nvhFormattingEditor.selectPlaceholder(child, props.state)}
-                            data-tooltip={getPlaceholderTitle(child)}
+                            title={isElementNonExisting(child.content.fullName) ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
                             onmouseup={(event) => onMouseUp(event, child)}
                             onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
                             onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
-                            class="tooltipped placeholder placeholder-{child.orientation}
+                            class="placeholder placeholder-{child.orientation}
                                   {child.status.isActive ? "placeholder-selected" : ""}
                                   {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
                                   {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
                                   {child.children.length === 0 ? "placeholder-no-children" : ""}
                                   {child.status.isDragged ? "placeholder-dragged" : ""}
                                   {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}
-                                  {canBeDropped(child) ? "placeholder-can-be-dropped" : ""}"
+                                  {canBeDropped(child) ? "placeholder-can-be-dropped" : ""}
+                                  {isElementNonExisting(child.content.fullName) ? "placeholder-non-existing" : ""}"
                             state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
                             parentState={props.state}
                             isBaseLevel={false}
@@ -275,6 +276,9 @@
         }
       },
 
+      isElementNonExisting(fullName) {
+        return fullName !== "" && window.nvhStore.getElementConfig(fullName) === undefined;
+      },
       getBorderColor() {
         if (this.props.state.content.name === "" && this.props.state.children.length !== 0) {
           return "#c7ced1";
@@ -404,6 +408,10 @@
     }
     .add-children-component {
       width: 100%;
+    }
+
+    .placeholder-non-existing {
+      background-color: black !important;
     }
 
 

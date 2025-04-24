@@ -104,7 +104,11 @@
         if (fullName === "") {
           return;
         }
-        if (window.nvhStore.getElementConfig(fullName).type === "markup" && this.props.schema.children.length === 2) {
+        let config = window.nvhStore.getElementConfig(fullName);
+        if (config === undefined) {
+          return;
+        }
+        if (config.type === "markup" && this.props.schema.children.length === 2) {
           this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
@@ -114,7 +118,11 @@
         if (fullName === "") {
           return;
         }
-        if (window.nvhStore.getElementConfig(fullName).type === "markup" && this.props.schema.children.length === 2) {
+        let config = window.nvhStore.getElementConfig(fullName);
+        if (config === undefined) {
+          return;
+        }
+        if (config.type === "markup" && this.props.schema.children.length === 2) {
           this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
@@ -177,7 +185,11 @@
         styleMarkupPlaceholder["markupValue"] = markupValue;
       },
       formatValue(fullName) {
-        this.state.type = window.nvhStore.getElementConfig(fullName).type;
+        let config = window.nvhStore.getElementConfig(fullName);
+        if (config === undefined) {
+          return;
+        }
+        this.state.type = config.type;
         let leftPunc = this.getPunc("leftPunc", this.props.schema.styles);
         let rightPunc = this.getPunc("rightPunc", this.props.schema.styles);
 
