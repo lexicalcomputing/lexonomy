@@ -24,9 +24,25 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
+    <div class="label">Container alignment:</div>
+    <div class="text-dropdown-wrapper">
+      <div class="text-dropdown-value-wrapper">
+        <div class="text-dropdown-value">{getStyleOptionValue("align-items") === null ? "baseline" : getStyleOptionValue("align-items")}</div>
+        <i class="material-icons tiny text-dropdown-icon" onclick={() => this.update({showAlignmentDropdown: !this.state.showAlignmentDropdown})}>
+          arrow_drop_down
+        </i>
+      </div>
+      <div if={this.state.showAlignmentDropdown} class="text-dropdown">
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "baseline")}>baseline</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "start")}>start</div>
+        <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "end")}>end</div>
+      </div>
+    </div>
+  </div>
+  <div class="styles-section-item-wrapper">
     <div class="label">Background:</div>
     <div class="value-wrapper">
-      <input type="color" value={getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
+      <input type="color" value={getStyleOptionValue("background-color") === null ? "#ffffff" : getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
@@ -461,6 +477,7 @@
         selectedOption: "",
         styles: null, // styles can not be taken from selectedPlaceholder because of markup type exception
         showFontDropdown: false,
+        showAlignmentDropdown: false,
         isLabelOptionStyle: false,
       },
 
