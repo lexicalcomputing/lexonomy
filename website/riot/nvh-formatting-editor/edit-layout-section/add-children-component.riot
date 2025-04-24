@@ -39,7 +39,11 @@
       if (fullName === "") {
         return [];
       }
-      let children = window.nvhStore.getElementConfig(fullName).children;
+      let config = window.nvhStore.getElementConfig(fullName);
+      if (config === undefined) {
+        return [];
+      }
+      let children = config.children;
       children = children.filter(child => !window.nvhFormattingEditor.isMarkupType(child.path)); // exclude markup type elements
       if (count === null) {
         return children;
@@ -47,9 +51,12 @@
       return children.slice(0, count);
     },
     getChildrenAndSelfList(fullName) {
-      let self = window.nvhStore.getElementConfig(fullName);
+      let config = window.nvhStore.getElementConfig(fullName);
+      if (config === undefined) {
+        return [];
+      }
       let children = this.getChildrenList(null, fullName);
-      children.splice(0, 0, self);
+      children.splice(0, 0, config);
       return children;
     },
     onAddElement(currentElement, newElement) {

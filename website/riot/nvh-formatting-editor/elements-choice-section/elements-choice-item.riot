@@ -10,7 +10,7 @@
     <div style="color: {props.state.data.color}">{props.state.data.name}</div>
   </div>
   <template each={child in props.state.data.children}>
-    <elements-choice-item if={window.nvhStore.getElementConfig(child.data.fullName).type !== "markup"}
+    <elements-choice-item if={window.nvhStore.getElementConfig(child.data.fullName) !== undefined && window.nvhStore.getElementConfig(child.data.fullName).type !== "markup"}
                           state={child}
                           indentationLevel={props.indentationLevel + 15}/>
   </template>

@@ -484,7 +484,10 @@
       onBeforeMount() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
         if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle) {
-          this.state.type = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName).type;
+          let config = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
+          if (config !== undefined) {
+            this.state.type = config.type;
+          }
         }
         if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
           window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
@@ -495,7 +498,10 @@
       onBeforeUpdate() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
         if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle) {
-          this.state.type = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName).type;
+          let config = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
+          if (config !== undefined) {
+            this.state.type = config.type;
+          }
         } else {
           this.state.type = null;
         }

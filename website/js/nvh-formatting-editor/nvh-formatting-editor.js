@@ -545,14 +545,22 @@ class NVHFormattingEditorClass {
     }
     pathArray.length -= 1;
     let parentPath = pathArray.join('.');
-    return window.nvhStore.getElementConfig(parentPath).type === "markup";
+    let config = window.nvhStore.getElementConfig(parentPath);
+    if (config === undefined) {
+      return false;
+    }
+    return config.type === "markup";
   }
 
   isMarkupType(fullName) {
     if (fullName === "") {
       return false;
     }
-    return window.nvhStore.getElementConfig(fullName).type === "markup";
+    let config = window.nvhStore.getElementConfig(fullName);
+    if (config === undefined) {
+      return false;
+    }
+    return config.type === "markup";
   }
 
   childWithInheritedArea(child, state) {
@@ -659,8 +667,12 @@ class NVHFormattingEditorClass {
     if (fullName === "") {
       return result;
     }
+    let config = window.nvhStore.getElementConfig(fullName);
+    if (config === undefined) {
+      return result;
+    }
     for (let child of window.store.schema.getElementByPath(fullName).children) {
-      if (window.nvhStore.getElementConfig(child.path).type === "markup") {
+      if (config.type === "markup") {
         result.push({name: child.name, fullName: child.path, color: window.nvhStore.getElementColor(child.path)});
       }
     }
