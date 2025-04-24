@@ -416,13 +416,22 @@
     }
 
     .placeholder-can-be-dropped {
-      background-color: var(--color-grey-light);
+      background-color: var(--color-is-dragged-over-light);
+    }
+    .placeholder-can-be-dropped > .placeholder-inside-wrapper {
+      background-color: var(--color-is-dragged-over-light) !important;
     }
     .placeholder-can-be-dropped:hover {
-      background-color:var(--color-grey-normal);
+      background-color:var(--color-yellow-light);
+    }
+    .placeholder-can-be-dropped:hover > .placeholder-inside-wrapper{
+      background-color:var(--color-yellow-light) !important;
     }
     .placeholder-can-be-dropped:hover:has(.placeholder-can-be-dropped:hover) {
-      background-color: var(--color-grey-light);
+      background-color: var(--color-is-dragged-over-light);
+    }
+    .placeholder-can-be-dropped:hover:has(.placeholder-can-be-dropped:hover) > .placeholder-inside-wrapper {
+      background-color: var(--color-is-dragged-over-light) !important;
     }
   </style>
 </placeholder-component>
