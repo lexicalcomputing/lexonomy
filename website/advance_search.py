@@ -5,7 +5,7 @@ import re
 import json
 from ops import getLocale
 from icu import Locale, Collator
-
+from ops import check_entry_completed
 
 def condition2sql(condition, all_json_trees, tl_element, queried_trees=[]):
     key = condition['attr']
@@ -226,10 +226,12 @@ def getEntries(dictDB, configs, query="", howmany=10, offset=0, sortdesc=False, 
         item = {"id": entry["id"], "title": entry["title"], "sortkey": entry["sortkey"]}
         if fullNVH:
             item["nvh"] = entry["nvh"]
+        if configs['progress_tracking'].get('tracked', False):
+            item['is_completed'] = check_entry_completed(entry["nvh"], configs)
         entries.append(item)
 
     total = len(entries)
-    return total, entries, False
+    return total, entries
 
 
 def result_id_list(query, db):

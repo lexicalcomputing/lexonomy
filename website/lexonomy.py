@@ -962,21 +962,20 @@ def getImportProgress(dictID, user, dictDB, configs):
 def entrylist(dictID, user, dictDB, configs):
     if request.forms.id:
         if request.forms.id == "last":
-            entryID = ops.getLastEditedEntry(dictDB, user["email"])
-            return {"success": True, "entryID": entryID}
+            return {"success": True, "entryID": ops.getLastEditedEntry(dictDB, user["email"])}
         else:
-            entries = ops.listEntriesById(dictDB, request.forms.id, configs)
-            return {"success": True, "entries": entries}
+            total, entries = ops.listEntriesById(dictDB, request.forms.id, configs)
     elif request.forms.advanced_query:
         try:
-            total, entries, first = advance_search.getEntries(dictDB, configs, request.forms.advanced_query, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False, False)
+            total, entries = advance_search.getEntries(dictDB, configs, request.forms.advanced_query, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False, False)
         except ValueError as e:
-            return {"success": False, "entries": [], "total": 0, "firstRun": False, "error": e}
-
-        return {"success": True, "entries": entries, "total": total, "firstRun": first}
+            return {"success": False, "entries": [], "total": 0, "error": e}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
-        return {"success": True, "entries": entries, "total": total, "firstRun": first}
+        total, entries = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
+
+    if request.forms.only_completed.lower() == 'true':
+        ops.filter_only_completed(entries)
+    return {"success": True, "entries": entries, "total": total}
 
 @post(siteconfig["rootPath"]+"<dictID>/search.json")
 def publicsearch(dictID):
@@ -987,7 +986,7 @@ def publicsearch(dictID):
     if not configs["publico"]["public"]:
         return {"success": False}
     else:
-        total, entries, first = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, modifier, howmany, request.forms.offset)
+        total, entries = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, modifier, howmany, request.forms.offset)
         return {"success": True, "entries": entries, "total": total}
 
 @post(siteconfig["rootPath"]+"<dictID>/configread.json")

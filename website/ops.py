@@ -1635,8 +1635,11 @@ def listEntriesById(dictDB, entryID, configs):
     c = dictDB.execute("select e.id, e.title, e.nvh from entries as e where e.id=?", (entryID,))
     entries = []
     for r in c.fetchall():
-        entries.append({"id": r["id"], "title": r["title"], "nvh": r["nvh"]})
-    return entries
+        item = {"id": r["id"], "title": r["title"], "nvh": r["nvh"]}
+        if configs['progress_tracking'].get('tracked', False):
+            item['is_completed'] = check_entry_completed(r["nvh"], configs)
+        entries.append(item)
+    return len(entries), entries
 
 def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howmany=10, offset=0, sortdesc=False, reverse=False, fullNVH=False):
     collate = ""
@@ -1653,8 +1656,10 @@ def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howman
             item = {"id": rf["id"], "title": rf["title"], "sortkey": rf["sortkey"]}
             if configs["flagging"].get("flag_element"):
                 item["flags"] = extractText(nvh.parse_string(rf["nvh"]), configs["flagging"]["flag_element"])
+            if configs['progress_tracking'].get('tracked', False):
+                item['is_completed'] = check_entry_completed(rf["nvh"], configs)
             entries.append(item)
-        return rc["total"], entries, True
+        return rc["total"], entries
 
     lowertext = searchtext.lower()
     if type(sortdesc) == str:
@@ -1699,6 +1704,8 @@ def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howman
         item = {"id": r1["id"], "title": r1["title"], "sortkey": r1["sortkey"]}
         if configs["flagging"].get("flag_element"):
             item["flags"] = extractText(nvh.parse_string(r1["nvh"]), configs["flagging"]["flag_element"])
+        if configs['progress_tracking'].get('tracked', False):
+            item['is_completed'] = check_entry_completed(r1["nvh"], configs)
         if fullNVH:
             item["nvh"] = r1["nvh"]
         if r1["level"] > 1:
@@ -1708,7 +1715,7 @@ def listEntries(dictDB, dictID, configs, searchtext="", modifier="start", howman
     c2 = dictDB.execute(sql2, params2)
     r2 = c2.fetchone()
     total = r2["total"]
-    return total, entries, False
+    return total, entries
 
 def listEntriesPublic(dictDB, dictID, configs, searchtext):
     howmany = 100
@@ -1738,6 +1745,20 @@ def extractElementText(nvh_parsed, elName, textAr):
     nvh_parsed.filter_entries([elName], [elName])
     nvh_parsed.path2value(textAr)
     return textAr
+
+def check_entry_completed(entry_nvh, configs):
+    progress_node = None
+    if configs['progress_tracking'].get('tracked', False):
+        progress_node =  configs['progress_tracking']['node']
+
+    if progress_node != None and f'{progress_node}:' in entry_nvh:
+        return True
+    return False
+
+def filter_only_completed(entries):
+    for idx, item in enumerate(entries):
+        if not item['is_completed']:
+            del item[idx]
 
 def extractFirstText(nvhParsed):
     return extractFirstElementText(nvhParsed) or ""
