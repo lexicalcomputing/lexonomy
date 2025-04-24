@@ -73,7 +73,7 @@
       </div>
     </div>
     <div if={state.showElements} class="resizeHandle"
-        onmousedown={(event) => onResizeHandleMouseDown(event, ".elements-choice-section-wrapper", 200, 400)}></div>
+        onmousedown={(event) => onResizeHandleMouseDown(event, ".elements-choice-section-wrapper", 200, 300)}></div>
     <div if={state.showStyle}
         id="style-container"
         class="formatting-page-container">
@@ -86,7 +86,7 @@
       </div>
     </div>
     <div if={state.showStyle} class="resizeHandle"
-        onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 300, 800)}></div>
+        onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 200, 600)}></div>
     <div if={state.showEditing}
         id="editing-container"
         class="formatting-page-container">
@@ -698,6 +698,7 @@
       --color-can-be-dropped: rgb(237, 205, 116);
       --color-is-dragged-over: rgb(162, 127, 31);
       --color-is-dragged-over-light: rgb(255, 245, 217);
+      --color-yellow-light: rgb(240, 224, 180);;
       --color-is-active: rgb(11, 78, 202);
       --color-is-hovered: rgb(90, 141, 236);
       --color-grey-light: #ebebeb;
