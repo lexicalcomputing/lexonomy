@@ -1,10 +1,10 @@
 <styles-section-item>
   <div class="styles-section-item-wrapper">
-    <div class="label">Container max width:</div>
+    <div class="label">Container width:</div>
     <div class="value-wrapper">
       <input type="number"
             style="margin:0; width: 55px; height: 25px; appearance: textfield;"
-            value={getStyleOptionValue("container-width") === null ? 0 : getStyleOptionValue("container-width")}
+            value={getStyleOptionValue("container-width") === null ? "" : getStyleOptionValue("container-width")}
             min="0" onchange={onChangeStyle.bind(this, "container-width", null)}>
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "container-width-unit", "")}
@@ -542,6 +542,16 @@
           } else {
             delete this.state.styles[option];
           }
+        } else if (option === "container-width-unit") { 
+          if (value === "") {
+            this.state.styles["container-width"] = "";
+          }
+          this.state.styles[option] = value;
+        } else if (option === "container-width") {
+          if (value !== undefined && value !== null && value !== "" && this.state.styles["container-width-unit"] === "") {
+            this.state.styles["container-width-unit"] = "px";
+          }
+          this.state.styles[option] = value;
         } else {
           this.state.styles[option] = value;
         }
