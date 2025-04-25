@@ -93,8 +93,6 @@
             return;
           }
           if (data.type === "choice-item") {
-            window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-            window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
             // Remove following line during selected placeholder refactor
             //window.nvhFormattingEditor.global.selectedPlaceholder = null;
             window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
@@ -174,10 +172,6 @@
             state.children.splice(index, 0, data);
             window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
             window.nvhFormattingEditor.global.dropInfo.index = index;
-            window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-            window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-            // Remove following line during selected placeholder refactor
-            //window.nvhFormattingEditor.global.selectedPlaceholder = null;
             window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
             window.nvhFormattingEditor.global.canBeDropped = false;
           }

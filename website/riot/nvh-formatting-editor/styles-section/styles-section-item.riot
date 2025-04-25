@@ -489,9 +489,6 @@
             this.state.type = config.type;
           }
         }
-        if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
-          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
-        }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.styles = this.props.styleOption.styles;
       },
@@ -504,9 +501,6 @@
           }
         } else {
           this.state.type = null;
-        }
-        if (window.nvhFormattingEditor.currentLayout.schema.children[0].children.length === 0) {
-          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "entry";
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.styles = this.props.styleOption.styles;
@@ -531,10 +525,6 @@
         this.onChangeStyle2(option, value);
       },
       onChangeStyle2(option, value) {
-        /* If selected placeholder is wrapper, then selectedPlaceholderFullName = "" */
-        /*TODO: selectedPlaceholderFullName should not be "" even for wrappers in the future*/
-        // let fullName = window.nvhFormattingEditor.global.selectedPlaceholderFullName;
-
         let selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
         if (selectedPlaceholder === null) {
           console.log("There is no selected placeholder");
@@ -601,13 +591,6 @@
       onSelectChange(value) {
         this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
         this.state.selectedOption = value;
-        this.update();
-      },
-      onSelectOpen() {
-        if (window.nvhFormattingEditor.global.selectedPlaceholderFullName === "") {
-          return;
-        }
-        this.state.indentationBulletingOpened = !this.state.indentationBulletingOpened;
         this.update();
       },
     }
