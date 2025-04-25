@@ -141,7 +141,7 @@ class NVHFormattingEditorClass {
 
   getEntryHTML(schema, entry) {
     if (schema.children.length === 0 && schema.content.fullName === entry.path) {
-      let entryStyle = entry.path === "entry" ? " color: red; font-weight: bold; font-size: 30px;" : ""
+      let entryStyle = entry.path === "entry" ? " color: red; font-weight: bold; font-size: 30px;" : "" // "entry" is here just for testing purposes, remove later
       return `<div style="padding: 3px;${entryStyle}">${entry.value}</div>`;
     }
 
@@ -238,6 +238,7 @@ class NVHFormattingEditorClass {
   }
 
   createSchema() {
+    let root = window.store.schema.getRoot();
     let schema = {
       orientation: "column",
       children: [
@@ -249,15 +250,15 @@ class NVHFormattingEditorClass {
           orientation: "column",
           type: "placeholder",
           content: {
-            name: "entry",
-            fullName: "entry",
-            area: "entry",
-            areaFullName: "entry",
-            color: window.nvhStore.getElementColor("entry"),
+            name: root.path,
+            fullName: root.path,
+            area: root.path,
+            areaFullName: root.path,
+            color: window.nvhStore.getElementColor(root.path),
             canHaveChildren: true,
           },
           styles: {},
-          markupStyles: this.createMarkupStyles("entry"),
+          markupStyles: this.createMarkupStyles(root.path),
           labelStyles: {},
           children: [],
         }
@@ -700,6 +701,9 @@ class NVHFormattingEditorClass {
     } else {
       return "";
     }
+  }
+  isElementNonExisting(fullName) {
+    return fullName !== "" && window.nvhStore.getElementConfig(fullName) === undefined;
   }
 }
 

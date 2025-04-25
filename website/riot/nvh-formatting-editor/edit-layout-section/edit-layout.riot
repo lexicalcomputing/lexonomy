@@ -3,12 +3,14 @@
     <div class="scrollable-div">
       <template each={(child, index) in window.nvhFormattingEditor.currentLayout.schema.children}>
         <placeholder-component onclick={() => onPlaceholderClick(child)}
+                              title={window.nvhFormattingEditor.isElementNonExisting(child.content.fullName) ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Click RESET button to fix the formatting structure." : ""}
                               onmouseenter={(event) => onPlaceholderMouseEnter(event, child, null)}
                               onmouseleave={(event) => onPlaceholderMouseLeave(event, child, null)}
                               class="placeholder placeholder-{child.orientation} placeholder-first
                                     {child.status.isActive ? "placeholder-selected" : ""}
                                     {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
-                                    {child.children.length === 0 ? "placeholder-no-children" : ""}"
+                                    {child.children.length === 0 ? "placeholder-no-children" : ""}
+                                    {window.nvhFormattingEditor.isElementNonExisting(child.content.fullName) ? "placeholder-non-existing" : ""}""
                               state={window.nvhFormattingEditor.childWithInheritedArea(child, null)}
                               parentState={window.nvhFormattingEditor.currentLayout.schema}
                               isBaseLevel={true}
@@ -187,6 +189,10 @@
     .placeholder-mouse-hover:has(.placeholder-mouse-hover) {
       border: 4px solid transparent !important;
       box-shadow: none;
+    }
+
+    .placeholder-non-existing {
+      background-color: black !important;
     }
   </style>
 </edit-layout>
