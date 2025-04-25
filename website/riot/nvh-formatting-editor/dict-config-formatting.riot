@@ -277,8 +277,6 @@
           },
           mouseData: window.nvhFormattingEditor.global.mouseData,
           canOpenActionPanel: true,
-          selectedPlaceholderAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName,
-          selectedPlaceholderFullName: window.nvhFormattingEditor.global.selectedPlaceholderFullName,
           selectedPlaceholder: window.nvhFormattingEditor.global.selectedPlaceholder,
           selectedPlaceholderParentAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
           parent: null,
@@ -317,8 +315,6 @@
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
           window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
-          window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-          window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
           // Remove following line during selected placeholder refactor
           // window.nvhFormattingEditor.global.selectedPlaceholder = null;
           window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";

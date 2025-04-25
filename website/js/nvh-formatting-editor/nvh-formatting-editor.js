@@ -645,6 +645,7 @@ class NVHFormattingEditorClass {
     }
     return true;
   }
+
   createMarkupStyles(fullName) {
     let markupChildren = this.hasDirectMarkupChild(fullName);
     let result = [];
