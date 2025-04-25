@@ -1,18 +1,18 @@
 <example-markup-item>
   <div class="example-item-markup-wrapper">
-    <div style="display: flex; flex-wrap: wrap;">
-      <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+    <div>
+      <span if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
           style={props.getCssStyles(props.labelStyles)}>
         {state.labelTextValue}
-      </div>
-      <pre each={child in props.valueStylePairs}
-          style={props.getCssStyles(child.styles) + "text-wrap: wrap;"}>
+      </span>
+      <span each={child in props.valueStylePairs}
+          style={props.getCssStyles(child.styles) + "word-break: break-word;"}>
         {child.value}
-      </pre>
-      <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+      </span>
+      <span if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
           style={props.getCssStyles(props.labelStyles)}>
         {state.labelTextValue}
-      </div>
+      </span>
     </div>
   </div>
 
