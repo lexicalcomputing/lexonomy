@@ -271,18 +271,6 @@
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
-    <div class="label">Max width (px):</div>
-    <div class="value-wrapper">
-      <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
-    </div>
-  </div>
-  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
-    <div class="label">Max height (px):</div>
-    <div class="value-wrapper">
-      <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
-    </div>
-  </div>
   <div if={this.state.type === "url"} class="styles-section-item-wrapper">
     <div class="label">Open url in new tab:</div>
     <div class="value-wrapper">
@@ -435,6 +423,18 @@
       </div>
     </div>
   </div>
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+    <div class="label">Max width (px):</div>
+    <div class="value-wrapper">
+      <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
+    </div>
+  </div>
+  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+    <div class="label">Max height (px):</div>
+    <div class="value-wrapper">
+      <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
+    </div>
+  </div>
   <div if={(this.state.type === "bool")} class="label">Set text (value = YES):</div>
   <div if={(this.state.type === "bool")} class="styles-section-item-wrapper">
     <div class="value-wrapper">
@@ -573,6 +573,16 @@
         } else if (option === "container-width") {
           if (value !== undefined && value !== null && value !== "" && this.state.styles["container-width-unit"] === "") {
             this.state.styles["container-width-unit"] = "px";
+          }
+          this.state.styles[option] = value;
+        } else if (option === "show-player") {
+          if (!value && !this.state.styles["show-url"]) {
+            this.state.styles["show-url"] = true;
+          }
+          this.state.styles[option] = value;
+        } else if (option === "show-url") {
+          if (!value && !this.state.styles["show-player"]) {
+            this.state.styles["show-player"] = true;
           }
           this.state.styles[option] = value;
         } else {
