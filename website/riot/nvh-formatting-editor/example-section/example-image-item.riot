@@ -4,16 +4,16 @@
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
     </div>
-    <img id="example-image-item-image" if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
-    <a if={(!state.showUrl || state.showUrl && !state.showOnlyUrl) && state.makeImageClickable} href={props.value}>
+    <img id="example-image-item-image" if={state.showImage && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
+    <a if={state.showImage && state.makeImageClickable} href={props.value}>
       <img src={props.value} style={props.getCssStyles(this.props.styles)}/>
     </a>
     <div class="example-image-item-icons">
-      <a if={state.showUrl && (!state.showOnlyUrl || state.showOnlyUrl && !state.showUrlAsIcon)} href={props.value}>{props.value}</a>
-      <a if={state.showUrl && state.showOnlyUrl && state.showUrlAsIcon} href={props.value}>
+      <a if={state.showUrl && !state.showUrlAsIcon} href={props.value}>{props.value}</a>
+      <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
         <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
       </a>
-      <a if={state.showUrl && state.showOnlyUrl && state.showUrlAsIcon} href={props.value}>
+      <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
         <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
     </div>
@@ -26,9 +26,9 @@
   <script>
     export default {
       state: {
+        showImage: null,
         showUrl: null,
         makeImageClickable: null,
-        showOnlyUrl: null,
         showUrlAsIcon: null,
         iconItem: null,
         unicodeIcon: null,
@@ -39,9 +39,9 @@
       onBeforeMount() {
         this.setDefaultCss();
         this.state = {
+          showImage: this.props.styles["show-image"] === undefined ? true : this.props.styles["show-image"],
           showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
           makeImageClickable: this.props.styles["make-image-clickable"],
-          showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],
@@ -51,9 +51,9 @@
       },
       onBeforeUpdate() {
         this.state = {
+          showImage: this.props.styles["show-image"] === undefined ? true : this.props.styles["show-image"],
           showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
           makeImageClickable: this.props.styles["make-image-clickable"],
-          showOnlyUrl: this.props.styles["show-only-url"],
           showUrlAsIcon: this.props.styles["show-url-as-icon"],
           iconItem: this.props.styles["icon-item"],
           unicodeIcon: this.props.styles["unicode-icon"],

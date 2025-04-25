@@ -289,25 +289,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && !getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
-    <div class="label">Make image clickable:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "make-image-clickable", getStyleOptionValue("make-image-clickable") === null ? true : !getStyleOptionValue("make-image-clickable"))}
-          style={getStyleOptionValue("make-image-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
   <div if={this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null)} class="styles-section-item-wrapper">
-    <div class="label">Show only url:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-only-url", getStyleOptionValue("show-only-url") === null ? true : !getStyleOptionValue("show-only-url"))}
-          style={getStyleOptionValue("show-only-url") === true ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
-  <div if={this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-only-url")} class="styles-section-item-wrapper">
     <div class="label">Show url as icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -349,7 +331,7 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-only-url") && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
     <div class="label">Choose icon:</div>
     <div class="value-wrapper" style="width: 200px; flex-wrap: wrap;">
       <div class="value-item value-item-icon"
@@ -399,7 +381,7 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-only-url") && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
     <div class="label">Use unicode character as an icon:</div>
     <div class="value-wrapper">
       <input type="text" style="height: 30px;" value={getStyleOptionValue("unicode-icon") === null ? "" : getStyleOptionValue("unicode-icon")} onchange={onChangeStyle.bind(this, "unicode-icon", null)}>
@@ -420,6 +402,24 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
           style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+    <div class="label">Show image:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-image", getStyleOptionValue("show-image") === null ? false : !getStyleOptionValue("show-image"))}
+          style={getStyleOptionValue("show-image") === true || getStyleOptionValue("show-image") === null ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={this.state.type === "image" && (getStyleOptionValue("show-image") || getStyleOptionValue("show-image") === null)} class="styles-section-item-wrapper">
+    <div class="label">Make image clickable:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "make-image-clickable", getStyleOptionValue("make-image-clickable") === null ? true : !getStyleOptionValue("make-image-clickable"))}
+          style={getStyleOptionValue("make-image-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
@@ -580,9 +580,17 @@
             this.state.styles["show-url"] = true;
           }
           this.state.styles[option] = value;
+        } else if (option === "show-image") {
+          if (!value && !this.state.styles["show-url"]) {
+            this.state.styles["show-url"] = true;
+          }
+          this.state.styles[option] = value;
         } else if (option === "show-url") {
           if (!value && !this.state.styles["show-player"]) {
             this.state.styles["show-player"] = true;
+          }
+          if (!value && !this.state.styles["show-image"]) {
+            this.state.styles["show-image"] = true;
           }
           this.state.styles[option] = value;
         } else {
