@@ -108,20 +108,20 @@
       <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
       <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "font-size", null)}>
       <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text format:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -146,7 +146,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text font:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
