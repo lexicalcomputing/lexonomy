@@ -1,4 +1,4 @@
-#!/usr/bin/python3.10
+#!/usr/bin/python3
 # coding: utf-8
 # Author: Tomas Svoboda, tomas.svoboda@sketchengine.eu, Lexical Computing CZ
 import os

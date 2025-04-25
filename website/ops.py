@@ -1,4 +1,4 @@
-#!/usr/bin/python3.10
+#!/usr/bin/python3
 
 import datetime
 import json
@@ -2645,60 +2645,57 @@ def replaceN(some_str, original, replacement, n):
     return first_originals_back
 
 def dql2sqliteToken(token):
-    match token:
-        case _ if '!=' in token:
-            # !=
-            parts = token.split('!=')
-            operator = '!='
-            path = parts[0]
-            value = parts[1]
-        case _ if '~=' in token:
-            #regex
-            parts = token.split('~=')
-            operator = '~='
-            path = parts[0]
-            value = parts[1]
-        case _ if '#=' in token:
-            #count
-            parts = token.split('#=')
-            operator = '#='
-            path = parts[0]
-            value = parts[1]
-        case _ if '#>' in token:
-            #count
-            parts = token.split('#>')
-            operator = '#>'
-            path = parts[0]
-            value = parts[1]
-        case _ if '=' in token:
-            # =
-            parts = token.split('=')
-            operator = '='
-            path = parts[0]
-            value = parts[1]
-        case _:
-            operator = 'exist'
-            path = token.strip()
-            value = ''
+    if '!=' in token:
+        # !=
+        parts = token.split('!=')
+        operator = '!='
+        path = parts[0]
+        value = parts[1]
+    elif '~=' in token:
+        #regex
+        parts = token.split('~=')
+        operator = '~='
+        path = parts[0]
+        value = parts[1]
+    elif '#=' in token:
+        #count
+        parts = token.split('#=')
+        operator = '#='
+        path = parts[0]
+        value = parts[1]
+    elif '#>' in token:
+        #count
+        parts = token.split('#>')
+        operator = '#>'
+        path = parts[0]
+        value = parts[1]
+    elif '=' in token:
+        # =
+        parts = token.split('=')
+        operator = '='
+        path = parts[0]
+        value = parts[1]
+    else:
+        operator = 'exist'
+        path = token.strip()
+        value = ''
 
     fullpath = replaceN(path, '.', '[%]%', 2)
     fullpathval = '$.' + fullpath + '[%]."_val"'
 
     sql = ''
-    match operator:
-        case '=':
+    if operator == '=':
             sql = "(json_tree.key='_val' AND json_tree.value = '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
-        case '!=':
+    elif operator == '!=':
             sql = "(json_tree.key='_val' AND json_tree.value != '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
-        case 'exist':
+    elif operator == 'exist':
             sql = "(json_tree.fullkey LIKE '$." + fullpath + "[%]')"
-        case '~=':
+    elif operator == '~=':
             sql = "(json_tree.key='_val' AND json_tree.value REGEXP '" + value + "' AND json_tree.fullkey LIKE '" + fullpathval + "')"
-        case '#=':
+    elif operator == '#=':
             sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.entry_data) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)=" + value + "))"
-        case '#>':
+    elif operator == '#>':
             sql = "(entries.id IN (SELECT entries.id FROM entries,json_tree(entries.entry_data) WHERE json_tree.fullkey LIKE '$." + fullpath + "[%]' GROUP BY entries.id HAVING COUNT(json_tree.key)>" + value + "))"
-
     return sql
 
 def parse_nested(text, left=r'[(]', right=r'[)]', sep=r' '):
