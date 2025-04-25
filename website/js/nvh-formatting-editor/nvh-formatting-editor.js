@@ -734,6 +734,9 @@ class NVHFormattingEditorClass {
       return "";
     }
   }
+  isElementNonExisting(fullName) {
+    return fullName !== "" && window.nvhStore.getElementConfig(fullName) === undefined;
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();
