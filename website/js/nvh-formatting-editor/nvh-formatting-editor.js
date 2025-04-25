@@ -667,11 +667,11 @@ class NVHFormattingEditorClass {
     if (fullName === "") {
       return result;
     }
-    let config = window.nvhStore.getElementConfig(fullName);
-    if (config === undefined) {
-      return result;
-    }
     for (let child of window.store.schema.getElementByPath(fullName).children) {
+      let config = window.nvhStore.getElementConfig(child.path);
+      if (config === undefined) {
+        continue;
+      }
       if (config.type === "markup") {
         result.push({name: child.name, fullName: child.path, color: window.nvhStore.getElementColor(child.path)});
       }
