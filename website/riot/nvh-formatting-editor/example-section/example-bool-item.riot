@@ -25,7 +25,7 @@
         yesValueText: this.props.styles["yes-value-text"],
         noValueText: this.props.styles["no-value-text"],
         labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
+        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
       }
     },
     onBeforeUpdate() {
@@ -33,7 +33,7 @@
         yesValueText: this.props.styles["yes-value-text"],
         noValueText: this.props.styles["no-value-text"],
         labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? false : this.props.labelStyles["show-label-before"],
+        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
       }
     }
   }

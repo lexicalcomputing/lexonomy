@@ -463,8 +463,8 @@
     <div class="label">Show label before:</div>
     <div class="value-wrapper">
       <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-label-before", getStyleOptionValue("show-label-before") === null ? true : !getStyleOptionValue("show-label-before"))}
-          style={getStyleOptionValue("show-label-before") === true ? `background-color:var(--color-grey-normal);` : ""}>
+          onclick={onChangeStyle.bind(this, "show-label-before", getStyleOptionValue("show-label-before") === null ? false : !getStyleOptionValue("show-label-before"))}
+          style={getStyleOptionValue("show-label-before") === true || getStyleOptionValue("show-label-before") === null ? `background-color:var(--color-grey-normal);` : ""}>
       </div>
     </div>
   </div>
