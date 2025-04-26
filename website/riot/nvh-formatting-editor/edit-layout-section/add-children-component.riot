@@ -1,7 +1,7 @@
 <add-children-component>
     <div if={props.canHaveAdders && props.state.content.fullName !== "" && getChildrenList(null, props.state.content.fullName).length !== 0}
         class="add-children-component-wrapper"
-        style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};">
+        style="background-color: {window.nvhFormattingEditor.getColorLightVersion(window.nvhStore.getElementColor(props.state.content.fullName))};">
       <div class="add-children-component-label">Add:</div>
       <template each={child in getChildrenList(2, props.state.content.fullName)}>
         <div class="add-children-component-child"
@@ -12,7 +12,7 @@
       </template>
       <div>
         <i class="material-icons tiny add-children-component-dropdown-icon"
-          style="background-color: {window.nvhFormattingEditor.getColorLightVersion(props.state.content.color)};"
+          style="background-color: {window.nvhFormattingEditor.getColorLightVersion(window.nvhStore.getElementColor(props.state.content.fullName))};" 
           onclick={onDropdownClick}>
           arrow_drop_down
         </i>
@@ -20,7 +20,7 @@
             onmouseenter={onMouseEnter}
             onmouseleave={onMouseLeave}>
           <template each={child in getChildrenAndSelfList(props.state.content.fullName)}>
-            <div style="color: {window.nvhStore.getElementColor(child.path)};"
+            <div style="color: {window.nvhStore.getElementColor(child.path)};" 
                 class="add-children-component-dropdown-child"
                 onclick={() => onAddElement(props.state, child)}> 
               {child.name}
@@ -71,7 +71,6 @@
         fullName: fullName,
         area: name,
         areaFullName: fullName,
-        color: window.nvhStore.getElementColor(fullName),
       };
     },
     onDropdownClick() {
