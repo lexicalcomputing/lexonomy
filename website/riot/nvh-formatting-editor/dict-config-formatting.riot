@@ -470,7 +470,6 @@
               fullName: child.fullName,
               area: this.getNameFromFullName(newAreaFullName),
               areaFullName: newAreaFullName,
-              color: window.nvhStore.getElementColor(child.fullName),
               canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
             },
             styles: JSON.parse(child.styles),

@@ -133,7 +133,6 @@
             state.content.fullName = data.fullName;
             state.content.area = data.name;
             state.content.areaFullName = data.fullName;
-            state.content.color = data.color;
             state.content.canHaveChildren = data.children.length !== 0;
             state.styles = {};
             state.labelStyles = {};
@@ -282,7 +281,7 @@
         if (this.props.state.children.length === 0) {
           return "transparent";
         }
-        return window.nvhFormattingEditor.getColorLightVersion(this.props.state.content.color);
+        return window.nvhFormattingEditor.getColorLightVersion(window.nvhStore.getElementColor(this.props.state.content.fullName));
       },
       canBeDropped(state) {
         const data = window.nvhFormattingEditor.global.mouseData;
