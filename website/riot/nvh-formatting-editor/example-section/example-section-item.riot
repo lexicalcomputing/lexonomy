@@ -9,6 +9,10 @@
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
         style={props.schema.children.length !== 0 ? getCssStyles(this.props.schema.styles) : ""}>
+    <div if={(this.props.schema.bulletStyles["bullet-use-numbers"] || this.props.schema.bulletStyles["bullet-use-bullets"]) && (this.props.haveSiblings || this.props.schema.bulletStyles["bullet-use-with-single-item"])}
+        style={getCssStyles(this.props.schema.bulletStyles)}>
+      {this.state.bulletValue}
+    </div> <!-- consider doing this way also labelstyles-->
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
@@ -64,7 +68,9 @@
                             class="{props.isFormatting ? "example-section-item" : ""}"
                             schema={childSchema}
                             entry={props.entry}
-                            isFormatting={props.isFormatting}/>
+                            isFormatting={props.isFormatting}
+                            bulletIndex={1}
+                            haveSiblings={false}/>
       <example-section-item if={props.schema.content.area === childSchema.content.area
                                 && childSchema.content.name !== "" /*render parent label*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
@@ -73,20 +79,21 @@
                             class="{props.isFormatting ? "example-section-item" : ""}"
                             schema={childSchema}
                             entry={props.entry}
-                            isFormatting={props.isFormatting}/>
-      <template if={props.schema.content.area !== childSchema.content.area
-                    && childSchema.content.name !== ""}
-                each={childEntry in window.nvhFormattingEditor.getEntryChildren(props.entry, [])}>
-        <example-section-item if={childSchema.content.fullName === childEntry.path}
-                              onclick={() => onExampleItemClick(childSchema, props.schema)}
-                              onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
-                              onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
-                              class="{props.isFormatting ? "example-section-item" : ""}"
-                              schema={childSchema}
-                              entry={childEntry}
-                              isFormatting={props.isFormatting}/>
-        <div if={!props.entry.children.map(e => e.path).includes(childSchema.content.fullName) && childSchema.status.isHovered /*entry does not contain element but schema does*/}
-            class="element-holder-hovered-empty-entry" style="display: none"></div>
+                            isFormatting={props.isFormatting}
+                            bulletIndex={props.bulletIndex}
+                            haveSiblings={props.haveSiblings}/>
+      <template each={(childEntry, index) in window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
+                if={props.schema.content.area !== childSchema.content.area
+                    && childSchema.content.name !== ""}>
+        <example-section-item onclick={() => onExampleItemClick(childSchema, props.schema)}
+                                onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
+                                onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                                class="{props.isFormatting ? "example-section-item" : ""}"
+                                schema={childSchema}
+                                entry={childEntry}
+                                isFormatting={props.isFormatting}
+                                bulletIndex={index + 1}
+                                haveSiblings={window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}/>
       </template>
     </div>
   </div>
@@ -96,10 +103,17 @@
       state: {
         type: null,
         value: null,
+        bulletValue: null,
         valueStylePairs: null,
       },
 
       onBeforeMount() {
+        if (this.props.schema["labelStyles"] === undefined) {
+          this.props.schema["labelStyles"] = {};
+        }
+        if (this.props.schema["bulletStyles"] === undefined) {
+          this.props.schema["bulletStyles"] = {};
+        }
         let fullName = this.props.schema.content.fullName;
         if (fullName === "") {
           return;
@@ -112,8 +126,15 @@
           this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
+        this.formatBulletValue();
       },
       onBeforeUpdate() {
+        if (this.props.schema["labelStyles"] === undefined) {
+          this.props.schema["labelStyles"] = {};
+        }
+        if (this.props.schema["bulletStyles"] === undefined) {
+          this.props.schema["bulletStyles"] = {};
+        }
         let fullName = this.props.schema.content.fullName;
         if (fullName === "") {
           return;
@@ -126,6 +147,7 @@
           this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
+        this.formatBulletValue();
       },
 
       onExampleItemMouseEnter(event, state) {
@@ -205,6 +227,25 @@
         } else {
           let value = this.props.entry.value;
           this.state.value = leftPunc + value + rightPunc;
+        }
+      },
+      formatBulletValue() {
+        let leftPunc = this.getPunc("leftPunc", this.props.schema.bulletStyles);
+        let rightPunc = this.getPunc("rightPunc", this.props.schema.bulletStyles);
+        if (this.props.schema.bulletStyles["bullet-use-numbers"]) {
+          if (this.props.bulletIndex !== undefined) {
+            this.state.bulletValue = leftPunc + this.props.bulletIndex + rightPunc;
+          } else {
+            this.state.bulletValue = "";
+          }
+        } else if (this.props.schema.bulletStyles["bullet-use-bullets"]) {
+          if (this.props.schema.bulletStyles["bullet-set-bullet"] !== undefined) {
+            this.state.bulletValue = leftPunc + this.props.schema.bulletStyles["bullet-set-bullet"] + rightPunc;
+          } else {
+            this.state.bulletValue = "";
+          }
+        } else {
+          this.state.bulletValue = "";
         }
       },
       createValueObject(prefix, markup, suffix) {

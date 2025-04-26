@@ -173,6 +173,15 @@ class NVHFormattingEditorClass {
     }
     return resultChildren;
   }
+  getValidEntryChildren(entry, resultChildren, validPath) {
+    for (let child of entry.children) {
+      this.getValidEntryChildren(child, resultChildren, validPath);
+      if (child.path === validPath) {
+        resultChildren.push(child);
+      }
+    }
+    return resultChildren;
+  }
 
   resetSchema() {
     window.nvhFormattingEditor.initializeSchema();
@@ -259,6 +268,7 @@ class NVHFormattingEditorClass {
           styles: {},
           markupStyles: this.createMarkupStyles(root.path),
           labelStyles: {},
+          bulletStyles: {},
           children: [],
         }
       ]
@@ -427,6 +437,7 @@ class NVHFormattingEditorClass {
       styles: {},
       markupStyles: [],
       labelStyles: {},
+      bulletStyles: {},
       children: []
     };
     window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
@@ -462,6 +473,7 @@ class NVHFormattingEditorClass {
       styles: {},
       markupStyles: this.createMarkupStyles(label.fullName),
       labelStyles: {},
+      bulletStyles: {},
       children: []
     };
 
@@ -497,6 +509,7 @@ class NVHFormattingEditorClass {
           styles: {},
           markupStyles: this.createMarkupStyles(label.fullName),
           labelStyles: {},
+          bulletStyles: {},
           children: []
         };
         newElement.children.push(selfDisplayElement);

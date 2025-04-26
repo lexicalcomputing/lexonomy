@@ -12,7 +12,8 @@
     <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null}
                         class="styles-section-container-divider"
                         styleOption={currentStyleOption}
-                        isLabelOptionStyle={currentStyleOption.name.includes("(label)")}/>
+                        isLabelOptionStyle={currentStyleOption.name.includes("(label)")}
+                        isBulletOptionStyle={currentStyleOption.name.includes("(bullet)")}/>
   </div>
 
   <script>
@@ -41,10 +42,12 @@
         let fullName = window.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
         let styles = window.nvhFormattingEditor.global.selectedPlaceholder.styles;
         let labelStyles = window.nvhFormattingEditor.global.selectedPlaceholder.labelStyles;
+        let bulletStyles = window.nvhFormattingEditor.global.selectedPlaceholder.bulletStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
         if (window.nvhFormattingEditor.global.selectedPlaceholder !== null && window.nvhFormattingEditor.global.selectedPlaceholder.children.length === 0) {
           result.splice(result.length, 0, {name: name + " (label)", fullName: fullName + " (label)", styles: labelStyles});
         }
+        result.splice(result.length, 0, {name: name + " (bullet)", fullName: fullName + " (bullet)", styles: bulletStyles});
         return result;
       },
       changeStyleOption(fullName) {

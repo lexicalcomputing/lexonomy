@@ -1,4 +1,52 @@
 <styles-section-item>
+  <div if={state.isLabelOptionStyle} class="styles-section-item-wrapper">
+    <div class="label">Set label text:</div>
+    <div class="value-wrapper" style="gap: 10px;">
+      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("label-text-value") === null ? "" : getStyleOptionValue("label-text-value")} onchange={onChangeStyle.bind(this, "label-text-value", null)}>
+    </div>
+  </div>
+  <div if={state.isLabelOptionStyle} class="styles-section-item-wrapper">
+    <div class="label">Show label before:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "show-label-before", getStyleOptionValue("show-label-before") === null ? false : !getStyleOptionValue("show-label-before"))}
+          style={getStyleOptionValue("show-label-before") === true || getStyleOptionValue("show-label-before") === null ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={state.isBulletOptionStyle} class="styles-section-item-wrapper">
+    <div class="label">Use numbers:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "bullet-use-numbers", getStyleOptionValue("bullet-use-numbers") === null ? true : !getStyleOptionValue("bullet-use-numbers"))}
+          style={getStyleOptionValue("bullet-use-numbers") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={state.isBulletOptionStyle} class="styles-section-item-wrapper">
+    <div class="label">Use bullets:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "bullet-use-bullets", getStyleOptionValue("bullet-use-bullets") === null ? true : !getStyleOptionValue("bullet-use-bullets"))}
+          style={getStyleOptionValue("bullet-use-bullets") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
+  <div if={state.isBulletOptionStyle && getStyleOptionValue("bullet-use-bullets")} class="styles-section-item-wrapper">
+    <div class="label">Set bullet:</div>
+    <div class="value-wrapper" style="gap: 10px;">
+      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("bullet-set-bullet") === null ? "" : getStyleOptionValue("bullet-set-bullet")} onchange={onChangeStyle.bind(this, "bullet-set-bullet", null)}>
+    </div>
+  </div>
+  <div if={state.isBulletOptionStyle} class="styles-section-item-wrapper">
+    <div class="label">Use with single item:</div>
+    <div class="value-wrapper">
+      <div class="value-item"
+          onclick={onChangeStyle.bind(this, "bullet-use-with-single-item", getStyleOptionValue("bullet-use-with-single-item") === null ? true : !getStyleOptionValue("bullet-use-with-single-item"))}
+          style={getStyleOptionValue("bullet-use-with-single-item") === true ? `background-color:var(--color-grey-normal);` : ""}>
+      </div>
+    </div>
+  </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Container width:</div>
     <div class="value-wrapper">
@@ -108,20 +156,20 @@
       <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
       <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "font-size", null)}>
       <input type="number" style="margin:0; width: 55px; height: 25px; appearance: textfield;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text format:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -146,7 +194,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text font:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
@@ -169,7 +217,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -214,13 +262,13 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Left punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -265,7 +313,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int"} class="styles-section-item-wrapper">
+  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
@@ -453,21 +501,6 @@
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value") === null ? "" : getStyleOptionValue("text-value")} onchange={onChangeStyle.bind(this, "text-value", null)}></textarea>
     </div>
   </div>
-  <div if={state.isLabelOptionStyle} class="styles-section-item-wrapper">
-    <div class="label">Set label text:</div>
-    <div class="value-wrapper" style="gap: 10px;">
-      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("label-text-value") === null ? "" : getStyleOptionValue("label-text-value")} onchange={onChangeStyle.bind(this, "label-text-value", null)}>
-    </div>
-  </div>
-  <div if={state.isLabelOptionStyle} class="styles-section-item-wrapper">
-    <div class="label">Show label before:</div>
-    <div class="value-wrapper">
-      <div class="value-item"
-          onclick={onChangeStyle.bind(this, "show-label-before", getStyleOptionValue("show-label-before") === null ? false : !getStyleOptionValue("show-label-before"))}
-          style={getStyleOptionValue("show-label-before") === true || getStyleOptionValue("show-label-before") === null ? `background-color:var(--color-grey-normal);` : ""}>
-      </div>
-    </div>
-  </div>
 
   <script>
     export default {
@@ -479,22 +512,24 @@
         showFontDropdown: false,
         showAlignmentDropdown: false,
         isLabelOptionStyle: false,
+        isBulletOptionStyle: false,
       },
 
       onBeforeMount() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle) {
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle && !this.props.isBulletOptionStyle) {
           let config = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
           }
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
+        this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
         this.state.styles = this.props.styleOption.styles;
       },
       onBeforeUpdate() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle) {
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle && !this.props.isBulletOptionStyle) {
           let config = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
@@ -503,6 +538,7 @@
           this.state.type = null;
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
+        this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
         this.state.styles = this.props.styleOption.styles;
       },
 
@@ -581,6 +617,16 @@
           }
           if (!value && !this.state.styles["show-image"]) {
             this.state.styles["show-image"] = true;
+          }
+          this.state.styles[option] = value;
+        } else if (option === "bullet-use-numbers") {
+          if (value && this.state.styles["bullet-use-bullets"]) {
+            this.state.styles["bullet-use-bullets"] = false;
+          }
+          this.state.styles[option] = value;
+        } else if (option === "bullet-use-bullets") {
+          if (value && this.state.styles["bullet-use-numbers"]) {
+            this.state.styles["bullet-use-numbers"] = false;
           }
           this.state.styles[option] = value;
         } else {
