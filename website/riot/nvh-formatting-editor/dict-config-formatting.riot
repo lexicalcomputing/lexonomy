@@ -368,6 +368,9 @@
         if (JSON.stringify(oldSchema.labelStyles) !== JSON.stringify(newSchema.labelStyles)) {
           return true;
         }
+        if (JSON.stringify(oldSchema.bulletStyles) !== JSON.stringify(newSchema.bulletStyles)) {
+          return true;
+        }
         if (oldSchema.content !== undefined && oldSchema.content !== undefined) {
           if (oldSchema.content.fullName !== newSchema.content.fullName) {
             return true;
@@ -449,6 +452,7 @@
             styles: JSON.stringify(child.styles),
             markupStyles: JSON.stringify(child.markupStyles),
             labelStyles: JSON.stringify(child.labelStyles),
+            bulletStyles: JSON.stringify(child.bulletStyles),
             children: [],
           });
           this.createExportedSchema(exportSchema.children.at(exportSchema.children.length - 1), child);
@@ -475,6 +479,7 @@
             styles: JSON.parse(child.styles),
             markupStyles: JSON.parse(child.markupStyles),
             labelStyles: JSON.parse(child.labelStyles),
+            bulletStyles: JSON.parse(child.bulletStyles),
             children: [],
           });
           this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);

@@ -84,6 +84,9 @@
         if (this.props.state["labelStyles"] === undefined) {
           this.props.state["labelStyles"] = {};
         }
+        if (this.props.state["bulletStyles"] === undefined) {
+          this.props.state["bulletStyles"] = {};
+        }
       },
 
       onMouseUp(event, state) {
@@ -136,6 +139,7 @@
             state.content.canHaveChildren = data.children.length !== 0;
             state.styles = {};
             state.labelStyles = {};
+            state.bulletStyles = {};
 
             let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
             if (markupChildren.length !== 0) {
