@@ -1,3 +1,12 @@
+import example_audio_item from '../../riot/nvh-formatting-editor/example-section/example-audio-item.riot';
+import example_basic_item from '../../riot/nvh-formatting-editor/example-section/example-basic-item.riot';
+import example_bool_item from '../../riot/nvh-formatting-editor/example-section/example-bool-item.riot';
+import example_image_item from '../../riot/nvh-formatting-editor/example-section/example-image-item.riot';
+import example_markup_item from '../../riot/nvh-formatting-editor/example-section/example-markup-item.riot';
+import example_section_item from '../../riot/nvh-formatting-editor/example-section/example-section-item.riot';
+import example_url_item from '../../riot/nvh-formatting-editor/example-section/example-url-item.riot';
+import example_video_item from '../../riot/nvh-formatting-editor/example-section/example-video-item.riot';
+
 class NVHFormattingEditorClass {
   constructor() {
     this.timeout = null,
@@ -17,6 +26,14 @@ class NVHFormattingEditorClass {
       pdf: null,
     }
     observable(this);
+    riot.register('example-basic-item', example_basic_item);
+    riot.register('example-audio-item', example_audio_item);
+    riot.register('example-bool-item', example_bool_item);
+    riot.register('example-image-item', example_image_item);
+    riot.register('example-markup-item', example_markup_item);
+    riot.register('example-section-item', example_section_item);
+    riot.register('example-url-item', example_url_item);
+    riot.register('example-video-item', example_video_item);
   }
 
   initializeGlobalAttributes() {
@@ -140,29 +157,9 @@ class NVHFormattingEditorClass {
   }
 
   getEntryHTML(schema, entry) {
-    if (schema.children.length === 0 && schema.content.fullName === entry.path) {
-      let entryStyle = entry.path === "entry" ? " color: red; font-weight: bold; font-size: 30px;" : "" // "entry" is here just for testing purposes, remove later
-      return `<div style="padding: 3px;${entryStyle}">${entry.value}</div>`;
-    }
-
-    let stringHTML = `<div style="display: flex; flex-direction: ${schema.orientation}; flex-wrap: wrap;">`;
-    for (let childSchema of schema.children) {
-      if (childSchema.content.fullName === "") {
-        stringHTML += this.getEntryHTML(childSchema, entry);
-      } else if (childSchema.content.areaFullName === schema.content.areaFullName) {
-        stringHTML += this.getEntryHTML(childSchema, entry);
-      } else {
-        stringHTML += `<div style="display: flex; flex-direction: ${childSchema.orientation}; flex-wrap: wrap;">`;
-        for (let childEntry of this.getEntryChildren(entry, [])) {
-          if (childSchema.content.fullName === childEntry.path) {
-            stringHTML += this.getEntryHTML(childSchema, childEntry);
-          }
-        }
-        stringHTML += `</div>`;
-      }
-    }
-    stringHTML += `</div>`;
-    return stringHTML;
+    const item = document.createElement('example-section-item');
+    riot.mount(item, { schema: schema, entry: entry });
+    return item.innerHTML;
   }
 
   /*This allows displaying non-direct children*/
