@@ -69,8 +69,8 @@
                             schema={childSchema}
                             entry={props.entry}
                             isFormatting={props.isFormatting}
-                            bulletIndex={1}
-                            haveSiblings={false}/>
+                            bulletIndex={props.bulletIndex}
+                            haveSiblings={props.haveSiblings}/>
       <example-section-item if={props.schema.content.area === childSchema.content.area
                                 && childSchema.content.name !== "" /*render parent label*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}

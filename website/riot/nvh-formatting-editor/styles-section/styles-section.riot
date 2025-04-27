@@ -37,7 +37,13 @@
       },
 
       getStyleOptions() {
-        let result = [...window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
+        let result;
+        if (window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles === undefined) {
+          result = [];
+          console.log("window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles = undefined; in 'styles-section.riot'");
+        } else {
+          result = [...window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
+        }
         let name = window.nvhFormattingEditor.global.selectedPlaceholder.content.name;
         let fullName = window.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
         let styles = window.nvhFormattingEditor.global.selectedPlaceholder.styles;
