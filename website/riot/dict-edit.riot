@@ -1,18 +1,14 @@
 <dict-edit>
    <loading-overlay if={dictData.isDictionaryLoading}/>
-   <h1 class="pageTitle">
-      <span class="entryListMenuButton">
+   <dict-header>
+      <span slot="before-title"
+            class="entryListMenuButton">
          <button class="btn sidenav-trigger btn-floating pulse"
                data-target="entryListSidenav">
             <i class="material-icons">menu</i>
          </button>
       </span>
-      <a href="#{dictData.dictId}"
-            class="dictionaryTitle">
-         {dictData.title}
-      </a>
-      <span class="totalEntries">total {window.Formatter.num(dictData.entryCount)} entries</span>
-   </h1>
+   </dict-header>
    <template if={dictData.isDictionaryLoaded}>
       <div id="dictEditContainer">
          <div class="positionRelative">
@@ -259,15 +255,6 @@
       #dictEditContainer .sidenav{
          padding-bottom: 0;
       }
-      .dictionaryTitle{
-         text-decoration: none;
-      }
-      .totalEntries{
-         font-size: 0.85rem;
-         color: #b8b8b8;
-         margin-left: 1.3rem;
-         text-transform: none;
-      }
       li > span {
          white-space: nowrap;
       }
@@ -287,7 +274,6 @@
          flex: 1;
       }
       .entryListMenuButton{
-         margin-right: 10px;
          display: none;
          right: unset;
          left: 23px;

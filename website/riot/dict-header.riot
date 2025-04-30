@@ -1,0 +1,116 @@
+<dict-header class="header displayFlex gap20 alignCenter">
+   <slot name="before-title"/>
+   <h1 class="pageTitle">
+      {dictData.title}
+   </h1>
+   <dict-progress if={dictData.config.progress_tracking?.tracked}
+         dict-id={dictData.dictId}>
+   </dict-progress>
+
+   <span if={dictData.entryCount}
+         class="totalEntries">total {window.Formatter.num(dictData.entryCount)} entries</span>
+
+   <div class="alignCenter buttons ml-auto">
+      <slot name="before-buttons"/>
+      <dict-favorite-toggle if={authData.authorized}
+            dict-id={dictData.dictId}/>
+      <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit || dictData.userAccess.canUpload || dictData.userAccess.canDownload}
+            class="dropdown-trigger btn btn-floating btn-flat"
+            href="#"
+            data-target="dictMenuDropdown">
+         <i class="material-icons black-text">more_horiz</i>
+      </a>
+      <ul id="dictMenuDropdown"
+            class="dropdown-content">
+         <li if={dictData.userAccess.canConfig}>
+            <a href="#/{dictData.dictId}/config">
+               <i class="material-icons">settings</i>
+               Config
+            </a>
+         </li>
+         <li if={dictData.userAccess.canUpload}>
+            <a href="#/{dictData.dictId}/upload">
+                  <i class="material-icons">upload</i>
+               Upload
+            </a>
+         </li>
+         <li if={dictData.userAccess.canDownload}>
+            <a href="#/{dictData.dictId}/download">
+               <i class="material-icons">download</i>
+               Download
+            </a>
+         </li>
+         <li if={dictData.userAccess.canConfig}>
+            <a href="javascript:void(0);"
+                  onclick={onClone}>
+               <i class="material-icons left">content_copy</i>
+               Clone
+            </a>
+         </li>
+         <li if={dictData.userAccess.canEdit}>
+            <a href="javascript:void(0);"
+                  onclick={onDelete}>
+               <i class="material-icons left">delete</i>
+               Delete
+            </a>
+         </li>
+      </ul>
+   </div>
+
+
+   <script>
+      export default{
+         bindings: [["store", "dictionaryChanged", "onDictionaryChanged"]],
+
+         onMounted(){
+            if(!this.dictData.isDictionaryLoading){
+               this.initializeDropdown()
+            }
+         },
+
+         onDictionaryChanged(){
+            this.initializeDropdown()
+         },
+
+         initializeDropdown(){
+            $(".dropdown-trigger", this.root).dropdown({
+               coverTrigger: false,
+               constrainWidth: false
+            })
+         }
+      }
+   </script>
+
+
+   <style type="scss">
+      :host{
+         padding-bottom: 0.5rem;
+      }
+      .pageTitle{
+         white-space: nowrap;
+         text-overflow: ellipsis;
+         overflow: hidden;
+      }
+      .totalEntries{
+         font-size: 0.85rem;
+         color: #b8b8b8;
+         text-transform: none;
+      }
+      dict-favorite-toggle{
+         font-size: 1.4rem;
+      }
+      @media screen and (max-width: 900px) {
+         :host{
+            &.gap20{
+               gap: 10px
+            }
+         }
+         .totalEntries{
+            display: none;
+         }
+         dict-progress .dictProgressBar{
+            width: 30px;
+         }
+      }
+   </style>
+</dict-header>

@@ -17,7 +17,7 @@
             <a each={ (entry, idx) in dictData.entryList }
                   href="#/{dictData.dictId}/edit/{entry.id}/{dictData.editorMode}{store.getEntrySearchUrlQueryString()}"
                   data-idx={idx}
-                  class="entry-list-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''}">
+                  class="entry-list-item {entry.isSaving ? 'saving' : ''} {entry.id == dictData.entryId ? 'selected' : ''} {entry.is_completed ? 'isCompleted' : ''}">
                <span class="lineNum">{idx + 1}.</span>
                <span class="headword-link {entry.id == dictData.entryId ? 'red-text' : ''}">
                   <raw-html content={entry.title || "&nbsp;"}/>
@@ -412,6 +412,17 @@
          &:hover{
             background-color: #eee;
          }
+         &.isCompleted{
+            background-color: #f1f8e9;
+            border-left-color: #4CAF50;
+            &:hover,
+            &.selected{
+               background-color: #dcedc8;
+            }
+            &.selected{
+               border-left-color: #1B5E20;
+            }
+         }
          &.selected{
             border-left-color: #000;
          }
@@ -454,11 +465,7 @@
          .badge{
             margin-top: 0;
             font-weight: bold;
-            font-size: 1rem;
-            color: #fff;
-            white-space: nowrap;
             min-width: auto;
-            border-radius: 2px;
             box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%),
                0 3px 1px -2px rgb(0 0 0 / 12%),
                0 1px 5px 0 rgb(0 0 0 / 20%);

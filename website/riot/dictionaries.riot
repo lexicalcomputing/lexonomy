@@ -49,6 +49,8 @@
                   <th class="titleColumn">Title</th>
                   <!--th>Language</th-->
                   <th class="sizeColumn">Size</th>
+                  <th if={state.hasProgressColumn}
+                       class="progressColumn">Progress</th>
                   <th class="actionColumn"></th>
                </tr>
             </thead>
@@ -83,6 +85,10 @@
                   </td-->
                   <td class="dict-size grey-text">
                      {window.Formatter.num(dict.size)}
+                  </td>
+                  <td if={state.hasProgressColumn}>
+                     <dict-progress if={dict.stats}
+                           dict-id={dict.id}/>
                   </td>
                   <td class="dict-actions">
                      <div class="buttons">
@@ -198,7 +204,8 @@
             selectedCount: 0,
             query: "",
             hasFavorite: false,
-            showOnlyFavorites: false
+            showOnlyFavorites: false,
+            hasProgressColumn: true
          },
 
          onBeforeMount() {
@@ -222,7 +229,8 @@
 
          onBeforeUpdate(){
             this.state.selectedCount = this.state.visibleDictionaries.filter(dict => dict.selected).length
-            this.state.hasFavorite = this.dictData.dictionaryList.findIndex(d => d.favorite) != -1
+            this.state.hasFavorite = this.dictData.dictionaryList.find(d => d.favorite)
+            this.state.hasProgressColumn = this.dictData.dictionaryList.find(d => !!d.stats)
          },
 
          onUpdated(){
@@ -432,7 +440,10 @@
       .actionColumn{
          width: 1px;
       }
-
+      .progressColumn{
+         min-width: 100px;
+         text-align: center;
+      }
       tr .checkbox input[type="checkbox"]+span{
          padding-left: 20px;
          height: 19px;

@@ -231,6 +231,36 @@ table.striped thead tr{
       padding-left: 20px;
    }
 }
+.buttonWithCounter{
+   &.btn-floating{
+      overflow: visible;
+   }
+}
+.buttonWithCounter .iconWrapper{
+   width: 24px;
+   height: 24px;
+   display: inline-flex;
+   vertical-align: middle;
+   position: relative;
+}
+.buttonWithCounter i{
+   height: 24px!important;
+   line-height: 24px!important;
+}
+.buttonWithCounter .iconCount{
+   background-color: #c62132;
+   color: #fff;
+   position: absolute;
+   top: -10px;
+   font-size: 12px;
+   right: -12px;
+   height: 17px;
+   width: 17px;
+   border-radius: 50%;
+   line-height: 17px;
+   text-align: center;
+   letter-spacing: -1px;
+}
 
 /* responsivity  */
 

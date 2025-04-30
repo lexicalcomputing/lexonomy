@@ -88,7 +88,8 @@ class StoreClass {
          tab: searchParams.tab || this.data.search.tab,
          searchtext: searchParams.searchtext || "",
          modifier: searchParams.modifier || "start",
-         advanced_query: searchParams.advanced_query || ""
+         advanced_query: searchParams.advanced_query || "",
+         isCompleted: searchParams.isCompleted ?? null
       }
       if(JSON.stringify(this.data.search) != JSON.stringify(newSearchParams)){
          Object.assign(this.data.search, newSearchParams)
@@ -112,18 +113,21 @@ class StoreClass {
    }
 
    updateURLSearchQuery(){
-      if(this.data.search.tab == "advanced"){
-         url.setQuery(this.data.search.advanced_query ? {
+      let params = {}
+      if(this.data.search.tab == "advanced" && this.data.search.advanced_query){
+         params = {
             t: "advanced",
             q: this.data.search.advanced_query
-         } : {}, true)
-      } else if(this.data.search.tab == "basic"){
-         url.setQuery(this.data.search.searchtext ? {
+         }
+      } else if(this.data.search.tab == "basic" && this.data.search.searchtext){
+         params = {
             t: "basic",
             s: this.data.search.searchtext,
-            m: this.data.search.modifier
-         } : {}, true)
+            m: this.data.search.modifier,
+            c: this.data.search.isCompleted ?? null
+         }
       }
+      url.setQuery(params, true)
    }
 
    setEntryFlag(entryId, flags){
@@ -172,6 +176,14 @@ class StoreClass {
    getElementDisplayedName(elementPath){
       let elementName = elementPath.split(".").pop()
       return this.data.config.formatting.elements?.[elementPath]?.name || elementName
+   }
+
+   getDictStats(dictId){
+      if(dictId == this.data.dictId){
+         return this.data.stats
+      } else {
+         return this.getDictionary(dictId)?.stats
+      }
    }
 
    getFlag(flagName){
@@ -342,7 +354,8 @@ class StoreClass {
                   }
                   Object.assign(this.data, {
                         config: response.configs,
-                        userAccess: response.userAccess
+                        userAccess: response.userAccess,
+                        stats: response.stats
                      },
                      response.publicInfo
                   )
@@ -373,6 +386,11 @@ class StoreClass {
          url: `${window.API_URL}${dictId}/config.json`,
          failMessage: `Could not load the dictionary.`
       })
+            .done(response => {
+               if(response?.stats){
+                  this._calculateProgress(response.stats)
+               }
+            })
    }
 
    loadMoreEntries(){
@@ -914,6 +932,12 @@ class StoreClass {
       if(dictionary){
          dictionary[attrName] = attrValue
       }
+   }
+
+   updateCompletedCount(change){
+      this.data.stats.completed_entries += change
+      this._calculateProgress(this.data.stats)
+      this.trigger("statsChanged", this.data.dictId)
    }
 
    importFile(data){
@@ -1638,8 +1662,27 @@ class StoreClass {
                currentUserCanDelete: true
             })
          }
+         if(d.stats){
+            this._calculateProgress(d.stats)
+         }
       })
       this.trigger("dictionaryListChanged")
+   }
+
+   _calculateProgress(stats){
+      if(stats.entry_count){
+         let progress = stats.completed_entries / stats.entry_count * 100
+         if(progress > 0 && progress < 1){
+            progress = 1
+         } else if (progress > 99 && progress < 100){
+            progress = 99
+         } else {
+            progress = Math.round(progress)
+         }
+         stats.progress = progress
+      } else {
+         stats.progress = 0
+      }
    }
 }
 

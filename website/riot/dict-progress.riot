@@ -1,0 +1,50 @@
+<dict-progress>
+   <div if={state.stats}
+         class="dictProgressContainer displayFlex tooltipped"
+         data-tooltip="Completed {window.Formatter.num(state.stats.completed_entries)} of {window.Formatter.num(state.stats.entry_count)} entries.">
+      <div class="dictProgressValue grey-text">{state.stats.progress}%</div>
+      <div class="dictProgressBar progress mt-0 mb-0">
+         <div class="determinate {window.getProgressColorClass(state.stats.progress)}"
+               style="width: {state.stats.progress}%"></div>
+      </div>
+   </div>
+
+   <script>
+      export default{
+         bindings: [["store", "statsChanged", "onStatsChanged"]],
+
+         onBeforeMount(){
+            this.refreshStats()
+         },
+
+         onBeforeUpdate(){
+            this.refreshStats()
+         },
+
+         onStatsChanged(dictId, stats){
+            if(dictId == this.props.dictId){
+               this.refreshStats()
+               this.update()
+            }
+         },
+
+         refreshStats(){
+            this.state.stats = this.store.getDictStats(this.props.dictId)
+         }
+      }
+   </script>
+
+   <style type="scss">
+      .dictProgressContainer{
+         flex-direction: column;
+         align-items: center;
+      }
+      .dictProgressValue{
+         line-height: 1;
+         font-size: small;
+      }
+      .dictProgressBar{
+         width: 50px;
+      }
+   </style>
+</dict-progress>

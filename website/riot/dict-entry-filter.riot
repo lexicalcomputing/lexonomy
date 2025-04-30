@@ -13,42 +13,77 @@
    </ul>
    <div class="filterForm tabContent">
       <div if={dictData.search.tab == "basic"}>
-         <span class="searchBox inputWithRightIcon">
-            <input type="text"
-                  id="searchtext"
-                  placeholder="search"
-                  class="input-field"
-                  value={dictData.search.searchtext}
-                  oninput={onSearchtextInput}
-                  onkeyup={onSearchtextKeyUp}
-                  onkeydown={onSearchtextKeyDown}/>
-            <i onclick={onClearFilterClick}
-               class="material-icons rightIcon grey-text clickable">close</i>
-         </span>
-
-         <select id="modifier"
-               onchange={onModifierChange}>
-            <template if={dictData.config.searchability.templates.length}>
-               <optgroup label="Custom templates">
-                  <option each={template in dictData.config.searchability.templates}
-                        value="template_{template.label}" selected={dictData.search.modifier == "template_" + template.label}>{template.label}</option>
-               </optgroup>
-               <optgroup label="Default options">
+         <div class="displayFlex gap10">
+            <span class="searchBox inputWithRightIcon">
+               <input type="text"
+                     id="searchtext"
+                     placeholder="search"
+                     class="input-field"
+                     value={dictData.search.searchtext}
+                     oninput={onSearchtextInput}
+                     onkeyup={onSearchtextKeyUp}
+                     onkeydown={onSearchtextKeyDown}/>
+               <i onclick={onClearFilterClick}
+                  class="material-icons rightIcon grey-text clickable">close</i>
+            </span>
+            <select id="modifier"
+                  onchange={onModifierChange}>
+               <template if={dictData.config.searchability.templates.length}>
+                  <optgroup label="Custom templates">
+                     <option each={template in dictData.config.searchability.templates}
+                           value="template_{template.label}" selected={dictData.search.modifier == "template_" + template.label}>{template.label}</option>
+                  </optgroup>
+                  <optgroup label="Default options">
+                     <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
+                     <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
+                     <option value="substring" selected={dictData.search.modifier == "substring"}>contains</option>
+                     <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
+                  </optgroup>
+               </template>
+               <template if={!dictData.config.searchability.templates.length}>
                   <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
                   <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
                   <option value="substring" selected={dictData.search.modifier == "substring"}>contains</option>
                   <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
-               </optgroup>
-            </template>
-            <template if={!dictData.config.searchability.templates.length}>
-               <option value="start" selected={!dictData.search.modifier || dictData.search.modifier == "start"}>starts like this</option>
-               <option value="exact" selected={dictData.search.modifier == "exact"}>is exactly</option>
-               <option value="substring" selected={dictData.search.modifier == "substring"}>contains</option>
-               <option value="id" selected={dictData.search.modifier == "id"}>entry ID is</option>
-            </template>
-         </select>
+               </template>
+            </select>
+            <button if={state.hasFilter}
+                  class="buttonWithCounter btn btn-flat btn-floating {state.showFilter ? 'btn-primary' : ''} tooltipped"
+                  data-tooltip={state.showFilter ? "Hide filters" : (typeof dictData.search.isCompleted == "boolean" ? "Show filters (1 filter is active)" : "Show filters")}
+                  onclick={onToggleFilterClick}>
+               <span class="iconWrapper">
+                  <i class="material-icons {state.showFilter ? 'white-text' : ''}">filter_list</i>
+                  <span if={!state.showFilter && typeof dictData.search.isCompleted == "boolean"}
+                        class="iconCount">
+                     1
+                  </span>
+               </span>
+            </button>
+         </div>
+
+         <div if={state.showFilter}
+               class="pt-2 pl-2 pr-2">
+            <div class="inputField">
+               <label>
+                  <input type="checkbox"
+                        checked={dictData.search.isCompleted === true}
+                        onclick={onIsCompletedClick.bind(this, true)}>
+                  <span>Only complete</span>
+               </label>
+            </div>
+            <div class="inputField mb-2">
+               <label>
+                  <input type="checkbox"
+                        checked={dictData.search.isCompleted === false}
+                        onclick={onIsCompletedClick.bind(this, false)}>
+                  <span>Only incomplete</span>
+               </label>
+            </div>
+         </div>
       </div>
-      <div if={dictData.search.tab == "advanced"}>
+
+      <div if={dictData.search.tab == "advanced"}
+            class="displayFlex gap10">
          <span class="searchBox inputWithRightIcon">
             <span class="textareaWrapper">
                <textarea id="advanced_query"
@@ -85,7 +120,12 @@
             isValid: null,
             parseError: "",
             searchDebounceTimer: null,
-            searchRequest: null
+            searchRequest: null,
+            hasFilter: false
+         },
+
+         onBeforeMount(){
+            this.state.hasFilter = this.dictData.config.progress_tracking?.tracked
          },
 
          onMounted(){
@@ -108,6 +148,10 @@
             }
          },
 
+         onToggleFilterClick(){
+            this.update({showFilter: !this.state.showFilter})
+         },
+
          onToggleQueryBuilder(show){
             this.update()
             $(this.root).toggleClass("showQueryBuilder", show ?? "")
@@ -121,6 +165,11 @@
          onAdvancedQueryBlur(){
             $(".textareaWrapper").removeClass("focused")
             $("#advanced_query").css("height", "48px")
+         },
+
+         onIsCompletedClick(isCompleted){
+            this.dictData.search.isCompleted = isCompleted
+            this.search()
          },
 
          search() {
@@ -243,11 +292,6 @@
       }
       .filterForm{
          padding: 10px;
-         div{
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-         }
          .searchBox{
             width: 100px;
             position: relative;

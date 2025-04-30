@@ -1,0 +1,54 @@
+<dict-config-progress>
+   <loading-overlay if={state.isLoading || state.isSaving}/>
+   <h1 class="pageTitle">Progress tracking</h1>
+   <dict-configuration-issues config-id="progress"/>
+   <template if={state.data}>
+      This feature allows you to keep track of the status of your dictionary work. Each entry can be marked as completed. In the entry list, you can only view completed or incomplete entries. For the dictionary, you can see how many entries are already completed.
+      <br><br>
+      <div class="row">
+          <div class="switch">
+            <label>
+               <input type="checkbox"
+                     id="tracked"
+                     checked={state.data.tracked}>
+               <span class="lever"></span>
+               Track progress
+            </label>
+         </div>
+      </div>
+      <br><br>
+      <dict-config-buttons save-data={saveData}/>
+   </template>
+
+   <script>
+      export default {
+         state: {
+            isLoading: true,
+            isSaving: false,
+            data: null
+         },
+
+         onMounted() {
+            this.store.loadDictionaryConfig("progress_tracking")
+                  .done(response => {
+                     this.state.data = response.content
+                  })
+                  .always(() => {
+                     this.update({isLoading: false})
+                  })
+         },
+
+         saveData() {
+            this.update({isSaving: true})
+            this.store.updateDictionaryConfig("progress_tracking", {
+               node: this.state.data.node,
+               tracked: $("#tracked").is(":checked")
+            })
+                  .always(() => {
+                     this.store.loadDictionaryList()
+                     this.update({isSaving: false})
+                  })
+         }
+      }
+   </script>
+</dict-config-progress>

@@ -27,7 +27,7 @@
       </button>
    </div>
 
-   <div class="nvh-buttons noSelect">
+   <div class="nvh-buttons noSelect {state.isEntryCompleted ? 'isCompleted' : ''}">
       <button if={dictData.userAccess.canAdd || nvhData.isSaving}
             class="btnWithText btn-flat tooltipped {!state.actions.new ? 'disabled' : ''} {!dictData.entryList || (!dictData.entryList.length && !store.getEntrySearchUrlQueryString()) ? 'redBtn' : ''}"
             onclick={onNewEntryClick}
@@ -45,7 +45,7 @@
       <div if={dictData.userAccess.canAdd}
             class="nvh-separator"></div>
 
-      <button if={(state.actions.edit || state.actions.code)  && !nvhData.isSaving}
+      <button if={(state.actions.edit || state.actions.code) && !nvhData.isSaving}
             class="btnSave btn-flat tooltipped {!state.actions.save ? 'disabled' : ''}"
             onclick={onSaveClick}
             data-tooltip="Save entry (Ctrl+s or ⌘+s)<br>Save entry and go to next: (Ctrl+Enter)">
@@ -66,6 +66,19 @@
             onclick={onRedoClick}
             data-tooltip="Redo last action">
          <i class="material-icons">redo</i>
+      </button>
+      <button if={state.actions.toggleCompleted && !nvhData.isSavingCompleted}
+            class="btn-flat tooltipped"
+            onclick={onToggleCompletedClick}
+            data-tooltip={state.isEntryCompleted ? 'Mark entry as incomplete.' : 'Mark entry as completed.'}>
+         <i if={!state.isEntryCompleted}
+               class="material-icons">check</i>
+         <i if={state.isEntryCompleted}
+               class="material-icons green-text">check_circle</i>
+      </button>
+      <button if={nvhData.isSavingCompleted}
+            class="btn-flat disabled spin">
+         <i class="material-icons">donut_large</i>
       </button>
       <button if={state.actions.duplicate}
             class="btn-flat tooltipped {!state.actions.duplicate ? 'disabled' : ''}"
@@ -140,6 +153,7 @@
    <script>
       export default{
          bindings: [["nvhStore", "isSavingChanged", "update"],
+                    ["nvhStore", "isSavingCompletedChanged", "update"],
                     ["nvhStore", "isRevisionsOpenChanged", "update"],
                     ["nvhStore", "revisionChanged", "update"],
                     ["nvhStore", "isValidChanged", "update"]],
@@ -153,12 +167,14 @@
             this.nvhData = this.nvhStore.data
             this.refreshPrevNextEntryId()
             this.refreshAvailableActions()
+            this.state.isEntryCompleted = this.nvhStore.isEntryCompleted()
             this.nvhStore.history.on("change", this.update.bind(this))
          },
 
          onBeforeUpdate(){
             this.refreshPrevNextEntryId()
             this.refreshAvailableActions()
+            this.state.isEntryCompleted = this.nvhStore.isEntryCompleted()
          },
 
          onBeforeUnmount(){
@@ -167,6 +183,10 @@
 
          onSaveClick(){
             this.nvhStore.saveEntry()
+         },
+
+         onToggleCompletedClick(){
+            this.nvhStore.toggleCompleted()
          },
 
          onUndoClick(){
@@ -280,7 +300,10 @@
       }
       .nvh-buttons{
          display: flex;
-         align-items: center
+         align-items: center;
+         &.isCompleted{
+            background-color: #f1f8e9;
+         }
       }
       .btnSave:not(.disabled),
       .redBtn{

@@ -111,6 +111,43 @@ class NVHStoreClass {
       }
    }
 
+   toggleCompleted(){
+      this.data.isSavingCompleted = true
+      this.trigger("isSavingCompletedChanged")
+      let nvh = window.store.data.entry.nvh
+      let lines = nvh.split("\n")
+      let completed = !lines.find(line => line.trim().startsWith("__lexonomy__completed:"))
+      let indentSize = this.guessNvhIndentSize(nvh)
+      if(completed){
+         lines.push(`${" ".repeat(indentSize)}__lexonomy__completed: 1`)
+      } else {
+         lines = lines.filter(line => !line.trim().startsWith("__lexonomy__completed:"))
+      }
+      nvh = lines.join("\n")
+      return window.store.updateEntry(nvh)
+            .always(response => {
+               if(response.success){
+                  window.store.data.entry.nvh = nvh
+                  this.data.entry.children = this.data.entry.children.filter(child => child.name != "__lexonomy__completed")
+                  if(completed){
+                     let element = this._addChildElement(this.data.entry, "entry.__lexonomy__completed")
+                     element.value = "1"
+                     //element.warnings = []
+                     element.isValid = true
+                  }
+                  this.trigger("updateElements", [this.data.entry])
+                  this.addStateToHistory()
+                  window.store.updateCompletedCount(completed ? 1 : -1)
+                  M.toast({html: `Entry marked as ${completed ? 'completed' : 'incomplete'}.`})
+               } else {
+                  M.toast({html: `Entry was not updated: ${response.feedback || ""}`})
+               }
+               this.data.isSavingCompleted = false
+               this.trigger("isSavingCompletedChanged")
+               this.trigger("entryUpdated")
+            })
+   }
+
    saveStyle(){
       return window.connection.post({
          url: `${window.API_URL}${window.store.data.dictId}/dictconfigupdate.json`,
@@ -609,6 +646,11 @@ class NVHStoreClass {
                         )
                   )
                && !revisions,
+         toggleCompleted: window.store.data.config.progress_tracking?.tracked
+               && hasEntry
+               && !isNewEntry
+               && (uA.canEdit || uA.canEditSource)
+               && !revisions,
          undo: (uA.canEdit || uA.canEditSource)
                && this.history.actualIdx > 0
                && !revisions,
@@ -755,6 +797,14 @@ class NVHStoreClass {
 
          this.trigger("updateElements", elements)
       }
+   }
+
+   isEntryCompleted(entry){
+      entry = this.data.entry
+      if(window.store.data.config.progress_tracking?.tracked){
+         return !!this.findElement(el => el.name == "__lexonomy__completed")
+      }
+      return false
    }
 
    isElementVisible(element){
