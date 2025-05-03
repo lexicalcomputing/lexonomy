@@ -705,6 +705,19 @@ class NVHFormattingEditorClass {
   isElementNonExisting(fullName) {
     return fullName !== "" && window.nvhStore.getElementConfig(fullName) === undefined;
   }
+  getMaxPossibleWidth() {
+    switch(window.nvhFormattingEditor.global.activeLayout) {
+      case "tablet":
+        return "1020px";
+      case "pdf":
+        return "980px";
+      case "mobile":
+        return "440px";
+      default:
+        // 2 * 5px padding + 2 * 3 px of margin = 16 px
+        return (window.innerWidth * 0.8 - 16).toString() + "px";
+    }
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();

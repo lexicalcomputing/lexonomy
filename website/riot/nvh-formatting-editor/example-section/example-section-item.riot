@@ -70,7 +70,8 @@
                             entry={props.entry}
                             isFormatting={props.isFormatting}
                             bulletIndex={props.bulletIndex}
-                            haveSiblings={props.haveSiblings}/>
+                            haveSiblings={props.haveSiblings}
+                            maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       <example-section-item if={props.schema.content.area === childSchema.content.area
                                 && childSchema.content.name !== "" /*render parent label*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
@@ -81,7 +82,8 @@
                             entry={props.entry}
                             isFormatting={props.isFormatting}
                             bulletIndex={props.bulletIndex}
-                            haveSiblings={props.haveSiblings}/>
+                            haveSiblings={props.haveSiblings}
+                            maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       <template each={(childEntry, index) in window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
                 if={props.schema.content.area !== childSchema.content.area
                     && childSchema.content.name !== ""}>
@@ -93,7 +95,8 @@
                                 entry={childEntry}
                                 isFormatting={props.isFormatting}
                                 bulletIndex={index + 1}
-                                haveSiblings={window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}/>
+                                haveSiblings={window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}
+                                maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       </template>
     </div>
   </div>
@@ -105,6 +108,7 @@
         value: null,
         bulletValue: null,
         valueStylePairs: null,
+        maxPossibleWidth: null,
       },
 
       onBeforeMount() {
@@ -115,6 +119,7 @@
           this.props.schema["bulletStyles"] = {};
         }
         let fullName = this.props.schema.content.fullName;
+        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
         if (fullName === "") {
           return;
         }
@@ -127,6 +132,7 @@
         }
         this.formatValue(fullName);
         this.formatBulletValue();
+        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
       },
       onBeforeUpdate() {
         if (this.props.schema["labelStyles"] === undefined) {
@@ -136,6 +142,7 @@
           this.props.schema["bulletStyles"] = {};
         }
         let fullName = this.props.schema.content.fullName;
+        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
         if (fullName === "") {
           return;
         }
@@ -148,6 +155,7 @@
         }
         this.formatValue(fullName);
         this.formatBulletValue();
+        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
       },
 
       onExampleItemMouseEnter(event, state) {
@@ -371,10 +379,19 @@
             if (styles["container-width"] !== undefined && styles["container-width"] !== 0) {
               if (styles[option] === "px") {
                 option = "width";
-                value = "min(" + styles["container-width"] + "px" + "," + "100%)";
+                if (parseInt(styles["container-width"]) < parseInt(this.state.maxPossibleWidth)) {
+                  value = styles["container-width"] + "px";
+                } else {
+                  value = this.state.maxPossibleWidth + "px";
+                }
+                this.state.maxPossibleWidth = value;
               } else if (styles[option] === "%") {
+                if (parseInt(styles["container-width"]) >= 100) {
+                  styles["container-width"] = "100";
+                }
                 option = "width";
-                value = "min(" + styles["container-width"] + "%" + "," + "100%)";
+                value = `${(parseInt(styles["container-width"]) / 100) * parseInt(this.state.maxPossibleWidth)}` + "px";
+                this.state.maxPossibleWidth = value;
               } else {
                 continue;
               }
@@ -385,11 +402,6 @@
             value = "min(" + styles["max-width"] + "px" + "," + "100%)";
           }
           result_css += option + ":" + value + ";";
-        }
-
-        if (styles["max-width"] === undefined) {
-          value = "100%";
-          result_css += "max-width" + ":" + value + ";";
         }
 
         return result_css;
@@ -421,6 +433,14 @@
             return punc;
         }
       },
+      getDecreaseMaxPossibleWidth() {
+        /*Width needs to be reduced by 2 * 3px of margin at each nested level*/
+        let widthReduction = 6;
+        if (this.props.schema.orientation === "row") {
+          widthReduction = 6 * this.props.schema.children.length;
+        }
+        return (parseInt(this.state.maxPossibleWidth) - widthReduction).toString() + "px";
+      }
     }
   </script>
 
@@ -433,7 +453,7 @@
       margin: 3px;
     }
     .element-holder-empty-placeholder {
-      margin: 0;
+      margin: 3px; /*originaly 0px, but updated with the introduction of container width setting, otherwise the UI looks weird*/
     }
     .element-holder {
       display: flex;
