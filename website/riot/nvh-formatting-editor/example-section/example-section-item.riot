@@ -256,11 +256,13 @@
         };
       },
       getValueStylePair(value, markupValueStylePair, styles) {
+        let markupValueStylePairSorted = markupValueStylePair.sort((a, b) => {
+          return value.indexOf(a.value) - value.indexOf(b.value);
+        });
         let leftPunc = this.getPunc("leftPunc", styles);
         let rightPunc = this.getPunc("rightPunc", styles);
-
         let result = [];
-        for (let child of markupValueStylePair) {
+        for (let child of markupValueStylePairSorted) {
           let splittedValue = value.split(child.value);
           if (splittedValue[0] !== "") {
             let normalObject = {
