@@ -606,7 +606,7 @@
           }
           this.state.styles[option] = value;
         } else if (option === "container-width") {
-          if (value !== undefined && value !== null && value !== "" && this.state.styles["container-width-unit"] === "") {
+          if (value !== undefined && value !== null && value !== "" && (this.state.styles["container-width-unit"] === "" || this.state.styles["container-width-unit"] === undefined)) {
             this.state.styles["container-width-unit"] = "px";
           }
           this.state.styles[option] = value;

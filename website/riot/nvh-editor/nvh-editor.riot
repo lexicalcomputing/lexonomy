@@ -13,7 +13,8 @@
                <example-section-item if={window.nvhFormattingEditor.currentLayout !== null}
                   schema={window.nvhFormattingEditor.currentLayout.schema.children[0]}
                   entry={nvhData.entry}
-                  isFormatting={false}/>
+                  isFormatting={false}
+                  maxPossibleWidth={window.nvhFormattingEditor.getMaxPossibleWidth()}/>
                <!--<nvh-editor-view-item element={nvhData.entry}
                      read-only={!dictData.userAccess.canEdit || !!nvhData.revision}/>-->
             </div>
