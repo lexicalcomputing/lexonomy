@@ -20,7 +20,7 @@
               {props.state.content.fullName === "" ? "placeholder-inside-wrapper-no-content" : ""}
               {props.state.content.fullName === "" && props.state.children.length !== 0 ? "placeholder-inside-wrapper-group" : ""}"
       style="background-color: {getBackgroundColor()};
-            border: 4px solid {getBorderColor()}">
+            border: 2px solid {getBorderColor()}">
     <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
                         && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
                     onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
@@ -273,7 +273,7 @@
         }
       },
       getBorderColor() {
-        if (this.props.state.content.name === "" && this.props.state.children.length !== 0) {
+        if (this.props.state.content.name === "") {
           return "#c7ced1";
         }
         return "transparent";
