@@ -142,14 +142,14 @@
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={!this.state.isMarkupType && !this.state.hasDirectMarkupChild} class="styles-section-item-wrapper">
     <div class="label">Margin (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "margin", null)}>
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={!this.state.isMarkupType && !this.state.hasDirectMarkupChild} class="styles-section-item-wrapper">
     <div class="label">Inner margin (padding) (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "padding", null)}>
@@ -513,6 +513,8 @@
         showAlignmentDropdown: false,
         isLabelOptionStyle: false,
         isBulletOptionStyle: false,
+        isMarkupType: false,
+        hasDirectMarkupChild: false,
       },
 
       onBeforeMount() {
@@ -525,6 +527,8 @@
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
+        this.state.isMarkupType = this.props.isMarkupType;
+        this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName);
         this.state.styles = this.props.styleOption.styles;
       },
       onBeforeUpdate() {
@@ -539,6 +543,8 @@
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
+        this.state.isMarkupType = this.props.isMarkupType;
+        this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = this.props.styleOption.styles;
       },
 

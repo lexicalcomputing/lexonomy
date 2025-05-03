@@ -72,8 +72,12 @@
   <script>
     export default {
       onBeforeMount() {
-        /* Initialize labelStyles and markupStyles in case any of them is undefined */
-        if (this.props.state["markupStyles"] === undefined) {
+        /* 
+        Initialize labelStyles and markupStyles in case any of them is undefined
+        this.props.state["markupStyles"].length === 0 is necessary because if someone change entry structure,
+        markup styles will not appear in style section
+        */
+        if (this.props.state["markupStyles"] === undefined || this.props.state["markupStyles"].length === 0) {
           let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(this.props.state.content.fullName);
           if (markupChildren.length !== 0 ) {
             this.props.state["markupStyles"] = window.nvhFormattingEditor.createMarkupStyles(this.props.state.content.fullName);
