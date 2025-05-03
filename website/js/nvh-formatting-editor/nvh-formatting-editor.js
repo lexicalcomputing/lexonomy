@@ -122,14 +122,9 @@ class NVHFormattingEditorClass {
 
   async parseEntry(entryId) {
     window.store.changeEntryId(entryId);
-    let entry = await window.store.loadEntry();
-    let entryObject = Object.entries(JSON.parse(entry.json).entry[0]);
-
-    let parsedEntry = this.getEntryStructure(entryObject, null);
+    await window.store.loadEntry();
     let schema = window.nvhFormattingEditor.layout.pdf.schema;
-    
-    let entryHTML = this.getEntryHTML(schema.children[0], parsedEntry);
-
+    let entryHTML = this.getEntryHTML(schema.children[0], window.nvhStore.data.entry);
     return entryHTML;
   }
 
