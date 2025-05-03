@@ -5,52 +5,78 @@
     <div class="formatting-page-layout-container">
       <div onclick={onLayoutClick.bind(this, "desktop")}
           data-tooltip="Desktop layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : ""}">
-        <i class="small material-icons">desktop_windows</i>
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">desktop_windows</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "tablet")}
           data-tooltip="Tablet layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : ""}">
-        <i class="small material-icons">tablet</i>
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">tablet</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "mobile")}
           data-tooltip="Mobile phone layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : ""}">
-        <i class="small material-icons">phone_android</i>
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">phone_android</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "pdf")}
           data-tooltip="Export to PDF layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : ""}">
-        <i class="small material-icons">picture_as_pdf</i>
+          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">picture_as_pdf</i>
       </div>
     </div>
     <div class="formatting-page-visibility-container">
       <div onclick={onSectionClick.bind(this, "showElements")}
           data-tooltip="Element list panel"
-          class="tooltipped formatting-page-visibility-item {!state.showElements ? "item-inactive" : ""}">
-        <i class="small material-icons">sort</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "showStyle")}
-          data-tooltip="Style panel"
-          class="tooltipped formatting-page-visibility-item {!state.showStyle ? "item-inactive" : ""}">
-        <i class="small material-icons">palette</i>
+          class="tooltipped formatting-page-visibility-item {!state.showElements ? "item-inactive" : "item-active"}">
+        <i class="material-icons">sort</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showEditing")}
           data-tooltip="Layout panel"
-          class="tooltipped formatting-page-visibility-item {!state.showEditing ? "item-inactive" : ""}">
-        <i class="small material-icons">view_compact</i>
+          class="tooltipped formatting-page-visibility-item {!state.showEditing ? "item-inactive" : "item-active"}">
+        <i class="material-icons">view_compact</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "showStyle")}
+          data-tooltip="Style panel"
+          class="tooltipped formatting-page-visibility-item {!state.showStyle ? "item-inactive" : "item-active"}">
+        <i class="material-icons">palette</i>
       </div>
       <div onclick={onSectionClick.bind(this, "showExample")}
           data-tooltip="Preview panel"
-          class="tooltipped formatting-page-visibility-item {!state.showExample ? "item-inactive" : ""}">
-        <i class="small material-icons">visibility</i>
+          class="tooltipped formatting-page-visibility-item {!state.showExample ? "item-inactive" : "item-active"}">
+        <i class="material-icons">visibility</i>
       </div>
     </div>
-    <div id="save-button-wrapper"
-        onclick={saveSchemas}
-        data-tooltip="Save formatting (including layout and styles)"
-        class="tooltipped">
-      SAVE
+    <div class="formatting-page-action-container">
+      <div id="save-button-wrapper"
+          onclick={saveSchemas}
+          data-tooltip="Save formatting (including layout and styles)"
+          class="tooltipped formatting-page-action-item">
+        <i class="material-icons">save</i>
+      </div>
+      <div id="undo-icon-wrapper" 
+          onclick={window.nvhFormattingEditor.undoSchema}
+          data-tooltip="Step back"
+          class="tooltipped formatting-page-action-item">
+        <i class="material-icons">undo</i>
+      </div>
+      <div id="redo-icon-wrapper" 
+          onclick={window.nvhFormattingEditor.redoSchema}
+          data-tooltip="Step forward"
+          class="tooltipped formatting-page-action-item">
+        <i class="material-icons">redo</i>
+      </div>
+      <div id="reset-icon-wrapper" 
+          onclick={window.nvhFormattingEditor.resetSchema}
+          data-tooltip="Reset current layout"
+          class="tooltipped formatting-page-action-item">
+        <i class="material-icons">refresh</i>
+      </div>
+      <div id="export-pdf"
+          onclick={onExportPDF}
+          data-tooltip="Export all entries of dictionary to PDF"
+          class="tooltipped formatting-page-action-item">
+        Export to PDF
+      </div>
     </div>
   </div>
   <div class="formatting-page-wrapper-container">
@@ -74,39 +100,14 @@
     </div>
     <div if={state.showElements} class="resizeHandle"
         onmousedown={(event) => onResizeHandleMouseDown(event, ".elements-choice-section-wrapper", 200, 300)}></div>
-    <div if={state.showStyle}
-        id="style-container"
-        class="formatting-page-container">
-      <div class="header-box">
-        <i class="small material-icons">palette</i>
-        <h2>Style</h2>
-      </div>
-      <div class="style-section-wrapper">
-        <styles-section class="style-section"/>
-      </div>
-    </div>
-    <div if={state.showStyle} class="resizeHandle"
-        onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 200, 600)}></div>
     <div if={state.showEditing}
         id="editing-container"
         class="formatting-page-container">
       <div class="editing-header">
         <div class="header-box">
           <i class="small material-icons">view_compact</i>
-          <h2>Editing</h2>
+          <h2>Layout</h2>
           <div id="buttons-box">
-            <div id="undo-icon-wrapper"
-                onclick={window.nvhFormattingEditor.undoSchema}
-                data-tooltip="Step back"
-                class="tooltipped">
-              UNDO
-            </div>
-            <div id="redo-icon-wrapper"
-                onclick={window.nvhFormattingEditor.redoSchema}
-                data-tooltip="Step forward"
-                class="tooltipped">
-              REDO
-            </div>
             <div id="import-json-wrapper"
                 data-tooltip="Import schema from JSON"
                 class="tooltipped">
@@ -138,13 +139,6 @@
                 onclick={saveAndUnconfigureSchema}>
               UNCONFIGURE
             </div>
-            <div style="width: 100px;"></div>
-            <div id="reset-icon-wrapper"
-                onclick={window.nvhFormattingEditor.resetSchema}
-                data-tooltip="Reset current layout"
-                class="tooltipped">
-              RESET
-            </div>
           </div>
         </div>
       </div>
@@ -152,18 +146,25 @@
         <edit-layout class="edit-layout"/>
       </div>
     </div>
+    <div if={state.showStyle}
+        id="style-container"
+        class="formatting-page-container">
+      <div class="header-box">
+        <i class="small material-icons">palette</i>
+        <h2>Style</h2>
+      </div>
+      <div class="style-section-wrapper">
+        <styles-section class="style-section"/>
+      </div>
+    </div>
+    <div if={state.showStyle} class="resizeHandle"
+        onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 200, 600)}></div>
     <div if={state.showExample} 
         id="example-container"
         class="formatting-page-container">
       <div class="header-box">
         <i class="small material-icons">visibility</i>
         <h2>Preview</h2>
-        <div id="export-pdf"
-            data-tooltip="Export all entries of dictionary to PDF"
-            onclick={onExportPDF}
-            class="tooltipped">
-          Export to PDF
-        </div>
       </div>
       <div class="example-section-wrapper">
         <example-section class="example-section"/>
@@ -801,6 +802,10 @@
     .formatting-page-visibility-container, .formatting-page-layout-container {
       display: flex;
     }
+    .formatting-page-action-container {
+      display: flex;
+      gap: 5px;
+    }
     .formatting-page-wrapper-container {
       display: flex;
       height: 700px;
@@ -839,30 +844,28 @@
       height: 600px;
     }
 
-    .formatting-page-layout-item, .formatting-page-visibility-item {
+    .formatting-page-layout-item, .formatting-page-visibility-item, .formatting-page-action-item {
       padding: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
+      background-color: white;
     }
-    .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover {
+    .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover, .formatting-page-action-item {
       cursor: pointer;
-    }
-    .formatting-page-layout-item {
-      background-color: var(--color-grey-light);
-    }
-    .formatting-page-layout-item:hover {
-      background-color: var(--color-grey-normal);
-    }
-    .formatting-page-visibility-item {
-      background-color: var(--color-grey-light);
-    }
-    .formatting-page-visibility-item:hover {
       background-color: var(--color-grey-normal);
     }
 
     .item-inactive {
-      background-color: var(--color-grey-very-light);
+      background-color: white;
+    }
+    .item-active {
+      background-color: var(--color-red-normal);
+      color: white;
+    }
+    .item-active:hover {
+      background-color: var(--color-red-dark);
+      color: white;
     }
 
 
