@@ -71,7 +71,7 @@
       </div>
     </div>
   </div>
-  <div class="styles-section-item-wrapper">
+  <div if={this.state.isGroup} class="styles-section-item-wrapper">
     <div class="label">Container alignment:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
@@ -515,6 +515,7 @@
         isBulletOptionStyle: false,
         isMarkupType: false,
         hasDirectMarkupChild: false,
+        isGroup: false,
       },
 
       onBeforeMount() {
@@ -527,9 +528,10 @@
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
-        this.state.isMarkupType = this.props.isMarkupType;
-        this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName);
+        this.state.isMarkupType = window.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
+        this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = this.props.styleOption.styles;
+        this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
       },
       onBeforeUpdate() {
         this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
@@ -543,9 +545,10 @@
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
-        this.state.isMarkupType = this.props.isMarkupType;
+        this.state.isMarkupType = window.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
         this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = this.props.styleOption.styles;
+        this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
       },
 
       getStyleOptionValue(option) {
