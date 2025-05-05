@@ -264,7 +264,8 @@
         };
       },
       getValueStylePair(value, markupValueStylePair, styles) {
-        let markupValueStylePairSorted = markupValueStylePair.sort((a, b) => {
+        /*Filter used markup style elements and sort them based on occurence index*/
+        let markupValueStylePairSorted = markupValueStylePair.filter(markup => value.indexOf(markup.value) !== -1).sort((a, b) => {
           return value.indexOf(a.value) - value.indexOf(b.value);
         });
         let leftPunc = this.getPunc("leftPunc", styles);
