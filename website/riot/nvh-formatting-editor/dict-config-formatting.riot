@@ -71,6 +71,23 @@
           class="tooltipped formatting-page-action-item">
         <i class="material-icons">refresh</i>
       </div>
+      <div id="import-json-wrapper"
+          data-tooltip="Import schema from JSON"
+          class="tooltipped">
+        <input id="import-json-input"
+            type="file"
+            accept=".json"
+            onchange={importSchema}/>
+        <label id="import-json-label" for="import-json-input">
+          <i class="material-icons" style="color: white">file_download</i>
+        </label>
+      </div>
+      <div id="export-json-wrapper"
+          data-tooltip="Export schema to JSON"
+          onclick={onExportJSON}
+          class="tooltipped">
+        <i class="material-icons" style="color: white">file_upload</i>
+      </div>
       <div id="export-pdf"
           onclick={onExportPDF}
           data-tooltip="Export all entries of dictionary to PDF"
@@ -107,39 +124,19 @@
         <div class="header-box">
           <i class="small material-icons">view_compact</i>
           <h2>Layout</h2>
-          <div id="buttons-box">
-            <div id="import-json-wrapper"
-                data-tooltip="Import schema from JSON"
-                class="tooltipped">
-              <input id="import-json-input"
-                  type="file"
-                  accept=".json"
-                  onchange={importSchema}/>
-              <label id="import-json-label" for="import-json-input">
-                <i class="material-icons" style="color: white">file_download</i>
-              </label>
-            </div>
-            <div id="export-json-wrapper"
-                data-tooltip="Export schema to JSON"
-                onclick={onExportJSON}
-                class="tooltipped">
-              <i class="material-icons" style="color: white">file_upload</i>
-            </div>
-            <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
-                    && window.nvhFormattingEditor.currentLayout.configured === false}
-                class="tooltipped configure-button-wrapper"
-                data-tooltip={"Layout for this device is not configured.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}
-                onclick={saveAndConfigureSchema}>
-              CONFIGURE
-            </div>
-            <div if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined
-                    && window.nvhFormattingEditor.currentLayout.configured === true}
-                class="tooltipped configure-button-wrapper"
-                data-tooltip={"Layout for this device is configured.\nWhen viewing the dictionary on this device, current layout will be seen."}
-                onclick={saveAndUnconfigureSchema}>
-              UNCONFIGURE
-            </div>
-          </div>
+          <label if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined}
+                class="checkbox"
+                style="margin-left: 20px;">
+              <input type="checkbox" checked={window.nvhFormattingEditor.currentLayout.configured}/>
+              <span class="tooltipped"
+                  style="padding-left: 25px;"
+                  onclick={saveAndConfigureSchema}
+                  data-tooltip={window.nvhFormattingEditor.currentLayout.configured ?
+                                "Layout for this device is used.\nWhen viewing the dictionary on this device, current layout will be seen."
+                                : "Layout for this device is not used.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}>
+                Use {window.nvhFormattingEditor.global.activeLayout} layout
+              </span>
+          </label>
         </div>
       </div>
       <div class="editing-layout-wrapper">
@@ -598,11 +595,11 @@
         this.update({isSaving: true});
         let formatting = window.nvhStore.data.formatting;
         let layoutConfig = formatting.layout;
-        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = true;
+        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = !window.nvhFormattingEditor.currentLayout.configured;
         this.store.updateDictionaryConfig("formatting", formatting)
               .always(() => {
                 this.state.isSaving = false;
-                window.nvhFormattingEditor.currentLayout.configured = true;
+                window.nvhFormattingEditor.currentLayout.configured = layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured;
                 this.update();
               });
       },
@@ -749,15 +746,6 @@
       color: red;
     }
 
-    #buttons-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      padding: 2px;
-      background-color: rgb(240, 247, 246)
-    }
-
     #undo-icon-wrapper, #redo-icon-wrapper, #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper, .configure-button-wrapper, #reset-icon-wrapper {
       display: flex;
       align-items: center;
@@ -797,7 +785,8 @@
     }
     .formatting-page-containers {
       display: flex;
-      gap: 10px;
+      gap: 25px;
+      background-color: var(--color-grey-light);
     }
     .formatting-page-visibility-container, .formatting-page-layout-container {
       display: flex;
