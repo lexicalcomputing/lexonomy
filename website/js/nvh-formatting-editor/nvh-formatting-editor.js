@@ -153,7 +153,7 @@ class NVHFormattingEditorClass {
 
   getEntryHTML(schema, entry) {
     const item = document.createElement('example-section-item');
-    riot.mount(item, { schema: schema, entry: entry });
+    riot.mount(item, { schema: schema, entry: entry, maxPossibleWidth: "980px"});
     return item.innerHTML;
   }
 
