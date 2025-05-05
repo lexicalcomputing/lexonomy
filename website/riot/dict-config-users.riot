@@ -8,7 +8,7 @@
          <h2>No users</h2>
          <br>
          <button class="btn btn-primary"
-               onclick={doAddUser}>
+               onclick={onAddUserClick}>
             <i class="material-icons right">add</i>
             Add new user
          </button>
@@ -53,12 +53,14 @@
                      </span>
                      <span if={!user.isEditable}>
                         { user.email }
+                        <span if={dictData.config.creator == user.email}
+                           class="myOwnBadge badge pink">owner</span>
                      </span>
                   </td>
                   <td each={privilege in privileges}>
                      <label>
                         <input type="checkbox"
-                              disabled={privilege.required}
+                              disabled={privilege.required || dictData.config.creator == user.email}
                               name="{privilege.id}"
                               checked={!!user[privilege.id] || privilege.required}
                               onchange={onPermissionChange.bind(this, idx)}/>
@@ -66,9 +68,16 @@
                      </label>
                   </td>
                   <td>
-                     <a class="btn btn-floating btn-flat right"
-                           onclick={ doDeleteUser.bind(this, idx) }>
+                     <a if={dictData.config.creator != user.email}
+                           class="btn btn-floating btn-flat right"
+                           onclick={onDeleteUserClick.bind(this, idx) }>
                         <i class="material-icons">delete</i>
+                     </a>
+                     <a if={dictData.config.creator != user.email}
+                           class="btn btn-floating btn-flat right tooltipped"
+                           onclick={onChangeOwnerClick.bind(this, user.email)}
+                           data-tooltip="Change dictionary owner">
+                        <i class="material-icons">group</i>
                      </a>
                   </td>
                </tr>
@@ -82,7 +91,7 @@
          <div>
             <button if={!state.userLimit || state.data.users.length < state.userLimit}
                   class="btn"
-                  onclick={doAddUser}>
+                  onclick={onAddUserClick}>
                <i class="material-icons right">add</i>
                Add new user
             </button>
@@ -146,12 +155,7 @@
             this.state.data.users[idx][evt.target.name] = evt.target.checked
          },
 
-         doDeleteUser(idx) {
-            this.state.data.users.splice(idx, 1)
-            this.update()
-         },
-
-         doAddUser(event) {
+         onAddUserClick() {
             this.state.data.users.push({
                id: this.state.data.users.length,
                email: "",
@@ -164,6 +168,32 @@
             })
             this.update()
             $('table input[type="email"]', this.root).last().focus()
+         },
+
+         onDeleteUserClick(idx) {
+            this.state.data.users.splice(idx, 1)
+            this.update()
+         },
+
+         onChangeOwnerClick(email){
+            window.modal.open({
+               title: "Change dictionary owner",
+               small: true,
+               tag: "raw-html",
+               props: {
+                  content: `Do you want to change dictionary owner to: <b>${email}</b>? This user will automatically receive all privileges. <br><br> You will not be able to undo this. <br>All changes will be saved before changing the owner.`
+               },
+               buttons: [{
+                  label: "change owner",
+                  class: "btn-primary",
+                  onClick: function(email, dialog, modal){
+                     this.saveData({
+                        new_creator: email
+                     })
+                     modal.close()
+                  }.bind(this, email)
+               }]
+            })
          },
 
          onMounted() {
@@ -184,33 +214,21 @@
                   })
          },
 
-         saveData() {
-            if (!this.state.data.users.length) {
-               window.showToast('Please, add at least one user.')
-            } else if(this.state.data.users.find(row => row.canConfig) == undefined) {
-               window.showToast('At least one user must have "Configure" permission.')
-            } else if(this.state.data.users.find(row => row.email == "")) {
-               window.showToast('Email must not be empty.')
-            } else {
-               let invalidUser = this.state.data.users.find(row => !window.isEmail(row.email))
-               if(invalidUser) {
-                  window.showToast(`Email "${invalidUser.email}" is not valid.`)
-                  return
-               }
-               if(new Set(this.state.data.users.map(user => user.email.trim())).size != this.state.data.users.length){
-                  window.showToast('Each email can only be used once.')
-                  return
-               }
+         saveData(optionalData={}) {
+            if(this.checkDataAndShowWarning()){
                let privilegeList = Object.values(this.privileges)
-               let data = {}
+               let users = {}
                this.state.data.users.forEach(u => {
-                  data[u.email] = {}
+                  users[u.email] = {}
                   privilegeList.forEach(privilege => {
-                     data[u.email][privilege.id] = u[privilege.id] || privilege.required || false
+                     users[u.email][privilege.id] = u[privilege.id] || privilege.required || false
                   })
                })
+               let data = Object.assign({
+                  users: JSON.stringify(users)
+               }, optionalData)
                this.update({isSaving: true})
-               this.store.updateDictionaryAccess(data)
+               return this.store.updateDictionaryAccess(data)
                      .done(response => {
                         if(!response.error){
                            this.state.data.users.forEach(u => u.isEditable = false)
@@ -218,6 +236,28 @@
                      })
                      .always(() => this.update({isSaving: false}))
             }
+         },
+
+         checkDataAndShowWarning(){
+            let error = ''
+            if (!this.state.data.users.length) {
+               error = 'Please, add at least one user.'
+            } else if(this.state.data.users.find(row => row.canConfig) == undefined) {
+               error = 'At least one user must have "Configure" permission.'
+            } else if(this.state.data.users.find(row => row.email == "")) {
+               error = 'Email must not be empty.'
+            } else {
+               let invalidUser = this.state.data.users.find(row => !window.isEmail(row.email))
+               if(invalidUser) {
+                  error = `Email "${invalidUser.email}" is not valid.`
+               } else if(new Set(this.state.data.users.map(user => user.email.trim())).size != this.state.data.users.length){
+                  error = 'Each email can only be used once.'
+         }
+      }
+            if(error){
+               window.showToast(error)
+            }
+            return !error
          }
       }
    </script>
@@ -225,6 +265,9 @@
    <style>
       .labelWrapper{
          gap: 5px;
+      }
+      .myOwnBadge{
+         margin-left: 10px;
       }
    </style>
 

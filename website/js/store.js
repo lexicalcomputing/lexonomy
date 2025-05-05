@@ -690,12 +690,10 @@ class StoreClass {
             })
    }
 
-   updateDictionaryAccess(users){
+   updateDictionaryAccess(data){
       return window.connection.post({
          url: `${window.API_URL}${this.data.dictId}/dictaccessupdate.json`,
-         data: {
-            users: JSON.stringify(users)
-         },
+         data: data,
          failMessage: `Could not save the data ('users').`,
          successMessage: "Saved"
       })

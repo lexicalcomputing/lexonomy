@@ -46,6 +46,7 @@
                <tr>
                   <th class="checkboxColumn"></th>
                   <th class="favoriteColumn"></th>
+                  <th class="roleColumn"></th>
                   <th class="titleColumn">Title</th>
                   <!--th>Language</th-->
                   <th class="sizeColumn">Size</th>
@@ -73,6 +74,12 @@
                   </td>
                   <td>
                      <dict-favorite-toggle dict-id={dict.id}/>
+                  </td>
+                  <td>
+                     <span if={dict.user_access_role == "creator"}
+                           class="badge pink">my own</span>
+                     <span if={dict.user_access_role == "contributor"}
+                           class="badge indigo">shared with me</span>
                   </td>
                   <td class="dict">
                      <a href="#/{ dict.id }"
@@ -441,6 +448,7 @@
       }
       .checkboxColumn,
       .favoriteColumn,
+      .roleColumn,
       .sizeColumn,
       .lastEditColumn,
       .actionColumn{
