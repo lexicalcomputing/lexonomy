@@ -1,61 +1,13 @@
 <dict-public>
    <loading-overlay if={state.isLoading || dictData.isDictionaryLoading || dictData.isEntryListLoading}/>
    <template if={!dictData.isDictionaryLoading}>
-      <div class="header displayFlex">
-         <h1 class="pageTitle">
-            { dictData.title }
-            <span if={dictData.entryCount} class="totalEntries">total {window.Formatter.num(dictData.entryCount)} entries</span>
-         </h1>
-         <div class="dictBtns buttons ml-auto">
-            <a href="#/{dictData.dictId}/edit"
-                  class="btn btn-primary btn-large">
-               {dictData.userAccess.canEdit ? "open editor" : "open viewer"}
-            </a>
-            <dict-favorite-toggle if={authData.authorized}
-                  dict-id={dictData.dictId}/>
-            <a if={dictData.userAccess.canConfig || dictData.userAccess.canEdit || dictData.userAccess.canUpload || dictData.userAccess.canDownload}
-                  class="dropdown-trigger btn btn-floating btn-flat"
-                  href="#"
-                  data-target="dictMenuDropdown">
-               <i class="material-icons black-text">more_horiz</i>
-            </a>
-            <ul id="dictMenuDropdown"
-                  class="dropdown-content">
-               <li if={dictData.userAccess.canConfig}>
-                  <a href="#/{dictData.dictId}/config">
-                     <i class="material-icons">settings</i>
-                     Config
-                  </a>
-               </li>
-               <li if={dictData.userAccess.canUpload}>
-                  <a href="#/{dictData.dictId}/upload">
-                        <i class="material-icons">upload</i>
-                     Upload
-                  </a>
-               </li>
-               <li if={dictData.userAccess.canDownload}>
-                  <a href="#/{dictData.dictId}/download">
-                     <i class="material-icons">download</i>
-                     Download
-                  </a>
-               </li>
-               <li if={dictData.userAccess.canConfig}>
-                  <a href="javascript:void(0);"
-                        onclick={onClone}>
-                     <i class="material-icons left">content_copy</i>
-                     Clone
-                  </a>
-               </li>
-               <li if={dictData.userAccess.canEdit}>
-                  <a href="javascript:void(0);"
-                        onclick={onDelete}>
-                     <i class="material-icons left">delete</i>
-                     Delete
-                  </a>
-               </li>
-            </ul>
-         </div>
-      </div>
+      <dict-header>
+         <a slot="before-buttons"
+               href="#/{dictData.dictId}/edit"
+               class="btn btn-primary btn-large">
+            {dictData.userAccess.canEdit ? "open editor" : "open viewer"}
+         </a>
+      </dict-header>
 
       <div class="displayFlex dictContainer">
          <template if={dictData.public || dictData.userAccess}>
@@ -129,8 +81,7 @@
          <div class="panel">
             <div if={state.showQueryBuilder}
                   class="block pr-6">
-               <advanced-query-builder query={state.query}
-                     search-func={search}/>
+               <advanced-query-builder search-func={search}/>
             </div>
             <div if={!state.showQueryBuilder}
                   class="description">
@@ -181,8 +132,7 @@
          state: {
             isLoading: false,
             displayedEntryId: null,
-            showQueryBuilder: false,
-            query: ""
+            showQueryBuilder: false
          },
 
          onBeforeMount(){
@@ -195,9 +145,6 @@
             this.dictData.search.searchtext = ""
             if(!this.dictData.isDictionaryExamplesLoading){
                this.reloadDictionaryExamples()
-            }
-            if(!this.dictData.isDictionaryLoading){
-               this.initializeDropdown()
             }
             if(this.dictData.config.formatting.customCss){
                window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".nvh-editor-view-items")
@@ -266,37 +213,19 @@
 
          onDictionaryChanged(){
             this.reloadDictionaryExamples()
-            this.initializeDropdown()
          },
 
          getEntryUrl(){
             let editorMode = this.dictData.userAccess
                   && this.dictData.userAccess.canEdit ? "edit" : "view"
             return `#/${this.dictData.dictId}/edit/${this.state.displayedEntryId}/${editorMode}`
-         },
-
-         initializeDropdown(){
-            $(".dropdown-trigger").dropdown({
-               coverTrigger: false,
-               constrainWidth: false
-            })
          }
       }
    </script>
 
    <style type="scss">
-      dict-favorite-toggle{
-         font-size: 1.4rem;
-      }
-      .header{
+      dict-header{
          border-bottom: 1px solid #e0e0e0;
-         padding-bottom: 0.5rem;
-      }
-      .totalEntries{
-         font-size: 0.85rem;
-         color: #b8b8b8;
-         margin-left: 1.3rem;
-         text-transform: none;
       }
       advanced-query-builder{
          h2{
@@ -308,9 +237,6 @@
          right: 0;
          top: 10px;
          z-index: 99;
-      }
-      .dictBtns{
-         align-items: center;
       }
       .sectionDivider{
          width: 1px;
