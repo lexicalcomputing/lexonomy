@@ -123,7 +123,7 @@ class NVHFormattingEditorClass {
   async parseEntry(entryId) {
     window.store.changeEntryId(entryId);
     await window.store.loadEntry();
-    let schema = window.nvhFormattingEditor.layout.pdf.schema;
+    let schema = window.nvhFormattingEditor.layout.pdf.configured ? window.nvhFormattingEditor.layout.pdf.schema : window.nvhFormattingEditor.layout.desktop.schema;
     let entryHTML = this.getEntryHTML(schema.children[0], window.nvhStore.data.entry);
     return entryHTML;
   }
