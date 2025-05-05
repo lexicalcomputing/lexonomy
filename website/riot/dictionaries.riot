@@ -214,6 +214,7 @@
             if(this.dictData.isDictionaryListLoaded){
                this.state.visibleDictionaries = this.dictData.dictionaryList
                this.state.hasFavorite = this.dictData.dictionaryList.findIndex(d => d.favorite) != -1
+               this.state.hasProgressColumn = this.dictData.dictionaryList.find(d => !!d.stats)
             } else if(!this.state.isLoading) {
                this.state.isLoading = true
                this.reload()
