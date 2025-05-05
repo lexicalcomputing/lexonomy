@@ -124,6 +124,9 @@ def readDictConfigs(dictDB):
                                              "canDownload": r['canDownload'],
                                              "canUpload": r['canUpload']
                                              }
+    creator = conn.execute("SELECT creator FROM dicts WHERE id=?", (dictID,)).fetchone()
+    if creator:
+        configs['creator'] = creator['creator']
 
     # alow access to all managers of project to all dicts that belong to the project
     c3 = conn.execute("SELECT DISTINCT u.user_email FROM user_projects AS u INNER JOIN project_dicts AS d ON u.project_id=d.project_id WHERE d.dict_id=? AND u.role=?", (dictID, 'manager'))
@@ -142,9 +145,6 @@ def readDictConfigs(dictDB):
     r = c4.fetchone()
     if r:
         configs['dict_settings'] = json.loads(r["configs"])
-    # if r:
-    #     for key, value in json.loads(r["configs"]).items():
-    #         configs[key] = value
 
     add_items = ["ident", "publico", "kontext", "titling", "flagging", "styles",
                  "searchability", "xampl", "thes", "collx", "defo", "structure",
@@ -962,9 +962,13 @@ def getDictsByUser(email):
     c = conn.execute("SELECT * FROM dict_fav WHERE user_email=?", (email,))
     for r in c.fetchall():
         favs.append(r['dict_id'])
-    c = conn.execute("SELECT DISTINCT d.id, d.title FROM dicts AS d INNER JOIN user_dict AS ud ON ud.dict_id=d.id WHERE ud.user_email=? OR d.id IN (SELECT dict_id FROM dict_fav WHERE user_email=?) ORDER BY d.title", (email, email))
+    c = conn.execute("SELECT DISTINCT d.id, d.title, d.creator FROM dicts AS d INNER JOIN user_dict AS ud ON ud.dict_id=d.id WHERE ud.user_email=? OR d.id IN (SELECT dict_id FROM dict_fav WHERE user_email=?) ORDER BY d.title", (email, email))
     for r in c.fetchall():
-        info = {"id": r["id"], "title": r["title"], "hasLinks": False, "lang": "", "favorite": False, "owners": []}
+        info = {"id": r["id"], "title": r["title"], "creator": r["creator"], "hasLinks": False, "lang": "", "favorite": False, "owners": []}
+        if r["creator"] == email:
+            info["user_access_role"] = 'creator'
+        else:
+            info["user_access_role"] = 'contributor'
         try:
             dictDB = getDB(r["id"])
             cc = dictDB.execute("select count(*) as total from entries")
@@ -1836,6 +1840,13 @@ def deleteFlagFromStructure(dictDB):
                 structure['elements'][e]['children'].pop(idx)
         dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(structure), 'structure'))
         dictDB.commit()
+
+
+def updateDictCreator(dictID, new_creator):
+    conn = getMainDB()
+    conn.execute("UPDATE dicts SET creator=? WHERE id=?", (new_creator, dictID))
+    conn.commit()
+
 
 def updateDictAccess(dictID, users):
     conn = getMainDB()

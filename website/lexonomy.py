@@ -1030,7 +1030,16 @@ def configupdate(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/dictaccessupdate.json")
 @authDict(["canConfig"])
 def dict_access_update(dictID, user, dictDB, configs):
+    new_user_rights = json.loads(request.forms.users)
+
+    if configs['creator'] not in new_user_rights.keys():
+        if request.forms.new_creator:
+            ops.updateDictCreator(dictID, request.forms.new_creator)
+        else:
+            return {"success": False, "message": "Deleting the current dictionary creator without selecting a new one is not allowed. Choose new crator first."}
+
     old_users = ops.updateDictAccess(dictID, json.loads(request.forms.users))
+
     ops.notifyUsers(old_users, json.loads(request.forms.users), configs['ident'], dictID)
     return {"success": True}
 

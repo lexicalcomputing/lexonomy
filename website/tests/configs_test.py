@@ -219,7 +219,8 @@ class UserTests(unittest.TestCase):
 
     # DICT ACCESS UPDATE (ADMIN)
     def test_02(self):
-        data = {'users': json.dumps({"xmedved1@fi.muni.cz": {"canView": True,"canEdit": False,"canConfig": False,"canDownload": False,"canUpload": False}})}
+        data = {'users': json.dumps({"xmedved1@fi.muni.cz": {"canView": True,"canEdit": False,"canConfig": False,"canDownload": False,"canUpload": False}}),
+                'new_creator': 'xmedved1@fi.muni.cz'}
         r = requests.post(url=self.website + "/" + self.dict_name + "/dictaccessupdate.json" , data=data,
                           headers=self.headers, cookies=self.admin_cookies)
         self.assertEqual(r.json()['success'], True)
