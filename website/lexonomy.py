@@ -973,8 +973,8 @@ def entrylist(dictID, user, dictDB, configs):
     else:
         total, entries = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
 
-    if request.forms.only_completed.lower() == 'true':
-        ops.filter_only_completed(entries)
+    if request.forms.isCompleted.lower() != 'null':
+        ops.filter_only_completed(entries, True if request.forms.isCompleted.lower() == 'true' else False)
     return {"success": True, "entries": entries, "total": total}
 
 @post(siteconfig["rootPath"]+"<dictID>/search.json")
