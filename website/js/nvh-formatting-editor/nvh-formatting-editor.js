@@ -665,7 +665,7 @@ class NVHFormattingEditorClass {
 
   hasDirectMarkupChild(fullName) {
     let result = [];
-    if (fullName === "") {
+    if (fullName === "" || window.store.schema.getElementByPath(fullName) === undefined) {
       return result;
     }
     for (let child of window.store.schema.getElementByPath(fullName).children) {
