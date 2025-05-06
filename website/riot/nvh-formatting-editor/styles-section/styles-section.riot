@@ -1,15 +1,15 @@
 <styles-section>
   <div class="styles-section-container">
-    <div if={window.nvhFormattingEditor.global.selectedPlaceholder === null}>No element selected.  Select element in layout selection to style it.</div>
-    <div if={window.nvhFormattingEditor.global.selectedPlaceholder !== null} class="style-section-option-wrapper">
+    <div if={!nvhFormattingEditor.global.selectedPlaceholder}>No element selected.  Select element in layout selection to style it.</div>
+    <div if={nvhFormattingEditor.global.selectedPlaceholder} class="style-section-option-wrapper">
       <div each={(child, index) in getStyleOptions()}
           class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
-          style="color: {window.nvhStore.getElementColor(child.fullName)};"
+          style="color: {nvhStore.getElementColor(child.fullName)};"
           onclick={() => changeStyleOption(child.fullName)}>
-        {child.name === "" ? "container": child.name}
+        {!child.name ? "container": child.name}
       </div>
     </div>
-    <styles-section-item if={window.nvhFormattingEditor.global.selectedPlaceholder !== null}
+    <styles-section-item if={nvhFormattingEditor.global.selectedPlaceholder}
                         class="styles-section-container-divider"
                         styleOption={currentStyleOption}
                         isLabelOptionStyle={currentStyleOption.name.includes("(label)")}
@@ -19,18 +19,22 @@
   <script>
     export default {
       currentStyleOption: null,
+      nvhFormattingEditor: null,
+      nvhStore: null,
 
-      onBeforeMount() {
-        if (window.nvhFormattingEditor.global.selectedPlaceholder !== null) {
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.nvhStore = window.nvhStore;
+        if (this.nvhFormattingEditor.global.selectedPlaceholder) {
           let styleOptions = this.getStyleOptions();
           this.currentStyleOption = styleOptions[0];
         }
       },
-      onBeforeUpdate() {
-        if (window.nvhFormattingEditor.global.selectedPlaceholder !== null) {
+      onBeforeUpdate(props) {
+        if (this.nvhFormattingEditor.global.selectedPlaceholder) {
           let styleOptions = this.getStyleOptions();
           let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);
-          if (this.currentStyleOption === null || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
+          if (!this.currentStyleOption || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
             this.currentStyleOption = styleOptions[0];
           }
         }
@@ -38,19 +42,19 @@
 
       getStyleOptions() {
         let result;
-        if (window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles === undefined) {
+        if (!this.nvhFormattingEditor.global.selectedPlaceholder.markupStyles) {
           result = [];
           console.log("window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles = undefined; in 'styles-section.riot'");
         } else {
-          result = [...window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
+          result = [...this.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
         }
-        let name = window.nvhFormattingEditor.global.selectedPlaceholder.content.name;
-        let fullName = window.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
-        let styles = window.nvhFormattingEditor.global.selectedPlaceholder.styles;
-        let labelStyles = window.nvhFormattingEditor.global.selectedPlaceholder.labelStyles;
-        let bulletStyles = window.nvhFormattingEditor.global.selectedPlaceholder.bulletStyles;
+        let name = this.nvhFormattingEditor.global.selectedPlaceholder.content.name;
+        let fullName = this.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
+        let styles = this.nvhFormattingEditor.global.selectedPlaceholder.styles;
+        let labelStyles = this.nvhFormattingEditor.global.selectedPlaceholder.labelStyles;
+        let bulletStyles = this.nvhFormattingEditor.global.selectedPlaceholder.bulletStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
-        if (window.nvhFormattingEditor.global.selectedPlaceholder !== null && window.nvhFormattingEditor.global.selectedPlaceholder.children.length === 0) {
+        if (this.nvhFormattingEditor.global.selectedPlaceholder && this.nvhFormattingEditor.global.selectedPlaceholder.children.length === 0) {
           result.splice(result.length, 0, {name: name + " (label)", fullName: fullName + " (label)", styles: labelStyles});
         }
         result.splice(result.length, 0, {name: name + " (bullet)", fullName: fullName + " (bullet)", styles: bulletStyles});

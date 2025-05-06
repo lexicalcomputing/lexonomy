@@ -1,138 +1,126 @@
 <placeholder-component>
-  <action-panel if={window.nvhFormattingEditor.global.mouseData === null}
-                class="action-panel
-                      {props.state.status.isHovered ? "action-panel-hovered" : ""}"
-                index={props.index}
-                parentState={props.parentState}
-                state={props.state}
-                isBaseLevel={props.isBaseLevel}
-                isMarkupTypeChild={props.isMarkupTypeChild}/>
+  <action-panel if={!nvhFormattingEditor.global.mouseData}
+          class="action-panel
+                {props.state.status.isHovered ? "action-panel-hovered" : ""}"
+          index={props.index}
+          parentState={props.parentState}
+          state={props.state}
+          isBaseLevel={props.isBaseLevel}/>
   <elementholder-component class="elementholder"
-                          state={props.state}
-                          canHaveAdders={props.canHaveAdders}
-                          isBaseLevel={props.isBaseLevel}/>
+          state={props.state}
+          canHaveAdders={props.canHaveAdders}
+          isBaseLevel={props.isBaseLevel}/>
   <add-children-component getBackgroundColor={getBackgroundColor}
-                          class="add-children-component"
-                          state={props.state}
-                          canHaveAdders={props.canHaveAdders}>
+          class="add-children-component"
+          state={props.state}
+          canHaveAdders={props.canHaveAdders}>
   </add-children-component>
-  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}
-              {props.state.content.fullName === "" ? "placeholder-inside-wrapper-no-content" : ""}
-              {props.state.content.fullName === "" && props.state.children.length !== 0 ? "placeholder-inside-wrapper-group" : ""}"
+  <div class={getPlaceholderInsideWrapperCssClass(props.state)}
       style="background-color: {getBackgroundColor()};
             border: 2px solid {getBorderColor()}">
-    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
-                        && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
-                    onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
-                    onmouseenter={onAdderMouseEnter}
-                    onmouseleave={onAdderMouseLeave}
-                    onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
-                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
-                          {props.state.children.length === 0 ? "adder-alone" : ""}
-                          {window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : "adder-invisible"}"
-                    orientation={props.state.children.length === 0 ? "column": props.state.orientation}
-                    index={0}
-                    state={props.state}/>
+    <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+                        && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
+            onclick={() => nvhFormattingEditor.addElement(0, props.state, null)}
+            onmouseenter={onAdderMouseEnter}
+            onmouseleave={onAdderMouseLeave}
+            onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
+            class={getAdderCssClass(props.state, "first")}
+            orientation={props.state.children.length === 0 ? "column": props.state.orientation}
+            index={0}
+            state={props.state}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => window.nvhFormattingEditor.selectPlaceholder(child, props.state)}
-                            title={window.nvhFormattingEditor.isElementNonExisting(child.content.fullName) ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
-                            onmouseup={(event) => onMouseUp(event, child)}
-                            onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
-                            onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
-                            class="placeholder placeholder-{child.orientation}
-                                  {child.status.isActive ? "placeholder-selected" : ""}
-                                  {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
-                                  {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
-                                  {child.children.length === 0 ? "placeholder-no-children" : ""}
-                                  {child.status.isDragged ? "placeholder-dragged" : ""}
-                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}
-                                  {canBeDropped(child) ? "placeholder-can-be-dropped" : ""}
-                                  {window.nvhFormattingEditor.isElementNonExisting(child.content.fullName) ? "placeholder-non-existing" : ""}"
-                            state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
-                            parentState={props.state}
-                            isBaseLevel={false}
-                            index={index}
-                            canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}
-                            isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}
-                            isMarkupTypeChild={props.isMarkupType}/>
-      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
-                          && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
-                      onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
-                      onmouseenter={onAdderMouseEnter}
-                      onmouseleave={onAdderMouseLeave}
-                      onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
-                      class="adder adder-{props.state.orientation}
-                            {window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : "adder-invisible"}"
-                      orientation={props.state.orientation}
-                      index={index + 1}
-                      state={props.state}/>
+      <placeholder-component onclick={() => nvhFormattingEditor.selectPlaceholder(child, props.state)}
+              title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
+                    ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
+              onmouseup={(event) => onMouseUp(event, child)}
+              onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
+              onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
+              class={getPlaceholderCssClass(child)}
+              state={nvhFormattingEditor.childWithInheritedArea(child, props.state)}
+              parentState={props.state}
+              isBaseLevel={false}
+              index={index}
+              canHaveAdders={nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
+      <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+                          && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
+              onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, null)}
+              onmouseenter={onAdderMouseEnter}
+              onmouseleave={onAdderMouseLeave}
+              onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
+              class={getAdderCssClass(props.state, "other")}
+              orientation={props.state.orientation}
+              index={index + 1}
+              state={props.state}/>
     </template>
   </div>
 
   <script>
     export default {
-      onBeforeMount() {
+      nvhFormattingEditor: null,
+      nvhStore: null,      
+
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.nvhStore = window.nvhStore;
         /* 
         Initialize labelStyles and markupStyles in case any of them is undefined
         this.props.state["markupStyles"].length === 0 is necessary because if someone change entry structure,
         markup styles will not appear in style section
         */
-        if (this.props.state["markupStyles"] === undefined || this.props.state["markupStyles"].length === 0) {
-          let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(this.props.state.content.fullName);
+        if (!props.state["markupStyles"] || props.state["markupStyles"].length === 0) {
+          let markupChildren = this.nvhFormattingEditor.hasDirectMarkupChild(props.state.content.fullName);
           if (markupChildren.length !== 0 ) {
-            this.props.state["markupStyles"] = window.nvhFormattingEditor.createMarkupStyles(this.props.state.content.fullName);
+            props.state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(props.state.content.fullName);
           } else {
-            this.props.state["markupStyles"] = [];
+            props.state["markupStyles"] = [];
           }
         }
-        if (this.props.state["labelStyles"] === undefined) {
-          this.props.state["labelStyles"] = {};
+        if (!props.state["labelStyles"]) {
+          props.state["labelStyles"] = {};
         }
-        if (this.props.state["bulletStyles"] === undefined) {
-          this.props.state["bulletStyles"] = {};
+        if (!props.state["bulletStyles"]) {
+          props.state["bulletStyles"] = {};
         }
       },
 
       onMouseUp(event, state) {
-        if (window.nvhFormattingEditor.global.canBeDropped) {
-          const data = window.nvhFormattingEditor.global.mouseData;
-          if (data === null) {
+        if (this.nvhFormattingEditor.global.canBeDropped) {
+          const data = this.nvhFormattingEditor.global.mouseData;
+          if (!data) {
             return;
           }
           if (data.type === "choice-item") {
-            // Remove following line during selected placeholder refactor
-            //window.nvhFormattingEditor.global.selectedPlaceholder = null;
-            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-            if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
+            this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+            if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
               /*Can not drop label to be a wrapper, if it can not have children*/
-              window.nvhFormattingEditor.global.canBeDropped = false;
+              this.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
-            if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.fullName, state)) {
+            if (this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
               /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
-              window.nvhFormattingEditor.global.canBeDropped = false;
+              this.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
             for (let child of state.children) {
-              if (!window.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
+              if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
                 /*Can not place label to placeholder, because not all children labels are valid*/
-                window.nvhFormattingEditor.global.canBeDropped = false;
+                this.nvhFormattingEditor.global.canBeDropped = false;
                 return;
               }
             }
             for (let child of state.children) {
-              if (window.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
+              if (this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
                 /*Can not create redundant parent wrapper*/
-                window.nvhFormattingEditor.global.canBeDropped = false;
+                this.nvhFormattingEditor.global.canBeDropped = false;
                 return;
               }
             }
-            if (!window.nvhFormattingEditor.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+            if (!this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
               /*
               Dragged element can not be dropped because,
               it is not a child element of the parent placeholder where I want to drop him.
               */
-              window.nvhFormattingEditor.global.canBeDropped = false;
+              this.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
 
@@ -145,179 +133,115 @@
             state.labelStyles = {};
             state.bulletStyles = {};
 
-            let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
+            let markupChildren = this.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
             if (markupChildren.length !== 0) {
-              state["markupStyles"] = window.nvhFormattingEditor.createMarkupStyles(data.fullName);
+              state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(data.fullName);
             }
           }
-          if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
+          if (data.releaseFunction) {
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          window.nvhFormattingEditor.global.canBeDropped = false;
+          this.nvhFormattingEditor.global.canBeDropped = false;
         }
       },
       onAdderMouseEnter(event) {
-        const data = window.nvhFormattingEditor.global.mouseData;
-        if (data !== null && data.type === "placeholder") {
+        const data = this.nvhFormattingEditor.global.mouseData;
+        if (data && data.type === "placeholder") {
           event.currentTarget.classList.add("adder-highligth-dragged");
         }
       },
       onAdderMouseLeave(event) {
-        const data = window.nvhFormattingEditor.global.mouseData;
-        if (data !== null && data.type === "placeholder") {
+        const data = this.nvhFormattingEditor.global.mouseData;
+        if (data && data.type === "placeholder") {
           event.currentTarget.classList.remove("adder-highligth-dragged");
         }
       },
       onAdderMouseUp(event, state, index) {
-        if (window.nvhFormattingEditor.global.canBeDropped) {
-          const data = window.nvhFormattingEditor.global.mouseData;
-          if (data === null) {
+        if (this.nvhFormattingEditor.global.canBeDropped) {
+          const data = this.nvhFormattingEditor.global.mouseData;
+          if (!data) {
             return;
           }
           if (data.type === "placeholder") {
             state.children.splice(index, 0, data);
-            window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
-            window.nvhFormattingEditor.global.dropInfo.index = index;
-            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-            window.nvhFormattingEditor.global.canBeDropped = false;
+            this.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
+            this.nvhFormattingEditor.global.dropInfo.index = index;
+            this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+            this.nvhFormattingEditor.global.canBeDropped = false;
           }
-          if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
+          if (data.releaseFunction) {
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          //window.nvhFormattingEditor.global.mouseData = null; // KEY FIX, not necessary because done in global mouse up
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.clearHoveredStatuses(this.nvhFormattingEditor.currentLayout.schema);
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
-      },
-      markupTypeChildrenLimitReached() {
-        return this.props.isMarkupType && this.props.state.children.length === 2;
-      },
-      getPlaceholderTitle(state) {
-        if (!window.nvhFormattingEditor.isMarkupType(state.content.fullName)) {
-          return "";
-        }
-        if (state.children.length == 0) {
-          return "";
-        }
-        if (state.children.length !== 2) {
-          return "Container with element of markup type (red frame),\nshould have exactly two subcontainers.";
-        }
-        if (state.children[0].content.fullName === "" || state.children[1].content.fullName === "") {
-          return "Container with element of markup type (red frame)\nshould not have empty subcontainers.";
-        }
-        if (state.children[0].content.fullName === state.children[1].content.fullName) {
-          return "Container with element of markup type (red frame),\nshould not have two subcontainers with the same element name.";
-        }
-        if (this.areMarkupTypeChildrenSwapped(state)) {
-          return "Subcontainers of a container with element of a markup type (red frame),\n should be swapped.";
-        }
-        return "";
-      },
-      isContainerConfiguredCorrectly(state) {
-        if (!window.nvhFormattingEditor.isMarkupType(state.content.fullName)) {
-          return true;
-        }
-        if (state.children.length == 0) {
-          return true;
-        }
-        if (state.children.length !== 2) {
-          return false;
-        }
-        if (state.children[0].content.fullName === "" || state.children[1].content.fullName === "") {
-          return false;
-        }
-        if (state.children[0].content.fullName === state.children[1].content.fullName) {
-          return false;
-        }
-        if (this.areMarkupTypeChildrenSwapped(state)) {
-          return false;
-        }
-        return true;
-      },
-      areMarkupTypeChildrenSwapped(state) {
-        let firstType = window.nvhFormattingEditor.isMarkupType(state.children[0].content.fullName);
-        let secondType = window.nvhFormattingEditor.isMarkupTypeChild(state.children[1].content.fullName);
-        return firstType && secondType;
       },
       onPlaceholderMouseEnter(event, state, parentState) {
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (!this.nvhFormattingEditor.global.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
-          /*
-            This is a work-around.
-            If I create a new placeholder inside of a placeholder,
-            the outer one will lose focus. In this way I assign a focus to parent
-            placeholder, which is expected behaviour. This is not true for base placeholder.
-          */
-          const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
-          if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
-            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-            parentState.status.isHovered = true;
-          }
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onPlaceholderMouseLeave(event, state, parentState) {
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (!this.nvhFormattingEditor.global.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
           /*
             This is a work-around.
             If I move a placeholder using arrows, sometimes I enter child placeholder
             without entering parent placeholder. I need to assure that after leaving child placeholder,
-            the parent will be hovered which is expected behaviour. This is not true for base placeholder.
+            the parent will be hovered which is expected behaviour.
           */
           const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
-          if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
+          if (classList.includes("placeholder")) {
             event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
             parentState.status.isHovered = true;
           }
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       getBorderColor() {
-        if (this.props.state.content.name === "") {
-          return "#c7ced1";
-        }
-        return "transparent";
+        return !this.props.state.content.name ? "#c7ced1" : "transparent";
       },
       getBackgroundColor() {
-        if (this.props.state.content.name === "" || this.props.isBaseLevel) {
+        if (!this.props.state.content.name || this.props.isBaseLevel) {
           return "#ffffff";
         }
         if (this.props.state.children.length === 0) {
           return "transparent";
         }
-        return window.nvhFormattingEditor.getColorLightVersion(window.nvhStore.getElementColor(this.props.state.content.fullName));
+        return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.state.content.fullName));
       },
       canBeDropped(state) {
-        const data = window.nvhFormattingEditor.global.mouseData;
-        if (data === null || data.type !== "choice-item") {
+        const data = this.nvhFormattingEditor.global.mouseData;
+        if (!data || data.type !== "choice-item") {
           return false;
         }
 
-        if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
+        if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
           /*Can not drop label to be a wrapper, if it can not have children*/
           return false;
         }
-        if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.fullName, state)) {
+        if (this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
           /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
           return false;
         }
         for (let child of state.children) {
-          if (!window.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
+          if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
             /*Can not place label to placeholder, because not all children labels are valid*/
             return false;
           }
         }
         for (let child of state.children) {
-          if (window.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
+          if (this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
             /*Can not create redundant parent wrapper*/
             return false;
           }
         }
-        if (!window.nvhFormattingEditor.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+        if (!this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
           /*
           Dragged element can not be dropped because,
           it is not a child element of the parent placeholder where I want to drop him.
@@ -325,7 +249,35 @@
           return false;
         }
         return true;
-      }
+      },
+      getPlaceholderCssClass(placeholder) {
+        let cssClass = "placeholder";
+        cssClass += placeholder.status.isActive ? " placeholder-selected" : "";
+        cssClass += placeholder.status.isHovered && !this.nvhFormattingEditor.global.mouseData ? " placeholder-mouse-hover" : "";
+        cssClass += placeholder.content.name && placeholder.children.length !== 0 ? " placeholder-wrapping-content" : "";
+        cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
+        cssClass += placeholder.status.isDragged ? " placeholder-dragged" : "";
+        cssClass += this.canBeDropped(placeholder) ? " placeholder-can-be-dropped" : "";
+        cssClass += this.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
+        return cssClass;
+      },
+      getPlaceholderInsideWrapperCssClass(placeholder) {
+        let cssClass = `placeholder-inside-wrapper placeholder-inside-wrapper-${placeholder.orientation}`;
+        cssClass += !placeholder.content.fullName ? " placeholder-inside-wrapper-no-content" : "";
+        cssClass += !placeholder.content.fullName && placeholder.children.length !== 0 ? " placeholder-inside-wrapper-group" : "";
+        return cssClass;
+      },
+      getAdderCssClass(placeholder, adderType) {
+        let cssClass = "adder"
+        cssClass += !this.nvhFormattingEditor.global.mouseData || this.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : " adder-invisible";
+        if (adderType === "first") {
+          cssClass += ` adder-${placeholder.children.length === 0 ? "column": placeholder.orientation}`;
+          cssClass += placeholder.children.length === 0 ? " adder-alone" : "";
+        } else {
+          cssClass += ` adder-${placeholder.orientation}`;
+        }
+        return cssClass;
+      } 
     }
   </script>
 
@@ -393,11 +345,6 @@
     .placeholder:not(:has(.placeholder-mouse-hover)) .action-panel-hovered {
       display: block;
     }
-
-    .placeholder-configured-incorrectly {
-      outline: 4px solid var(--color-red-normal) !important;
-    }
-
 
     .elementholder {
       width: fit-content;

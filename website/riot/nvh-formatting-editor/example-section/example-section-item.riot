@@ -1,67 +1,63 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
-              {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
-              {window.nvhFormattingEditor.isMarkupTypeChild(props.schema.content.fullName) ? "element-holder-markup-type-child" : ""}
-              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) ? "element-holder-markup-type" : ""}
-              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isHovered ? "element-holder-markup-type-hovered" : ""}
-              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
-        style={props.schema.children.length !== 0 ? getCssStyles(this.props.schema.styles) : ""}>
-    <div if={(this.props.schema.bulletStyles["bullet-use-numbers"] || this.props.schema.bulletStyles["bullet-use-bullets"]) && (this.props.haveSiblings || this.props.schema.bulletStyles["bullet-use-with-single-item"])}
-        style={getCssStyles(this.props.schema.bulletStyles)}>
-      {this.state.bulletValue}
+        style={props.schema.children.length !== 0 ? getCssStyles(props.schema.styles) : ""}>
+    <div if={(props.schema.bulletStyles["bullet-use-numbers"] || props.schema.bulletStyles["bullet-use-bullets"])
+            && (props.haveSiblings || props.schema.bulletStyles["bullet-use-with-single-item"])}
+        style={getCssStyles(props.schema.bulletStyles)}>
+      {state.bulletValue}
     </div> <!-- consider doing this way also labelstyles-->
-    <div if={props.schema.children.length === 0}
+    <div if={!props.schema.children.length && props.schema.content.fullName === props.entry.path}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <example-basic-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs === null}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-basic-item if={props.entry.value && ["int", "string", "list", "empty"].includes(state.type) && !state.valueStylePairs}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-markup-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs !== null}
-          valueStylePairs={this.state.valueStylePairs}
-          labelStyles={this.props.schema.labelStyles}
+        <example-markup-item if={props.entry.value && ["int", "string", "list", "empty"].includes(state.type) && state.valueStylePairs}
+          valueStylePairs={state.valueStylePairs}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-url-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "url"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-url-item if={props.entry.value && state.type === "url"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-bool-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "bool"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-bool-item if={props.entry.value && state.type === "bool"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-image-item if={props.entry.value && state.type === "image"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-audio-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "audio"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-audio-item if={props.entry.value && state.type === "audio"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "video"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-video-item if={props.entry.value && state.type === "video"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
       </div>
     </div>
     <div each={childSchema in props.schema.children}
-        class="element-holder element-holder-{childSchema.orientation}">
-      <example-section-item if={childSchema.content.name === "" /*empty placeholder*/}
+        class="element-holder-list element-holder-list-{childSchema.orientation}">
+      <example-section-item if={!childSchema.content.name /*empty placeholder*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
                             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
                             onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
@@ -73,7 +69,7 @@
                             haveSiblings={props.haveSiblings}
                             maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       <example-section-item if={props.schema.content.area === childSchema.content.area
-                                && childSchema.content.name !== "" /*render parent label*/}
+                                && childSchema.content.name /*render parent label*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
                             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
                             onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
@@ -84,9 +80,9 @@
                             bulletIndex={props.bulletIndex}
                             haveSiblings={props.haveSiblings}
                             maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
-      <template each={(childEntry, index) in window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
+      <template each={(childEntry, index) in nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
                 if={props.schema.content.area !== childSchema.content.area
-                    && childSchema.content.name !== ""}>
+                    && childSchema.content.name}>
         <example-section-item onclick={() => onExampleItemClick(childSchema, props.schema)}
                                 onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
                                 onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
@@ -95,7 +91,7 @@
                                 entry={childEntry}
                                 isFormatting={props.isFormatting}
                                 bulletIndex={index + 1}
-                                haveSiblings={window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}
+                                haveSiblings={nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}
                                 maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       </template>
     </div>
@@ -110,83 +106,65 @@
         valueStylePairs: null,
         maxPossibleWidth: null,
       },
+      nvhFormattingEditor: null,
+      nvhStore: null,
 
-      onBeforeMount() {
-        if (this.props.schema["labelStyles"] === undefined) {
-          this.props.schema["labelStyles"] = {};
-        }
-        if (this.props.schema["bulletStyles"] === undefined) {
-          this.props.schema["bulletStyles"] = {};
-        }
-        let fullName = this.props.schema.content.fullName;
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
-        if (fullName === "") {
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.nvhStore = window.nvhStore;
+        props.schema["labelStyles"] = props?.schema?.labelStyles || {};
+        props.schema["bulletStyles"] = props?.schema?.bulletStyles || {};
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
+        let fullName = props.schema.content.fullName;
+        if (!fullName) {
           return;
-        }
-        let config = window.nvhStore.getElementConfig(fullName);
-        if (config === undefined) {
-          return;
-        }
-        if (config.type === "markup" && this.props.schema.children.length === 2) {
-          this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
         this.formatBulletValue();
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
       },
-      onBeforeUpdate() {
-        if (this.props.schema["labelStyles"] === undefined) {
-          this.props.schema["labelStyles"] = {};
-        }
-        if (this.props.schema["bulletStyles"] === undefined) {
-          this.props.schema["bulletStyles"] = {};
-        }
-        let fullName = this.props.schema.content.fullName;
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
-        if (fullName === "") {
+      onBeforeUpdate(props) {
+        props.schema["labelStyles"] = props?.schema?.labelStyles || {};
+        props.schema["bulletStyles"] = props?.schema?.bulletStyles || {};
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
+        let fullName = props.schema.content.fullName;
+        if (!fullName) {
           return;
-        }
-        let config = window.nvhStore.getElementConfig(fullName);
-        if (config === undefined) {
-          return;
-        }
-        if (config.type === "markup" && this.props.schema.children.length === 2) {
-          this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
         this.formatBulletValue();
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
       },
 
       onExampleItemMouseEnter(event, state) {
         if (!this.props.isFormatting) {
           return;
         }
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (!nvhFormattingEditor.global.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onExampleItemMouseLeave(event, state) {
         if (!this.props.isFormatting) {
           return;
         }
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (!nvhFormattingEditor.global.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onExampleItemClick(state, parentState) {
         if (this.props.isFormatting) {
-          window.nvhFormattingEditor.selectPlaceholder(state, parentState)
+          nvhFormattingEditor.selectPlaceholder(state, parentState)
         }
       },
 
       hasChildWithContent(state) {
         for (let child of state.children) {
-          if (child.content.name !== "" && child.children.length === 0) {
+          if (child.content.name && !child.children.length) {
             return true;
           }
           if (this.hasChildWithContent(child)) {
@@ -196,27 +174,11 @@
         return false;
       },
       isDisplayLabel() {
-        return this.props.schema.children.length === 0 && this.props.schema.content.name !== "";
-      },
-      isEmptyPlaceholder() {
-        return this.props.schema.content.name === "";
-      },
-      connectMarkupElementWithChildren(schema) {
-        /* Markup type will always have two children:
-          first one will be markup element child
-          second one will be the markup element itself
-        */
-        let displayMarkupPlaceholder = this.props.schema.children[1];
-        let styleMarkupPlaceholder = this.props.schema.children[0];
-        let markupValue = { value: null };
-        displayMarkupPlaceholder["markupStyles"] = styleMarkupPlaceholder.styles;
-        displayMarkupPlaceholder["markupStatus"] = styleMarkupPlaceholder.status;
-        displayMarkupPlaceholder["markupValue"] = markupValue;
-        styleMarkupPlaceholder["markupValue"] = markupValue;
+        return !this.props.schema.children.length && this.props.schema.content.name;
       },
       formatValue(fullName) {
-        let config = window.nvhStore.getElementConfig(fullName);
-        if (config === undefined) {
+        let config = this.nvhStore.getElementConfig(fullName);
+        if (!config) {
           return;
         }
         this.state.type = config.type;
@@ -225,8 +187,8 @@
 
         let markupValueStylesPair = null;
         let valueStylesPair = null;
-        let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(fullName);
-        if (markupChildren.length !== 0) { /*means that has markup children*/
+        let markupChildren = nvhFormattingEditor.hasDirectMarkupChild(fullName);
+        if (markupChildren.length) { /*means that has markup children*/
           markupValueStylesPair = this.getMarkupValueStylePair();
           valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
           this.state.valueStylePairs = valueStylesPair;
@@ -241,13 +203,13 @@
         let leftPunc = this.getPunc("leftPunc", this.props.schema.bulletStyles);
         let rightPunc = this.getPunc("rightPunc", this.props.schema.bulletStyles);
         if (this.props.schema.bulletStyles["bullet-use-numbers"]) {
-          if (this.props.bulletIndex !== undefined) {
+          if (this.props.bulletIndex) {
             this.state.bulletValue = leftPunc + this.props.bulletIndex + rightPunc;
           } else {
             this.state.bulletValue = "";
           }
         } else if (this.props.schema.bulletStyles["bullet-use-bullets"]) {
-          if (this.props.schema.bulletStyles["bullet-set-bullet"] !== undefined) {
+          if (this.props.schema.bulletStyles["bullet-set-bullet"]) {
             this.state.bulletValue = leftPunc + this.props.schema.bulletStyles["bullet-set-bullet"] + rightPunc;
           } else {
             this.state.bulletValue = "";
@@ -273,14 +235,14 @@
         let result = [];
         for (let child of markupValueStylePairSorted) {
           let splittedValue = value.split(child.value);
-          if (splittedValue[0] !== "") {
+          if (splittedValue[0]) {
             let normalObject = {
               value: result.length === 0 ? leftPunc + splittedValue[0] : splittedValue[0], /*prepend left punc only before first normalObject*/
               styles: styles,
             };
             result.push(normalObject);
           }
-          if (child.value !== "") {
+          if (child.value) {
             let leftMarkupPunc = this.getPunc("leftPunc", child.styles);
             let rightMarkupPunc = this.getPunc("rightPunc", child.styles);
             let markupObject = {
@@ -291,20 +253,18 @@
           }
           value = splittedValue.slice(1).join(child.value);
         }
-        if (value !== "") {
-          let normalObject = {
-            value: value + rightPunc,
-            styles: styles,
-          };
-          result.push(normalObject);
-        }
+        let normalObject = {
+          value: value ? value + rightPunc : rightPunc,
+          styles: styles,
+        };
+        result.push(normalObject);
         return result;
       },
       getMarkupValueStylePair() {
         let result = [];
         let object;
         for (let child of this.props.entry.children) {
-          if (window.nvhFormattingEditor.isMarkupType(child.path)) {
+          if (nvhFormattingEditor.isMarkupType(child.path)) {
             object = {
               value: child.value,
               styles: this.getStyleToFullName(child.path),
@@ -325,7 +285,7 @@
         let leftMarkupPunc = this.getPunc("leftPunc", schema.markupStyles);
         let rightMarkupPunc = this.getPunc("rightPunc", schema.markupStyles);
 
-        if (schema.markupValue === undefined) {
+        if (!schema.markupValue) {
           return this.createValueObject(leftPunc + value + rightPunc, "", "");
         }
 
@@ -333,7 +293,7 @@
         let values = value.split(markupValue);
         let prefix = values[0];
 
-        if (markupValue === "") {
+        if (!markupValue) {
           return this.createValueObject(leftPunc + value + rightPunc, "", "");
         } else if (values.length > 1) {
           let suffix = values.slice(1).join(markupValue);
@@ -343,28 +303,28 @@
         }
       },
       getCssStyles(styles) {
-        if (styles === undefined) {
+        if (!styles) {
           return;
         }
         let result_css = "";
         for (let i = 0; i < Object.keys(styles).length; i++) {
           let option = Object.keys(styles)[i];
           let value = styles[option];
-          if (value === null || value === undefined) {
+          if (!value) {
             continue;
           }
-          if (option === "thousandsDivider" || option === "decimalPlaceDivider" || option === "leftPunc"
-          || option === "rightPunc" || option === "border-color" || option === "border-width"
-          || option === "container-width" || option === "label-text-value" || option === "show-label-before") {
+          if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
+          "border-color", "border-width", "container-width", "label-text-value",
+          "show-label-before"].includes(option)) {
             continue;
           }
-          if (option === "border-radius" || option === "padding" || option === "margin" || option === "max-height" || option === "font-size") {
+          if (["border-radius", "padding", "margin", "max-height", "font-size"].includes(option)) {
             value = value + "px";
           } else if (option === "box-shadow") {
             value = value + "px " + value + "px " + value + "px " + "grey";
           } else if (option === "text-decoration") {
             let array = styles["text-decoration"];
-            if (array === undefined) {
+            if (!array) {
               continue;
             }
             let values = "";
@@ -373,11 +333,11 @@
             }
             value = values;
           } else if (option === "border") {
-            let borderColor = styles["border-color"] === undefined ? "black" : styles["border-color"];
-            let borderWidth = styles["border-width"] === undefined ? "1px" : styles["border-width"] + "px";
+            let borderColor = styles?.["border-color"] || "black";
+            let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
             value = borderWidth + " " + value + " " + borderColor;
           } else if (option === "container-width-unit") {
-            if (styles["container-width"] !== undefined && styles["container-width"] !== 0) {
+            if (styles["container-width"] && styles["container-width"]) {
               if (styles[option] === "px") {
                 option = "width";
                 if (parseInt(styles["container-width"]) < parseInt(this.state.maxPossibleWidth)) {
@@ -408,11 +368,11 @@
         return result_css;
       },
       getPunc(option, styles) {
-        if (styles === undefined) {
+        if (!styles) {
           return "";
         }
         let punc = styles[option];
-        if (punc === undefined) {
+        if (!punc) {
           return "";
         }
         switch (punc) {
@@ -450,13 +410,15 @@
       margin: 0;
       font-family: "Roboto Condensed", sans-serif;
     }
-    .element-holder-used-placeholder {
+    .element-holder {
+      display: flex;
+      flex-wrap: wrap;
+      width: fit-content;
+      align-items: baseline;
+      line-height: 1;
       margin: 3px;
     }
-    .element-holder-empty-placeholder {
-      margin: 3px; /*originaly 0px, but updated with the introduction of container width setting, otherwise the UI looks weird*/
-    }
-    .element-holder {
+    .element-holder-list {
       display: flex;
       flex-wrap: wrap;
       width: fit-content;
@@ -471,18 +433,6 @@
     .element-holder-column {
       flex-direction: column;
     }
-    .element-holder-markup-type-child {
-      display: none;
-    }
-    .element-holder-markup-type:has(.element-holder-markup-type-child) {
-      outline: none;
-    }
-    .element-holder-markup-type-hovered:has(.element-holder-markup-type) {
-      outline: 2px solid var(--color-is-hovered);
-    }
-    .element-holder-markup-type-active:has(.element-holder-markup-type) {
-      outline: 2px solid var(--color-is-active);
-    }
     .element-holder-hovered {
       outline: 2px solid var(--color-is-hovered);
     }
@@ -492,7 +442,7 @@
     .element-holder-hovered:has(.element-holder-hovered-empty) {
       outline: none;
     }
-    .element-holder-hovered:has( > .element-holder > .element-holder-hovered-empty-entry) {
+    .element-holder-hovered:has( > .element-holder-list > .element-holder-hovered-empty-entry) {
       outline: none;
     }
     .element-holder-active {

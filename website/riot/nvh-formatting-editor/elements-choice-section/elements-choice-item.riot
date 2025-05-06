@@ -5,33 +5,40 @@
       style="padding-left: {props.indentationLevel}px"
       onmousedown={() => onMouseDown(props.state)}>
     <div class="elements-choice-item-box"
-        style="background-color: {window.nvhStore.getElementColor(props.state.data.fullName)}">
+        style="background-color: {nvhStore.getElementColor(props.state.data.fullName)}">
     </div>
-    <div style="color: {window.nvhStore.getElementColor(props.state.data.fullName)}">{props.state.data.name}</div>
+    <div style="color: {nvhStore.getElementColor(props.state.data.fullName)}">{props.state.data.name}</div>
   </div>
   <template each={child in props.state.data.children}>
-    <elements-choice-item if={window.nvhStore.getElementConfig(child.data.fullName) !== undefined && window.nvhStore.getElementConfig(child.data.fullName).type !== "markup"}
+    <elements-choice-item if={nvhStore.getElementConfig(child.data.fullName) && nvhStore.getElementConfig(child.data.fullName).type !== "markup"}
                           state={child}
                           indentationLevel={props.indentationLevel + 15}/>
   </template>
 
   <script>
     export default {
+      nvhFormattingEditor: null,
+      nvhStore: null,
+
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.nvhStore = window.nvhStore;
+      },
+
       onMouseDown(state) {
-        window.nvhFormattingEditor.global.mouseData = this.props.state.data;
-        window.nvhFormattingEditor.global.draggedElementFullName = this.props.state.data.fullName;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.global.mouseData = this.props.state.data;
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
-        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+        if (!this.nvhFormattingEditor.global.selectedPlaceholder) {
           return false;
         }
-        return window.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
-                                                                            window.nvhFormattingEditor.global.selectedPlaceholder,
-                                                                            window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName);
+        return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
+                                                                            this.nvhFormattingEditor.global.selectedPlaceholder,
+                                                                            this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName);
       },
       isInvalidToActivePlaceholder() {
-        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+        if (!this.nvhFormattingEditor.global.selectedPlaceholder) {
           return false;
         }
         return !this.isValidToActivePlaceholder();

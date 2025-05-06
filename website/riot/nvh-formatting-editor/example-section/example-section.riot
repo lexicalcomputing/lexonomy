@@ -1,16 +1,16 @@
 <example-section>
   <div class="example-section-container">
-    <div class="scrollable-div-layout scrollable-div-layout-{window.nvhFormattingEditor.global.activeLayout}">
-      <div if={this.state.exampleEntry === undefined}>Preview is loading ...</div>
-      <div if={this.state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary.</div>
-      <example-section-item if={this.state.exampleEntry !== null && this.state.exampleEntry !== undefined}
-        each={child in window.nvhFormattingEditor.currentLayout.schema.children}
+    <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.global.activeLayout}">
+      <div if={state.exampleEntry === undefined}>Preview is loading ...</div>
+      <div if={state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
+      <example-section-item if={state.exampleEntry}
+        each={child in nvhFormattingEditor.currentLayout.schema.children}
         onclick={() => onExampleSectionItemClick(child)}
         schema={child}
-        entry={this.state.exampleEntry}
+        entry={state.exampleEntry}
         class="example-section-item"
         isFormatting={true}
-        maxPossibleWidth={window.nvhFormattingEditor.getMaxPossibleWidth()}/>
+        maxPossibleWidth={nvhFormattingEditor.getMaxPossibleWidth()}/>
     <div>
   </div>
 
@@ -20,406 +20,40 @@
       state: {
         exampleEntry: undefined
       },
+      nvhFormattingEditor: null,
+      store: null,
+      nvhStore: null,
 
       async getEntry() {
-        let entriesList = await window.store.loadEntryList();
-        if (entriesList.entries.length === 0) {
+        let entriesList = await this.store.loadEntryList();
+        if (!entriesList || entriesList.entries.length === 0) {
           return null;
         }
-        window.store.changeEntryId(entriesList.entries[0].id);
-        return await window.store.loadEntry();
+        this.store.changeEntryId(entriesList.entries[0].id);
+        return await this.store.loadEntry();
       },
 
-      onBeforeMount() {
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.store = window.store;
+        this.nvhStore = window.nvhStore;
+
         this.getEntry().then(res => {
-          if (res === null) {
+          if (!res) {
             this.state.exampleEntry = null;
-          } else if (window.nvhStore.data === null || window.nvhStore.data === undefined
-                    || window.nvhStore.data.entry === null || window.nvhStore.data.entry === undefined) {
+          } else if (!this.nvhStore.data || !this.nvhStore.data.entry) {
             this.state.exampleEntry = null;
           } else {
-            this.state.exampleEntry = window.nvhStore.data.entry;
+            this.state.exampleEntry = this.nvhStore.data.entry;
           }
           this.update();
         });
       },
 
       onExampleSectionItemClick(state) {
-        window.nvhFormattingEditor.selectPlaceholder(state, null);
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.selectPlaceholder(state, null);
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
-
-      /*Example entry for testing purposes (remove later)*/
-      exampleEntry: {
-        path: "entry",
-        value: "car",
-        children: [
-          {
-            path: "entry.homograph",
-            value: "1",
-            children: []
-          },
-          {
-            path: "entry.pos",
-            value: "N",
-            children: []
-          },
-          {
-            path: "entry.label",
-            value: "label",
-            children: []
-          },
-          {
-            path: "entry.number",
-            value: "12345678.1234",
-            children: []
-          },
-          {
-            path: "entry.yesNoElement",
-            value: "1",
-            children: []
-          },
-          {
-            path: "entry.yesNoElement",
-            value: "0",
-            children: []
-          },
-          {
-            path: "entry.empty",
-            value: null,
-            children: [
-              {
-                path: "entry.empty.emptyChild",
-                value: "emptyChild example",
-                children: [],
-              }
-            ]
-          },
-          {
-            path: "entry.urlParent",
-            value: "Redirect to google.",
-            children: [
-              {
-                path: "entry.urlParent.url",
-                value: "https://www.google.com/",
-                children: [],
-              }
-            ]
-          },
-          {
-            path: "entry.empty",
-            value: null,
-            children: [],
-          },
-          {
-            path: "entry.textMarkup",
-            value: "Hello how are you and how are you doing?",
-            children: [
-              {
-                path: "entry.textMarkup.textMarkupChild1",
-                value: "how",
-                children: []
-              },
-              {
-                path: "entry.textMarkup.textMarkupChild2",
-                value: "you",
-                children: []
-              },
-              {
-                path: "entry.textMarkup.textMarkupChild1",
-                value: "and",
-                children: []
-              },
-            ]
-          },
-          {
-            path: "entry.textMarkup",
-            value: "Another test",
-            children: [
-              {
-                path: "entry.textMarkup.textMarkupChild1",
-                value: "her",
-                children: []
-              }
-            ]
-          },
-          {
-            path: "entry.image",
-            value: "https://placehold.co/600x400",
-            children: [],
-          },
-          {
-            path: "entry.audio",
-            value: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-            children: [],
-          },
-          {
-            path: "entry.video",
-            value: "https://www.youtube.com/watch?v=wDchsz8nmbo",
-            children: [],
-          },
-          {
-            path: "entry.pronunciation",
-            value: "car-br.mp3",
-            children: [
-              {
-                path: "entry.pronunciation.transcription",
-                value: "kɑː",
-                children: [
-                  {
-                    path: "entry.pronunciation.transcription.scheme",
-                    value: "IPA",
-                    children: []
-                  }
-                ]
-              },
-              {
-                path: "entry.pronunciation.label",
-                value: "British",
-                children: []
-              }
-            ]
-          },
-          {
-            path: "entry.pronunciation",
-            value: "car-am.mp3",
-            children: [
-              {
-                path: "entry.pronunciation.transcription",
-                value: "kɑːr",
-                children: [
-                  {
-                    path: "entry.pronunciation.transcription.scheme",
-                    value: "IPA",
-                    children: []
-                  }
-                ]
-              },
-              {
-                path: "entry.pronunciation.label",
-                value: "American",
-                children: []
-              }
-            ]
-          },
-          {
-            path: "entry.form",
-            value: "cars",
-            children: [
-              {
-                path: "entry.form.tag",
-                value: "pl",
-                children: []
-              },
-              {
-                path: "entry.form.pronunciation",
-                value: "cars-br.mp3",
-                children: [
-                  {
-                    path: "entry.form.pronunciation.transcription",
-                    value: "kɑːz",
-                    children: [
-                      {
-                        path: "entry.form.pronunciation.transcription.scheme",
-                        value: "IPA",
-                        children: []
-                      }
-                    ]
-                  },
-                  {
-                    path: "entry.form.pronunciation.label",
-                    value: "British",
-                    children: []
-                  },
-                ]
-              },
-              {
-                path: "entry.form.pronunciation",
-                value: "cars-am.mp3",
-                children: [
-                  {
-                    path: "entry.form.pronunciation.transcription",
-                    value: "kɑːrz",
-                    children: [
-                      {
-                        path: "entry.form.pronunciation.transcription.scheme",
-                        value: "IPA",
-                        children: []
-                      }
-                    ]
-                  },
-                  {
-                    path: "entry.form.pronunciation.label",
-                    value: "American",
-                    children: []
-                  },
-                ]
-              },
-              {
-                path: "entry.form.label",
-                value: "label",
-                children: []
-              },
-            ]
-          },
-          {
-            path: "entry.form",
-            value: "car",
-            children: [
-              {
-                path: "entry.form.tag",
-                value: "sg",
-                children: []
-              },
-              {
-                path: "entry.form.pronunciation",
-                value: "car-br.mp3",
-                children: [
-                  {
-                    path: "entry.form.pronunciation.transcription",
-                    value: "kɑː",
-                    children: [
-                      {
-                        path: "entry.form.pronunciation.transcription.scheme",
-                        value: "IPA",
-                        children: []
-                      }
-                    ]
-                  },
-                  {
-                    path: "entry.form.pronunciation.label",
-                    value: "British",
-                    children: []
-                  },
-                ]
-              },
-              {
-                path: "entry.form.pronunciation",
-                value: "car-am.mp3",
-                children: [
-                  {
-                    path: "entry.form.pronunciation.transcription",
-                    value: "kɑːr",
-                    children: [
-                      {
-                        path: "entry.form.pronunciation.transcription.scheme",
-                        value: "IPA",
-                        children: []
-                      }
-                    ]
-                  },
-                  {
-                    path: "entry.form.pronunciation.label",
-                    value: "American",
-                    children: []
-                  },
-                ]
-              },
-              {
-                path: "entry.form.label",
-                value: "label",
-                children: []
-              },
-            ]
-          },
-          {
-            path: "entry.sense",
-            value: "motor vehicle",
-            children: [
-              {
-                path: "entry.sense.label",
-                value: "label",
-                children: []
-              },
-              {
-                path: "entry.sense.definition",
-                value: "a road vehicle powered by an engine, typically used for transporting passengers",
-                children: [
-                  {
-                    path: "entry.sense.definition.definitionType",
-                    value: "full",
-                    children: []
-                  },
-                ]
-              },
-              {
-                path: "entry.sense.example",
-                value: "After I explained to him that I hadn't heard the car, he realized how the situation could have come about.",
-                children: [
-                  {
-                    path: "entry.sense.example.sourceIdentity",
-                    value: "sketchengine",
-                    children: []
-                  },
-                  {
-                    path: "entry.sense.example.sourceElaboration",
-                    value: "GDEX examples",
-                    children: []
-                  },
-                  {
-                    path: "entry.sense.example.soundFile",
-                    value: "audio_file.mp3",
-                    children: []
-                  },
-                  {
-                    path: "entry.sense.example.label",
-                    value: "label",
-                    children: []
-                  },
-                ]
-              },
-            ]
-          },
-          {
-            path: "entry.sense",
-            value: "train",
-            children: [
-              {
-                path: "entry.sense.label",
-                value: "label",
-                children: []
-              },
-              {
-                path: "entry.sense.definition",
-                value: "a train carriage",
-                children: [
-                  {
-                    path: "entry.sense.definition.definitionType",
-                    value: "full",
-                    children: []
-                  },
-                ]
-              },
-              {
-                path: "entry.sense.example",
-                value: "Nothing was damaged and they pulled the cars back onto the rails.",
-                children: [
-                  {
-                    path: "entry.sense.example.sourceIdentity",
-                    value: "sketchengine",
-                    children: []
-                  },
-                  {
-                    path: "entry.sense.example.sourceElaboration",
-                    value: "GDEX examples",
-                    children: []
-                  },
-                  {
-                    path: "entry.sense.example.soundFile",
-                    value: "audio_file1.mp3",
-                    children: []
-                  },
-                  {
-                    path: "entry.sense.example.label",
-                    value: "label",
-                    children: []
-                  },
-                ]
-              },
-            ]
-          },
-        ]
-      }
     }
   </script>
 

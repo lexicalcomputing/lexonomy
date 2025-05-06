@@ -68,11 +68,11 @@
                         <template if={nvhData.entry}>
                            <div if={!nvhData.customEditor}
                                  class="nvh-editor-view-items">
-                              <example-section-item if={window.nvhFormattingEditor.currentLayout !== null}
-                                 schema={window.nvhFormattingEditor.currentLayout.schema.children[0]}
+                              <example-section-item if={this.nvhFormattingEditor.currentLayout !== null}
+                                 schema={this.nvhFormattingEditor.currentLayout.schema.children[0]}
                                  entry={nvhData.entry}
                                  isFormatting={false}
-                                 maxPossibleWidth={window.nvhFormattingEditor.getMaxPossibleWidth()}/>
+                                 maxPossibleWidth={this.nvhFormattingEditor.getMaxPossibleWidth()}/>
                               <!--<nvh-editor-view-item element={nvhData.entry}
                                     read-only={true}/>-->
                            </div>
@@ -149,6 +149,7 @@
          onBeforeMount(){
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
             window.addEventListener("resize", this.isLayoutSchemaChange);
          },
 
@@ -163,12 +164,12 @@
             }
             if (this.dictData.config.formatting.layout === undefined || this.dictData.config.formatting.layout === null) {
                /* Display only entry name, because no layout is defined */
-               window.nvhFormattingEditor.initializeSchemas();
+               this.nvhFormattingEditor.initializeSchemas();
             } else {
                /* Load layouts from DB*/
-               window.nvhFormattingEditor.layout = this.dictData.config.formatting.layout;
+               this.nvhFormattingEditor.layout = this.dictData.config.formatting.layout;
             }
-            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+            this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout.desktop;
             window.scrollTo(0, 0)
             this.isLayoutSchemaChange();
          },
@@ -179,9 +180,9 @@
          },
 
          isLayoutSchemaChange() {
-            let oldLayout = window.nvhFormattingEditor.global.activeLayout;
-            window.nvhFormattingEditor.changeLayoutSchema();
-            let newLayout = window.nvhFormattingEditor.global.activeLayout;
+            let oldLayout = this.nvhFormattingEditor.global.activeLayout;
+            this.nvhFormattingEditor.changeLayoutSchema();
+            let newLayout = this.nvhFormattingEditor.global.activeLayout;
             if (oldLayout !== newLayout) {
                this.update();
             }

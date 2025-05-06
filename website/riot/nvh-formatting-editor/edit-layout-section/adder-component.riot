@@ -2,10 +2,9 @@
   <div class="plus-icon-wrapper">
     <div class="adder-line adder-line-{props.orientation}">
       <div class="tooltipped adder-icon-wrapper"
-          data-tooltip={window.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
+          data-tooltip={!this.nvhFormattingEditor.global.mouseData ? "Insert empty container" : ""}
           onmouseenter={onMouseEnter}
-          onmouseleave={onMouseLeave}
-          onmousedown={onMouseDown}>
+          onmouseleave={onMouseLeave}>
         <i class="small material-icons adder-icon">add_box</i>
       <div>
     </div>
@@ -13,31 +12,21 @@
   
   <script>
     export default {
+      nvhFormattingEditor: null,
+
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+      },
+
       onMouseEnter(event) {
-        const data = window.nvhFormattingEditor.global.mouseData;
-        if (data !== null && data.type === "choice-item") {
+        const data = this.nvhFormattingEditor.global.mouseData;
+        if (data && data.type === "choice-item") {
           event.currentTarget.classList.add("adder-icon-wrapper-highligth-dragged");
         }
       },
       onMouseLeave(event) {
         event.currentTarget.classList.remove("adder-icon-wrapper-highligth-dragged");
       },
-      onMouseDown(event) {
-        const data = window.nvhFormattingEditor.global.mouseData;
-        if (data !== null && window.nvhFormattingEditor.global.canBeDropped) {
-          if (data.type === "choice-item") {
-            let content = {
-              name: data.name,
-              fullName: data.fullName,
-              area: data.name,
-              areaFullName: data.fullName,
-              children: data.children
-            }
-            window.nvhFormattingEditor.addElementWithChildren(this.props.index, window.nvhFormattingEditor.global.parent, this.props.state, this.props.state, content);
-            window.nvhFormattingEditor.global.canBeDropped = false;
-          }
-        }
-      }
     }
   </script>
 
@@ -50,7 +39,18 @@
       color: var(--color-is-dragged-over);
       transform: scale(1.1);
     }
-
+    .adder-icon-wrapper {
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 20px;
+    }
+    .adder-icon {
+      color: var(--color-is-dragged-over);
+      z-index: 1000;
+    }
     .adder-line {
       background-color: var(--color-is-dragged-over);
       display: flex;
@@ -64,18 +64,6 @@
     .adder-line-row {
       height: 100%;
       width: 2px;
-    }
-    .adder-icon-wrapper {
-      background-color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 20px;
-      width: 20px;
-    }
-    .adder-icon {
-      color: var(--color-is-dragged-over);
-      z-index: 1000;
     }
   </style>
 </adder-component>

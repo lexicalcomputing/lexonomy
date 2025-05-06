@@ -4,7 +4,7 @@
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
     </div>
-    <div style={props.getCssStyles(this.props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</div>
+    <div style={props.getCssStyles(props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</div>
     <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
@@ -20,20 +20,20 @@
       showLabelBefore: null,
     },
 
-    onBeforeMount() {
+    onBeforeMount(props) {
       this.state = {
-        yesValueText: this.props.styles["yes-value-text"],
-        noValueText: this.props.styles["no-value-text"],
-        labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+        yesValueText: props.styles["yes-value-text"],
+        noValueText: props.styles["no-value-text"],
+        labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+        showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
       }
     },
-    onBeforeUpdate() {
+    onBeforeUpdate(props) {
       this.state = {
-        yesValueText: this.props.styles["yes-value-text"],
-        noValueText: this.props.styles["no-value-text"],
-        labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-        showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+        yesValueText: props.styles["yes-value-text"],
+        noValueText: props.styles["no-value-text"],
+        labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+        showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
       }
     }
   }

@@ -2,9 +2,9 @@
   <div class="tooltipped content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
       style="color: {getColor()};
             background-color: {getBackgroundColor()};
-            border: 1px solid {props.isBaseLevel ? window.nvhStore.getElementColor(props.state.content.fullName) : "transparent"};"
+            border: 1px solid {props.isBaseLevel ? this.nvhStore.getElementColor(props.state.content.fullName) : "transparent"};"
       data-tooltip={props.state.content.fullName}
-      onmousedown={!props.isBaseLevel && !isMarkupTypeOrMarkupTypeChild() ? () => onMouseDown() : () => {}}>
+      onmousedown={!props.isBaseLevel && props.state.content.fullName ? () => onMouseDown() : () => {}}>
     <div class="content-box-wrapper-2">
       <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-parent"}">
         {getElementHolderLabel()}
@@ -14,6 +14,14 @@
 
 <script>
   export default {
+    nvhFormattingEditor: null,
+    nvhStore: null,
+
+    onBeforeMount(props) {
+      this.nvhFormattingEditor = window.nvhFormattingEditor;
+      this.nvhStore = window.nvhStore;
+    },
+
     onMouseDown() {
       transferObject = {
         type: "elementholder-label"
@@ -23,18 +31,18 @@
         run: this.onRelease,
       };
       transferObject["releaseFunction"] = releaseFunction;
-      window.nvhFormattingEditor.global.mouseData = transferObject;
-      window.nvhFormattingEditor.timeout = setTimeout(() => {
+      this.nvhFormattingEditor.global.mouseData = transferObject;
+      this.nvhFormattingEditor.timeout = setTimeout(() => {
         let trash = document.getElementById("trash-icon");
-        if (trash !== null) {
+        if (trash) {
           trash.classList.add("trash-enabled");
           trash.classList.remove("trash-disabled");
         }
       }, 200);
-      window.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
+      this.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
     },
     onRelease() {
-      if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
+      if (this.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
         this.props.state.content.name = "";
         this.props.state.content.fullName = "";
         this.props.state.content.area = "";
@@ -47,51 +55,19 @@
       }
     },
     onMouseEnter(event) {
-      const data = window.nvhFormattingEditor.global.mouseData;
-      if (data !== null && data.type === "choice-item") {
+      const data = this.nvhFormattingEditor.global.mouseData;
+      if (data && data.type === "choice-item") {
         event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
       }
     },
     onMouseLeave(event) {
       event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
     },
-    onMouseUp(event, adderIndex) {
-      const data = window.nvhFormattingEditor.global.mouseData;
-      if (data.type === "choice-item") {
-        let newContent = {
-          name: data.name,
-          fullName: data.fullName,
-          area: data.name,
-          areaFullName: data.fullName,
-          children: data.children
-        }
-
-        switch (adderIndex) {
-          case 1:
-            // top
-            this.addElementInside("row", newContent, this.props.state.content);
-            break;
-          case 2:
-            // left
-            this.addElementInside("column", newContent, this.props.state.content);
-            break;
-          case 3:
-            // right
-            this.addElementInside("column", this.props.state.content, newContent);
-            break;
-          case 4:
-            // bottom
-            this.addElementInside("row", this.props.state.content, newContent);
-        }
-      }
-      event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
-      window.nvhFormattingEditor.global.canBeDropped = false;
-    },
 
     getElementHolderLabel() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
-      if (name === "") {
+      if (!name) {
         return "container";
       }
       if (childrenCount === 0) {
@@ -103,14 +79,14 @@
     getColor() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
-      let color = window.nvhStore.getElementColor(this.props.state.content.fullName);
+      let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
       if (this.props.isBaseLevel) {
         if (childrenCount === 0) {
           return "#ffffff";
         }
         return color;
       }
-      if (name === "") {
+      if (!name) {
         return "black";
       } else {
         if (childrenCount === 0) {
@@ -122,43 +98,22 @@
     getBackgroundColor() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
-      let color = window.nvhStore.getElementColor(this.props.state.content.fullName);
+      let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
       if (this.props.isBaseLevel) {
         if (childrenCount === 0) {
           return color;
         }
         return "#ffffff";
       }
-      if (name === "") {
+      if (!name) {
         return "#c7ced1";
       } else {
         if (childrenCount === 0) {
           return color;
         }
-        return window.nvhFormattingEditor.getColorLightVersion(color);
+        return this.nvhFormattingEditor.getColorLightVersion(color);
       }
     },
-    isMarkupTypeOrMarkupTypeChild() {
-      return window.nvhFormattingEditor.isMarkupType(this.props.state.content.fullName)
-             || window.nvhFormattingEditor.isMarkupTypeChild(this.props.state.content.fullName)
-    },
-    addElementInside(undesiredOrientation, firstLabel, secondLabel) {
-      if (this.props.state.orientation === undesiredOrientation) {
-        let desiredOrientation = undesiredOrientation == "column" ? "row" : "column";
-        window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, this.props.state, desiredOrientation, null);
-        let newWrapperPlaceholder = this.props.state.children[0];
-        window.nvhFormattingEditor.addElementWithChildren(0, window.nvhFormattingEditor.formattingEditorComponent, newWrapperPlaceholder, newWrapperPlaceholder, firstLabel);
-        window.nvhFormattingEditor.addElementWithChildren(1, window.nvhFormattingEditor.formattingEditorComponent, newWrapperPlaceholder, newWrapperPlaceholder, secondLabel);
-      } else {
-        window.nvhFormattingEditor.addElementWithChildren(0, window.nvhFormattingEditor.formattingEditorComponent, this.props.state, this.props.state, firstLabel);
-        window.nvhFormattingEditor.addElementWithChildren(1, window.nvhFormattingEditor.formattingEditorComponent, this.props.state, this.props.state, secondLabel);
-      }
-    },
-    isDraggedElementOk() {
-      return window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.fullName)
-              && window.nvhFormattingEditor.global.draggedElementFullName !== this.props.state.content.fullName
-              && !window.nvhFormattingEditor.isMarkupType(this.props.state.content.fullName); /*resolve problem with markup type somewhere else*/
-    }
   }
 </script>
 
