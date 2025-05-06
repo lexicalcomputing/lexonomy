@@ -521,9 +521,8 @@
         /*
           Exported PDF file is prepared on backend via pdfkit library
         */
-        // TODO: If pdf layout not configured use desktop.
-        let stringHTML = await window.nvhFormattingEditor.parseAllEntries();
-        let response = await window.nvhFormattingEditor.createPDF(stringHTML);
+        await window.nvhFormattingEditor.parseAllEntries();
+        let response = await window.nvhFormattingEditor.createPDF();
         const encodedPDFString = response.pdf_string;
 
         /*

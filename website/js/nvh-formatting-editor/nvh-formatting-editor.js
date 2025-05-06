@@ -99,32 +99,62 @@ class NVHFormattingEditorClass {
     }
   }
 
-  async createPDF(html_string) {
+  async createPDF() {
     return window.connection.post({
        url: `${window.API_URL}createPDF`,
-       data: {
-          html_string: html_string,
-       },
+       data: {},
        failMessage: "Could not create PDF"
     })
   }
 
-  async parseAllEntries() {
-    let entriesList = await window.store.loadEntryList();
-    let htmlWrapper = "<div>";
-    for (let entry of entriesList.entries) {
-      htmlWrapper += await this.parseEntry(entry.id);
-      htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
-    }
-    htmlWrapper += "</div>"
-    return htmlWrapper;
+  async clearHtmlFile() {
+    return window.connection.post({
+      url: `${window.API_URL}clearHtmlFile`,
+      data: {},
+      failMessage: "Could not clear HTML file"
+    })
   }
 
-  async parseEntry(entryId) {
-    window.store.changeEntryId(entryId);
-    await window.store.loadEntry();
+  async appendToHtmlFile(html_string) {
+    return window.connection.post({
+      url: `${window.API_URL}appendToHtmlFile`,
+      data: {
+        html_string: html_string,
+      },
+      failMessage: "Could not append to HTML file"
+    })
+  }
+
+  async loadEntries() {
+    return window.connection.post({
+      url: `${window.API_URL}${window.store.data.dictId}/entriesread.json`,
+      failMessage: "Entries could not be loaded."
+   })
+  }
+
+  async parseAllEntries() {
+    await this.clearHtmlFile();
+
+    let entriesList = await this.loadEntries();
+    let htmlWrapper = "<div>";
+
+    for (let idx = 0; idx < entriesList.entriesList.length; idx++) {
+      let entryJson = window.nvhStore.nvhToJson(entriesList.entriesList[idx].nvh);
+      htmlWrapper += await this.parseEntry(entryJson);
+      htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
+      if (idx % 50 === 0) { // Do not send all entries at once to backend
+        await this.appendToHtmlFile(htmlWrapper);
+        htmlWrapper = ""
+      }
+    }
+
+    htmlWrapper += "</div>"
+    await this.appendToHtmlFile(htmlWrapper);
+  }
+
+  async parseEntry(entry) {
     let schema = window.nvhFormattingEditor.layout.pdf.configured ? window.nvhFormattingEditor.layout.pdf.schema : window.nvhFormattingEditor.layout.desktop.schema;
-    let entryHTML = this.getEntryHTML(schema.children[0], window.nvhStore.data.entry);
+    let entryHTML = this.getEntryHTML(schema.children[0], entry);
     return entryHTML;
   }
 
