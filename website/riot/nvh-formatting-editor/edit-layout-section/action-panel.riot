@@ -1,21 +1,20 @@
 <action-panel>
   <div class="action-panel-wrapper">
-    <div if={!props.isBaseLevel && !props.isMarkupTypeChild} 
+    <div if={!props.isBaseLevel} 
         class="tooltipped action"
         id="action-drag"
         data-tooltip="Drag"
         onmousedown={(event) => onMouseDown(event, props.state, props.index)}>
       <i class="small material-icons">drag_handle</i>
     </div>
-    <div if={!props.isBaseLevel && !props.isMarkupTypeChild}
+    <div if={!props.isBaseLevel}
         class="tooltipped action"
         id="action-duplicate"
         data-tooltip="Duplicate"
         onclick={duplicateElement}>
       <i class="small material-icons">content_copy</i>
     </div>
-    <div if={!props.isMarkupTypeChild}
-        class="tooltipped action action-orientation-{props.state.orientation}"
+    <div class="tooltipped action action-orientation-{props.state.orientation}"
         data-tooltip={props.state.orientation === "column"
           ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
             : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
@@ -67,11 +66,9 @@
       window.nvhFormattingEditor.global.canBeDragged = false;
     },
     onRelease(htmlElement, indexToDelete, parentState, state) {
-      /*
-      If placeholder was dragged within the same parent but its index was decreased,
+      /* If placeholder was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
-      the desired element.
-      */
+      the desired element. */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
                                 && window.nvhFormattingEditor.global.dropInfo.index < indexToDelete;
 
@@ -82,7 +79,6 @@
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
         }
       }
-      // window.nvhFormattingEditor.formattingEditorComponent.update(); // IMPORTANT, NOT TO HAVE HERE, BUT ONLY AFTER THIS FUNCTION FINISHES
     },
     hideCloseAdders(htmlElement, indexToDrag) {
       let htmlElementChildren = Array.from(htmlElement.children);
@@ -92,7 +88,7 @@
       rightAdder.style.display = "none";
     },
     duplicateElement() {
-      let copiedElement = JSON.parse(JSON.stringify(this.props.state)); /*deep copy*/
+      let copiedElement = JSON.parse(JSON.stringify(this.props.state));
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
       this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
       copiedElement.status.isHovered = false;

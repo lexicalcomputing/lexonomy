@@ -283,7 +283,7 @@
         }
         return false;
       },
-      saveSchemas() { //TODO: too slow fix, probably move to dict-config-formatting-riot
+      saveSchemas() {
         this.update({isSaving: true});
         window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
         window.nvhFormattingEditor.global.selectedPlaceholder = null;

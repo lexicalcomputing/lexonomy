@@ -50,7 +50,18 @@
       color: var(--color-is-dragged-over);
       transform: scale(1.1);
     }
-
+    .adder-icon-wrapper {
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 20px;
+      width: 20px;
+    }
+    .adder-icon {
+      color: var(--color-is-dragged-over);
+      z-index: 1000;
+    }
     .adder-line {
       background-color: var(--color-is-dragged-over);
       display: flex;
@@ -64,18 +75,6 @@
     .adder-line-row {
       height: 100%;
       width: 2px;
-    }
-    .adder-icon-wrapper {
-      background-color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 20px;
-      width: 20px;
-    }
-    .adder-icon {
-      color: var(--color-is-dragged-over);
-      z-index: 1000;
     }
   </style>
 </adder-component>

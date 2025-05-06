@@ -1,71 +1,56 @@
 <placeholder-component>
   <action-panel if={window.nvhFormattingEditor.global.mouseData === null}
-                class="action-panel
-                      {props.state.status.isHovered ? "action-panel-hovered" : ""}"
-                index={props.index}
-                parentState={props.parentState}
-                state={props.state}
-                isBaseLevel={props.isBaseLevel}
-                isMarkupTypeChild={props.isMarkupTypeChild}/>
+          class="action-panel
+                {props.state.status.isHovered ? "action-panel-hovered" : ""}"
+          index={props.index}
+          parentState={props.parentState}
+          state={props.state}
+          isBaseLevel={props.isBaseLevel}/>
   <elementholder-component class="elementholder"
-                          state={props.state}
-                          canHaveAdders={props.canHaveAdders}
-                          isBaseLevel={props.isBaseLevel}/>
+          state={props.state}
+          canHaveAdders={props.canHaveAdders}
+          isBaseLevel={props.isBaseLevel}/>
   <add-children-component getBackgroundColor={getBackgroundColor}
-                          class="add-children-component"
-                          state={props.state}
-                          canHaveAdders={props.canHaveAdders}>
+          class="add-children-component"
+          state={props.state}
+          canHaveAdders={props.canHaveAdders}>
   </add-children-component>
-  <div class="placeholder-inside-wrapper placeholder-inside-wrapper-{props.state.orientation}
-              {props.state.content.fullName === "" ? "placeholder-inside-wrapper-no-content" : ""}
-              {props.state.content.fullName === "" && props.state.children.length !== 0 ? "placeholder-inside-wrapper-group" : ""}"
+  <div class={getPlaceholderInsideWrapperCssClass(props.state)}
       style="background-color: {getBackgroundColor()};
             border: 2px solid {getBorderColor()}">
-    <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
+    <adder-component if={props.canHaveAdders && !props.state.status.isDragged
                         && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
-                    onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
-                    onmouseenter={onAdderMouseEnter}
-                    onmouseleave={onAdderMouseLeave}
-                    onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
-                    class="adder adder-{props.state.children.length === 0 ? "column": props.state.orientation}
-                          {props.state.children.length === 0 ? "adder-alone" : ""}
-                          {window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : "adder-invisible"}"
-                    orientation={props.state.children.length === 0 ? "column": props.state.orientation}
-                    index={0}
-                    state={props.state}/>
+            onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
+            onmouseenter={onAdderMouseEnter}
+            onmouseleave={onAdderMouseLeave}
+            onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
+            class={getAdderCssClass(props.state, "first")}
+            orientation={props.state.children.length === 0 ? "column": props.state.orientation}
+            index={0}
+            state={props.state}/>
     <template each={(child, index) in props.state.children}>
       <placeholder-component onclick={() => window.nvhFormattingEditor.selectPlaceholder(child, props.state)}
-                            title={window.nvhFormattingEditor.isElementNonExisting(child.content.fullName) ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
-                            onmouseup={(event) => onMouseUp(event, child)}
-                            onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
-                            onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
-                            class="placeholder placeholder-{child.orientation}
-                                  {child.status.isActive ? "placeholder-selected" : ""}
-                                  {child.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? "placeholder-mouse-hover" : ""}
-                                  {child.content.name !== "" && child.children.length !== 0 ? "placeholder-wrapping-content" : ""}
-                                  {child.children.length === 0 ? "placeholder-no-children" : ""}
-                                  {child.status.isDragged ? "placeholder-dragged" : ""}
-                                  {!isContainerConfiguredCorrectly(child) ? "placeholder-configured-incorrectly" : ""}
-                                  {canBeDropped(child) ? "placeholder-can-be-dropped" : ""}
-                                  {window.nvhFormattingEditor.isElementNonExisting(child.content.fullName) ? "placeholder-non-existing" : ""}"
-                            state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
-                            parentState={props.state}
-                            isBaseLevel={false}
-                            index={index}
-                            canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}
-                            isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}
-                            isMarkupTypeChild={props.isMarkupType}/>
-      <adder-component if={props.canHaveAdders && !props.state.status.isDragged && !markupTypeChildrenLimitReached() && !props.isMarkupTypeChild
+              title={window.nvhFormattingEditor.isElementNonExisting(child.content.fullName)
+                    ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
+              onmouseup={(event) => onMouseUp(event, child)}
+              onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
+              onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
+              class={getPlaceholderCssClass(child)}
+              state={window.nvhFormattingEditor.childWithInheritedArea(child, props.state)}
+              parentState={props.state}
+              isBaseLevel={false}
+              index={index}
+              canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
+      <adder-component if={props.canHaveAdders && !props.state.status.isDragged
                           && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
-                      onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
-                      onmouseenter={onAdderMouseEnter}
-                      onmouseleave={onAdderMouseLeave}
-                      onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
-                      class="adder adder-{props.state.orientation}
-                            {window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : "adder-invisible"}"
-                      orientation={props.state.orientation}
-                      index={index + 1}
-                      state={props.state}/>
+              onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
+              onmouseenter={onAdderMouseEnter}
+              onmouseleave={onAdderMouseLeave}
+              onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
+              class={getAdderCssClass(props.state, "other")}
+              orientation={props.state.orientation}
+              index={index + 1}
+              state={props.state}/>
     </template>
   </div>
 
@@ -186,75 +171,14 @@
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          //window.nvhFormattingEditor.global.mouseData = null; // KEY FIX, not necessary because done in global mouse up
+          window.nvhFormattingEditor.clearIsHoveredStatus();
           window.nvhFormattingEditor.formattingEditorComponent.update();
         }
-      },
-      markupTypeChildrenLimitReached() {
-        return this.props.isMarkupType && this.props.state.children.length === 2;
-      },
-      getPlaceholderTitle(state) {
-        if (!window.nvhFormattingEditor.isMarkupType(state.content.fullName)) {
-          return "";
-        }
-        if (state.children.length == 0) {
-          return "";
-        }
-        if (state.children.length !== 2) {
-          return "Container with element of markup type (red frame),\nshould have exactly two subcontainers.";
-        }
-        if (state.children[0].content.fullName === "" || state.children[1].content.fullName === "") {
-          return "Container with element of markup type (red frame)\nshould not have empty subcontainers.";
-        }
-        if (state.children[0].content.fullName === state.children[1].content.fullName) {
-          return "Container with element of markup type (red frame),\nshould not have two subcontainers with the same element name.";
-        }
-        if (this.areMarkupTypeChildrenSwapped(state)) {
-          return "Subcontainers of a container with element of a markup type (red frame),\n should be swapped.";
-        }
-        return "";
-      },
-      isContainerConfiguredCorrectly(state) {
-        if (!window.nvhFormattingEditor.isMarkupType(state.content.fullName)) {
-          return true;
-        }
-        if (state.children.length == 0) {
-          return true;
-        }
-        if (state.children.length !== 2) {
-          return false;
-        }
-        if (state.children[0].content.fullName === "" || state.children[1].content.fullName === "") {
-          return false;
-        }
-        if (state.children[0].content.fullName === state.children[1].content.fullName) {
-          return false;
-        }
-        if (this.areMarkupTypeChildrenSwapped(state)) {
-          return false;
-        }
-        return true;
-      },
-      areMarkupTypeChildrenSwapped(state) {
-        let firstType = window.nvhFormattingEditor.isMarkupType(state.children[0].content.fullName);
-        let secondType = window.nvhFormattingEditor.isMarkupTypeChild(state.children[1].content.fullName);
-        return firstType && secondType;
       },
       onPlaceholderMouseEnter(event, state, parentState) {
         if (window.nvhFormattingEditor.global.mouseData === null) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
-          /*
-            This is a work-around.
-            If I create a new placeholder inside of a placeholder,
-            the outer one will lose focus. In this way I assign a focus to parent
-            placeholder, which is expected behaviour. This is not true for base placeholder.
-          */
-          const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
-          if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
-            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-            parentState.status.isHovered = true;
-          }
           window.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
@@ -266,10 +190,10 @@
             This is a work-around.
             If I move a placeholder using arrows, sometimes I enter child placeholder
             without entering parent placeholder. I need to assure that after leaving child placeholder,
-            the parent will be hovered which is expected behaviour. This is not true for base placeholder.
+            the parent will be hovered which is expected behaviour.
           */
           const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
-          if (classList.includes("placeholder") && !classList.includes("placeholder-first")) {
+          if (classList.includes("placeholder")) {
             event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
             parentState.status.isHovered = true;
           }
@@ -277,10 +201,7 @@
         }
       },
       getBorderColor() {
-        if (this.props.state.content.name === "") {
-          return "#c7ced1";
-        }
-        return "transparent";
+        return this.props.state.content.name === "" ? "#c7ced1" : "transparent";
       },
       getBackgroundColor() {
         if (this.props.state.content.name === "" || this.props.isBaseLevel) {
@@ -325,7 +246,35 @@
           return false;
         }
         return true;
-      }
+      },
+      getPlaceholderCssClass(placeholder) {
+        let cssClass = "placeholder";
+        cssClass += placeholder.status.isActive ? " placeholder-selected" : "";
+        cssClass += placeholder.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? " placeholder-mouse-hover" : "";
+        cssClass += placeholder.content.name !== "" && placeholder.children.length !== 0 ? " placeholder-wrapping-content" : "";
+        cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
+        cssClass += placeholder.status.isDragged ? " placeholder-dragged" : "";
+        cssClass += this.canBeDropped(placeholder) ? " placeholder-can-be-dropped" : "";
+        cssClass += window.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
+        return cssClass;
+      },
+      getPlaceholderInsideWrapperCssClass(placeholder) {
+        let cssClass = `placeholder-inside-wrapper placeholder-inside-wrapper-${placeholder.orientation}`;
+        cssClass += placeholder.content.fullName === "" ? " placeholder-inside-wrapper-no-content" : "";
+        cssClass += placeholder.content.fullName === "" && placeholder.children.length !== 0 ? " placeholder-inside-wrapper-group" : "";
+        return cssClass;
+      },
+      getAdderCssClass(placeholder, adderType) {
+        let cssClass = "adder"
+        cssClass += window.nvhFormattingEditor.global.mouseData === null || window.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : " adder-invisible";
+        if (adderType === "first") {
+          cssClass += ` adder-${placeholder.children.length === 0 ? "column": placeholder.orientation}`;
+          cssClass += placeholder.children.length === 0 ? " adder-alone" : "";
+        } else {
+          cssClass += ` adder-${placeholder.orientation}`;
+        }
+        return cssClass;
+      } 
     }
   </script>
 
@@ -393,11 +342,6 @@
     .placeholder:not(:has(.placeholder-mouse-hover)) .action-panel-hovered {
       display: block;
     }
-
-    .placeholder-configured-incorrectly {
-      outline: 4px solid var(--color-red-normal) !important;
-    }
-
 
     .elementholder {
       width: fit-content;
