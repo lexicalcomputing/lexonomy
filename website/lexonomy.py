@@ -215,20 +215,20 @@ def listuserdicts(user):
 @post(siteconfig["rootPath"] + "createPDF")
 @auth
 def createPDF(user):
-    pdf_string = nvh_formatting_editor.html_string_to_pdf()
+    pdf_string = nvh_formatting_editor.html_string_to_pdf(user)
     response.content_type = 'application/json'
     return {"success": True, "pdf_string": pdf_string}
 
 @post(siteconfig["rootPath"] + "clearHtmlFile")
 @auth
 def clearHtmlFile(user):
-    success = nvh_formatting_editor.clear_html_file()
+    success = nvh_formatting_editor.clear_html_file(user)
     return {"success": success}
 
 @post(siteconfig["rootPath"] + "appendToHtmlFile")
 @auth
 def appendToHtmlFile(user):
-    success = nvh_formatting_editor.append_to_html_file(request.forms.html_string)
+    success = nvh_formatting_editor.append_to_html_file(user, request.forms.html_string)
     return {"success": success}
 
 @post(siteconfig["rootPath"] + "<dictID>/entrydelete.json")
