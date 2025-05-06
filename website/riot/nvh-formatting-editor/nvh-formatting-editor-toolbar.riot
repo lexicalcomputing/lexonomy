@@ -77,23 +77,6 @@
           class="tooltipped formatting-page-action-item">
         <i class="material-icons">refresh</i>
       </div>
-      <div id="import-json-wrapper"
-          data-tooltip="Import schema from JSON"
-          class="tooltipped">
-        <input id="import-json-input"
-            type="file"
-            accept=".json"
-            onchange={importSchema}/>
-        <label id="import-json-label" for="import-json-input">
-          <i class="material-icons" style="color: white">file_download</i>
-        </label>
-      </div>
-      <div id="export-json-wrapper"
-          data-tooltip="Export schema to JSON"
-          onclick={onExportJSON}
-          class="tooltipped">
-        <i class="material-icons" style="color: white">file_upload</i>
-      </div>
       <div id="export-pdf"
           onclick={onExportPDF}
           data-tooltip="Export all entries of dictionary to PDF"
@@ -118,14 +101,6 @@
           exported: 0,
           total: 0,
         },
-        fileReader: null,
-      },
-
-      onBeforeMount(props) {
-        this.state.fileReader = new FileReader();
-        this.state.fileReader.onload = function(e) {
-          this.setSchemaFromImportedFile(this.state.fileReader.result);
-        }.bind(this);
       },
 
       onLayoutClick(layoutName) {
@@ -153,7 +128,7 @@
           https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
         */
         // const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString); // Not available on Chrome
-        
+
         /*
           This should be available for both Mozilla and Chrome.
           https://developer.mozilla.org/en-US/docs/Web/API/Window/atob
@@ -178,117 +153,6 @@
         URL.revokeObjectURL(blobUrl);
         this.update(this.state.exportedEntries.isLoading = false);
       },
-      /*  THESE METHODS ARE RELATED TO JSON IMPORT/EXPORT. REMOVE LATER */
-      importSchema(event) {
-        let file = event.target.files[0];
-        file && this.state.fileReader.readAsText(file, 'UTF-8');
-      },
-      setSchemaFromImportedFile(importedSchemaString) {
-        let importedSchema = JSON.parse(importedSchemaString);
-        if (!this.isImportedSchemaValid(importedSchema, "")) {
-          console.log("Imported schema is not valid");
-          return;
-        }
-        let newSchema = {children: []};
-        this.recreateImportedSchema(newSchema, importedSchema, "");
-        window.nvhFormattingEditor.currentLayout.schema = newSchema;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
-      },
-      isImportedSchemaValid(importedSchema, areaFullName) {
-        for (let child of importedSchema.children) {
-          if (child.orientation !== "column" && child.orientation !== "row") {
-            // Invalid orientation
-            return false;
-          }
-          if (child.fullName !== "" && !window.nvhFormattingEditor.getChoiceElementsFullNamesList().includes(child.fullName)) {
-            // Invalid element
-            return false;
-          }
-          if (child.fullName !== "" && !child.fullName.includes(areaFullName)) {
-            // Invalid child
-            return false;
-          }
-          if (child.fullName === areaFullName && child.children.length !== 0) {
-            // Nested wrappers of same name
-            return false;
-          }
-          if (child.fullName !== "" && window.store.schema.getElementByPath(child.fullName).children.length === 0 && child.children.length !== 0) {
-            // Element has child but it should not have
-            return false;
-          }
-          let newAreaFullName = child.fullName === "" ? areaFullName : child.fullName;
-          if (!this.isImportedSchemaValid(child, newAreaFullName)) {
-            return false;
-          }
-        }
-        return true;
-      },
-      recreateImportedSchema(newSchema, importedSchema, areaFullName) {
-        for (let child of importedSchema.children) {
-          let newAreaFullName = child.fullName === "" ? areaFullName : child.fullName;
-          newSchema.children.push({
-            status: {
-              isActive: false,
-              isHovered: false,
-              isDragged: false,
-            },
-            orientation: child.orientation,
-            type: "placeholder",
-            content: {
-              name: this.getNameFromFullName(child.fullName),
-              fullName: child.fullName,
-              area: this.getNameFromFullName(newAreaFullName),
-              areaFullName: newAreaFullName,
-              canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
-            },
-            styles: JSON.parse(child.styles),
-            markupStyles: JSON.parse(child.markupStyles),
-            labelStyles: JSON.parse(child.labelStyles),
-            bulletStyles: JSON.parse(child.bulletStyles),
-            children: [],
-          });
-          this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);
-        }
-      },
-      getNameFromFullName(fullName) {
-        let nameParts = fullName.split(".");
-        return nameParts.at(nameParts.length - 1);
-      },
-      onExportJSON() {
-        /*
-        I do not export first "entry" placeholder, because it is default.
-        I export only "orientation" and "fullName" of each placeholder because I can derive
-        all the attributes from them.
-        */
-        let exportSchema = {children: []};
-        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.currentLayout.schema);
-        let blobContent = [JSON.stringify(exportSchema)];
-        let blob = new Blob(blobContent, { type: "application/json" });
-        let schemaURL = URL.createObjectURL(blob);
-
-        const tmpLink = document.createElement("a");
-        tmpLink.href = schemaURL;
-        tmpLink.download = "schema.json"
-        document.body.appendChild(tmpLink)
-        tmpLink.click();
-        document.body.removeChild(tmpLink)
-
-        URL.revokeObjectURL(schemaURL);
-      },
-      createExportedSchema(exportSchema, editingSchema) {
-        for (let child of editingSchema.children) {
-          exportSchema.children.push({
-            orientation: child.orientation,
-            fullName: child.content.fullName,
-            styles: JSON.stringify(child.styles),
-            markupStyles: JSON.stringify(child.markupStyles),
-            labelStyles: JSON.stringify(child.labelStyles),
-            bulletStyles: JSON.stringify(child.bulletStyles),
-            children: [],
-          });
-          this.createExportedSchema(exportSchema.children.at(exportSchema.children.length - 1), child);
-        }
-      },
     }
   </script>
 
@@ -309,7 +173,6 @@
       gap: 25px;
       background-color: var(--color-grey-light);
     }
-
     .formatting-page-visibility-container, .formatting-page-layout-container, .formatting-page-action-container {
       display: flex;
     }
@@ -328,12 +191,7 @@
       background-color: var(--color-red-dark);
     }
 
-    .progress-label {
-      display: flex;
-      align-items: center;
-    }
-
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper, .configure-button-wrapper, #reset-icon-wrapper {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #save-button-wrapper, #reset-icon-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -342,26 +200,23 @@
       color: white;
       background-color: var(--color-black-normal);
     }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, .configure-button-wrapper:hover, #reset-icon-wrapper:hover {
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, #reset-icon-wrapper:hover {
       background-color: var(--color-black-dark);
       cursor: pointer;
     }
-    #save-button-wrapper, .configure-button-wrapper {
+    #save-button-wrapper {
       background-color: var(--color-red-normal);
     }
-    #save-button-wrapper:hover, .configure-button-wrapper:hover {
+    #save-button-wrapper:hover {
       background-color: var(--color-red-dark);
-    }
-    #import-json-input {
-      display: none;
-    }
-    #import-json-label {
-      color: black;
-      cursor: pointer;
-      height: 24px;
     }
     #export-pdf {
       margin-left: 10px;
+    }
+
+    .progress-label {
+      display: flex;
+      align-items: center;
     }
   </style>
 
