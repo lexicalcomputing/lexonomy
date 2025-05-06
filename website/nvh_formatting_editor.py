@@ -6,7 +6,14 @@ def html_string_to_pdf():
         'encoding': 'UTF-8',
         'disable-smart-shrinking': '',
     }
-    pdf_bytes = pdfkit.from_file("tmp/pdf_export.html", output_path=None, options=options, css="./css/nvh-formatting-editor.css")
+
+    try:
+        with open("tmp/pdf_export.html") as f:
+            string_html = f.read()
+    except:
+        return ""
+
+    pdf_bytes = pdfkit.from_string(string_html, output_path=None, options=options, css="./css/nvh-formatting-editor.css")
     pdf_string = base64.b64encode(pdf_bytes).decode('utf-8')
     return pdf_string
 
