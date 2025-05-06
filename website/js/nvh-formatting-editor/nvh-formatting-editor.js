@@ -132,21 +132,31 @@ class NVHFormattingEditorClass {
    })
   }
 
-  async parseAllEntries() {
+  async parseAllEntries(exportedEntries) {
     await this.clearHtmlFile();
 
     let entriesList = await this.loadEntries();
+    exportedEntries.inProgress = true;
+    exportedEntries.total = entriesList.entriesList.length;
+    exportedEntries.exported = 0;
+
     let htmlWrapper = "<div>";
 
     for (let idx = 0; idx < entriesList.entriesList.length; idx++) {
       let entryJson = window.nvhStore.nvhToJson(entriesList.entriesList[idx].nvh);
       htmlWrapper += await this.parseEntry(entryJson);
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
-      if (idx % 50 === 0) { // Do not send all entries at once to backend
+      if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
+        exportedEntries.exported = idx;
+        window.nvhFormattingEditor.formattingEditorComponent.update();
         await this.appendToHtmlFile(htmlWrapper);
         htmlWrapper = ""
       }
     }
+    exportedEntries.inProgress = false;
+    exportedEntries.total = 0;
+    exportedEntries.exported = 0;
+    window.nvhFormattingEditor.formattingEditorComponent.update();
 
     htmlWrapper += "</div>"
     await this.appendToHtmlFile(htmlWrapper);
