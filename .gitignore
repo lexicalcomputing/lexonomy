@@ -14,3 +14,4 @@ website/bundle.codemirror.js
 website/bundle.css
 .vscode/
 website/data/
+website/tmp/

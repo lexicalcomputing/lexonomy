@@ -94,6 +94,12 @@
           class="tooltipped formatting-page-action-item">
         Export to PDF
       </div>
+      <div style="display: flex; align-items: center;" if={state.exportedEntries.inProgress}>
+        {state.exportedEntries.exported} / {state.exportedEntries.total}
+      </div>
+      <div style="display: flex; align-items: center;" if={state.exportedEntries.isLoading}>
+        Wait please
+      </div>
     </div>
   </div>
   <div class="formatting-page-wrapper-container">
@@ -173,6 +179,12 @@
     export default {
       state: {
         isSaving: false,
+        exportedEntries: {
+          isLoading: false,
+          inProgress: false,
+          exported: 0,
+          total: 0,
+        },
         showElements: true,
         showStyle: false,
         showEditing: true,
@@ -521,9 +533,10 @@
         /*
           Exported PDF file is prepared on backend via pdfkit library
         */
-        // TODO: If pdf layout not configured use desktop.
-        let stringHTML = await window.nvhFormattingEditor.parseAllEntries();
-        let response = await window.nvhFormattingEditor.createPDF(stringHTML);
+        await window.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
+        this.state.exportedEntries.isLoading = true;
+        window.nvhFormattingEditor.formattingEditorComponent.update();
+        let response = await window.nvhFormattingEditor.createPDF();
         const encodedPDFString = response.pdf_string;
 
         /*
@@ -554,6 +567,8 @@
         document.body.removeChild(tmpLink)
 
         URL.revokeObjectURL(blobUrl);
+        this.state.exportedEntries.isLoading = false;
+        window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       saveSchemas() {
         this.update({isSaving: true});
