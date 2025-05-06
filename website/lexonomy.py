@@ -246,7 +246,7 @@ def entryread(dictID, user, dictDB, configs):
 
 @post(siteconfig["rootPath"]+"<dictID>/entriesread.json")
 @authDict(["canView"])
-def entryread(dictID, user, dictDB, configs):
+def entriesread(dictID, user, dictDB, configs):
     entriesList = nvh_formatting_editor.readEntries(dictDB)
     return {"success": True, "entriesList": entriesList}
 
