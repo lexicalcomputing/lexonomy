@@ -1,109 +1,9 @@
 <dict-config-formatting>
   <loading-overlay if={state.isSaving}/>
   <h1 class="formatting-page-title">Entry Formatting</h1>
-  <div class="formatting-page-containers">
-    <div class="formatting-page-layout-container">
-      <div onclick={onLayoutClick.bind(this, "desktop")}
-          data-tooltip="Desktop layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">desktop_windows</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "tablet")}
-          data-tooltip="Tablet layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">tablet</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "mobile")}
-          data-tooltip="Mobile phone layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">phone_android</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "pdf")}
-          data-tooltip="Export to PDF layout"
-          class="tooltipped formatting-page-layout-item {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">picture_as_pdf</i>
-      </div>
-    </div>
-    <div class="formatting-page-visibility-container">
-      <div onclick={onSectionClick.bind(this, "showElements")}
-          data-tooltip="Element list panel"
-          class="tooltipped formatting-page-visibility-item {!state.showElements ? "item-inactive" : "item-active"}">
-        <i class="material-icons">sort</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "showEditing")}
-          data-tooltip="Layout panel"
-          class="tooltipped formatting-page-visibility-item {!state.showEditing ? "item-inactive" : "item-active"}">
-        <i class="material-icons">view_compact</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "showStyle")}
-          data-tooltip="Style panel"
-          class="tooltipped formatting-page-visibility-item {!state.showStyle ? "item-inactive" : "item-active"}">
-        <i class="material-icons">palette</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "showExample")}
-          data-tooltip="Preview panel"
-          class="tooltipped formatting-page-visibility-item {!state.showExample ? "item-inactive" : "item-active"}">
-        <i class="material-icons">visibility</i>
-      </div>
-    </div>
-    <div class="formatting-page-action-container">
-      <div id="save-button-wrapper"
-          onclick={saveSchemas}
-          data-tooltip="Save formatting (including layout and styles)"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">save</i>
-      </div>
-      <div id="undo-icon-wrapper" 
-          onclick={window.nvhFormattingEditor.undoSchema}
-          data-tooltip="Step back"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">undo</i>
-      </div>
-      <div id="redo-icon-wrapper" 
-          onclick={window.nvhFormattingEditor.redoSchema}
-          data-tooltip="Step forward"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">redo</i>
-      </div>
-      <div id="reset-icon-wrapper" 
-          onclick={window.nvhFormattingEditor.resetSchema}
-          data-tooltip="Reset current layout"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">refresh</i>
-      </div>
-      <div id="import-json-wrapper"
-          data-tooltip="Import schema from JSON"
-          class="tooltipped">
-        <input id="import-json-input"
-            type="file"
-            accept=".json"
-            onchange={importSchema}/>
-        <label id="import-json-label" for="import-json-input">
-          <i class="material-icons" style="color: white">file_download</i>
-        </label>
-      </div>
-      <div id="export-json-wrapper"
-          data-tooltip="Export schema to JSON"
-          onclick={onExportJSON}
-          class="tooltipped">
-        <i class="material-icons" style="color: white">file_upload</i>
-      </div>
-      <div id="export-pdf"
-          onclick={onExportPDF}
-          data-tooltip="Export all entries of dictionary to PDF"
-          class="tooltipped formatting-page-action-item">
-        Export to PDF
-      </div>
-      <div style="display: flex; align-items: center;" if={state.exportedEntries.inProgress}>
-        {state.exportedEntries.exported} / {state.exportedEntries.total}
-      </div>
-      <div style="display: flex; align-items: center;" if={state.exportedEntries.isLoading}>
-        Wait please
-      </div>
-    </div>
-  </div>
+  <nvh-formatting-editor-toolbar state={state.toolbar} save-schemas={saveSchemas}/>
   <div class="formatting-page-wrapper-container">
-    <div if={state.showElements}
+    <div if={state.toolbar.isSectionVisible.elements}
         id="elements-container"
         class="formatting-page-container">
       <div class="header-box">
@@ -121,9 +21,9 @@
                                 elementsSchema={window.nvhFormattingEditor.elementsSchema}/>
       </div>
     </div>
-    <div if={state.showElements} class="resizeHandle"
+    <div if={state.toolbar.isSectionVisible.elements} class="resizeHandle"
         onmousedown={(event) => onResizeHandleMouseDown(event, ".elements-choice-section-wrapper", 200, 300)}></div>
-    <div if={state.showEditing}
+    <div if={state.toolbar.isSectionVisible.editing}
         id="editing-container"
         class="formatting-page-container">
       <div class="editing-header">
@@ -149,7 +49,7 @@
         <edit-layout class="edit-layout"/>
       </div>
     </div>
-    <div if={state.showStyle}
+    <div if={state.toolbar.isSectionVisible.style}
         id="style-container"
         class="formatting-page-container">
       <div class="header-box">
@@ -160,9 +60,9 @@
         <styles-section class="style-section"/>
       </div>
     </div>
-    <div if={state.showStyle} class="resizeHandle"
+    <div if={state.toolbar.isSectionVisible.style} class="resizeHandle"
         onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 200, 600)}></div>
-    <div if={state.showExample} 
+    <div if={state.toolbar.isSectionVisible.example} 
         id="example-container"
         class="formatting-page-container">
       <div class="header-box">
@@ -178,18 +78,15 @@
   <script>
     export default {
       state: {
-        isSaving: false,
-        exportedEntries: {
-          isLoading: false,
-          inProgress: false,
-          exported: 0,
-          total: 0,
+        toolbar: {
+          isSaving: false,
+          isSectionVisible: {
+            elements: true,
+            style: false,
+            editing: true,
+            example: true,
+          },
         },
-        showElements: true,
-        showStyle: false,
-        showEditing: true,
-        showExample: true,
-        fileReader: null,
         mousePos: null,
         leftContainer: {
           className: null,
@@ -200,10 +97,6 @@
 
       onBeforeMount() {
         window.nvhFormattingEditor.elementsSchema = window.nvhFormattingEditor.createElementsSchema();
-        this.state.fileReader = new FileReader();
-        this.state.fileReader.onload = function(e) {
-          this.setSchemaFromImportedFile(this.state.fileReader.result);
-        }.bind(this),
         window.nvhFormattingEditor.formattingEditorComponent = this;
         window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
@@ -337,34 +230,6 @@
         }
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
-
-      onLayoutClick(layoutName) {
-        window.nvhFormattingEditor.global.activeLayout = layoutName;
-        window.nvhFormattingEditor.global.selectedPlaceholder = null;
-        /*TODO: Is there a way how to simplify this?*/
-        switch(layoutName) {
-          case "desktop":
-            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
-            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-            break;
-          case "tablet":
-            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
-            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-            break;
-          case "mobile":
-            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
-            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-            break;
-          case "pdf":
-            window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.pdf;
-            window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-            break;
-        }
-        this.update();
-      },
-      onSectionClick(sectionName) {
-        this.update({[sectionName]: !this.state[sectionName]});
-      },
       isSchemaChanged(oldSchema, newSchema) {
         if (oldSchema.orientation !== newSchema.orientation) {
           return true;
@@ -418,159 +283,7 @@
         }
         return false;
       },
-      onExportJSON() {
-        /*
-        I do not export first "entry" placeholder, because it is default.
-        I export only "orientation" and "fullName" of each placeholder because I can derive
-        all the attributes from them.
-        */
-        let exportSchema = {children: []};
-        this.createExportedSchema(exportSchema, window.nvhFormattingEditor.currentLayout.schema);
-        let blobContent = [JSON.stringify(exportSchema)];
-        let blob = new Blob(blobContent, { type: "application/json" });
-        let schemaURL = URL.createObjectURL(blob);
-
-        const tmpLink = document.createElement("a");
-        tmpLink.href = schemaURL;
-        tmpLink.download = "schema.json"
-        document.body.appendChild(tmpLink)
-        tmpLink.click();
-        document.body.removeChild(tmpLink)
-
-        URL.revokeObjectURL(schemaURL);
-      },
-      importSchema(event) {
-        let file = event.target.files[0];
-        file && this.state.fileReader.readAsText(file, 'UTF-8');
-      },
-      setSchemaFromImportedFile(importedSchemaString) {
-        let importedSchema = JSON.parse(importedSchemaString);
-        if (!this.isImportedSchemaValid(importedSchema, "")) {
-          console.log("Imported schema is not valid");
-          return;
-        }
-        let newSchema = {children: []};
-        this.recreateImportedSchema(newSchema, importedSchema, "");
-        window.nvhFormattingEditor.currentLayout.schema = newSchema;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
-      },
-      createExportedSchema(exportSchema, editingSchema) {
-        for (let child of editingSchema.children) {
-          exportSchema.children.push({
-            orientation: child.orientation,
-            fullName: child.content.fullName,
-            styles: JSON.stringify(child.styles),
-            markupStyles: JSON.stringify(child.markupStyles),
-            labelStyles: JSON.stringify(child.labelStyles),
-            bulletStyles: JSON.stringify(child.bulletStyles),
-            children: [],
-          });
-          this.createExportedSchema(exportSchema.children.at(exportSchema.children.length - 1), child);
-        }
-      },
-      recreateImportedSchema(newSchema, importedSchema, areaFullName) {
-        for (let child of importedSchema.children) {
-          let newAreaFullName = child.fullName === "" ? areaFullName : child.fullName;
-          newSchema.children.push({
-            status: {
-              isActive: false,
-              isHovered: false,
-              isDragged: false,
-            },
-            orientation: child.orientation,
-            type: "placeholder",
-            content: {
-              name: this.getNameFromFullName(child.fullName),
-              fullName: child.fullName,
-              area: this.getNameFromFullName(newAreaFullName),
-              areaFullName: newAreaFullName,
-              canHaveChildren: child.fullName !== "" ? window.store.schema.getElementByPath(child.fullName).children.length !== 0 : true,
-            },
-            styles: JSON.parse(child.styles),
-            markupStyles: JSON.parse(child.markupStyles),
-            labelStyles: JSON.parse(child.labelStyles),
-            bulletStyles: JSON.parse(child.bulletStyles),
-            children: [],
-          });
-          this.recreateImportedSchema(newSchema.children.at(newSchema.children.length - 1), child, newAreaFullName);
-        }
-      },
-
-      getNameFromFullName(fullName) {
-        let nameParts = fullName.split(".");
-        return nameParts.at(nameParts.length - 1);
-      },
-      isImportedSchemaValid(importedSchema, areaFullName) {
-        for (let child of importedSchema.children) {
-          if (child.orientation !== "column" && child.orientation !== "row") {
-            // Invalid orientation
-            return false;
-          }
-          if (child.fullName !== "" && !window.nvhFormattingEditor.getChoiceElementsFullNamesList().includes(child.fullName)) {
-            // Invalid element
-            return false;
-          }
-          if (child.fullName !== "" && !child.fullName.includes(areaFullName)) {
-            // Invalid child
-            return false;
-          }
-          if (child.fullName === areaFullName && child.children.length !== 0) {
-            // Nested wrappers of same name
-            return false;
-          }
-          if (child.fullName !== "" && window.store.schema.getElementByPath(child.fullName).children.length === 0 && child.children.length !== 0) {
-            // Element has child but it should not have
-            return false;
-          }
-          let newAreaFullName = child.fullName === "" ? areaFullName : child.fullName;
-          if (!this.isImportedSchemaValid(child, newAreaFullName)) {
-            return false;
-          }
-        }
-        return true;
-      },
-      async onExportPDF() {
-        /*
-          Exported PDF file is prepared on backend via pdfkit library
-        */
-        await window.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
-        this.state.exportedEntries.isLoading = true;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
-        let response = await window.nvhFormattingEditor.createPDF();
-        const encodedPDFString = response.pdf_string;
-
-        /*
-          Convert encoded PDF string to array of bytes, and use it as an input for Blob to generate URL.
-          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
-        */
-        // const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString); // Not available on Chrome
-
-        /*
-          This should be available for both Mozilla and Chrome.
-          https://developer.mozilla.org/en-US/docs/Web/API/Window/atob
-          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-        */
-        const bytesArrayPDF = Uint8Array.from(atob(encodedPDFString), c => c.charCodeAt(0));
-        const blob = new Blob([bytesArrayPDF], { type: 'application/pdf' });
-        const blobUrl = URL.createObjectURL(blob);
-        
-        /*
-          Because of asynchronous creating of a PDF file,
-          I need to create a temporary <a> element a simulate clicking on it.
-          <a> element in html code would not download PDF file.
-        */
-        const tmpLink = document.createElement("a");
-        tmpLink.href = blobUrl;
-        tmpLink.download = "entries.pdf"
-        document.body.appendChild(tmpLink)
-        tmpLink.click();
-        document.body.removeChild(tmpLink)
-
-        URL.revokeObjectURL(blobUrl);
-        this.state.exportedEntries.isLoading = false;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
-      },
-      saveSchemas() {
+      saveSchemas() { //TODO: too slow fix, probably move to dict-config-formatting-riot
         this.update({isSaving: true});
         window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
         window.nvhFormattingEditor.global.selectedPlaceholder = null;
@@ -735,10 +448,6 @@
       min-width: 100%;
       padding: 5px;
     }
-    .icon-svg {
-      height: 20px;
-      width: 20px;
-    }
     .header-box {
       display: flex;
       align-items: center;
@@ -761,54 +470,8 @@
       color: red;
     }
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-json-wrapper, #import-json-wrapper, #export-pdf, #save-button-wrapper, .configure-button-wrapper, #reset-icon-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 8px;
-      text-wrap: nowrap;
-      color: white;
-      background-color: var(--color-black-normal);
-    }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-json-wrapper:hover, #import-json-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, .configure-button-wrapper:hover, #reset-icon-wrapper:hover {
-      background-color: var(--color-black-dark);
-      cursor: pointer;
-    }
-
-    #save-button-wrapper, .configure-button-wrapper {
-      background-color: var(--color-red-normal);
-    }
-    #save-button-wrapper:hover, .configure-button-wrapper:hover {
-      background-color: var(--color-red-dark);
-    }
-
-    #import-json-input {
-      display: none;
-    }
-    #import-json-label {
-      color: black;
-      cursor: pointer;
-      height: 24px;
-    }
-
-    #export-pdf {
-      margin-left: 10px;
-    }
-
     .formatting-page-title {
       text-wrap: nowrap;
-    }
-    .formatting-page-containers {
-      display: flex;
-      gap: 25px;
-      background-color: var(--color-grey-light);
-    }
-    .formatting-page-visibility-container, .formatting-page-layout-container {
-      display: flex;
-    }
-    .formatting-page-action-container {
-      display: flex;
-      gap: 5px;
     }
     .formatting-page-wrapper-container {
       display: flex;
@@ -848,59 +511,12 @@
       height: 600px;
     }
 
-    .formatting-page-layout-item, .formatting-page-visibility-item, .formatting-page-action-item {
-      padding: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: white;
-    }
-    .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover, .formatting-page-action-item {
-      cursor: pointer;
-      background-color: var(--color-grey-normal);
-    }
-
-    .item-inactive {
-      background-color: white;
-    }
-    .item-active {
-      background-color: var(--color-red-normal);
-      color: white;
-    }
-    .item-active:hover {
-      background-color: var(--color-red-dark);
-      color: white;
-    }
-
-
     .formatting-page-container {
-      /*width: 100%;*/
-    }
-    #elements-container {
-      /*border-right: 1px solid #dcdee3;*/
       padding-right: 1.5em;
-      /*width: 220px;
-      min-width: 220px;*/
-    }
-    #style-container {
-      /*border-right: 1px solid #dcdee3;*/
       padding-left: 1.5em;
-      padding-right: 1.5em;
-      /*width: 430px;
-      min-width: 430px;*/
     }
-    #editing-container {
+    #editing-container, #example-container {
       border-right: 1px solid #dcdee3;
-      padding-left: 1.5em;
-      padding-right: 1.5em;
-      flex: auto;
-      width: auto;
-    }
-    #example-container {
-      border-right: 1px solid #dcdee3;
-      padding-left: 1.5em;
-      padding-right: 1.5em;
-      width: auto;
     }
 
 

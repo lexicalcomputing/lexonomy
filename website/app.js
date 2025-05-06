@@ -112,6 +112,7 @@ import nvh_editor_new_element_button from "./riot/nvh-editor/nvh-editor-new-elem
 import nvh_editor_toolbar from "./riot/nvh-editor/nvh-editor-toolbar.riot"
 import nvh_editor_view_item from "./riot/nvh-editor/nvh-editor-view-item.riot"
 import nvh_element_style_editor from "./riot/nvh-editor/nvh-element-style-editor.riot"
+import nvh_formatting_editor_toolbar from "./riot/nvh-formatting-editor/nvh-formatting-editor-toolbar.riot"
 import nvh_item_media from "./riot/nvh-editor/nvh-item-media.riot"
 import nvh_item_value_editor from "./riot/nvh-editor/nvh-item-value-editor.riot"
 import nvh_markup_dialog from "./riot/nvh-editor/nvh-markup-dialog.riot"
@@ -230,6 +231,7 @@ riot_register("nvh-editor-new-element-button", nvh_editor_new_element_button)
 riot_register("nvh-editor-toolbar", nvh_editor_toolbar)
 riot_register("nvh-editor-view-item", nvh_editor_view_item)
 riot_register("nvh-element-style-editor", nvh_element_style_editor)
+riot_register("nvh-formatting-editor-toolbar", nvh_formatting_editor_toolbar)
 riot_register("nvh-item-media", nvh_item_media)
 riot_register("nvh-item-value-editor", nvh_item_value_editor)
 riot_register("nvh-markup-dialog", nvh_markup_dialog)
