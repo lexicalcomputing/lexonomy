@@ -226,7 +226,7 @@
                   searchtext: decodeURIComponent(query.s || ""),
                   modifier: query.m,
                   advanced_query: decodeURIComponent(query.q || ""),
-                  isCompleted: decodeURIComponent(query.c || "")
+                  isCompleted: decodeURIComponent(query.c || "") || null
                })
                if(this.store.data.isDictionaryLoading){
                   this.store.one("isDictionaryLoadingChanged", this.checkAccessAndOpenPage.bind(this, page, pageProps))

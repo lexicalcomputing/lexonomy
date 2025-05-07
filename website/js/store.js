@@ -247,7 +247,8 @@ class StoreClass {
             tab: this.data.search.tab,
             searchtext: '',
             modifier: 'start',
-            advanced_query: ''
+            advanced_query: '',
+            isCompleted: null
          },
          editorMode: 'edit',
          userAccess: false,
@@ -1331,6 +1332,7 @@ class StoreClass {
          offset: offset || 0
       }
       if(this.data.search.tab == "basic"){
+         data.isCompleted = String(this.data.search.isCompleted ?? null)
          if(this.data.search.searchtext.startsWith("#")){
             data.id = this.data.search.searchtext.substring(1)
          } else if(this.data.search.modifier == "id"){
