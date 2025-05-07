@@ -167,7 +167,7 @@
             if(this.state.page == "unauthorized"){
                this.store.resetDictionary()
             }
-            this.state.isLoading = this.authData.isCheckingAuth
+            this.state.isLoading = (this.authData.isCheckingAuth && this.state.page != "login")
                   || this.dictData.isSiteconfigLoading
             this.dictData.actualPage = this.state.page
          },
