@@ -25,7 +25,7 @@
                   style="display: none;">name already taken</small>
          </span>
       </div>
-      <div if={state.availableOptions.includes("hidden")}
+      <div if={state.availableOptions.includes("hidden") || state.style.hidden}
             class="nvh-option">
          <span class="nvh-label">
             Hide element
