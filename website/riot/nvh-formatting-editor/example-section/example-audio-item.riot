@@ -36,34 +36,34 @@
       },
       nvhFormattingEditor: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.state = {
-          showPlayer: this.props.styles["show-player"],
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          replaceUrlWithText: this.props.styles["replace-url-with-text"],
-          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
-          showIcon: this.props.styles["show-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showPlayer: props.styles["show-player"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          replaceUrlWithText: props.styles["replace-url-with-text"],
+          textReplacementForUrl: props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showIcon: props.styles["show-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         };
       },
 
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         this.state = {
-          showPlayer: this.props.styles["show-player"],
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          replaceUrlWithText: this.props.styles["replace-url-with-text"],
-          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
-          showIcon: this.props.styles["show-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showPlayer: props.styles["show-player"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          replaceUrlWithText: props.styles["replace-url-with-text"],
+          textReplacementForUrl: props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showIcon: props.styles["show-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         };
       }
     }

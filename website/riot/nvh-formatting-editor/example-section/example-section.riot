@@ -1,13 +1,13 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.global.activeLayout}">
-      <div if={this.state.exampleEntry === undefined}>Preview is loading ...</div>
-      <div if={this.state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
-      <example-section-item if={this.state.exampleEntry}
+      <div if={state.exampleEntry === undefined}>Preview is loading ...</div>
+      <div if={state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
+      <example-section-item if={state.exampleEntry}
         each={child in nvhFormattingEditor.currentLayout.schema.children}
         onclick={() => onExampleSectionItemClick(child)}
         schema={child}
-        entry={this.state.exampleEntry}
+        entry={state.exampleEntry}
         class="example-section-item"
         isFormatting={true}
         maxPossibleWidth={nvhFormattingEditor.getMaxPossibleWidth()}/>
@@ -32,7 +32,7 @@
         return await this.store.loadEntry();
       },
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.store = window.store;
         this.nvhStore = window.nvhStore;

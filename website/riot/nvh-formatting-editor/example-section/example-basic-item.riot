@@ -22,16 +22,16 @@
         showLabelBefore: null,
       },
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.state = {
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         }
       },
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         this.state = {
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         }
       }
     }

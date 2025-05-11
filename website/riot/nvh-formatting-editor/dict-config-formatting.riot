@@ -98,7 +98,7 @@
       nvhStore: null,
       store: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor,
         this.nvhStore = window.nvhStore,
         this.store = window.store,
@@ -167,7 +167,7 @@
         document.removeEventListener("mouseup", this.globalOnMouseUp);
         document.removeEventListener("mousedown", this.globalOnMouseDown);
       },
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         this.nvhFormattingEditor.global = {
           canBeRemovedIfHovered: true,
           canBeDropped: true,
@@ -218,8 +218,6 @@
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
           this.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
-          // Remove following line during selected placeholder refactor
-          // this.nvhFormattingEditor.global.selectedPlaceholder = null;
           this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");

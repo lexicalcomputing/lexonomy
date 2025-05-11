@@ -6,7 +6,7 @@
     </div>
     <img id="example-image-item-image" if={state.showImage && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
     <a if={state.showImage && state.makeImageClickable} href={props.value}>
-      <img src={props.value} style={props.getCssStyles(this.props.styles)}/>
+      <img src={props.value} style={props.getCssStyles(props.styles)}/>
     </a>
     <div class="example-image-item-icons">
       <a if={state.showUrl && !state.showUrlAsIcon} href={props.value}>{props.value}</a>
@@ -37,30 +37,30 @@
       },
       nvhFormattingEditor: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.setDefaultCss();
         this.state = {
-          showImage: this.props.styles["show-image"] === undefined ? true : this.props.styles["show-image"],
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          makeImageClickable: this.props.styles["make-image-clickable"],
-          showUrlAsIcon: this.props.styles["show-url-as-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showImage: props.styles["show-image"] === undefined ? true : props.styles["show-image"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          makeImageClickable: props.styles["make-image-clickable"],
+          showUrlAsIcon: props.styles["show-url-as-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         };
       },
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         this.state = {
-          showImage: this.props.styles["show-image"] === undefined ? true : this.props.styles["show-image"],
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          makeImageClickable: this.props.styles["make-image-clickable"],
-          showUrlAsIcon: this.props.styles["show-url-as-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showImage: props.styles["show-image"] === undefined ? true : props.styles["show-image"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          makeImageClickable: props.styles["make-image-clickable"],
+          showUrlAsIcon: props.styles["show-url-as-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         }
       },
 

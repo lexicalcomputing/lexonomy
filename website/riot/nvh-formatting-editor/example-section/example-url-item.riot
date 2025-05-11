@@ -5,11 +5,11 @@
           style={props.getCssStyles(props.labelStyles)}>
         {state.labelTextValue}
       </div>
-      <a if={state.showUrl && state.showIcon} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>
-        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+      <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
+        <div>{window.nvhFormattingEditor.getIcon(state.iconItem)}</div>
       </a>
-      <a if={state.showUrl && state.showIcon} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>
-        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+      <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
       <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
@@ -35,34 +35,34 @@
       },
       nvhFormattingEditor: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.state = {
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          replaceUrlWithText: this.props.styles["replace-url-with-text"],
-          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
-          showIcon: this.props.styles["show-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          openUrlNewTab: this.props.styles["open-url-new-tab"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          replaceUrlWithText: props.styles["replace-url-with-text"],
+          textReplacementForUrl: props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showIcon: props.styles["show-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          openUrlNewTab: props.styles["open-url-new-tab"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         };
       },
 
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         this.state = {
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          replaceUrlWithText: this.props.styles["replace-url-with-text"],
-          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
-          showIcon: this.props.styles["show-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          openUrlNewTab: this.props.styles["open-url-new-tab"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          replaceUrlWithText: props.styles["replace-url-with-text"],
+          textReplacementForUrl: props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showIcon: props.styles["show-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          openUrlNewTab: props.styles["open-url-new-tab"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         }
       }
     }

@@ -59,7 +59,7 @@
       nvhFormattingEditor: null,
       nvhStore: null,      
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
         /* 
@@ -67,19 +67,19 @@
         this.props.state["markupStyles"].length === 0 is necessary because if someone change entry structure,
         markup styles will not appear in style section
         */
-        if (!this.props.state["markupStyles"] || this.props.state["markupStyles"].length === 0) {
-          let markupChildren = this.nvhFormattingEditor.hasDirectMarkupChild(this.props.state.content.fullName);
+        if (!props.state["markupStyles"] || props.state["markupStyles"].length === 0) {
+          let markupChildren = this.nvhFormattingEditor.hasDirectMarkupChild(props.state.content.fullName);
           if (markupChildren.length !== 0 ) {
-            this.props.state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(this.props.state.content.fullName);
+            props.state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(props.state.content.fullName);
           } else {
-            this.props.state["markupStyles"] = [];
+            props.state["markupStyles"] = [];
           }
         }
-        if (!this.props.state["labelStyles"]) {
-          this.props.state["labelStyles"] = {};
+        if (!props.state["labelStyles"]) {
+          props.state["labelStyles"] = {};
         }
-        if (!this.props.state["bulletStyles"]) {
-          this.props.state["bulletStyles"] = {};
+        if (!props.state["bulletStyles"]) {
+          props.state["bulletStyles"] = {};
         }
       },
 

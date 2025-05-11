@@ -22,7 +22,7 @@
       nvhFormattingEditor: null,
       nvhStore: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
         if (this.nvhFormattingEditor.global.selectedPlaceholder) {
@@ -30,7 +30,7 @@
           this.currentStyleOption = styleOptions[0];
         }
       },
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         if (this.nvhFormattingEditor.global.selectedPlaceholder) {
           let styleOptions = this.getStyleOptions();
           let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);

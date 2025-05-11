@@ -20,10 +20,10 @@
           allowfullscreen></iframe>
     <div class="example-video-item-url">
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+        <div>{window.nvhFormattingEditor.getIcon(state.iconItem)}</div>
       </a>
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+        <div>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
@@ -49,40 +49,40 @@
       },
       nvhFormattingEditor: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
-        if (this.props.styles["margin"] === undefined) {
-          this.props.styles["margin"] = "20";
+        if (props.styles["margin"] === undefined) {
+          props.styles["margin"] = "20";
         }
         this.state = {
-          showPlayer: this.props.styles["show-player"],
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          replaceUrlWithText: this.props.styles["replace-url-with-text"],
-          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
-          showIcon: this.props.styles["show-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showPlayer: props.styles["show-player"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          replaceUrlWithText: props.styles["replace-url-with-text"],
+          textReplacementForUrl: props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showIcon: props.styles["show-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         };
       },
 
-      onBeforeUpdate() {
-        if (this.props.styles["margin"] === undefined) {
-          this.props.styles["margin"] = "20";
+      onBeforeUpdate(props) {
+        if (props.styles["margin"] === undefined) {
+          props.styles["margin"] = "20";
         }
         this.state = {
-          showPlayer: this.props.styles["show-player"],
-          showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
-          replaceUrlWithText: this.props.styles["replace-url-with-text"],
-          textReplacementForUrl: this.props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: this.props.styles["text-as-url-tooltip"],
-          showIcon: this.props.styles["show-icon"],
-          iconItem: this.props.styles["icon-item"],
-          unicodeIcon: this.props.styles["unicode-icon"],
-          labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
-          showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
+          showPlayer: props.styles["show-player"],
+          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+          replaceUrlWithText: props.styles["replace-url-with-text"],
+          textReplacementForUrl: props.styles["text-replacement-for-url"],
+          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showIcon: props.styles["show-icon"],
+          iconItem: props.styles["icon-item"],
+          unicodeIcon: props.styles["unicode-icon"],
+          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         };
       },
 

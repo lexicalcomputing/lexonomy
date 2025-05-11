@@ -71,16 +71,16 @@
       </div>
     </div>
   </div>
-  <div if={this.state.isGroup} class="styles-section-item-wrapper">
+  <div if={state.isGroup} class="styles-section-item-wrapper">
     <div class="label">Container alignment:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
         <div class="text-dropdown-value">{getStyleOptionValue("align-items") === null ? "baseline" : getStyleOptionValue("align-items")}</div>
-        <i class="material-icons tiny text-dropdown-icon" onclick={() => this.update({showAlignmentDropdown: !this.state.showAlignmentDropdown})}>
+        <i class="material-icons tiny text-dropdown-icon" onclick={() => this.update({showAlignmentDropdown: !state.showAlignmentDropdown})}>
           arrow_drop_down
         </i>
       </div>
-      <div if={this.state.showAlignmentDropdown} class="text-dropdown">
+      <div if={state.showAlignmentDropdown} class="text-dropdown">
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "baseline")}>baseline</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "start")}>start</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "end")}>end</div>
@@ -144,35 +144,35 @@
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
-  <div if={!this.state.isMarkupType && !this.state.hasDirectMarkupChild} class="styles-section-item-wrapper">
+  <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
     <div class="label">Margin (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "margin", null)}>
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
-  <div if={!this.state.isMarkupType && !this.state.hasDirectMarkupChild} class="styles-section-item-wrapper">
+  <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
     <div class="label">Inner margin (padding) (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "padding", null)}>
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("color")} style="height: 25px; width: 100px; margin: 0;" onchange={onChangeStyle.bind(this, "color", null)}/>
       <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "font-size", null)}>
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text format:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -197,16 +197,16 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || this.state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text font:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
         <div class="text-dropdown-value">{getStyleOptionValue("font-family") === null || getStyleOptionValue("font-family") === "" ? "-- inherit --" : getStyleOptionValue("font-family").split(",")[0]}</div>
-        <i class="material-icons tiny text-dropdown-icon" onclick={() => this.update({showFontDropdown: !this.state.showFontDropdown})}>
+        <i class="material-icons tiny text-dropdown-icon" onclick={() => update({showFontDropdown: !state.showFontDropdown})}>
           arrow_drop_down
         </i>
       </div>
-      <div if={this.state.showFontDropdown} class="text-dropdown">
+      <div if={state.showFontDropdown} class="text-dropdown">
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "")}>-- inherit --</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Arial, sans-serif")}>Arial</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Verdana, sans-serif")}>Verdana</div>
@@ -220,7 +220,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -265,13 +265,13 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Left punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -316,13 +316,13 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "string" || this.state.type === "list" || this.state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
     </div>
   </div>
-  <div if={this.state.type === "url"} class="styles-section-item-wrapper">
+  <div if={state.type === "url"} class="styles-section-item-wrapper">
     <div class="label">Open url in new tab:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -331,7 +331,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" || this.state.type === "video" || this.state.type === "audio" || this.state.type === "url"} class="styles-section-item-wrapper">
+  <div if={state.type === "image" || state.type === "video" || state.type === "audio" || state.type === "url"} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -340,7 +340,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null)} class="styles-section-item-wrapper">
+  <div if={state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null)} class="styles-section-item-wrapper">
     <div class="label">Show url as icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -349,7 +349,7 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Replace url with text:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -358,13 +358,13 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Text replacement for url:</div>
     <div class="value-wrapper">
       <input type="text" style="height: 30px;" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Set text as tooltip:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -373,7 +373,7 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Show icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -382,7 +382,7 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
     <div class="label">Choose icon:</div>
     <div class="value-wrapper" style="width: 200px; flex-wrap: wrap;">
       <div class="value-item value-item-icon"
@@ -432,13 +432,13 @@
       </div>
     </div>
   </div>
-  <div if={(this.state.type === "audio" || this.state.type === "video" || this.state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (this.state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
     <div class="label">Use unicode character as an icon:</div>
     <div class="value-wrapper">
       <input type="text" style="height: 30px;" value={getStyleOptionValue("unicode-icon") === null ? "" : getStyleOptionValue("unicode-icon")} onchange={onChangeStyle.bind(this, "unicode-icon", null)}>
     </div>
   </div>
-  <div if={this.state.type === "audio"} class="styles-section-item-wrapper">
+  <div if={state.type === "audio"} class="styles-section-item-wrapper">
     <div class="label">Show audio player:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -447,7 +447,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "video"} class="styles-section-item-wrapper">
+  <div if={state.type === "video"} class="styles-section-item-wrapper">
     <div class="label">Show video player:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -456,7 +456,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image"} class="styles-section-item-wrapper">
+  <div if={state.type === "image"} class="styles-section-item-wrapper">
     <div class="label">Show image:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -465,7 +465,7 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" && (getStyleOptionValue("show-image") || getStyleOptionValue("show-image") === null)} class="styles-section-item-wrapper">
+  <div if={state.type === "image" && (getStyleOptionValue("show-image") || getStyleOptionValue("show-image") === null)} class="styles-section-item-wrapper">
     <div class="label">Make image clickable:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -474,32 +474,32 @@
       </div>
     </div>
   </div>
-  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+  <div if={state.type === "image" || (state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max width (px):</div>
     <div class="value-wrapper">
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
     </div>
   </div>
-  <div if={this.state.type === "image" || (this.state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+  <div if={state.type === "image" || (state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max height (px):</div>
     <div class="value-wrapper">
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
-  <div if={(this.state.type === "bool")} class="label">Set text (value = YES):</div>
-  <div if={(this.state.type === "bool")} class="styles-section-item-wrapper">
+  <div if={(state.type === "bool")} class="label">Set text (value = YES):</div>
+  <div if={(state.type === "bool")} class="styles-section-item-wrapper">
     <div class="value-wrapper">
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("yes-value-text") === null ? "" : getStyleOptionValue("yes-value-text")} onchange={onChangeStyle.bind(this, "yes-value-text", null)}></textarea>
     </div>
   </div>
-  <div if={(this.state.type === "bool")} class="label">Set text (value = NO):</div>
-  <div if={(this.state.type === "bool")} class="styles-section-item-wrapper">
+  <div if={(state.type === "bool")} class="label">Set text (value = NO):</div>
+  <div if={(state.type === "bool")} class="styles-section-item-wrapper">
     <div class="value-wrapper">
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("no-value-text") === null ? "" : getStyleOptionValue("no-value-text")} onchange={onChangeStyle.bind(this, "no-value-text", null)}></textarea>
     </div>
   </div>
-  <div if={(this.state.type === "empty")} class="label">Set text:</div>
-  <div if={(this.state.type === "empty")} class="styles-section-item-wrapper">
+  <div if={(state.type === "empty")} class="label">Set text:</div>
+  <div if={(state.type === "empty")} class="styles-section-item-wrapper">
     <div class="value-wrapper">
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value") === null ? "" : getStyleOptionValue("text-value")} onchange={onChangeStyle.bind(this, "text-value", null)}></textarea>
     </div>
@@ -523,26 +523,26 @@
       nvhFormattingEditor: null,
       nvhStore: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
         this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle && !this.props.isBulletOptionStyle) {
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
           let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
           }
         }
-        this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
-        this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
+        this.state.isLabelOptionStyle = props.isLabelOptionStyle;
+        this.state.isBulletOptionStyle = props.isBulletOptionStyle;
         this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
-        this.state.styles = this.props.styleOption.styles;
+        this.state.styles = props.styleOption.styles;
         this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
       },
-      onBeforeUpdate() {
+      onBeforeUpdate(props) {
         this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle && !this.props.isBulletOptionStyle) {
+        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
           let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
@@ -550,11 +550,11 @@
         } else {
           this.state.type = null;
         }
-        this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
-        this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
+        this.state.isLabelOptionStyle = props.isLabelOptionStyle;
+        this.state.isBulletOptionStyle = props.isBulletOptionStyle;
         this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
-        this.state.styles = this.props.styleOption.styles;
+        this.state.styles = props.styleOption.styles;
         this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
       },
 

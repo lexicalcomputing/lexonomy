@@ -8,53 +8,53 @@
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
-        style={props.schema.children.length !== 0 ? getCssStyles(this.props.schema.styles) : ""}>
-    <div if={(this.props.schema.bulletStyles["bullet-use-numbers"] || this.props.schema.bulletStyles["bullet-use-bullets"]) && (this.props.haveSiblings || this.props.schema.bulletStyles["bullet-use-with-single-item"])}
-        style={getCssStyles(this.props.schema.bulletStyles)}>
-      {this.state.bulletValue}
+        style={props.schema.children.length !== 0 ? getCssStyles(props.schema.styles) : ""}>
+    <div if={(props.schema.bulletStyles["bullet-use-numbers"] || props.schema.bulletStyles["bullet-use-bullets"]) && (props.haveSiblings || props.schema.bulletStyles["bullet-use-with-single-item"])}
+        style={getCssStyles(props.schema.bulletStyles)}>
+      {state.bulletValue}
     </div> <!-- consider doing this way also labelstyles-->
     <div if={props.schema.children.length === 0}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
-        <example-basic-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs === null}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-basic-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (state.type === "int" || state.type === "string" || state.type === "list") || state.type === "empty") && state.valueStylePairs === null}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-markup-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (this.state.type === "int" || this.state.type === "string" || this.state.type === "list") || this.state.type === "empty") && state.valueStylePairs !== null}
-          valueStylePairs={this.state.valueStylePairs}
-          labelStyles={this.props.schema.labelStyles}
+        <example-markup-item if={props.schema.content.fullName === props.entry.path && (props.entry.value !== "" && (state.type === "int" || state.type === "string" || state.type === "list") || state.type === "empty") && state.valueStylePairs !== null}
+          valueStylePairs={state.valueStylePairs}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-url-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "url"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-url-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && state.type === "url"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-bool-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "bool"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-bool-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && state.type === "bool"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "image"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-image-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && state.type === "image"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-audio-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "audio"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-audio-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && state.type === "audio"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
-        <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && this.state.type === "video"}
-          value={this.state.value}
-          styles={this.props.schema.styles}
-          labelStyles={this.props.schema.labelStyles}
+        <example-video-item if={props.schema.content.fullName === props.entry.path && props.entry.value !== "" && state.type === "video"}
+          value={state.value}
+          styles={props.schema.styles}
+          labelStyles={props.schema.labelStyles}
           get-css-styles={getCssStyles}
         />
       </div>
@@ -113,39 +113,39 @@
       nvhFormattingEditor: null,
       nvhStore: null,
 
-      onBeforeMount() {
+      onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
-        if (this.props.schema["labelStyles"] === undefined) {
-          this.props.schema["labelStyles"] = {};
+        if (props.schema["labelStyles"] === undefined) {
+          props.schema["labelStyles"] = {};
         }
-        if (this.props.schema["bulletStyles"] === undefined) {
-          this.props.schema["bulletStyles"] = {};
+        if (props.schema["bulletStyles"] === undefined) {
+          props.schema["bulletStyles"] = {};
         }
-        let fullName = this.props.schema.content.fullName;
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
+        let fullName = props.schema.content.fullName;
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
         if (fullName === "") {
           return;
         }
         this.formatValue(fullName);
         this.formatBulletValue();
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
       },
-      onBeforeUpdate() {
-        if (this.props.schema["labelStyles"] === undefined) {
-          this.props.schema["labelStyles"] = {};
+      onBeforeUpdate(props) {
+        if (props.schema["labelStyles"] === undefined) {
+          props.schema["labelStyles"] = {};
         }
-        if (this.props.schema["bulletStyles"] === undefined) {
-          this.props.schema["bulletStyles"] = {};
+        if (props.schema["bulletStyles"] === undefined) {
+          props.schema["bulletStyles"] = {};
         }
-        let fullName = this.props.schema.content.fullName;
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
+        let fullName = props.schema.content.fullName;
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
         if (fullName === "") {
           return;
         }
         this.formatValue(fullName);
         this.formatBulletValue();
-        this.state.maxPossibleWidth = this.props.maxPossibleWidth;
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
       },
 
       onExampleItemMouseEnter(event, state) {
