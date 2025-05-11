@@ -201,46 +201,20 @@ class NVHFormattingEditorClass {
     let initialSchema = this.createSchema();
     let defaultElements = window.store.data.config.formatting.elements;
 
-    this.layout.desktop = {
-      configured: true,
-      schema: JSON.parse(JSON.stringify(initialSchema)),
-      elements: JSON.parse(JSON.stringify(defaultElements)),
-      history: {
-        index: 0,
-        schema: [JSON.parse(JSON.stringify(initialSchema))],
-        elements: [JSON.parse(JSON.stringify(defaultElements))],
+    for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
+      this.layout[layout] = {
+        configured: false,
+        schema: JSON.parse(JSON.stringify(initialSchema)),
+        elements: JSON.parse(JSON.stringify(defaultElements)),
+        history: {
+          index: 0,
+          schema: [JSON.parse(JSON.stringify(initialSchema))],
+          elements: [JSON.parse(JSON.stringify(defaultElements))],
+        }
       }
     }
-    this.layout.tablet = {
-      configured: false,
-      schema: JSON.parse(JSON.stringify(initialSchema)),
-      elements: JSON.parse(JSON.stringify(defaultElements)),
-      history: {
-        index: 0,
-        schema: [JSON.parse(JSON.stringify(initialSchema))],
-        elements: [JSON.parse(JSON.stringify(defaultElements))],
-      }
-    }
-    this.layout.mobile = {
-      configured: false,
-      schema: JSON.parse(JSON.stringify(initialSchema)),
-      elements: JSON.parse(JSON.stringify(defaultElements)),
-      history: {
-        index: 0,
-        schema: [JSON.parse(JSON.stringify(initialSchema))],
-        elements: [JSON.parse(JSON.stringify(defaultElements))],
-      }
-    }
-    this.layout.pdf = {
-      configured: false,
-      schema: JSON.parse(JSON.stringify(initialSchema)),
-      elements: JSON.parse(JSON.stringify(defaultElements)),
-      history: {
-        index: 0,
-        schema: [JSON.parse(JSON.stringify(initialSchema))],
-        elements: [JSON.parse(JSON.stringify(defaultElements))],
-      }
-    }
+    this.layout.desktop.configured = true;
+
     this.global.selectedPlaceholderAreaFullName = "";
     this.global.selectedPlaceholderFullName = "";
     this.global.selectedPlaceholder = null;

@@ -110,54 +110,26 @@
 
         let formatting = this.store.data.config.formatting;
 
-        if (formatting.layout && formatting.layout) {
+        if (formatting.layout) {
           let desktopElements = formatting.layout.desktop.elements ? formatting.layout.desktop.elements : formatting.elements;
           let tabletElements = formatting.layout.tablet.elements ? formatting.layout.tablet.elements : formatting.elements;
           let mobileElements = formatting.layout.mobile.elements ? formatting.layout.mobile.elements : formatting.elements;
           let pdfElements = formatting.layout.pdf.elements ? formatting.layout.pdf.elements : formatting.elements;
 
-          this.nvhFormattingEditor.layout = {
-            desktop: {
-              configured: true,
-              schema: formatting.layout.desktop.schema,
-              elements: JSON.parse(JSON.stringify(desktopElements)),
+          for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
+            let layoutElements = formatting.layout[layout].elements ? formatting.layout[layout].elements : formatting.elements;
+            this.nvhFormattingEditor.layout[layout] = {
+              configured: !formatting.layout[layout].configured ? false : formatting.layout[layout].configured,
+              schema: formatting.layout[layout].schema,
+              elements: JSON.parse(JSON.stringify(layoutElements)),
               history: {
                 index: 0,
-                schema: [JSON.parse(JSON.stringify(formatting.layout.desktop.schema))],
-                elements: [JSON.parse(JSON.stringify(desktopElements))],
-              }
-            },
-            tablet: {
-              configured: !formatting.layout.tablet.configured ? false : formatting.layout.tablet.configured,
-              schema: formatting.layout.tablet.schema,
-              elements: JSON.parse(JSON.stringify(tabletElements)),
-              history: {
-                index: 0,
-                schema: [JSON.parse(JSON.stringify(formatting.layout.tablet.schema))],
-                elements: [JSON.parse(JSON.stringify(tabletElements))],
-              }
-            },
-            mobile: {
-              configured: !formatting.layout.mobile.configured ? false : formatting.layout.mobile.configured,
-              schema: formatting.layout.mobile.schema,
-              elements: JSON.parse(JSON.stringify(mobileElements)),
-              history: {
-                index: 0,
-                schema: [JSON.parse(JSON.stringify(formatting.layout.mobile.schema))],
-                elements: [JSON.parse(JSON.stringify(mobileElements))],
-              }
-            },
-            pdf: {
-              configured: !formatting.layout.pdf.configured ? false : formatting.layout.pdf.configured,
-              schema: formatting.layout.pdf.schema,
-              elements: JSON.parse(JSON.stringify(pdfElements)),
-              history: {
-                index: 0,
-                schema: [JSON.parse(JSON.stringify(formatting.layout.pdf.schema))],
-                elements: [JSON.parse(JSON.stringify(pdfElements))],
+                schema: [JSON.parse(JSON.stringify(formatting.layout[layout].schema))],
+                elements: [JSON.parse(JSON.stringify(layoutElements))],
               }
             }
           }
+          this.nvhFormattingEditor.layout.desktop.configured = true;
         } else {
           this.nvhFormattingEditor.initializeSchemas();
         }
