@@ -11,10 +11,10 @@
     <div class="example-image-item-icons">
       <a if={state.showUrl && !state.showUrlAsIcon} href={props.value}>{props.value}</a>
       <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+        <div>{nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
       </a>
       <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+        <div>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
     </div>
     <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
@@ -35,8 +35,10 @@
         labelTextValue: null,
         showLabelBefore: null,
       },
+      nvhFormattingEditor: null,
 
       onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.setDefaultCss();
         this.state = {
           showImage: this.props.styles["show-image"] === undefined ? true : this.props.styles["show-image"],
@@ -47,7 +49,7 @@
           unicodeIcon: this.props.styles["unicode-icon"],
           labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
           showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
-        }
+        };
       },
       onBeforeUpdate() {
         this.state = {

@@ -520,26 +520,30 @@
         hasDirectMarkupChild: false,
         isGroup: false,
       },
+      nvhFormattingEditor: null,
+      nvhStore: null,
 
       onBeforeMount() {
-        this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.nvhStore = window.nvhStore;
+        this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
         if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle && !this.props.isBulletOptionStyle) {
-          let config = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
+          let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
           }
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
-        this.state.isMarkupType = window.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
-        this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
+        this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
+        this.state.hasDirectMarkupChild = this.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = this.props.styleOption.styles;
         this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
       },
       onBeforeUpdate() {
-        this.state.selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
+        this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
         if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !this.props.isLabelOptionStyle && !this.props.isBulletOptionStyle) {
-          let config = window.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
+          let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
           }
@@ -548,14 +552,14 @@
         }
         this.state.isLabelOptionStyle = this.props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = this.props.isBulletOptionStyle;
-        this.state.isMarkupType = window.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
-        this.state.hasDirectMarkupChild = window.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
+        this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
+        this.state.hasDirectMarkupChild = this.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = this.props.styleOption.styles;
         this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
       },
 
       getStyleOptionValue(option) {
-        if (window.nvhFormattingEditor.global.selectedPlaceholder === null) {
+        if (this.nvhFormattingEditor.global.selectedPlaceholder === null) {
           return null;
         }
         if (this.state.styles === undefined) {
@@ -573,7 +577,7 @@
         this.onChangeStyle2(option, value);
       },
       onChangeStyle2(option, value) {
-        let selectedPlaceholder = window.nvhFormattingEditor.global.selectedPlaceholder;
+        let selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
         if (selectedPlaceholder === null) {
           console.log("There is no selected placeholder");
           return;
@@ -644,7 +648,7 @@
         } else {
           this.state.styles[option] = value;
         }
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
     }
   </script>

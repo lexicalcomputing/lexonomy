@@ -47,8 +47,10 @@
         labelTextValue: null,
         showLabelBefore: null,
       },
+      nvhFormattingEditor: null,
 
       onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
         if (this.props.styles["margin"] === undefined) {
           this.props.styles["margin"] = "20";
         }

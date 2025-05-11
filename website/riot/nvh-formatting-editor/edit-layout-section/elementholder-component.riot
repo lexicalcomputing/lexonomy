@@ -2,7 +2,7 @@
   <div class="tooltipped content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
       style="color: {getColor()};
             background-color: {getBackgroundColor()};
-            border: 1px solid {props.isBaseLevel ? window.nvhStore.getElementColor(props.state.content.fullName) : "transparent"};"
+            border: 1px solid {props.isBaseLevel ? this.nvhStore.getElementColor(props.state.content.fullName) : "transparent"};"
       data-tooltip={props.state.content.fullName}
       onmousedown={!props.isBaseLevel && props.state.content.fullName !== "" ? () => onMouseDown() : () => {}}>
     <div class="content-box-wrapper-2">
@@ -14,6 +14,14 @@
 
 <script>
   export default {
+    nvhFormattingEditor: null,
+    nvhStore: null,
+
+    onBeforeMount(props) {
+      this.nvhFormattingEditor = window.nvhFormattingEditor;
+      this.nvhStore = window.nvhStore;
+    },
+
     onMouseDown() {
       transferObject = {
         type: "elementholder-label"
@@ -23,18 +31,18 @@
         run: this.onRelease,
       };
       transferObject["releaseFunction"] = releaseFunction;
-      window.nvhFormattingEditor.global.mouseData = transferObject;
-      window.nvhFormattingEditor.timeout = setTimeout(() => {
+      this.nvhFormattingEditor.global.mouseData = transferObject;
+      this.nvhFormattingEditor.timeout = setTimeout(() => {
         let trash = document.getElementById("trash-icon");
         if (trash !== null) {
           trash.classList.add("trash-enabled");
           trash.classList.remove("trash-disabled");
         }
       }, 200);
-      window.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
+      this.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
     },
     onRelease() {
-      if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
+      if (this.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
         this.props.state.content.name = "";
         this.props.state.content.fullName = "";
         this.props.state.content.area = "";
@@ -47,7 +55,7 @@
       }
     },
     onMouseEnter(event) {
-      const data = window.nvhFormattingEditor.global.mouseData;
+      const data = this.nvhFormattingEditor.global.mouseData;
       if (data !== null && data.type === "choice-item") {
         event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
       }
@@ -71,7 +79,7 @@
     getColor() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
-      let color = window.nvhStore.getElementColor(this.props.state.content.fullName);
+      let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
       if (this.props.isBaseLevel) {
         if (childrenCount === 0) {
           return "#ffffff";
@@ -90,7 +98,7 @@
     getBackgroundColor() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
-      let color = window.nvhStore.getElementColor(this.props.state.content.fullName);
+      let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
       if (this.props.isBaseLevel) {
         if (childrenCount === 0) {
           return color;
@@ -103,7 +111,7 @@
         if (childrenCount === 0) {
           return color;
         }
-        return window.nvhFormattingEditor.getColorLightVersion(color);
+        return this.nvhFormattingEditor.getColorLightVersion(color);
       }
     },
   }

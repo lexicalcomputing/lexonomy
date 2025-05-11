@@ -1,49 +1,55 @@
 <edit-layout>
   <div class="edit-layout-container">
     <div class="scrollable-div">
-      <template each={(child, index) in window.nvhFormattingEditor.currentLayout.schema.children}>
+      <template each={(child, index) in this.nvhFormattingEditor.currentLayout.schema.children}>
         <placeholder-component onclick={() => onPlaceholderClick(child)}
-                title={window.nvhFormattingEditor.isElementNonExisting(child.content.fullName)
+                title={this.nvhFormattingEditor.isElementNonExisting(child.content.fullName)
                       ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Click RESET button to fix the formatting structure." : ""}
                 onmouseenter={(event) => onPlaceholderMouseEnter(event, child)}
                 onmouseleave={(event) => onPlaceholderMouseLeave(event, child)}
                 class={getCssClass(child)}
-                state={window.nvhFormattingEditor.childWithInheritedArea(child, null)}
-                parentState={window.nvhFormattingEditor.currentLayout.schema}
+                state={this.nvhFormattingEditor.childWithInheritedArea(child, null)}
+                parentState={this.nvhFormattingEditor.currentLayout.schema}
                 isBaseLevel={true}
                 index={index}
                 canHaveAdders={true}
-                isMarkupType={window.nvhFormattingEditor.isMarkupType(child.content.fullName)}/>
+                isMarkupType={this.nvhFormattingEditor.isMarkupType(child.content.fullName)}/>
       </template>
     </div>
   </div>
 
   <script>
     export default {
+      nvhFormattingEditor: null,
+
+      onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+      },
+
       onPlaceholderClick(child) {
-        window.nvhFormattingEditor.selectPlaceholder(child, null);
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.selectPlaceholder(child, null);
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseEnter(event, state) {
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (this.nvhFormattingEditor.global.mouseData === null) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onPlaceholderMouseLeave(event, state) {
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (this.nvhFormattingEditor.global.mouseData === null) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       getCssClass(placeholder) {
         cssClass = "placeholder placeholder-first";
         cssClass += placeholder.status.isActive ? " placeholder-selected" : "";
-        cssClass += placeholder.status.isHovered && window.nvhFormattingEditor.global.mouseData === null ? " placeholder-mouse-hover" : ""
+        cssClass += placeholder.status.isHovered && this.nvhFormattingEditor.global.mouseData === null ? " placeholder-mouse-hover" : ""
         cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
-        cssClass += window.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
+        cssClass += this.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
         return cssClass;
       }
     }

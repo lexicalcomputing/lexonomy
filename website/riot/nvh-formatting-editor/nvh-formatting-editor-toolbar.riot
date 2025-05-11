@@ -4,25 +4,25 @@
       <div onclick={onLayoutClick.bind(this, "desktop")}
           data-tooltip="Desktop layout"
           class="tooltipped formatting-page-layout-item
-                {window.nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
         <i class="material-icons">desktop_windows</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "tablet")}
           data-tooltip="Tablet layout"
           class="tooltipped formatting-page-layout-item
-                {window.nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
         <i class="material-icons">tablet</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "mobile")}
           data-tooltip="Mobile phone layout"
           class="tooltipped formatting-page-layout-item
-                {window.nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
         <i class="material-icons">phone_android</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "pdf")}
           data-tooltip="Export to PDF layout"
           class="tooltipped formatting-page-layout-item
-                {window.nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
         <i class="material-icons">picture_as_pdf</i>
       </div>
     </div>
@@ -60,19 +60,19 @@
         <i class="material-icons">save</i>
       </div>
       <div id="undo-icon-wrapper" 
-          onclick={window.nvhFormattingEditor.undoSchema}
+          onclick={nvhFormattingEditor.undoSchema.bind(nvhFormattingEditor)}
           data-tooltip="Step back"
           class="tooltipped formatting-page-action-item">
         <i class="material-icons">undo</i>
       </div>
       <div id="redo-icon-wrapper" 
-          onclick={window.nvhFormattingEditor.redoSchema}
+          onclick={nvhFormattingEditor.redoSchema.bind(nvhFormattingEditor)}
           data-tooltip="Step forward"
           class="tooltipped formatting-page-action-item">
         <i class="material-icons">redo</i>
       </div>
       <div id="reset-icon-wrapper" 
-          onclick={window.nvhFormattingEditor.resetSchema}
+          onclick={nvhFormattingEditor.resetSchema.bind(nvhFormattingEditor)}
           data-tooltip="Reset current layout"
           class="tooltipped formatting-page-action-item">
         <i class="material-icons">refresh</i>
@@ -102,22 +102,27 @@
           total: 0,
         },
       },
+      nvhFormattingEditor: null,
+
+      onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+      },
 
       onLayoutClick(layoutName) {
-        window.nvhFormattingEditor.global.activeLayout = layoutName;
-        window.nvhFormattingEditor.global.selectedPlaceholder = null;
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout[layoutName];
-        window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.global.activeLayout = layoutName;
+        this.nvhFormattingEditor.global.selectedPlaceholder = null;
+        this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
+        this.nvhFormattingEditor.clearStatuses(this.nvhFormattingEditor.currentLayout.schema);
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onSectionClick(sectionName) {
         this.props.state.isSectionVisible[sectionName] = !this.props.state.isSectionVisible[sectionName];
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       async onExportPDF() {
-        await window.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
+        await this.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
         this.update(this.state.exportedEntries.isLoading = true);
-        let response = await window.nvhFormattingEditor.createPDF();
+        let response = await this.nvhFormattingEditor.createPDF();
         const encodedPDFString = response.pdf_string;
 
         /*

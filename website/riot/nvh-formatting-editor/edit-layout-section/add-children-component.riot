@@ -1,7 +1,7 @@
 <add-children-component>
     <div if={props.canHaveAdders && props.state.content.fullName !== "" && getChildrenList(null, props.state.content.fullName).length !== 0}
         class="add-children-component-wrapper"
-        style="background-color: {window.nvhFormattingEditor.getColorLightVersion(window.nvhStore.getElementColor(props.state.content.fullName))};">
+        style="background-color: {this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(props.state.content.fullName))};">
       <div class="add-children-component-label">Add:</div>
       <template each={child in getChildrenList(2, props.state.content.fullName)}>
         <div class="add-children-component-child"
@@ -12,7 +12,7 @@
       </template>
       <div>
         <i class="material-icons add-children-component-dropdown-icon"
-          style="background-color: {window.nvhFormattingEditor.getColorLightVersion(window.nvhStore.getElementColor(props.state.content.fullName))};" 
+          style="background-color: {this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(props.state.content.fullName))};" 
           onclick={onDropdownClick}>
           arrow_drop_down
         </i>
@@ -35,6 +35,14 @@
     state: {
       isDropdownShown: false,
     },
+    nvhFormattingEditor: null,
+    nvhStore: null,
+
+    onBeforeMount(props) {
+      this.nvhFormattingEditor = window.nvhFormattingEditor;
+      this.nvhStore = window.nvhStore;
+    },
+
     getChildrenList(count, fullName) {
       if (fullName === "") {
         return [];
@@ -44,7 +52,7 @@
         return [];
       }
       let children = config.children;
-      children = children.filter(child => !window.nvhFormattingEditor.isMarkupType(child.path)); // exclude markup type elements
+      children = children.filter(child => !this.nvhFormattingEditor.isMarkupType(child.path)); // exclude markup type elements
       if (count === null) {
         return children;
       }
@@ -61,9 +69,9 @@
     },
     onAddElement(currentElement, newElement) {
       if (currentElement.children.length === 0 && currentElement.content.fullName !== newElement.path) {
-        window.nvhFormattingEditor.addElement(currentElement.children.length, currentElement, "row", this.getLabel(currentElement.content.name, currentElement.content.fullName));
+        this.nvhFormattingEditor.addElement(currentElement.children.length, currentElement, "row", this.getLabel(currentElement.content.name, currentElement.content.fullName));
       }
-      window.nvhFormattingEditor.addElement(currentElement.children.length, currentElement, "row", this.getLabel(newElement.name, newElement.path));
+      this.nvhFormattingEditor.addElement(currentElement.children.length, currentElement, "row", this.getLabel(newElement.name, newElement.path));
     },
     getLabel(name, fullName) {
       return {
@@ -71,10 +79,10 @@
         fullName: fullName,
         area: name,
         areaFullName: fullName,
-      };
+      };window
     },
     onDropdownClick() {
-      window.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {
+      this.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {
         this.state.isDropdownShown = false;
         this.update();
       }, 2000);
@@ -82,10 +90,10 @@
       this.update();
     },
     onMouseEnter() {
-      clearTimeout(window.nvhFormattingEditor.dropdownTimeout);
+      clearTimeout(this.nvhFormattingEditor.dropdownTimeout);
     },
     onMouseLeave() {
-      window.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {
+      this.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {
         this.state.isDropdownShown = false;
         this.update();
       }, 500);

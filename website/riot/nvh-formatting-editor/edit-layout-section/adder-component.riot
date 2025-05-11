@@ -2,7 +2,7 @@
   <div class="plus-icon-wrapper">
     <div class="adder-line adder-line-{props.orientation}">
       <div class="tooltipped adder-icon-wrapper"
-          data-tooltip={window.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
+          data-tooltip={this.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
           onmouseenter={onMouseEnter}
           onmouseleave={onMouseLeave}>
         <i class="small material-icons adder-icon">add_box</i>
@@ -12,8 +12,14 @@
   
   <script>
     export default {
+      nvhFormattingEditor: null,
+
+      onBeforeMount(props) {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+      },
+
       onMouseEnter(event) {
-        const data = window.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.global.mouseData;
         if (data !== null && data.type === "choice-item") {
           event.currentTarget.classList.add("adder-icon-wrapper-highligth-dragged");
         }

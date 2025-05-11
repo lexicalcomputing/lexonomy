@@ -7,10 +7,10 @@
     <audio if={state.showPlayer} controls src={props.value} style={props.getCssStyles(props.styles)}></audio>
     <div class="example-audio-item-url">
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+        <div>{nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
       </a>
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+        <div>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
@@ -34,8 +34,10 @@
         labelTextValue: null,
         showLabelBefore: null,
       },
+      nvhFormattingEditor: null,
 
       onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.state = {
           showPlayer: this.props.styles["show-player"],
           showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
@@ -47,7 +49,7 @@
           unicodeIcon: this.props.styles["unicode-icon"],
           labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
           showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
-        }
+        };
       },
 
       onBeforeUpdate() {

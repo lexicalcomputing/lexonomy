@@ -26,7 +26,7 @@
         class="tooltipped action"
         id="action-delete"
         data-tooltip="Delete"
-        onclick={() => window.nvhFormattingEditor.deleteElement(props.index, props.parentState, props.state)}>
+        onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentState, props.state)}>
       <i class="small material-icons">delete</i>
     </div>
   </div>
@@ -34,45 +34,47 @@
 <script>
   export default {
     parentLengthOriginal: null,
+    nvhFormattingEditor: null,
 
     onBeforeMount(props) {
       this.parentLengthOriginal = props.parentState.children.length;
+      this.nvhFormattingEditor = window.nvhFormattingEditor;
     },
     onBeforeUpdate(props) {
       this.parentLengthOriginal = props.parentState.children.length;
     },
   
     onMouseDown(event, state, indexToDrag) {
-      if (window.nvhFormattingEditor.global.canBeDragged) {
+      let global = this.nvhFormattingEditor.global;
+      if (global.canBeDragged) {
         let releaseFunction = {
           parameters: [event.currentTarget.parentElement.parentElement.parentElement.parentElement, this.props.index, this.props.parentState, this.props.state],
           run: this.onRelease,
         };
         state["releaseFunction"] = releaseFunction;
-        window.nvhFormattingEditor.global.mouseData = state;
-
-        window.nvhFormattingEditor.global.draggedElementFullName = state.content.fullName;
-        window.nvhFormattingEditor.global.draggedPlaceholder = state;
+        global.mouseData = state;
+        global.draggedElementFullName = state.content.fullName;
+        global.draggedPlaceholder = state;
         state.status.isDragged = true;
 
         this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
-
         let adders = document.getElementsByClassName("adder");
         for (let adder of adders) {
           adder.classList.add("adder-highligth");
         }
-        window.nvhFormattingEditor.formattingEditorComponent.update(); /*This forces Chrome browser to rerender placeholders and adders*/
+        this.nvhFormattingEditor.formattingEditorComponent.update(); /*This forces Chrome browser to rerender placeholders and adders*/
       }
-      window.nvhFormattingEditor.global.canBeDragged = false;
+      global.canBeDragged = false;
     },
     onRelease(htmlElement, indexToDelete, parentState, state) {
+      let global = this.nvhFormattingEditor.global;
       /* If placeholder was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
       the desired element. */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
-                                && window.nvhFormattingEditor.global.dropInfo.index < indexToDelete;
+                                && global.dropInfo.index < indexToDelete;
 
-      if (window.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
+      if (global.dropInfo.wasSuccessful) {
         if (wasIndexDecreased) {
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
         } else {
@@ -92,7 +94,7 @@
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
       this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
       copiedElement.status.isHovered = false;
-      window.nvhFormattingEditor.formattingEditorComponent.update();
+      this.nvhFormattingEditor.formattingEditorComponent.update();
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";

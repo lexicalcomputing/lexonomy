@@ -1,10 +1,10 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
               {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
-              {window.nvhFormattingEditor.isMarkupTypeChild(props.schema.content.fullName) ? "element-holder-markup-type-child" : ""}
-              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) ? "element-holder-markup-type" : ""}
-              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isHovered ? "element-holder-markup-type-hovered" : ""}
-              {window.nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
+              {nvhFormattingEditor.isMarkupTypeChild(props.schema.content.fullName) ? "element-holder-markup-type-child" : ""}
+              {nvhFormattingEditor.isMarkupType(props.schema.content.fullName) ? "element-holder-markup-type" : ""}
+              {nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isHovered ? "element-holder-markup-type-hovered" : ""}
+              {nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
@@ -84,7 +84,7 @@
                             bulletIndex={props.bulletIndex}
                             haveSiblings={props.haveSiblings}
                             maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
-      <template each={(childEntry, index) in window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
+      <template each={(childEntry, index) in nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
                 if={props.schema.content.area !== childSchema.content.area
                     && childSchema.content.name !== ""}>
         <example-section-item onclick={() => onExampleItemClick(childSchema, props.schema)}
@@ -95,7 +95,7 @@
                                 entry={childEntry}
                                 isFormatting={props.isFormatting}
                                 bulletIndex={index + 1}
-                                haveSiblings={window.nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}
+                                haveSiblings={nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName).length !== 1}
                                 maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       </template>
     </div>
@@ -110,8 +110,12 @@
         valueStylePairs: null,
         maxPossibleWidth: null,
       },
+      nvhFormattingEditor: null,
+      nvhStore: null,
 
       onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
+        this.nvhStore = window.nvhStore;
         if (this.props.schema["labelStyles"] === undefined) {
           this.props.schema["labelStyles"] = {};
         }
@@ -148,25 +152,25 @@
         if (!this.props.isFormatting) {
           return;
         }
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (nvhFormattingEditor.global.mouseData === null) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onExampleItemMouseLeave(event, state) {
         if (!this.props.isFormatting) {
           return;
         }
-        if (window.nvhFormattingEditor.global.mouseData === null) {
+        if (nvhFormattingEditor.global.mouseData === null) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onExampleItemClick(state, parentState) {
         if (this.props.isFormatting) {
-          window.nvhFormattingEditor.selectPlaceholder(state, parentState)
+          nvhFormattingEditor.selectPlaceholder(state, parentState)
         }
       },
 
@@ -188,7 +192,7 @@
         return this.props.schema.content.name === "";
       },
       formatValue(fullName) {
-        let config = window.nvhStore.getElementConfig(fullName);
+        let config = this.nvhStore.getElementConfig(fullName);
         if (config === undefined) {
           return;
         }
@@ -198,7 +202,7 @@
 
         let markupValueStylesPair = null;
         let valueStylesPair = null;
-        let markupChildren = window.nvhFormattingEditor.hasDirectMarkupChild(fullName);
+        let markupChildren = nvhFormattingEditor.hasDirectMarkupChild(fullName);
         if (markupChildren.length !== 0) { /*means that has markup children*/
           markupValueStylesPair = this.getMarkupValueStylePair();
           valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
@@ -277,7 +281,7 @@
         let result = [];
         let object;
         for (let child of this.props.entry.children) {
-          if (window.nvhFormattingEditor.isMarkupType(child.path)) {
+          if (nvhFormattingEditor.isMarkupType(child.path)) {
             object = {
               value: child.value,
               styles: this.getStyleToFullName(child.path),

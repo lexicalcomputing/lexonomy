@@ -60,42 +60,42 @@ class NVHFormattingEditorClass {
 
   changeLayoutSchema() {
     if (window.innerWidth < 440) {
-      if (window.nvhFormattingEditor.global.activeLayout !== "mobile") {
-        window.nvhFormattingEditor.global.activeLayout = "mobile";
+      if (this.global.activeLayout !== "mobile") {
+        this.global.activeLayout = "mobile";
         this.setClosestConfiguredLayout("mobile");
       }
     } else if (window.innerWidth < 1020) {
-      if (window.nvhFormattingEditor.global.activeLayout !== "tablet") {
-        window.nvhFormattingEditor.global.activeLayout = "tablet";
+      if (this.global.activeLayout !== "tablet") {
+        this.global.activeLayout = "tablet";
         this.setClosestConfiguredLayout("tablet");
       }
     } else {
-      if (window.nvhFormattingEditor.global.activeLayout !== "desktop") {
-        window.nvhFormattingEditor.global.activeLayout = "desktop";
+      if (this.global.activeLayout !== "desktop") {
+        this.global.activeLayout = "desktop";
         this.setClosestConfiguredLayout("desktop");
       }
     }
   }
 
   setClosestConfiguredLayout(activeLayout) {
-    let mobileConfigured = window.nvhFormattingEditor.layout.mobile.configured === undefined ? false : window.nvhFormattingEditor.layout.mobile.configured;
-    let tabletConfigured = window.nvhFormattingEditor.layout.tablet.configured === undefined ? false : window.nvhFormattingEditor.layout.tablet.configured;
+    let mobileConfigured = this.layout.mobile.configured === undefined ? false : this.layout.mobile.configured;
+    let tabletConfigured = this.layout.tablet.configured === undefined ? false : this.layout.tablet.configured;
     if (activeLayout === "mobile") {
       if (mobileConfigured) {
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.mobile;
+        this.currentLayout = this.layout.mobile;
       } else if (tabletConfigured) {
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+        this.currentLayout = this.layout.tablet;
       } else {
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+        this.currentLayout = this.layout.desktop;
       }
     } else if (activeLayout === "tablet") {
       if (tabletConfigured) {
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.tablet;
+        this.currentLayout = this.layout.tablet;
       } else {
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+        this.currentLayout = this.layout.desktop;
       }
     } else {
-      window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+      this.currentLayout = this.layout.desktop;
     }
   }
 
@@ -148,7 +148,7 @@ class NVHFormattingEditorClass {
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
       if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
         exportedEntries.exported = idx;
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.formattingEditorComponent.update();
         await this.appendToHtmlFile(htmlWrapper);
         htmlWrapper = ""
       }
@@ -156,14 +156,14 @@ class NVHFormattingEditorClass {
     exportedEntries.inProgress = false;
     exportedEntries.total = 0;
     exportedEntries.exported = 0;
-    window.nvhFormattingEditor.formattingEditorComponent.update();
+    this.formattingEditorComponent.update();
 
     htmlWrapper += "</div>"
     await this.appendToHtmlFile(htmlWrapper);
   }
 
   async parseEntry(entry) {
-    let schema = window.nvhFormattingEditor.layout.pdf.configured ? window.nvhFormattingEditor.layout.pdf.schema : window.nvhFormattingEditor.layout.desktop.schema;
+    let schema = this.layout.pdf.configured ? this.layout.pdf.schema : this.layout.desktop.schema;
     let entryHTML = this.getEntryHTML(schema.children[0], entry);
     return entryHTML;
   }
@@ -185,23 +185,23 @@ class NVHFormattingEditorClass {
   }
 
   resetSchema() {
-    window.nvhFormattingEditor.initializeSchema();
-    window.nvhFormattingEditor.formattingEditorComponent.update();
+    this.initializeSchema();
+    this.formattingEditorComponent.update();
   }
 
   initializeSchema() {
-    window.nvhFormattingEditor.currentLayout.schema = window.nvhFormattingEditor.createSchema();
-    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholder = null;
-    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+    this.currentLayout.schema = this.createSchema();
+    this.global.selectedPlaceholderAreaFullName = "";
+    this.global.selectedPlaceholderFullName = "";
+    this.global.selectedPlaceholder = null;
+    this.global.selectedPlaceholderParentAreaFullName = "";
   }
 
   initializeSchemas() {
-    let initialSchema = window.nvhFormattingEditor.createSchema();
+    let initialSchema = this.createSchema();
     let defaultElements = window.store.data.config.formatting.elements;
 
-    window.nvhFormattingEditor.layout.desktop = {
+    this.layout.desktop = {
       configured: true,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
@@ -211,7 +211,7 @@ class NVHFormattingEditorClass {
         elements: [JSON.parse(JSON.stringify(defaultElements))],
       }
     }
-    window.nvhFormattingEditor.layout.tablet = {
+    this.layout.tablet = {
       configured: false,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
@@ -221,7 +221,7 @@ class NVHFormattingEditorClass {
         elements: [JSON.parse(JSON.stringify(defaultElements))],
       }
     }
-    window.nvhFormattingEditor.layout.mobile = {
+    this.layout.mobile = {
       configured: false,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
@@ -231,7 +231,7 @@ class NVHFormattingEditorClass {
         elements: [JSON.parse(JSON.stringify(defaultElements))],
       }
     }
-    window.nvhFormattingEditor.layout.pdf = {
+    this.layout.pdf = {
       configured: false,
       schema: JSON.parse(JSON.stringify(initialSchema)),
       elements: JSON.parse(JSON.stringify(defaultElements)),
@@ -241,10 +241,10 @@ class NVHFormattingEditorClass {
         elements: [JSON.parse(JSON.stringify(defaultElements))],
       }
     }
-    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholder = null;
-    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+    this.global.selectedPlaceholderAreaFullName = "";
+    this.global.selectedPlaceholderFullName = "";
+    this.global.selectedPlaceholder = null;
+    this.global.selectedPlaceholderParentAreaFullName = "";
   }
 
   createSchema() {
@@ -300,35 +300,35 @@ class NVHFormattingEditorClass {
   }
 
   undoSchema() {
-    if (window.nvhFormattingEditor.currentLayout.history.index > 0) {
-      window.nvhFormattingEditor.currentLayout.history.index -= 1;
-      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.schema.at(window.nvhFormattingEditor.currentLayout.history.index)));
-      window.nvhFormattingEditor.currentLayout.elements = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.elements.at(window.nvhFormattingEditor.currentLayout.history.index)));
-      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-      window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-      window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-      window.nvhFormattingEditor.global.selectedPlaceholder = null;
-      window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-      window.nvhFormattingEditor.formattingEditorComponent.update();
+    if (this.currentLayout.history.index > 0) {
+      this.currentLayout.history.index -= 1;
+      this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
+      this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
+      this.clearStatuses(this.currentLayout.schema);
+      this.global.selectedPlaceholderAreaFullName = "";
+      this.global.selectedPlaceholderFullName = "";
+      this.global.selectedPlaceholder = null;
+      this.global.selectedPlaceholderParentAreaFullName = "";
+      this.formattingEditorComponent.update();
     }
   }
 
   redoSchema() {
-    if (window.nvhFormattingEditor.currentLayout.history.index < window.nvhFormattingEditor.currentLayout.history.schema.length - 1) {
-      window.nvhFormattingEditor.currentLayout.history.index += 1;
-      window.nvhFormattingEditor.currentLayout.schema = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.schema.at(window.nvhFormattingEditor.currentLayout.history.index)));
-      window.nvhFormattingEditor.currentLayout.elements = JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.history.elements.at(window.nvhFormattingEditor.currentLayout.history.index)));
-      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-      window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-      window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-      window.nvhFormattingEditor.global.selectedPlaceholder = null;
-      window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-      window.nvhFormattingEditor.formattingEditorComponent.update();
+    if (this.currentLayout.history.index < this.currentLayout.history.schema.length - 1) {
+      this.currentLayout.history.index += 1;
+      this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
+      this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
+      this.clearStatuses(this.currentLayout.schema);
+      this.global.selectedPlaceholderAreaFullName = "";
+      this.global.selectedPlaceholderFullName = "";
+      this.global.selectedPlaceholder = null;
+      this.global.selectedPlaceholderParentAreaFullName = "";
+      this.formattingEditorComponent.update();
     }
   }
 
   createElementsSchema() {
-    return window.nvhFormattingEditor.createElementsSchemaRec(window.store.schema.getRoot());
+    return this.createElementsSchemaRec(window.store.schema.getRoot());
   }
 
   createElementsSchemaRec(element) {
@@ -348,7 +348,7 @@ class NVHFormattingEditorClass {
   }
 
   clearIsHoveredStatus() {
-    window.nvhFormattingEditor.clearIsHoveredStatusRec(window.nvhFormattingEditor.currentLayout.schema);
+    this.clearIsHoveredStatusRec(this.currentLayout.schema);
   }
 
   clearIsHoveredStatusRec(state) {
@@ -360,31 +360,31 @@ class NVHFormattingEditorClass {
   }
 
   selectPlaceholder(child, parent) {
-    if (window.nvhFormattingEditor.global.canOpenActionPanel) {
+    if (this.global.canOpenActionPanel) {
       let currentIsActive = child.status.isActive;
-      window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
+      this.clearStatuses(this.currentLayout.schema);
       child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
       child.status.isHovered = true;
       if (child.status.isActive && child.children.length === 0) {
-        window.nvhFormattingEditor.global.selectedPlaceholderFullName = child.content.fullName;
+        this.global.selectedPlaceholderFullName = child.content.fullName;
       } else {
-        window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
+        this.global.selectedPlaceholderFullName = "";
       }
       if (child.status.isActive) {
-        window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
+        this.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
         if (parent !== null) {
-          window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+          this.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
         }
-        window.nvhFormattingEditor.global.selectedPlaceholder = child;
+        this.global.selectedPlaceholder = child;
       } else {
-        window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-        window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-        window.nvhFormattingEditor.global.selectedPlaceholder = null;
+        this.global.selectedPlaceholderAreaFullName = "";
+        this.global.selectedPlaceholderParentAreaFullName = "";
+        this.global.selectedPlaceholder = null;
       }
     } else {
       child.status.isActive = false;
     }
-    window.nvhFormattingEditor.global.canOpenActionPanel = false;
+    this.global.canOpenActionPanel = false;
   }
 
   isChildChoiceItemOfPlaceholder(child, parent) {
@@ -392,11 +392,11 @@ class NVHFormattingEditorClass {
   }
 
   isChildOfParent(child, parent) {
-    if (window.nvhFormattingEditor.global.draggedPlaceholder !== null) {
-      return window.nvhFormattingEditor.isChildObjectOfParent(window.nvhFormattingEditor.global.draggedPlaceholder, parent);
+    if (this.global.draggedPlaceholder !== null) {
+      return this.isChildObjectOfParent(this.global.draggedPlaceholder, parent);
     }
     let result = child.includes(parent);
-    let alternative = window.nvhFormattingEditor.global.draggedElementFullName === "";
+    let alternative = this.global.draggedElementFullName === "";
     return result || alternative;
   }
 
@@ -441,14 +441,14 @@ class NVHFormattingEditorClass {
       bulletStyles: {},
       children: []
     };
-    window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
-    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholder = newElement;
-    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
+    this.clearStatuses(this.currentLayout.schema);
+    this.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
+    this.global.selectedPlaceholderFullName = "";
+    this.global.selectedPlaceholder = newElement;
+    this.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
-    window.nvhFormattingEditor.formattingEditorComponent.update();
-    window.nvhFormattingEditor.global.canOpenActionPanel = false;
+    this.formattingEditorComponent.update();
+    this.global.canOpenActionPanel = false;
   }
 
   deleteElement(indexToDelete, parentState, state) {
@@ -458,14 +458,14 @@ class NVHFormattingEditorClass {
         state.markupValue.value = null;
       }
     }
-    window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-    parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
-    window.nvhFormattingEditor.global.canOpenActionPanel = false;
-    window.nvhFormattingEditor.global.draggedElementFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderAreaFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-    window.nvhFormattingEditor.global.selectedPlaceholder = null;
+    this.clearStatuses(this.currentLayout.schema);
+    parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
+    this.global.canOpenActionPanel = false;
+    this.global.draggedElementFullName = "";
+    this.global.selectedPlaceholderFullName = "";
+    this.global.selectedPlaceholderAreaFullName = "";
+    this.global.selectedPlaceholderParentAreaFullName = "";
+    this.global.selectedPlaceholder = null;
   }
 
   isMarkupTypeChild(fullName) {
@@ -553,23 +553,23 @@ class NVHFormattingEditorClass {
     return true;
   }
   isChoiceElementValidToPlaceholder(choiceElement, placeholder, placeholderWrapperAreaFullName) {
-    if (window.nvhFormattingEditor.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
+    if (this.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
       return false;
     }
-    if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)) {
+    if (this.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)) {
       return false;
     }
     for (let child of placeholder.children) {
-      if (!window.nvhFormattingEditor.isParentLabelOfDropObject(choiceElement.fullName, child)) {
+      if (!this.isParentLabelOfDropObject(choiceElement.fullName, child)) {
         return false;
       }
     }
     for (let child of placeholder.children) {
-      if (window.nvhFormattingEditor.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
+      if (this.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
         return false;
       }
     }
-    if (!window.nvhFormattingEditor.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)) {
+    if (!this.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)) {
       return false;
     }
     return true;
@@ -650,7 +650,7 @@ class NVHFormattingEditorClass {
     return fullName !== "" && window.nvhStore.getElementConfig(fullName) === undefined;
   }
   getMaxPossibleWidth() {
-    switch(window.nvhFormattingEditor.global.activeLayout) {
+    switch(this.global.activeLayout) {
       case "tablet":
         return "1020px";
       case "pdf":

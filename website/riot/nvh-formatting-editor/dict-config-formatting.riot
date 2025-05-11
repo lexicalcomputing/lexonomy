@@ -18,7 +18,7 @@
       </div>
       <div class="elements-choice-section-wrapper">
         <elements-choice-section class="elements-choice-section"
-                                elementsSchema={window.nvhFormattingEditor.elementsSchema}/>
+                                elementsSchema={nvhFormattingEditor.elementsSchema}/>
       </div>
     </div>
     <div if={state.toolbar.isSectionVisible.elements} class="resizeHandle"
@@ -30,17 +30,17 @@
         <div class="header-box">
           <i class="small material-icons">view_compact</i>
           <h2>Layout</h2>
-          <label if={window.nvhFormattingEditor.global.activeLayout !== "desktop" && window.nvhStore.data.formatting.layout !== undefined}
+          <label if={nvhFormattingEditor.global.activeLayout !== "desktop" && nvhStore.data.formatting.layout !== undefined}
                 class="checkbox"
                 style="margin-left: 20px;">
-              <input type="checkbox" checked={window.nvhFormattingEditor.currentLayout.configured}/>
+              <input type="checkbox" checked={nvhFormattingEditor.currentLayout.configured}/>
               <span class="tooltipped"
                   style="padding-left: 25px;"
                   onclick={saveAndToggleLayoutUsage}
-                  data-tooltip={window.nvhFormattingEditor.currentLayout.configured ?
+                  data-tooltip={nvhFormattingEditor.currentLayout.configured ?
                                 "Layout for this device is used.\nWhen viewing the dictionary on this device, current layout will be seen."
                                 : "Layout for this device is not used.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}>
-                Use {window.nvhFormattingEditor.global.activeLayout} layout
+                Use {nvhFormattingEditor.global.activeLayout} layout
               </span>
           </label>
         </div>
@@ -94,15 +94,21 @@
           maxWidth: null,
         }
       },
+      nvhFormattingEditor: null,
+      nvhStore: null,
+      store: null,
 
       onBeforeMount() {
-        window.nvhFormattingEditor.elementsSchema = window.nvhFormattingEditor.createElementsSchema();
-        window.nvhFormattingEditor.formattingEditorComponent = this;
-        window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
+        this.nvhFormattingEditor = window.nvhFormattingEditor,
+        this.nvhStore = window.nvhStore,
+        this.store = window.store,
+        this.nvhFormattingEditor.elementsSchema = this.nvhFormattingEditor.createElementsSchema();
+        this.nvhFormattingEditor.formattingEditorComponent = this;
+        this.nvhFormattingEditor.global = this.nvhFormattingEditor.initializeGlobalAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
 
-        let formatting = window.store.data.config.formatting;
+        let formatting = this.store.data.config.formatting;
 
         if (formatting.layout !== undefined && formatting.layout !== null) {
           let desktopElements = formatting.layout.desktop.elements !== undefined && formatting.layout.desktop.elements !== null
@@ -114,7 +120,7 @@
           let pdfElements = formatting.layout.pdf.elements !== undefined && formatting.layout.pdf.elements !== null
                                   ? formatting.layout.pdf.elements : formatting.elements;
 
-          window.nvhFormattingEditor.layout = {
+          this.nvhFormattingEditor.layout = {
             desktop: {
               configured: true,
               schema: formatting.layout.desktop.schema,
@@ -157,47 +163,47 @@
             }
           }
         } else {
-          window.nvhFormattingEditor.initializeSchemas();
+          this.nvhFormattingEditor.initializeSchemas();
         }
-        window.nvhFormattingEditor.currentLayout = window.nvhFormattingEditor.layout.desktop;
+        this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout.desktop;
       },
       onBeforeUnmount() {
         document.removeEventListener("mouseup", this.globalOnMouseUp);
         document.removeEventListener("mousedown", this.globalOnMouseDown);
       },
       onBeforeUpdate() {
-        window.nvhFormattingEditor.global = {
+        this.nvhFormattingEditor.global = {
           canBeRemovedIfHovered: true,
           canBeDropped: true,
           canBeDragged: true,
-          draggedElementFullName: window.nvhFormattingEditor.global.draggedElementFullName,
-          draggedPlaceholder: window.nvhFormattingEditor.global.draggedPlaceholder,
+          draggedElementFullName: this.nvhFormattingEditor.global.draggedElementFullName,
+          draggedPlaceholder: this.nvhFormattingEditor.global.draggedPlaceholder,
           dropInfo: {
             wasSuccessful: false,
             index: null,
           },
-          mouseData: window.nvhFormattingEditor.global.mouseData,
+          mouseData: this.nvhFormattingEditor.global.mouseData,
           canOpenActionPanel: true,
-          selectedPlaceholder: window.nvhFormattingEditor.global.selectedPlaceholder,
-          selectedPlaceholderParentAreaFullName: window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
+          selectedPlaceholder: this.nvhFormattingEditor.global.selectedPlaceholder,
+          selectedPlaceholderParentAreaFullName: this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
           parent: null,
-          activeLayout: window.nvhFormattingEditor.global.activeLayout,
+          activeLayout: this.nvhFormattingEditor.global.activeLayout,
         };
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
         */
-        if (this.isElementsStyleChanged(window.nvhFormattingEditor.currentLayout.history.elements.at(window.nvhFormattingEditor.currentLayout.history.index), window.nvhFormattingEditor.currentLayout.elements)
-            || this.isSchemaChanged(window.nvhFormattingEditor.currentLayout.history.schema.at(window.nvhFormattingEditor.currentLayout.history.index), window.nvhFormattingEditor.currentLayout.schema)) {
-          window.nvhFormattingEditor.currentLayout.history.elements.length = window.nvhFormattingEditor.currentLayout.history.index + 1;
-          window.nvhFormattingEditor.currentLayout.history.schema.length = window.nvhFormattingEditor.currentLayout.history.index + 1;
-          window.nvhFormattingEditor.currentLayout.history.elements.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.elements)));
-          window.nvhFormattingEditor.currentLayout.history.schema.push(JSON.parse(JSON.stringify(window.nvhFormattingEditor.currentLayout.schema)));
-          window.nvhFormattingEditor.currentLayout.history.index += 1;
+        if (this.isElementsStyleChanged(this.nvhFormattingEditor.currentLayout.history.elements.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.elements)
+            || this.isSchemaChanged(this.nvhFormattingEditor.currentLayout.history.schema.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.schema)) {
+          this.nvhFormattingEditor.currentLayout.history.elements.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
+          this.nvhFormattingEditor.currentLayout.history.schema.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
+          this.nvhFormattingEditor.currentLayout.history.elements.push(JSON.parse(JSON.stringify(this.nvhFormattingEditor.currentLayout.elements)));
+          this.nvhFormattingEditor.currentLayout.history.schema.push(JSON.parse(JSON.stringify(this.nvhFormattingEditor.currentLayout.schema)));
+          this.nvhFormattingEditor.currentLayout.history.index += 1;
         }
       },
 
       onMouseEnter() {
-        const data = window.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.global.mouseData;
         if (data !== null && data.type === "elementholder-label") {
           let trashIcon = document.getElementById("trash-icon");
           if (Array.from(trashIcon.classList).includes("trash-enabled")) {
@@ -210,15 +216,15 @@
         trashIcon.classList.remove("trash-dragged-over");
       },
       onMouseUp() {
-        const data = window.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.global.mouseData;
         if (data === null) {
           return;
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
-          window.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
+          this.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
           // Remove following line during selected placeholder refactor
-          // window.nvhFormattingEditor.global.selectedPlaceholder = null;
-          window.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+          // this.nvhFormattingEditor.global.selectedPlaceholder = null;
+          this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");
         }
@@ -226,7 +232,7 @@
           data.releaseFunction.run(...data.releaseFunction.parameters);
           data.releaseFunction = null;
         }
-        window.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isSchemaChanged(oldSchema, newSchema) {
         if (oldSchema.orientation !== newSchema.orientation) {
@@ -283,29 +289,29 @@
       },
       saveSchemas() {
         this.update({isSaving: true});
-        window.nvhFormattingEditor.clearStatuses(window.nvhFormattingEditor.currentLayout.schema);
-        window.nvhFormattingEditor.global.selectedPlaceholder = null;
-        let elementsConfig = window.nvhStore.data.formatting.elements;
+        this.nvhFormattingEditor.clearStatuses(this.nvhFormattingEditor.currentLayout.schema);
+        this.nvhFormattingEditor.global.selectedPlaceholder = null;
+        let elementsConfig = this.nvhStore.data.formatting.elements;
         let layoutConfig = {
           desktop: {
-            schema: window.nvhFormattingEditor.layout.desktop.schema,
-            elements: window.nvhFormattingEditor.layout.desktop.elements,
+            schema: this.nvhFormattingEditor.layout.desktop.schema,
+            elements: this.nvhFormattingEditor.layout.desktop.elements,
             configured: true,
           },
           tablet: {
-            schema: window.nvhFormattingEditor.layout.tablet.schema,
-            elements: window.nvhFormattingEditor.layout.tablet.elements,
-            configured: window.nvhFormattingEditor.layout.tablet.configured,
+            schema: this.nvhFormattingEditor.layout.tablet.schema,
+            elements: this.nvhFormattingEditor.layout.tablet.elements,
+            configured: this.nvhFormattingEditor.layout.tablet.configured,
           },
           mobile: {
-            schema: window.nvhFormattingEditor.layout.mobile.schema,
-            elements: window.nvhFormattingEditor.layout.mobile.elements,
-            configured: window.nvhFormattingEditor.layout.mobile.configured,
+            schema: this.nvhFormattingEditor.layout.mobile.schema,
+            elements: this.nvhFormattingEditor.layout.mobile.elements,
+            configured: this.nvhFormattingEditor.layout.mobile.configured,
           },
           pdf: {
-            schema: window.nvhFormattingEditor.layout.pdf.schema,
-            elements: window.nvhFormattingEditor.layout.pdf.elements,
-            configured: window.nvhFormattingEditor.layout.pdf.configured,
+            schema: this.nvhFormattingEditor.layout.pdf.schema,
+            elements: this.nvhFormattingEditor.layout.pdf.elements,
+            configured: this.nvhFormattingEditor.layout.pdf.configured,
           },
         };
         this.store.updateDictionaryConfig("formatting", {
@@ -319,19 +325,19 @@
       },
       saveAndToggleLayoutUsage() {
         this.update({isSaving: true});
-        let formatting = window.nvhStore.data.formatting;
+        let formatting = this.nvhStore.data.formatting;
         let layoutConfig = formatting.layout;
-        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = !window.nvhFormattingEditor.currentLayout.configured;
+        layoutConfig[this.nvhFormattingEditor.global.activeLayout].configured = !this.nvhFormattingEditor.currentLayout.configured;
         this.store.updateDictionaryConfig("formatting", formatting)
               .always(() => {
                 this.state.isSaving = false;
-                window.nvhFormattingEditor.currentLayout.configured = layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured;
+                this.nvhFormattingEditor.currentLayout.configured = layoutConfig[this.nvhFormattingEditor.global.activeLayout].configured;
                 this.update();
               });
       },
       globalOnMouseUp() {
-        clearTimeout(window.nvhFormattingEditor.timeout);
-        if (window.nvhFormattingEditor.global.mouseData !== null) {
+        clearTimeout(this.nvhFormattingEditor.timeout);
+        if (this.nvhFormattingEditor.global.mouseData !== null) {
           let adders = document.getElementsByClassName("adder");
           for (let adder of adders) {
             adder.classList.remove("adder-highligth");
@@ -339,9 +345,9 @@
             adder.style.display = "";
           }
 
-          window.nvhFormattingEditor.global.draggedElementFullName = "";
-          window.nvhFormattingEditor.global.draggedPlaceholder = null;
-          window.nvhFormattingEditor.global.mouseData = null;
+          this.nvhFormattingEditor.global.draggedElementFullName = "";
+          this.nvhFormattingEditor.global.draggedPlaceholder = null;
+          this.nvhFormattingEditor.global.mouseData = null;
 
           let trash = document.getElementById("trash-icon");
           if (trash != null) {
@@ -354,17 +360,17 @@
           for (element of allElements) {
             element.classList.remove("cursor-grabbing");
           }
-          window.nvhFormattingEditor.clearDraggedStatuses(window.nvhFormattingEditor.currentLayout.schema);
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.clearDraggedStatuses(this.nvhFormattingEditor.currentLayout.schema);
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       globalOnMouseDown() {
-        if (window.nvhFormattingEditor.global.mouseData !== null) {
+        if (this.nvhFormattingEditor.global.mouseData !== null) {
           let allElements = document.querySelectorAll("*");
           for (element of allElements) {
             element.classList.add("cursor-grabbing");
           }
-          window.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
 

@@ -33,8 +33,10 @@
         labelTextValue: null,
         showLabelBefore: null,
       },
+      nvhFormattingEditor: null,
 
       onBeforeMount() {
+        this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.state = {
           showUrl: this.props.styles["show-url"] === undefined ? true : this.props.styles["show-url"],
           replaceUrlWithText: this.props.styles["replace-url-with-text"],
@@ -46,7 +48,7 @@
           openUrlNewTab: this.props.styles["open-url-new-tab"],
           labelTextValue: this.props.labelStyles === undefined || this.props.labelStyles["label-text-value"] === undefined ? "" : this.props.labelStyles["label-text-value"],
           showLabelBefore: this.props.labelStyles === undefined || this.props.labelStyles["show-label-before"] === undefined ? true : this.props.labelStyles["show-label-before"],
-        }
+        };
       },
 
       onBeforeUpdate() {
