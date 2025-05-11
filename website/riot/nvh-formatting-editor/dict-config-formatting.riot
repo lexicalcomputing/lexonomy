@@ -160,8 +160,7 @@
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
         */
-        if (this.isElementsStyleChanged(this.nvhFormattingEditor.currentLayout.history.elements.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.elements)
-            || this.isSchemaChanged(this.nvhFormattingEditor.currentLayout.history.schema.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.schema)) {
+        if (this.isSchemaChanged(this.nvhFormattingEditor.currentLayout.history.schema.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.schema)) {
           this.nvhFormattingEditor.currentLayout.history.elements.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
           this.nvhFormattingEditor.currentLayout.history.schema.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
           this.nvhFormattingEditor.currentLayout.history.elements.push(JSON.parse(JSON.stringify(this.nvhFormattingEditor.currentLayout.elements)));
@@ -220,9 +219,6 @@
           if (oldSchema.content.fullName !== newSchema.content.fullName) {
             return true;
           }
-          if (oldSchema.content.fullName !== newSchema.content.fullName) {
-            return true;
-          }
         }
         if (oldSchema.children.length !== newSchema.children.length) {
           return true;
@@ -234,23 +230,6 @@
           }
         }
 
-        return false;
-      },
-      isElementsStyleChanged(oldElements, newElements) {
-        for (let element of Object.entries(oldElements)) {
-          let path = element[0];
-
-          if (Object.entries(oldElements[path]).length !== Object.entries(newElements[path]).length) {
-            return true;
-          }
-
-          for (let style of Object.entries(oldElements[path])) {
-            let styleName = style[0];
-            if (oldElements[path][styleName] !== newElements[path][styleName]) {
-              return true;
-            }
-          }
-        }
         return false;
       },
       saveSchemas() {
