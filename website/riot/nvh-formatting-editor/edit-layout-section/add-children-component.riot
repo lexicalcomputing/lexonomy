@@ -61,9 +61,9 @@
     },
     onAddElement(currentElement, newElement) {
       if (currentElement.children.length === 0 && currentElement.content.fullName !== newElement.path) {
-        window.nvhFormattingEditor.addElement(currentElement.children.length, null, currentElement, "row", this.getLabel(currentElement.content.name, currentElement.content.fullName));
+        window.nvhFormattingEditor.addElement(currentElement.children.length, currentElement, "row", this.getLabel(currentElement.content.name, currentElement.content.fullName));
       }
-      window.nvhFormattingEditor.addElement(currentElement.children.length, null, currentElement, "row", this.getLabel(newElement.name, newElement.path));
+      window.nvhFormattingEditor.addElement(currentElement.children.length, currentElement, "row", this.getLabel(newElement.name, newElement.path));
     },
     getLabel(name, fullName) {
       return {

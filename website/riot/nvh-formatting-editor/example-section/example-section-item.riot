@@ -123,13 +123,6 @@
         if (fullName === "") {
           return;
         }
-        let config = window.nvhStore.getElementConfig(fullName);
-        if (config === undefined) {
-          return;
-        }
-        if (config.type === "markup" && this.props.schema.children.length === 2) {
-          this.connectMarkupElementWithChildren(this.props.schema);
-        }
         this.formatValue(fullName);
         this.formatBulletValue();
         this.state.maxPossibleWidth = this.props.maxPossibleWidth;
@@ -145,13 +138,6 @@
         this.state.maxPossibleWidth = this.props.maxPossibleWidth;
         if (fullName === "") {
           return;
-        }
-        let config = window.nvhStore.getElementConfig(fullName);
-        if (config === undefined) {
-          return;
-        }
-        if (config.type === "markup" && this.props.schema.children.length === 2) {
-          this.connectMarkupElementWithChildren(this.props.schema);
         }
         this.formatValue(fullName);
         this.formatBulletValue();
@@ -200,19 +186,6 @@
       },
       isEmptyPlaceholder() {
         return this.props.schema.content.name === "";
-      },
-      connectMarkupElementWithChildren(schema) {
-        /* Markup type will always have two children:
-          first one will be markup element child
-          second one will be the markup element itself
-        */
-        let displayMarkupPlaceholder = this.props.schema.children[1];
-        let styleMarkupPlaceholder = this.props.schema.children[0];
-        let markupValue = { value: null };
-        displayMarkupPlaceholder["markupStyles"] = styleMarkupPlaceholder.styles;
-        displayMarkupPlaceholder["markupStatus"] = styleMarkupPlaceholder.status;
-        displayMarkupPlaceholder["markupValue"] = markupValue;
-        styleMarkupPlaceholder["markupValue"] = markupValue;
       },
       formatValue(fullName) {
         let config = window.nvhStore.getElementConfig(fullName);

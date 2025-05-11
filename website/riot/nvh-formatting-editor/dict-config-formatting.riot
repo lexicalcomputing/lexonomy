@@ -36,7 +36,7 @@
               <input type="checkbox" checked={window.nvhFormattingEditor.currentLayout.configured}/>
               <span class="tooltipped"
                   style="padding-left: 25px;"
-                  onclick={saveAndConfigureSchema}
+                  onclick={saveAndToggleLayoutUsage}
                   data-tooltip={window.nvhFormattingEditor.currentLayout.configured ?
                                 "Layout for this device is used.\nWhen viewing the dictionary on this device, current layout will be seen."
                                 : "Layout for this device is not used.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}>
@@ -101,7 +101,6 @@
         window.nvhFormattingEditor.global = window.nvhFormattingEditor.initializeGlobalAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
-        document.addEventListener("mousemove", this.globalMouseMove, { passive: true });
 
         let formatting = window.store.data.config.formatting;
 
@@ -165,7 +164,6 @@
       onBeforeUnmount() {
         document.removeEventListener("mouseup", this.globalOnMouseUp);
         document.removeEventListener("mousedown", this.globalOnMouseDown);
-        document.removeEventListener("mousemove", this.globalMouseMove, { passive: true });
       },
       onBeforeUpdate() {
         window.nvhFormattingEditor.global = {
@@ -319,7 +317,7 @@
                 this.update();
               });
       },
-      saveAndConfigureSchema() {
+      saveAndToggleLayoutUsage() {
         this.update({isSaving: true});
         let formatting = window.nvhStore.data.formatting;
         let layoutConfig = formatting.layout;
@@ -328,18 +326,6 @@
               .always(() => {
                 this.state.isSaving = false;
                 window.nvhFormattingEditor.currentLayout.configured = layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured;
-                this.update();
-              });
-      },
-      saveAndUnconfigureSchema() {
-        this.update({isSaving: true});
-        let formatting = window.nvhStore.data.formatting;
-        let layoutConfig = formatting.layout;
-        layoutConfig[window.nvhFormattingEditor.global.activeLayout].configured = false;
-        this.store.updateDictionaryConfig("formatting", formatting)
-              .always(() => {
-                this.state.isSaving = false;
-                window.nvhFormattingEditor.currentLayout.configured = false;
                 this.update();
               });
       },
@@ -380,10 +366,6 @@
           }
           window.nvhFormattingEditor.formattingEditorComponent.update();
         }
-      },
-      globalMouseMove() {
-        /* Specify if necessary.
-        I need custom mouse move to specify its options and to be able to remove it. */
       },
 
       /*Taken from dict-edit.riot*/

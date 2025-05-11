@@ -115,9 +115,6 @@
         window.nvhFormattingEditor.formattingEditorComponent.update();
       },
       async onExportPDF() {
-        /*
-          Exported PDF file is prepared on backend via pdfkit library
-        */
         await window.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
         this.update(this.state.exportedEntries.isLoading = true);
         let response = await window.nvhFormattingEditor.createPDF();

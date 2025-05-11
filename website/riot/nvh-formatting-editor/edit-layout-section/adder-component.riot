@@ -4,8 +4,7 @@
       <div class="tooltipped adder-icon-wrapper"
           data-tooltip={window.nvhFormattingEditor.global.mouseData === null ? "Insert empty container" : ""}
           onmouseenter={onMouseEnter}
-          onmouseleave={onMouseLeave}
-          onmousedown={onMouseDown}>
+          onmouseleave={onMouseLeave}>
         <i class="small material-icons adder-icon">add_box</i>
       <div>
     </div>
@@ -22,22 +21,6 @@
       onMouseLeave(event) {
         event.currentTarget.classList.remove("adder-icon-wrapper-highligth-dragged");
       },
-      onMouseDown(event) {
-        const data = window.nvhFormattingEditor.global.mouseData;
-        if (data !== null && window.nvhFormattingEditor.global.canBeDropped) {
-          if (data.type === "choice-item") {
-            let content = {
-              name: data.name,
-              fullName: data.fullName,
-              area: data.name,
-              areaFullName: data.fullName,
-              children: data.children
-            }
-            window.nvhFormattingEditor.addElementWithChildren(this.props.index, window.nvhFormattingEditor.global.parent, this.props.state, this.props.state, content);
-            window.nvhFormattingEditor.global.canBeDropped = false;
-          }
-        }
-      }
     }
   </script>
 

@@ -168,43 +168,12 @@ class NVHFormattingEditorClass {
     return entryHTML;
   }
 
-  // DO NOT USE THIS !!!, use 'window.nvhStore.data.entry' instead
-  getEntryStructure(entry, parentPath) {
-    let objectHolder = {
-      path: "",
-      value: "",
-      children: []
-    };
-    for (let element of entry) {
-      if (element[0] === "_name") {
-        objectHolder.path = parentPath == null ? element[1] : parentPath + "." + element[1];
-        continue;
-      } else if (element[0] === "_value") {
-        objectHolder.value = element[1];
-      } else {
-        for (let childHolder of element[1]) {
-          let child = this.getEntryStructure(Object.entries(childHolder), objectHolder.path);
-          objectHolder.children.push(child);
-        }
-      }
-    }
-    return objectHolder;
-  }
-
   getEntryHTML(schema, entry) {
     const item = document.createElement('example-section-item');
     riot.mount(item, { schema: schema, entry: entry, maxPossibleWidth: "980px"});
     return item.innerHTML;
   }
 
-  /*This allows displaying non-direct children*/
-  getEntryChildren(entry, resultChildren) {
-    for (let child of entry.children) {
-      this.getEntryChildren(child, resultChildren);
-      resultChildren.push(child);
-    }
-    return resultChildren;
-  }
   getValidEntryChildren(entry, resultChildren, validPath) {
     for (let child of entry.children) {
       this.getValidEntryChildren(child, resultChildren, validPath);
@@ -450,7 +419,7 @@ class NVHFormattingEditorClass {
     return true;
   }
 
-  addElement(index, component, state, editingMode, label) {
+  addElement(index, state, editingMode, label) {
     let newElement = {
       status: {
         isActive: true,
@@ -480,83 +449,6 @@ class NVHFormattingEditorClass {
     state.children.splice(index, 0, newElement);
     window.nvhFormattingEditor.formattingEditorComponent.update();
     window.nvhFormattingEditor.global.canOpenActionPanel = false;
-  }
-
-  addElementWithChildren(index, component, state, element, label) {
-    /*label can not be null or undefined*/
-    if (label == null || label == undefined) {
-      return;
-    }
-    let newElement = {
-      status: {
-        isActive: false,
-        isHovered: false,
-        isDragged: false,
-      },
-      orientation: "column",
-      type: "placeholder",
-      content: {
-        name: label.name,
-        fullName: label.fullName,
-        area: label.name,
-        areaFullName: label.fullName,
-        canHaveChildren: label.canHaveChildren !== undefined ? label.canHaveChildren : label.children.length !== 0,
-      },
-      styles: {},
-      markupStyles: this.createMarkupStyles(label.fullName),
-      labelStyles: {},
-      bulletStyles: {},
-      children: []
-    };
-
-    if (state != null) {
-      state.children.splice(index, 0, newElement);
-    }
-    if (label.children !== undefined && label.children !== null && element.content.areaFullName != label.areaFullName) {
-      /*
-      Children are present.
-      When I drop to an plus icon e.g. pronunciation and the parent
-      is also of type pronunciation, so that it will not render all the children.
-      */
-      /*
-      If element has children, append also this element,
-      so that it is displayed together with its children.
-      */
-      if (label.children.length !== 0) {
-        let selfDisplayElement = {
-          status: {
-            isActive: false,
-            isHovered: false,
-            isDragged: false,
-          },
-          orientation: "column",
-          type: "placeholder",
-          content: {
-            name: label.name,
-            fullName: label.fullName,
-            area: label.name,
-            areaFullName: label.fullName,
-            canHaveChildren: false,
-          },
-          styles: {},
-          markupStyles: this.createMarkupStyles(label.fullName),
-          labelStyles: {},
-          bulletStyles: {},
-          children: []
-        };
-        newElement.children.push(selfDisplayElement);
-      }
-      for(let child of label.children) {
-        if (!this.isMarkupType(child.data.fullName)) {
-          let childElement = this.addElementWithChildren(null, null, null, newElement, child.data);
-          newElement.children.push(childElement);
-        }
-      }
-    }
-    if (component != null) {
-      window.nvhFormattingEditor.formattingEditorComponent.update();
-    }
-    return newElement;
   }
 
   deleteElement(indexToDelete, parentState, state) {
@@ -623,10 +515,6 @@ class NVHFormattingEditorClass {
     return true;
   }
 
-  getChoiceElementsFullNamesList() {
-    return window.store.schema.getElementList().map(e => e.path);
-  }
-
   /*Validation of choice-element vs. placeholder relationship functions*/
   isElementWithoutChildrenToWrapper(element, placeholder) {
     return placeholder.children.length !== 0 && element.children.length === 0;
@@ -685,22 +573,6 @@ class NVHFormattingEditorClass {
       return false;
     }
     return true;
-  }
-
-  applyStylesFromElements() {
-    for (let child of window.nvhFormattingEditor.currentLayout.schema.children) {
-      this.applyStylesFromElementsRec(child);
-    }
-  }
-  applyStylesFromElementsRec(state) {
-    let fullName = state.content.fullName;
-    if (fullName !== "" && state.styles === undefined) {
-      // TODO: apply styles from elements to each individual container
-    }
-
-    for (let child of state.children) {
-      this.applyStylesFromElementsRec(child);
-    }
   }
 
   hasDirectMarkupChild(fullName) {

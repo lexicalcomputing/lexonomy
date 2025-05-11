@@ -20,7 +20,7 @@
             border: 2px solid {getBorderColor()}">
     <adder-component if={props.canHaveAdders && !props.state.status.isDragged
                         && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
-            onclick={() => window.nvhFormattingEditor.addElement(0, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
+            onclick={() => window.nvhFormattingEditor.addElement(0, props.state, "row", null)}
             onmouseenter={onAdderMouseEnter}
             onmouseleave={onAdderMouseLeave}
             onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
@@ -43,7 +43,7 @@
               canHaveAdders={window.nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
       <adder-component if={props.canHaveAdders && !props.state.status.isDragged
                           && window.nvhFormattingEditor.isChildOfParent(window.nvhFormattingEditor.global.draggedElementFullName, this.props.state.content.areaFullName)}
-              onclick={() => window.nvhFormattingEditor.addElement(index + 1, window.nvhFormattingEditor.formattingEditorComponent, props.state, "row", null)}
+              onclick={() => window.nvhFormattingEditor.addElement(index + 1, props.state, "row", null)}
               onmouseenter={onAdderMouseEnter}
               onmouseleave={onAdderMouseLeave}
               onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
@@ -93,7 +93,7 @@
               window.nvhFormattingEditor.global.canBeDropped = false;
               return;
             }
-            if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.fullName, state)) {
+            if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
               /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
               window.nvhFormattingEditor.global.canBeDropped = false;
               return;
@@ -222,7 +222,7 @@
           /*Can not drop label to be a wrapper, if it can not have children*/
           return false;
         }
-        if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.fullName, state)) {
+        if (window.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
           /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
           return false;
         }
