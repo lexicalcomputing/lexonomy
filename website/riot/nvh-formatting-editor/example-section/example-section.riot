@@ -3,7 +3,7 @@
     <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.global.activeLayout}">
       <div if={this.state.exampleEntry === undefined}>Preview is loading ...</div>
       <div if={this.state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
-      <example-section-item if={this.state.exampleEntry !== null && this.state.exampleEntry !== undefined}
+      <example-section-item if={this.state.exampleEntry}
         each={child in nvhFormattingEditor.currentLayout.schema.children}
         onclick={() => onExampleSectionItemClick(child)}
         schema={child}
@@ -25,7 +25,7 @@
 
       async getEntry() {
         let entriesList = await this.store.loadEntryList();
-        if (entriesList === undefined || entriesList.entries.length === 0) {
+        if (!entriesList || entriesList.entries.length === 0) {
           return null;
         }
         this.store.changeEntryId(entriesList.entries[0].id);
@@ -38,10 +38,9 @@
         this.nvhStore = window.nvhStore;
 
         this.getEntry().then(res => {
-          if (res === null) {
+          if (!res) {
             this.state.exampleEntry = null;
-          } else if (this.nvhStore.data === null || this.nvhStore.data === undefined
-                    || this.nvhStore.data.entry === null || this.nvhStore.data.entry === undefined) {
+          } else if (!this.nvhStore.data || !this.nvhStore.data.entry) {
             this.state.exampleEntry = null;
           } else {
             this.state.exampleEntry = this.nvhStore.data.entry;

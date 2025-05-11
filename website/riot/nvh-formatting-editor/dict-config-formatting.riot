@@ -30,7 +30,7 @@
         <div class="header-box">
           <i class="small material-icons">view_compact</i>
           <h2>Layout</h2>
-          <label if={nvhFormattingEditor.global.activeLayout !== "desktop" && nvhStore.data.formatting.layout !== undefined}
+          <label if={nvhFormattingEditor.global.activeLayout !== "desktop" && nvhStore.data.formatting.layout}
                 class="checkbox"
                 style="margin-left: 20px;">
               <input type="checkbox" checked={nvhFormattingEditor.currentLayout.configured}/>
@@ -110,15 +110,11 @@
 
         let formatting = this.store.data.config.formatting;
 
-        if (formatting.layout !== undefined && formatting.layout !== null) {
-          let desktopElements = formatting.layout.desktop.elements !== undefined && formatting.layout.desktop.elements !== null
-                                  ? formatting.layout.desktop.elements : formatting.elements;
-          let tabletElements = formatting.layout.tablet.elements !== undefined && formatting.layout.tablet.elements !== null
-                                  ? formatting.layout.tablet.elements : formatting.elements;
-          let mobileElements = formatting.layout.mobile.elements !== undefined && formatting.layout.mobile.elements !== null
-                                  ? formatting.layout.mobile.elements : formatting.elements;
-          let pdfElements = formatting.layout.pdf.elements !== undefined && formatting.layout.pdf.elements !== null
-                                  ? formatting.layout.pdf.elements : formatting.elements;
+        if (formatting.layout && formatting.layout) {
+          let desktopElements = formatting.layout.desktop.elements ? formatting.layout.desktop.elements : formatting.elements;
+          let tabletElements = formatting.layout.tablet.elements ? formatting.layout.tablet.elements : formatting.elements;
+          let mobileElements = formatting.layout.mobile.elements ? formatting.layout.mobile.elements : formatting.elements;
+          let pdfElements = formatting.layout.pdf.elements ? formatting.layout.pdf.elements : formatting.elements;
 
           this.nvhFormattingEditor.layout = {
             desktop: {
@@ -132,7 +128,7 @@
               }
             },
             tablet: {
-              configured: formatting.layout.tablet.configured === undefined ? false : formatting.layout.tablet.configured,
+              configured: !formatting.layout.tablet.configured ? false : formatting.layout.tablet.configured,
               schema: formatting.layout.tablet.schema,
               elements: JSON.parse(JSON.stringify(tabletElements)),
               history: {
@@ -142,7 +138,7 @@
               }
             },
             mobile: {
-              configured: formatting.layout.mobile.configured === undefined ? false : formatting.layout.mobile.configured,
+              configured: !formatting.layout.mobile.configured ? false : formatting.layout.mobile.configured,
               schema: formatting.layout.mobile.schema,
               elements: JSON.parse(JSON.stringify(mobileElements)),
               history: {
@@ -152,7 +148,7 @@
               }
             },
             pdf: {
-              configured: formatting.layout.pdf.configured === undefined ? false : formatting.layout.pdf.configured,
+              configured: !formatting.layout.pdf.configured ? false : formatting.layout.pdf.configured,
               schema: formatting.layout.pdf.schema,
               elements: JSON.parse(JSON.stringify(pdfElements)),
               history: {
@@ -204,7 +200,7 @@
 
       onMouseEnter() {
         const data = this.nvhFormattingEditor.global.mouseData;
-        if (data !== null && data.type === "elementholder-label") {
+        if (data && data.type === "elementholder-label") {
           let trashIcon = document.getElementById("trash-icon");
           if (Array.from(trashIcon.classList).includes("trash-enabled")) {
             trashIcon.classList.add("trash-dragged-over");
@@ -217,7 +213,7 @@
       },
       onMouseUp() {
         const data = this.nvhFormattingEditor.global.mouseData;
-        if (data === null) {
+        if (!data) {
           return;
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
@@ -228,7 +224,7 @@
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");
         }
-        if (data.releaseFunction !== undefined && data.releaseFunction !== null) {
+        if (data.releaseFunction) {
           data.releaseFunction.run(...data.releaseFunction.parameters);
           data.releaseFunction = null;
         }
@@ -250,7 +246,7 @@
         if (JSON.stringify(oldSchema.bulletStyles) !== JSON.stringify(newSchema.bulletStyles)) {
           return true;
         }
-        if (oldSchema.content !== undefined && oldSchema.content !== undefined) {
+        if (oldSchema.content && newSchema.content) {
           if (oldSchema.content.fullName !== newSchema.content.fullName) {
             return true;
           }
@@ -337,7 +333,7 @@
       },
       globalOnMouseUp() {
         clearTimeout(this.nvhFormattingEditor.timeout);
-        if (this.nvhFormattingEditor.global.mouseData !== null) {
+        if (this.nvhFormattingEditor.global.mouseData) {
           let adders = document.getElementsByClassName("adder");
           for (let adder of adders) {
             adder.classList.remove("adder-highligth");
@@ -365,7 +361,7 @@
         }
       },
       globalOnMouseDown() {
-        if (this.nvhFormattingEditor.global.mouseData !== null) {
+        if (this.nvhFormattingEditor.global.mouseData) {
           let allElements = document.querySelectorAll("*");
           for (element of allElements) {
             element.classList.add("cursor-grabbing");

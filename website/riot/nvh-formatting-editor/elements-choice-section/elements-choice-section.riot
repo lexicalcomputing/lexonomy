@@ -1,6 +1,6 @@
 <elements-choice-section>
   <div class="elements-choice-section-container">
-    <elements-choice-item if={nvhStore.getElementConfig(props.elementsSchema.data.fullName) !== undefined && nvhStore.getElementConfig(props.elementsSchema.data.fullName).type !== "markup"}
+    <elements-choice-item if={nvhStore.getElementConfig(props.elementsSchema.data.fullName) && nvhStore.getElementConfig(props.elementsSchema.data.fullName).type !== "markup"}
                           state={props.elementsSchema}
                           indentationLevel={5}/>
   </div>

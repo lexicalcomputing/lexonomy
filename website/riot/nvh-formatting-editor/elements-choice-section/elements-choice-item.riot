@@ -10,7 +10,7 @@
     <div style="color: {nvhStore.getElementColor(props.state.data.fullName)}">{props.state.data.name}</div>
   </div>
   <template each={child in props.state.data.children}>
-    <elements-choice-item if={nvhStore.getElementConfig(child.data.fullName) !== undefined && nvhStore.getElementConfig(child.data.fullName).type !== "markup"}
+    <elements-choice-item if={nvhStore.getElementConfig(child.data.fullName) && nvhStore.getElementConfig(child.data.fullName).type !== "markup"}
                           state={child}
                           indentationLevel={props.indentationLevel + 15}/>
   </template>
@@ -31,7 +31,7 @@
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
-        if (this.nvhFormattingEditor.global.selectedPlaceholder === null) {
+        if (!this.nvhFormattingEditor.global.selectedPlaceholder) {
           return false;
         }
         return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
@@ -39,7 +39,7 @@
                                                                             this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName);
       },
       isInvalidToActivePlaceholder() {
-        if (this.nvhFormattingEditor.global.selectedPlaceholder === null) {
+        if (!this.nvhFormattingEditor.global.selectedPlaceholder) {
           return false;
         }
         return !this.isValidToActivePlaceholder();

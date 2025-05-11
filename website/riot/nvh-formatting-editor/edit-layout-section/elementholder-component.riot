@@ -4,7 +4,7 @@
             background-color: {getBackgroundColor()};
             border: 1px solid {props.isBaseLevel ? this.nvhStore.getElementColor(props.state.content.fullName) : "transparent"};"
       data-tooltip={props.state.content.fullName}
-      onmousedown={!props.isBaseLevel && props.state.content.fullName !== "" ? () => onMouseDown() : () => {}}>
+      onmousedown={!props.isBaseLevel && props.state.content.fullName ? () => onMouseDown() : () => {}}>
     <div class="content-box-wrapper-2">
       <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-parent"}">
         {getElementHolderLabel()}
@@ -34,7 +34,7 @@
       this.nvhFormattingEditor.global.mouseData = transferObject;
       this.nvhFormattingEditor.timeout = setTimeout(() => {
         let trash = document.getElementById("trash-icon");
-        if (trash !== null) {
+        if (trash) {
           trash.classList.add("trash-enabled");
           trash.classList.remove("trash-disabled");
         }
@@ -56,7 +56,7 @@
     },
     onMouseEnter(event) {
       const data = this.nvhFormattingEditor.global.mouseData;
-      if (data !== null && data.type === "choice-item") {
+      if (data && data.type === "choice-item") {
         event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
       }
     },
@@ -67,7 +67,7 @@
     getElementHolderLabel() {
       let childrenCount = this.props.state.children.length;
       let name = this.props.state.content.name;
-      if (name === "") {
+      if (!name) {
         return "container";
       }
       if (childrenCount === 0) {
@@ -86,7 +86,7 @@
         }
         return color;
       }
-      if (name === "") {
+      if (!name) {
         return "black";
       } else {
         if (childrenCount === 0) {
@@ -105,7 +105,7 @@
         }
         return "#ffffff";
       }
-      if (name === "") {
+      if (!name) {
         return "#c7ced1";
       } else {
         if (childrenCount === 0) {

@@ -1,5 +1,5 @@
 <add-children-component>
-    <div if={props.canHaveAdders && props.state.content.fullName !== "" && getChildrenList(null, props.state.content.fullName).length !== 0}
+    <div if={props.canHaveAdders && props.state.content.fullName && getChildrenList(null, props.state.content.fullName).length !== 0}
         class="add-children-component-wrapper"
         style="background-color: {this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(props.state.content.fullName))};">
       <div class="add-children-component-label">Add:</div>
@@ -44,23 +44,23 @@
     },
 
     getChildrenList(count, fullName) {
-      if (fullName === "") {
+      if (!fullName) {
         return [];
       }
       let config = window.nvhStore.getElementConfig(fullName);
-      if (config === undefined) {
+      if (!config) {
         return [];
       }
       let children = config.children;
       children = children.filter(child => !this.nvhFormattingEditor.isMarkupType(child.path)); // exclude markup type elements
-      if (count === null) {
+      if (!count) {
         return children;
       }
       return children.slice(0, count);
     },
     getChildrenAndSelfList(fullName) {
       let config = window.nvhStore.getElementConfig(fullName);
-      if (config === undefined) {
+      if (!config) {
         return [];
       }
       let children = this.getChildrenList(null, fullName);
