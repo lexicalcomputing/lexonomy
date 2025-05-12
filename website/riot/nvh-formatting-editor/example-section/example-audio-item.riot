@@ -6,13 +6,13 @@
     </pre>
     <audio if={state.showPlayer} controls src={props.value} style={props.getCssStyles(props.styles)}></audio>
     <div class="example-audio-item-url">
-      <a if={state.showUrl && state.showIcon} href={props.value}>
+      <a if={state.showIcon} href={props.value}>
         <pre>{nvhFormattingEditor.getIcon(this.state.iconItem)}</pre>
       </a>
-      <a if={state.showUrl && state.showIcon} href={props.value}>
+      <a if={state.showIcon} href={props.value}>
         <pre>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</pre>
       </a>
-      <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
+      <a if={state.showUrl && !state.showUrlAsIcon} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
     <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
@@ -28,6 +28,7 @@
         replaceUrlWithText: null,
         textReplacementForUrl: null,
         textAsUrlTooltip: null,
+        showUrlAsIcon: null,
         showIcon: null,
         iconItem: null,
         unicodeIcon: null,
@@ -44,6 +45,7 @@
           replaceUrlWithText: props.styles["replace-url-with-text"],
           textReplacementForUrl: props.styles["text-replacement-for-url"],
           textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showUrlAsIcon: props.styles["show-url-as-icon"],
           showIcon: props.styles["show-icon"],
           iconItem: props.styles["icon-item"],
           unicodeIcon: props.styles["unicode-icon"],
@@ -59,6 +61,7 @@
           replaceUrlWithText: props.styles["replace-url-with-text"],
           textReplacementForUrl: props.styles["text-replacement-for-url"],
           textAsUrlTooltip: props.styles["text-as-url-tooltip"],
+          showUrlAsIcon: props.styles["show-url-as-icon"],
           showIcon: props.styles["show-icon"],
           iconItem: props.styles["icon-item"],
           unicodeIcon: props.styles["unicode-icon"],
