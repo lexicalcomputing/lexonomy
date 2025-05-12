@@ -380,7 +380,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? false : !getStyleOptionValue("show-url"))}
           style={getStyleOptionValue("show-url") === true || getStyleOptionValue("show-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
-        <i if={getStyleOptionValue("show-url")} class="material-icons tiny">check</i>
+        <i if={getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -512,7 +512,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-image", getStyleOptionValue("show-image") === null ? false : !getStyleOptionValue("show-image"))}
           style={getStyleOptionValue("show-image") === true || getStyleOptionValue("show-image") === null ? `background-color:var(--color-grey-normal);` : ""}>
-        <i if={getStyleOptionValue("show-image")} class="material-icons tiny">check</i>
+        <i if={getStyleOptionValue("show-image") || getStyleOptionValue("show-image") === null} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
