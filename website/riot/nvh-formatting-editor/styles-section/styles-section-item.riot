@@ -384,7 +384,7 @@
       </div>
     </div>
   </div>
-  <div if={state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null)} class="styles-section-item-wrapper">
+  <div if={["image", "video", "audio"].includes(state.type) && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null)} class="styles-section-item-wrapper">
     <div class="label">Show url as icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
