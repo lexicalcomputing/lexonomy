@@ -2,15 +2,15 @@
   <div class="example-item-markup-wrapper">
     <div>
       <span if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
-          style={props.getCssStyles(props.labelStyles)}>
+          style={props.getCssStyles(props.labelStyles) + "white-space: pre;"}>
         {state.labelTextValue}
       </span>
       <span each={child in props.valueStylePairs}
-          style={props.getCssStyles(child.styles) + "word-break: break-word;"}>
+          style={props.getCssStyles(child.styles) + "word-break: break-word; white-space: pre;"}>
         {child.value}
       </span>
       <span if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
-          style={props.getCssStyles(props.labelStyles)}>
+          style={props.getCssStyles(props.labelStyles) + "white-space: pre;"}>
         {state.labelTextValue}
       </span>
     </div>

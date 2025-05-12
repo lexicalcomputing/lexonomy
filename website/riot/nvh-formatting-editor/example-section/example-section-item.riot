@@ -4,11 +4,11 @@
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
         style={props.schema.children.length !== 0 ? getCssStyles(props.schema.styles) : ""}>
-    <div if={(props.schema.bulletStyles["bullet-use-numbers"] || props.schema.bulletStyles["bullet-use-bullets"])
+    <pre if={(props.schema.bulletStyles["bullet-use-numbers"] || props.schema.bulletStyles["bullet-use-bullets"])
             && (props.haveSiblings || props.schema.bulletStyles["bullet-use-with-single-item"])}
         style={getCssStyles(props.schema.bulletStyles)}>
       {state.bulletValue}
-    </div> <!-- consider doing this way also labelstyles-->
+    </pre> <!-- consider doing this way also labelstyles-->
     <div if={!props.schema.children.length && props.schema.content.fullName === props.entry.path}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
