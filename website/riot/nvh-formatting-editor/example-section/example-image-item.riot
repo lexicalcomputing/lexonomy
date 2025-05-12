@@ -5,7 +5,7 @@
       {state.labelTextValue}
     </div>
     <img id="example-image-item-image" if={state.showImage && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
-    <a if={state.showImage && state.makeImageClickable} href={props.value}>
+    <a if={state.showImage && state.makeImageClickable} href={props.value} target="_blank">
       <img src={props.value} style={props.getCssStyles(props.styles)}/>
     </a>
     <div class="example-image-item-icons">
