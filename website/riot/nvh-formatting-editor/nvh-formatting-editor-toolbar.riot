@@ -1,57 +1,5 @@
 <nvh-formatting-editor-toolbar>
   <div class="formatting-page-containers">
-    <div class="formatting-page-layout-container">
-      <div onclick={onLayoutClick.bind(this, "desktop")}
-          data-tooltip="Desktop layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">desktop_windows</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "tablet")}
-          data-tooltip="Tablet layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">tablet</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "mobile")}
-          data-tooltip="Mobile phone layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">phone_android</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "pdf")}
-          data-tooltip="Export to PDF layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">picture_as_pdf</i>
-      </div>
-    </div>
-    <div class="formatting-page-visibility-container">
-      <div onclick={onSectionClick.bind(this, "elements")}
-          data-tooltip="Element list panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.elements ? "item-inactive" : "item-active"}">
-        <i class="material-icons">sort</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "editing")}
-          data-tooltip="Layout panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.editing ? "item-inactive" : "item-active"}">
-        <i class="material-icons">view_compact</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "style")}
-          data-tooltip="Style panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.style ? "item-inactive" : "item-active"}">
-        <i class="material-icons">palette</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "example")}
-          data-tooltip="Preview panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.example ? "item-inactive" : "item-active"}">
-        <i class="material-icons">visibility</i>
-      </div>
-    </div>
     <div class="formatting-page-action-container">
       <div id="save-button-wrapper"
           onclick={props.saveSchemas}
@@ -88,6 +36,58 @@
       </div>
       <div class="progress-label" if={state.exportedEntries.isLoading}>
         Wait please
+      </div>
+    </div>
+    <div class="formatting-page-visibility-container">
+      <div onclick={onSectionClick.bind(this, "elements")}
+          data-tooltip="Element list panel"
+          class="tooltipped formatting-page-visibility-item
+                {!props.state.isSectionVisible.elements ? "item-inactive" : "item-active"}">
+        <i class="material-icons">sort</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "editing")}
+          data-tooltip="Layout panel"
+          class="tooltipped formatting-page-visibility-item
+                {!props.state.isSectionVisible.editing ? "item-inactive" : "item-active"}">
+        <i class="material-icons">view_compact</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "style")}
+          data-tooltip="Style panel"
+          class="tooltipped formatting-page-visibility-item
+                {!props.state.isSectionVisible.style ? "item-inactive" : "item-active"}">
+        <i class="material-icons">palette</i>
+      </div>
+      <div onclick={onSectionClick.bind(this, "example")}
+          data-tooltip="Preview panel"
+          class="tooltipped formatting-page-visibility-item
+                {!props.state.isSectionVisible.example ? "item-inactive" : "item-active"}">
+        <i class="material-icons">visibility</i>
+      </div>
+    </div>
+    <div class="formatting-page-layout-container">
+      <div onclick={onLayoutClick.bind(this, "desktop")}
+          data-tooltip="Desktop layout"
+          class="tooltipped formatting-page-layout-item
+                {nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">desktop_windows</i>
+      </div>
+      <div onclick={onLayoutClick.bind(this, "tablet")}
+          data-tooltip="Tablet layout"
+          class="tooltipped formatting-page-layout-item
+                {nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">tablet</i>
+      </div>
+      <div onclick={onLayoutClick.bind(this, "mobile")}
+          data-tooltip="Mobile phone layout"
+          class="tooltipped formatting-page-layout-item
+                {nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">phone_android</i>
+      </div>
+      <div onclick={onLayoutClick.bind(this, "pdf")}
+          data-tooltip="Export to PDF layout"
+          class="tooltipped formatting-page-layout-item
+                {nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
+        <i class="material-icons">picture_as_pdf</i>
       </div>
     </div>
   </div>
