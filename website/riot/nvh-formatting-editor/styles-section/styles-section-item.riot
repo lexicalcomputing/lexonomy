@@ -11,6 +11,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-label-before", getStyleOptionValue("show-label-before") === null ? false : !getStyleOptionValue("show-label-before"))}
           style={getStyleOptionValue("show-label-before") === true || getStyleOptionValue("show-label-before") === null ? `background-color:var(--color-grey-normal);` : ""}>
+          <i if={getStyleOptionValue("show-label-before") || getStyleOptionValue("show-label-before") === null} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -20,6 +21,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "bullet-use-numbers", getStyleOptionValue("bullet-use-numbers") === null ? true : !getStyleOptionValue("bullet-use-numbers"))}
           style={getStyleOptionValue("bullet-use-numbers") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("bullet-use-numbers")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -29,6 +31,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "bullet-use-bullets", getStyleOptionValue("bullet-use-bullets") === null ? true : !getStyleOptionValue("bullet-use-bullets"))}
           style={getStyleOptionValue("bullet-use-bullets") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("bullet-use-bullets")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -44,6 +47,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "bullet-use-with-single-item", getStyleOptionValue("bullet-use-with-single-item") === null ? true : !getStyleOptionValue("bullet-use-with-single-item"))}
           style={getStyleOptionValue("bullet-use-with-single-item") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("bullet-use-with-single-item")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -362,6 +366,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "open-url-new-tab", getStyleOptionValue("open-url-new-tab") === null ? true : !getStyleOptionValue("open-url-new-tab"))}
           style={getStyleOptionValue("open-url-new-tab") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("open-url-new-tab")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -371,6 +376,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-url", getStyleOptionValue("show-url") === null ? false : !getStyleOptionValue("show-url"))}
           style={getStyleOptionValue("show-url") === true || getStyleOptionValue("show-url") === null ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("show-url")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -380,6 +386,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-url-as-icon", getStyleOptionValue("show-url-as-icon") === null ? true : !getStyleOptionValue("show-url-as-icon"))}
           style={getStyleOptionValue("show-url-as-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("show-url-as-icon")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -389,6 +396,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "replace-url-with-text", getStyleOptionValue("replace-url-with-text") === null ? true : !getStyleOptionValue("replace-url-with-text"))}
           style={getStyleOptionValue("replace-url-with-text") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("replace-url-with-text")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -404,6 +412,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "text-as-url-tooltip", getStyleOptionValue("text-as-url-tooltip") === null ? true : !getStyleOptionValue("text-as-url-tooltip"))}
           style={getStyleOptionValue("text-as-url-tooltip") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("text-as-url-tooltip")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -413,6 +422,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-icon", getStyleOptionValue("show-icon") === null ? true : !getStyleOptionValue("show-icon"))}
           style={getStyleOptionValue("show-icon") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("show-icon")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -478,6 +488,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
           style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("show-player")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -487,6 +498,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-player", getStyleOptionValue("show-player") === null ? true : !getStyleOptionValue("show-player"))}
           style={getStyleOptionValue("show-player") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("show-player")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -496,6 +508,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-image", getStyleOptionValue("show-image") === null ? false : !getStyleOptionValue("show-image"))}
           style={getStyleOptionValue("show-image") === true || getStyleOptionValue("show-image") === null ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("show-image")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
@@ -505,6 +518,7 @@
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "make-image-clickable", getStyleOptionValue("make-image-clickable") === null ? true : !getStyleOptionValue("make-image-clickable"))}
           style={getStyleOptionValue("make-image-clickable") === true ? `background-color:var(--color-grey-normal);` : ""}>
+        <i if={getStyleOptionValue("make-image-clickable")} class="material-icons tiny">check</i>
       </div>
     </div>
   </div>
