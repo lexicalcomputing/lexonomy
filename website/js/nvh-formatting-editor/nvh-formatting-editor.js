@@ -48,11 +48,8 @@ class NVHFormattingEditorClass {
       },
       mouseData: null,
       canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
-      selectedPlaceholderAreaFullName: "",
-      selectedPlaceholderFullName: "",
       selectedPlaceholder: null,
       selectedPlaceholderParentAreaFullName: "",
-      parent: null,
       activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
     }
   }
@@ -190,8 +187,6 @@ class NVHFormattingEditorClass {
 
   initializeSchema() {
     this.currentLayout.schema = this.createSchema();
-    this.global.selectedPlaceholderAreaFullName = "";
-    this.global.selectedPlaceholderFullName = "";
     this.global.selectedPlaceholder = null;
     this.global.selectedPlaceholderParentAreaFullName = "";
   }
@@ -213,9 +208,6 @@ class NVHFormattingEditorClass {
       }
     }
     this.layout.desktop.configured = true;
-
-    this.global.selectedPlaceholderAreaFullName = "";
-    this.global.selectedPlaceholderFullName = "";
     this.global.selectedPlaceholder = null;
     this.global.selectedPlaceholderParentAreaFullName = "";
   }
@@ -278,8 +270,6 @@ class NVHFormattingEditorClass {
       this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
       this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
       this.clearStatuses(this.currentLayout.schema);
-      this.global.selectedPlaceholderAreaFullName = "";
-      this.global.selectedPlaceholderFullName = "";
       this.global.selectedPlaceholder = null;
       this.global.selectedPlaceholderParentAreaFullName = "";
       this.formattingEditorComponent.update();
@@ -292,8 +282,6 @@ class NVHFormattingEditorClass {
       this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
       this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
       this.clearStatuses(this.currentLayout.schema);
-      this.global.selectedPlaceholderAreaFullName = "";
-      this.global.selectedPlaceholderFullName = "";
       this.global.selectedPlaceholder = null;
       this.global.selectedPlaceholderParentAreaFullName = "";
       this.formattingEditorComponent.update();
@@ -338,19 +326,13 @@ class NVHFormattingEditorClass {
       this.clearStatuses(this.currentLayout.schema);
       child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
       child.status.isHovered = true;
-      if (child.status.isActive && child.children.length === 0) {
-        this.global.selectedPlaceholderFullName = child.content.fullName;
-      } else {
-        this.global.selectedPlaceholderFullName = "";
-      }
       if (child.status.isActive) {
-        this.global.selectedPlaceholderAreaFullName = child.content.areaFullName;
         if (parent !== null) {
           this.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
         }
         this.global.selectedPlaceholder = child;
+        console.log(this.global.selectedPlaceholder);
       } else {
-        this.global.selectedPlaceholderAreaFullName = "";
         this.global.selectedPlaceholderParentAreaFullName = "";
         this.global.selectedPlaceholder = null;
       }
@@ -375,7 +357,7 @@ class NVHFormattingEditorClass {
     if (data?.type === "choice-item") {
       return data?.fullName.includes(parent)
     }
-    return false;
+    return true;
   }
 
   isChildObjectOfParent(childObject, parent) {
@@ -420,8 +402,6 @@ class NVHFormattingEditorClass {
       children: []
     };
     this.clearStatuses(this.currentLayout.schema);
-    this.global.selectedPlaceholderAreaFullName = state.content.areaFullName;
-    this.global.selectedPlaceholderFullName = "";
     this.global.selectedPlaceholder = newElement;
     this.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
@@ -439,8 +419,6 @@ class NVHFormattingEditorClass {
     this.clearStatuses(this.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
     this.global.canOpenActionPanel = false;
-    this.global.selectedPlaceholderFullName = "";
-    this.global.selectedPlaceholderAreaFullName = "";
     this.global.selectedPlaceholderParentAreaFullName = "";
     this.global.selectedPlaceholder = null;
   }
