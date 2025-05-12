@@ -2,7 +2,7 @@
   <div if={state.isLabelOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Set label text:</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("label-text-value") === null ? "" : getStyleOptionValue("label-text-value")} onchange={onChangeStyle.bind(this, "label-text-value", null)}>
+      <input type="string" class="input-text" value={getStyleOptionValue("label-text-value") === null ? "" : getStyleOptionValue("label-text-value")} onchange={onChangeStyle.bind(this, "label-text-value", null)}>
     </div>
   </div>
   <div if={state.isLabelOptionStyle} class="styles-section-item-wrapper">
@@ -35,7 +35,7 @@
   <div if={state.isBulletOptionStyle && getStyleOptionValue("bullet-use-bullets")} class="styles-section-item-wrapper">
     <div class="label">Set bullet:</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("bullet-set-bullet") === null ? "" : getStyleOptionValue("bullet-set-bullet")} onchange={onChangeStyle.bind(this, "bullet-set-bullet", null)}>
+      <input type="string" class="input-text" value={getStyleOptionValue("bullet-set-bullet") === null ? "" : getStyleOptionValue("bullet-set-bullet")} onchange={onChangeStyle.bind(this, "bullet-set-bullet", null)}>
     </div>
   </div>
   <div if={state.isBulletOptionStyle} class="styles-section-item-wrapper">
@@ -48,10 +48,14 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
-    <div class="label">Container width:</div>
+    <div class="label">
+      Container width:
+      <i data-tooltip="If left empty (recommended), the element automatically sets width depending on the content. Set a percentage of the parent container. To set a fixed width, use pixels."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper">
       <input type="number"
-            style="margin:0; width: 70px; height: 25px; appearance: textfield;"
+            class="input-number"
             value={getStyleOptionValue("container-width") === null ? "" : getStyleOptionValue("container-width")}
             min="0" onchange={onChangeStyle.bind(this, "container-width", null)}>
       <div class="value-item"
@@ -88,10 +92,16 @@
     </div>
   </div>
   <div class="styles-section-item-wrapper">
-    <div class="label">Background color:</div>
+    <div class="label">
+      Background color:
+      <i data-tooltip={state.type === "string"
+              ? "Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
+              : "The background colour will only show if the inner margin (padding) is set to 1 or higher. Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."}
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("background-color")} style="height: 25px; width: 100px; margin: 0;" onchange={onChangeStyle.bind(this, "background-color", null)}/>
-      <input type="color" value={getStyleOptionValue("background-color") === null ? "#ffffff" : getStyleOptionValue("background-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "background-color", null)}>
+      <input type="color" class="input-color" value={getStyleOptionValue("background-color") === null ? "#ffffff" : getStyleOptionValue("background-color")} onchange={onChangeStyle.bind(this, "background-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
@@ -120,56 +130,68 @@
     <div class="label">Border color:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("border-color")} style="height: 25px; width: 100px; margin: 0;" onchange={onChangeStyle.bind(this, "border-color", null)}/>
-      <input type="color" value={getStyleOptionValue("border-color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "border-color", null)}>
+      <input type="color" class="input-color" value={getStyleOptionValue("border-color")} onchange={onChangeStyle.bind(this, "border-color", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Border width (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" max="10" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "border-width", null)}>
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" onchange={onChangeStyle.bind(this, "border-width", null)}>
+      <input type="range" class="input-range" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" max="10" step="1" onchange={onChangeStyle.bind(this, "border-width", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" onchange={onChangeStyle.bind(this, "border-width", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="range" class="input-range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Rounded corners (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "border-radius", null)}>
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="range" class="input-range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
-    <div class="label">Margin (px):</div>
+    <div class="label">
+      Margin (px):
+      <i data-tooltip="Inserts empty space between elements."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "margin", null)}>
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="range" class="input-range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
-    <div class="label">Inner margin (padding) (px):</div>
+    <div class="label">
+      Inner margin (padding) (px):
+      <i data-tooltip="Inserts empty space inside the element - between the content and the element border."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "padding", null)}>
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="range" class="input-range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
-    <div class="label">Text color:</div>
+    <div class="label">
+      Text color:
+      <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("color")} style="height: 25px; width: 100px; margin: 0;" onchange={onChangeStyle.bind(this, "color", null)}/>
-      <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
+      <input type="color" class="input-color" value={getStyleOptionValue("color")} onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "font-size", null)}>
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
+      <input type="range" class="input-range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" onchange={onChangeStyle.bind(this, "font-size", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
@@ -198,7 +220,11 @@
     </div>
   </div>
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
-    <div class="label">Text font:</div>
+    <div class="label">
+      Text font:
+      <i data-tooltip="By default, the element is displayed in its parent font. To set the font for the whole entry, change the font of the ENTRY element. Changing the parent elment font will not affect the children, if children's fonts were modified previously. Set children to --inherit-- to adopt the parent font."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
         <div class="text-dropdown-value">{getStyleOptionValue("font-family") === null || getStyleOptionValue("font-family") === "" ? "-- inherit --" : getStyleOptionValue("font-family").split(",")[0]}</div>
@@ -221,7 +247,11 @@
     </div>
   </div>
   <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
-    <div class="label">Left punctuation:</div>
+    <div class="label">
+      Left punctuation:
+      <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "leftPunc", "")}
@@ -266,9 +296,13 @@
     </div>
   </div>
   <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
-    <div class="label">Left punctuation (custom):</div>
+    <div class="label">
+      Left punctuation (custom):
+      <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
+      <input type="string" class="input-text" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
   <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
@@ -319,7 +353,7 @@
   <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
+      <input type="string" class="input-text" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
     </div>
   </div>
   <div if={state.type === "url"} class="styles-section-item-wrapper">
@@ -475,15 +509,19 @@
     </div>
   </div>
   <div if={state.type === "image" || (state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
-    <div class="label">Max width (px):</div>
+    <div class="label">
+      Max width (px):
+      <i data-tooltip="The image will be reduced to the specified size. Smaller images will not be enlarged. If the other dimension is empty, it will be calculated automatically, preserving the aspect ratio. If both dimensions are set and the image has different aspect ratio, the smaller dimension is given preference."
+        class="material-icons tooltipped">help</i>
+    </div>
     <div class="value-wrapper">
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("max-width")} onchange={onChangeStyle.bind(this, "max-width", null)}>
     </div>
   </div>
   <div if={state.type === "image" || (state.type === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
     <div class="label">Max height (px):</div>
     <div class="value-wrapper">
-      <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
+      <input type="number" class="input-number" value={getStyleOptionValue("max-height")} onchange={onChangeStyle.bind(this, "max-height", null)}>
     </div>
   </div>
   <div if={(state.type === "bool")} class="label">Set text (value = YES):</div>
@@ -704,6 +742,9 @@
       cursor: pointer;
     }
 
+    .label {
+      display: flex;
+    }
     .value-wrapper {
       display: flex;
       flex-direction: row;
@@ -755,6 +796,29 @@
     }
     .select-dropdown-option:hover {
       background-color: #d7e4f7;
+    }
+
+    .input-text {
+      margin: 0;
+      width: 150px;
+      height: 30px;
+    }
+    .input-color {
+      border: none;
+      padding: 0;
+      height: 25px;
+      width: 25px;
+      cursor: pointer;
+    }
+    .input-number {
+      margin: 0 !important;
+      width: 70px !important;
+      height: 25px !important;
+      appearance: textfield !important;
+    }
+    .input-range {
+      margin:0;
+      width: 120px;
     }
 
     .value-item-colour-red {
