@@ -12,8 +12,8 @@
     <styles-section-item if={nvhFormattingEditor.global.selectedPlaceholder}
                         class="styles-section-container-divider"
                         styleOption={currentStyleOption}
-                        isLabelOptionStyle={currentStyleOption.name.includes("(label)")}
-                        isBulletOptionStyle={currentStyleOption.name.includes("(bullet)")}/>
+                        isLabelOptionStyle={currentStyleOption.type === "label"}
+                        isBulletOptionStyle={currentStyleOption.type === "bullet"}/>
   </div>
 
   <script>
@@ -55,9 +55,9 @@
         let bulletStyles = this.nvhFormattingEditor.global.selectedPlaceholder.bulletStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
         if (this.nvhFormattingEditor.global.selectedPlaceholder && this.nvhFormattingEditor.global.selectedPlaceholder.children.length === 0) {
-          result.splice(result.length, 0, {name: name + " (label)", fullName: fullName + " (label)", styles: labelStyles});
+          result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
         }
-        result.splice(result.length, 0, {name: name + " (bullet)", fullName: fullName + " (bullet)", styles: bulletStyles});
+        result.splice(result.length, 0, {name: "bullet", fullName: "bullet", styles: bulletStyles, type: "bullet"});
         return result;
       },
       changeStyleOption(fullName) {

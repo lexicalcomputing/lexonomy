@@ -14,7 +14,7 @@
         onclick={duplicateElement}>
       <i class="small material-icons">content_copy</i>
     </div>
-    <div class="tooltipped action action-orientation-{props.state.orientation}"
+    <div class="tooltipped action"
         data-tooltip={props.state.orientation === "column"
           ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
             : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
@@ -113,32 +113,13 @@
     border: 1px solid black;
   }
   .action:hover {
-    background-color:rgb(208, 232, 246);
-  }
-  #action-delete {
-    background-color: red;
-  }
-  #action-delete:hover {
-    background-color: rgb(218, 71, 51);
+    background-color: var(--color-grey-normal);
   }
   #action-drag {
     cursor: grab;
   }
   .action {
     user-select: none;
-  }
-
-  .action-orientation-column {
-    background-color: var(--color-column);
-  }
-  .action-orientation-column:hover {
-    background-color:rgb(102, 184, 239);
-  }
-  .action-orientation-row {
-    background-color: var(--color-row);
-  }
-  .action-orientation-row:hover {
-    background-color: rgb(239, 122, 96);
   }
 </style>
 
