@@ -19,7 +19,7 @@
       style="background-color: {getBackgroundColor()};
             border: 2px solid {getBorderColor()}">
     <adder-component if={props.canHaveAdders && !props.state.status.isDragged
-                        && nvhFormattingEditor.isChildOfParent(nvhFormattingEditor.global.draggedElementFullName, props.state.content.areaFullName)}
+                        && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
             onclick={() => nvhFormattingEditor.addElement(0, props.state, "row", null)}
             onmouseenter={onAdderMouseEnter}
             onmouseleave={onAdderMouseLeave}
@@ -42,7 +42,7 @@
               index={index}
               canHaveAdders={nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
       <adder-component if={props.canHaveAdders && !props.state.status.isDragged
-                          && nvhFormattingEditor.isChildOfParent(nvhFormattingEditor.global.draggedElementFullName, props.state.content.areaFullName)}
+                          && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
               onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, "row", null)}
               onmouseenter={onAdderMouseEnter}
               onmouseleave={onAdderMouseLeave}
@@ -115,7 +115,7 @@
                 return;
               }
             }
-            if (!this.nvhFormattingEditor.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+            if (!this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
               /*
               Dragged element can not be dropped because,
               it is not a child element of the parent placeholder where I want to drop him.
@@ -241,7 +241,7 @@
             return false;
           }
         }
-        if (!this.nvhFormattingEditor.isChildOfParent(data.fullName, this.props.state.content.areaFullName)) {
+        if (!this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
           /*
           Dragged element can not be dropped because,
           it is not a child element of the parent placeholder where I want to drop him.

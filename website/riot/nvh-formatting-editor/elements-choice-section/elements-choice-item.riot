@@ -27,7 +27,6 @@
 
       onMouseDown(state) {
         this.nvhFormattingEditor.global.mouseData = this.props.state.data;
-        this.nvhFormattingEditor.global.draggedElementFullName = this.props.state.data.fullName;
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {

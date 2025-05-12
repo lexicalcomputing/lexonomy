@@ -41,7 +41,6 @@ class NVHFormattingEditorClass {
       canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
       canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
       canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
-      draggedElementFullName: "",
       draggedPlaceholder: null,
       dropInfo: {
         wasSuccessful: false,
@@ -365,13 +364,18 @@ class NVHFormattingEditorClass {
     return child.includes(parent);
   }
 
-  isChildOfParent(child, parent) {
-    if (this.global.draggedPlaceholder !== null) {
-      return this.isChildObjectOfParent(this.global.draggedPlaceholder, parent);
+  isChildOfParent(parent) {
+    let data = this.global.mouseData;
+    if (!data) {
+      return true;
     }
-    let result = child.includes(parent);
-    let alternative = this.global.draggedElementFullName === "";
-    return result || alternative;
+    if (data?.type === "placeholder") {
+      return this.isChildObjectOfParent(data, parent);
+    }
+    if (data?.type === "choice-item") {
+      return data?.fullName.includes(parent)
+    }
+    return false;
   }
 
   isChildObjectOfParent(childObject, parent) {
@@ -435,7 +439,6 @@ class NVHFormattingEditorClass {
     this.clearStatuses(this.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
     this.global.canOpenActionPanel = false;
-    this.global.draggedElementFullName = "";
     this.global.selectedPlaceholderFullName = "";
     this.global.selectedPlaceholderAreaFullName = "";
     this.global.selectedPlaceholderParentAreaFullName = "";

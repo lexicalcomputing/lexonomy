@@ -144,7 +144,6 @@
           canBeRemovedIfHovered: true,
           canBeDropped: true,
           canBeDragged: true,
-          draggedElementFullName: this.nvhFormattingEditor.global.draggedElementFullName,
           draggedPlaceholder: this.nvhFormattingEditor.global.draggedPlaceholder,
           dropInfo: {
             wasSuccessful: false,
@@ -290,7 +289,6 @@
             adder.style.display = "";
           }
 
-          this.nvhFormattingEditor.global.draggedElementFullName = "";
           this.nvhFormattingEditor.global.draggedPlaceholder = null;
           this.nvhFormattingEditor.global.mouseData = null;
 
