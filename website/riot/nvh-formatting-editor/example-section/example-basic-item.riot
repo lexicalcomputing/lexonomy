@@ -1,16 +1,16 @@
 <example-basic-item>
   <div class="example-basic-item-wrapper">
-    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+    <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
-    <div style={props.getCssStyles(props.styles)}>
+    </pre>
+    <pre style={props.getCssStyles(props.styles)}>
       {props.value}
-    </div>
-    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+    </pre>
+    <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
   </div>
   
   </div>

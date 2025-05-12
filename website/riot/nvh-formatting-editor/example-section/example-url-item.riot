@@ -1,21 +1,21 @@
 <example-url-item>
   <div class="example-url-item-wrapper">
     <div class="example-url-item-url" style={props.getCssStyles(props.styles)}>
-      <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+      <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
           style={props.getCssStyles(props.labelStyles)}>
         {state.labelTextValue}
-      </div>
+      </pre>
       <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
-        <div>{window.nvhFormattingEditor.getIcon(state.iconItem)}</div>
+        <pre>{window.nvhFormattingEditor.getIcon(state.iconItem)}</pre>
       </a>
       <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
-        <div>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</div>
+        <pre>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
-      <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+      <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
           style={props.getCssStyles(props.labelStyles)}>
         {state.labelTextValue}
-      </div>
+      </pre>
     </div>
   </div>
   

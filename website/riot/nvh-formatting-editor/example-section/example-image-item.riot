@@ -1,9 +1,9 @@
 <example-image-item>
   <div class="example-image-item-wrapper">
-    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
+    <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
     <img id="example-image-item-image" if={state.showImage && !state.makeImageClickable} src={props.value} style={props.getCssStyles(this.props.styles)}/>
     <a if={state.showImage && state.makeImageClickable} href={props.value} target="_blank">
       <img src={props.value} style={props.getCssStyles(props.styles)}/>
@@ -11,16 +11,16 @@
     <div class="example-image-item-icons">
       <a if={state.showUrl && !state.showUrlAsIcon} href={props.value}>{props.value}</a>
       <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
-        <div>{nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+        <pre>{nvhFormattingEditor.getIcon(this.state.iconItem)}</pre>
       </a>
       <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
-        <div>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+        <pre>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</pre>
       </a>
     </div>
-    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
+    <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
   </div>
 
   <script>

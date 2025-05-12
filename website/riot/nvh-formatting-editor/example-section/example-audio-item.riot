@@ -1,23 +1,23 @@
 <example-audio-item>
   <div class="example-audio-item-wrapper">
-    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
+    <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
     <audio if={state.showPlayer} controls src={props.value} style={props.getCssStyles(props.styles)}></audio>
     <div class="example-audio-item-url">
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{nvhFormattingEditor.getIcon(this.state.iconItem)}</div>
+        <pre>{nvhFormattingEditor.getIcon(this.state.iconItem)}</pre>
       </a>
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</div>
+        <pre>{nvhFormattingEditor.getUnicodeIcon(this.state.unicodeIcon)}</pre>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
-    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
+    <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
   </div>
 
   <script>

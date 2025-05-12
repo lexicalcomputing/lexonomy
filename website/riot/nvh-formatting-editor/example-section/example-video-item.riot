@@ -1,9 +1,9 @@
 <example-video-item>
   <div class="example-video-item-wrapper">
-    <div if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
+    <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
     <!-- Taken from nvh-item-media.riot -->
     <video if={state.showPlayer && !isYouTube()}
           controls
@@ -20,17 +20,17 @@
           allowfullscreen></iframe>
     <div class="example-video-item-url">
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getIcon(state.iconItem)}</div>
+        <pre>{window.nvhFormattingEditor.getIcon(state.iconItem)}</pre>
       </a>
       <a if={state.showUrl && state.showIcon} href={props.value}>
-        <div>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</div>
+        <pre>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
-    <div if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
+    <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
         style={props.getCssStyles(props.labelStyles)}>
       {state.labelTextValue}
-    </div>
+    </pre>
   </div>
 
   <script>
