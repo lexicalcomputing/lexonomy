@@ -84,11 +84,13 @@
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
         <div class="text-dropdown-value">{getStyleOptionValue("align-items") === null ? "baseline" : getStyleOptionValue("align-items")}</div>
-        <i class="material-icons tiny text-dropdown-icon" onclick={() => this.update({showAlignmentDropdown: !state.showAlignmentDropdown})}>
+        <i class="material-icons tiny text-dropdown-icon" onclick={() => onDropdownClick("alignment")}>
           arrow_drop_down
         </i>
       </div>
-      <div if={state.showAlignmentDropdown} class="text-dropdown">
+      <div if={state.showAlignmentDropdown} class="text-dropdown"
+            onmouseenter={onMouseEnter}
+            onmouseleave={() => onMouseLeave("alignment")}>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "baseline")}>baseline</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "start")}>start</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "align-items", "end")}>end</div>
@@ -232,11 +234,13 @@
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
         <div class="text-dropdown-value">{getStyleOptionValue("font-family") === null || getStyleOptionValue("font-family") === "" ? "-- inherit --" : getStyleOptionValue("font-family").split(",")[0]}</div>
-        <i class="material-icons tiny text-dropdown-icon" onclick={() => update({showFontDropdown: !state.showFontDropdown})}>
+        <i class="material-icons tiny text-dropdown-icon" onclick={() => onDropdownClick("font")}>
           arrow_drop_down
         </i>
       </div>
-      <div if={state.showFontDropdown} class="text-dropdown">
+      <div if={state.showFontDropdown} class="text-dropdown"
+            onmouseenter={onMouseEnter}
+            onmouseleave={() => onMouseLeave("font")}>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "")}>-- inherit --</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Arial, sans-serif")}>Arial</div>
         <div class="text-dropdown-option" onclick={onChangeStyle.bind(this, "font-family", "Verdana, sans-serif")}>Verdana</div>
@@ -702,6 +706,35 @@
         }
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
+      onDropdownClick(dropdownType) {
+        this.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {
+          if (dropdownType === "alignment") {
+            this.state.showAlignmentDropdown = false;
+          } else {
+            this.state.showFontDropdown = false;
+          }
+          this.update();
+        }, 2000);
+        if (dropdownType === "alignment") {
+          this.state.showAlignmentDropdown = !this.state.showAlignmentDropdown;
+        } else {
+          this.state.showFontDropdown = !this.state.showFontDropdown;
+        }
+        this.update();
+      },
+      onMouseEnter() {
+        clearTimeout(this.nvhFormattingEditor.dropdownTimeout);
+      },
+      onMouseLeave(dropdownType) {
+      this.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {
+          if (dropdownType === "alignment") {
+            this.state.showAlignmentDropdown = false;
+          } else {
+            this.state.showFontDropdown = false;
+          }
+        this.update();
+      }, 500);
+      }
     }
   </script>
 
