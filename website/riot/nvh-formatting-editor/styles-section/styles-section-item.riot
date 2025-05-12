@@ -158,21 +158,21 @@
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text color:</div>
     <div class="value-wrapper">
       <input type="text" value={getStyleOptionValue("color")} style="height: 25px; width: 100px; margin: 0;" onchange={onChangeStyle.bind(this, "color", null)}/>
       <input type="color" value={getStyleOptionValue("color")} style="border: none; padding: 0; height: 25px; width: 25px; cursor: pointer;" onchange={onChangeStyle.bind(this, "color", null)}>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" style="margin:0; width: 150px;" onchange={onChangeStyle.bind(this, "font-size", null)}>
       <input type="number" style="margin:0; width: 70px; height: 25px; appearance: textfield;" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text format:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -197,7 +197,7 @@
       </div>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.type === "bool" || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text font:</div>
     <div class="text-dropdown-wrapper">
       <div class="text-dropdown-value-wrapper">
@@ -220,7 +220,7 @@
       </div>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Left punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -265,13 +265,13 @@
       </div>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Left punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -316,7 +316,7 @@
       </div>
     </div>
   </div>
-  <div if={state.type === "string" || state.type === "list" || state.type === "int" || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" style="margin:0; width: 150px; height: 30px;" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
@@ -331,7 +331,7 @@
       </div>
     </div>
   </div>
-  <div if={state.type === "image" || state.type === "video" || state.type === "audio" || state.type === "url"} class="styles-section-item-wrapper">
+  <div if={["image", "video", "audio", "url"].includes(state.type)} class="styles-section-item-wrapper">
     <div class="label">Show url:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -349,7 +349,7 @@
       </div>
     </div>
   </div>
-  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={["video", "audio", "url"].includes(state.type) && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Replace url with text:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -358,13 +358,13 @@
       </div>
     </div>
   </div>
-  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={["video", "audio", "url"].includes(state.type) && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Text replacement for url:</div>
     <div class="value-wrapper">
       <input type="text" style="height: 30px;" value={getStyleOptionValue("text-replacement-for-url") === null ? "" : getStyleOptionValue("text-replacement-for-url")} onchange={onChangeStyle.bind(this, "text-replacement-for-url", null)}>
     </div>
   </div>
-  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={["video", "audio", "url"].includes(state.type) && getStyleOptionValue("replace-url-with-text") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Set text as tooltip:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -373,7 +373,7 @@
       </div>
     </div>
   </div>
-  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
+  <div if={["video", "audio", "url"].includes(state.type) && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
     <div class="label">Show icon:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -382,7 +382,7 @@
       </div>
     </div>
   </div>
-  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+  <div if={["video", "audio", "url"].includes(state.type) && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (state.type === "image" && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
     <div class="label">Choose icon:</div>
     <div class="value-wrapper" style="width: 200px; flex-wrap: wrap;">
       <div class="value-item value-item-icon"
@@ -432,7 +432,7 @@
       </div>
     </div>
   </div>
-  <div if={(state.type === "audio" || state.type === "video" || state.type === "url") && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+  <div if={["video", "audio", "url"].includes(state.type) && ((getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)) && getStyleOptionValue("show-icon") || (state.type === "image" && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") === null) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
     <div class="label">Use unicode character as an icon:</div>
     <div class="value-wrapper">
       <input type="text" style="height: 30px;" value={getStyleOptionValue("unicode-icon") === null ? "" : getStyleOptionValue("unicode-icon")} onchange={onChangeStyle.bind(this, "unicode-icon", null)}>
