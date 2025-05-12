@@ -141,16 +141,14 @@
       },
       onBeforeUpdate(props) {
         this.nvhFormattingEditor.global = {
-          canBeRemovedIfHovered: true,
           canBeDropped: true,
           canBeDragged: true,
-          draggedPlaceholder: this.nvhFormattingEditor.global.draggedPlaceholder,
           dropInfo: {
             wasSuccessful: false,
             index: null,
           },
           mouseData: this.nvhFormattingEditor.global.mouseData,
-          canOpenActionPanel: true,
+          canSelectPlaceholder: true,
           selectedPlaceholder: this.nvhFormattingEditor.global.selectedPlaceholder,
           selectedPlaceholderParentAreaFullName: this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
           parent: null,
@@ -288,8 +286,6 @@
             adder.classList.remove("adder-highligth-dragged");
             adder.style.display = "";
           }
-
-          this.nvhFormattingEditor.global.draggedPlaceholder = null;
           this.nvhFormattingEditor.global.mouseData = null;
 
           let trash = document.getElementById("trash-icon");

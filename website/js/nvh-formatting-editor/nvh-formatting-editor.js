@@ -38,16 +38,14 @@ class NVHFormattingEditorClass {
 
   initializeGlobalAttributes() {
     return {
-      canBeRemovedIfHovered: true, /*remove only the deepest hovered "placeholder", the other ones should stay as they are*/
-      canBeDropped: true, /*drop element only to deepest hovered "placeholder"*/
-      canBeDragged: true, /*drag only the deepest hovered "placeholder"*/
-      draggedPlaceholder: null,
+      canBeDropped: true,
+      canBeDragged: true,
+      canSelectPlaceholder: true,
       dropInfo: {
         wasSuccessful: false,
         index: null,
       },
       mouseData: null,
-      canOpenActionPanel: true, /*open only action panel of the deepest hovered "placeholder"*/
       selectedPlaceholder: null,
       selectedPlaceholderParentAreaFullName: "",
       activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
@@ -74,8 +72,8 @@ class NVHFormattingEditorClass {
   }
 
   setClosestConfiguredLayout(activeLayout) {
-    let mobileConfigured = this.layout.mobile.configured === undefined ? false : this.layout.mobile.configured;
-    let tabletConfigured = this.layout.tablet.configured === undefined ? false : this.layout.tablet.configured;
+    let mobileConfigured = !!this.layout.mobile.configured;
+    let tabletConfigured = !!this.layout.tablet.configured;
     if (activeLayout === "mobile") {
       if (mobileConfigured) {
         this.currentLayout = this.layout.mobile;
@@ -140,7 +138,7 @@ class NVHFormattingEditorClass {
 
     for (let idx = 0; idx < entriesList.entriesList.length; idx++) {
       let entryJson = window.nvhStore.nvhToJson(entriesList.entriesList[idx].nvh);
-      htmlWrapper += await this.parseEntry(entryJson);
+      htmlWrapper += this.parseEntry(entryJson);
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
       if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
         exportedEntries.exported = idx;
@@ -158,7 +156,7 @@ class NVHFormattingEditorClass {
     await this.appendToHtmlFile(htmlWrapper);
   }
 
-  async parseEntry(entry) {
+  parseEntry(entry) {
     let schema = this.layout.pdf.configured ? this.layout.pdf.schema : this.layout.desktop.schema;
     let entryHTML = this.getEntryHTML(schema.children[0], entry);
     return entryHTML;
@@ -193,6 +191,9 @@ class NVHFormattingEditorClass {
 
   initializeSchemas() {
     let initialSchema = this.createSchema();
+    /* window.store.data.config.formatting.elements was used before
+    the implementation of nvh-formatting-editor; but it is not used anymore;
+    should it be removed?*/
     let defaultElements = window.store.data.config.formatting.elements;
 
     for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
@@ -243,7 +244,7 @@ class NVHFormattingEditorClass {
   }
 
   clearStatuses(state) {
-    if (state === null) {
+    if (!state) {
       return;
     }
     Array.from(state.children).map(child => this.clearStatuses(child));
@@ -255,12 +256,22 @@ class NVHFormattingEditorClass {
   }
 
   clearDraggedStatuses(state) {
-    if (state === null) {
+    if (!state) {
       return;
     }
     Array.from(state.children).map(child => this.clearDraggedStatuses(child));
     state.children.map(child => {
       child.status.isDragged = false;
+    });
+  }
+
+  clearHoveredStatuses(state) {
+    if (!state) {
+      return;
+    }
+    Array.from(state.children).map(child => this.clearHoveredStatuses(child));
+    state.children.map(child => {
+      child.status.isHovered = false;
     });
   }
 
@@ -308,30 +319,17 @@ class NVHFormattingEditorClass {
     return objectStructure;
   }
 
-  clearIsHoveredStatus() {
-    this.clearIsHoveredStatusRec(this.currentLayout.schema);
-  }
-
-  clearIsHoveredStatusRec(state) {
-    if (state === null) {
-      return null;
-    }
-    Array.from(state.children).map(child => this.clearIsHoveredStatusRec(child));
-    state.children.map(child => child.status.isHovered = false);
-  }
-
   selectPlaceholder(child, parent) {
-    if (this.global.canOpenActionPanel) {
-      let currentIsActive = child.status.isActive;
+    if (this.global.canSelectPlaceholder) {
+      let isActiveCurrent = child.status.isActive;
       this.clearStatuses(this.currentLayout.schema);
-      child.status.isActive = !currentIsActive; /*clicking on selected placeholder should unselect it*/
+      child.status.isActive = !isActiveCurrent;
       child.status.isHovered = true;
       if (child.status.isActive) {
-        if (parent !== null) {
+        if (parent) {
           this.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
         }
         this.global.selectedPlaceholder = child;
-        console.log(this.global.selectedPlaceholder);
       } else {
         this.global.selectedPlaceholderParentAreaFullName = "";
         this.global.selectedPlaceholder = null;
@@ -339,7 +337,7 @@ class NVHFormattingEditorClass {
     } else {
       child.status.isActive = false;
     }
-    this.global.canOpenActionPanel = false;
+    this.global.canSelectPlaceholder = false;
   }
 
   isChildChoiceItemOfPlaceholder(child, parent) {
@@ -361,12 +359,11 @@ class NVHFormattingEditorClass {
   }
 
   isChildObjectOfParent(childObject, parent) {
-    if (childObject.content.fullName === parent && childObject.children.length !== 0) {
-      /*This avoids placing a wrapper with label "parent" into another wrapper with label "parent"*/
+    if (childObject.content.fullName === parent && childObject.children.length) {
       return false;
     }
     let result = childObject.content.fullName.includes(parent);
-    let alternative = childObject.content.fullName === "";
+    let alternative = !childObject.content.fullName;
     if (!result && !alternative) {
       return false;
     }
@@ -379,21 +376,21 @@ class NVHFormattingEditorClass {
     return true;
   }
 
-  addElement(index, state, editingMode, label) {
+  addElement(index, state, label) {
     let newElement = {
       status: {
         isActive: true,
         isHovered: false,
         isDragged: false,
       },
-      orientation: editingMode,
+      orientation: "row",
       type: "placeholder",
       content: {
-        name: label === null ? "" : label.name,
-        fullName: label === null ? "" : label.fullName,
-        area: label === null ? "" : label.area,
-        areaFullName: label === null ? "" : label.areaFullName,
-        canHaveChildren: label === null ? true : window.store.schema.getElementByPath(label.fullName).children.length !== 0
+        name: label?.name || "",
+        fullName: label?.fullName || "",
+        area: label?.area || "",
+        areaFullName: label?.areaFullName || "",
+        canHaveChildren: !label ? true : window.store.schema.getElementByPath(label.fullName).children.length
       },
       styles: {},
       markupStyles: [],
@@ -406,83 +403,53 @@ class NVHFormattingEditorClass {
     this.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
     this.formattingEditorComponent.update();
-    this.global.canOpenActionPanel = false;
+    this.global.canSelectPlaceholder = false;
   }
 
-  deleteElement(indexToDelete, parentState, state) {
-    if (this.isMarkupTypeChild(state.content.fullName)) {
-      state.styles = false;
-      if (state.markupValue !== undefined) {
-        state.markupValue.value = null;
-      }
-    }
+  deleteElement(indexToDelete, parentState) {
     this.clearStatuses(this.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
-    this.global.canOpenActionPanel = false;
+    this.global.canSelectPlaceholder = false;
     this.global.selectedPlaceholderParentAreaFullName = "";
     this.global.selectedPlaceholder = null;
   }
 
-  isMarkupTypeChild(fullName) {
-    if (fullName === "") {
-      return false;
-    }
-    let pathArray = fullName.split('.');
-    if (pathArray.length === 1) {
-      return false;
-    }
-    pathArray.length -= 1;
-    let parentPath = pathArray.join('.');
-    let config = window.nvhStore.getElementConfig(parentPath);
-    if (config === undefined) {
-      return false;
-    }
-    return config.type === "markup";
-  }
-
   isMarkupType(fullName) {
-    if (fullName === "") {
+    if (!fullName) {
       return false;
     }
     let config = window.nvhStore.getElementConfig(fullName);
-    if (config === undefined) {
+    if (!config) {
       return false;
     }
     return config.type === "markup";
   }
 
   childWithInheritedArea(child, state) {
-    if (state === null) {
+    if (!state) {
       return child;
     }
-    child.content.area = child.content.name === "" ? state.content.area : child.content.name;
-    child.content.areaFullName = child.content.name === "" ? state.content.areaFullName : child.content.fullName;
+    child.content.area = !child.content.name ? state.content.area : child.content.name;
+    child.content.areaFullName = !child.content.name ? state.content.areaFullName : child.content.fullName;
     return child;
   }
 
   canHaveAdders(parentFullName, placeholder) {
-    if (parentFullName === placeholder.content.fullName) {
-      return false;
-    }
-    if (!placeholder.content.canHaveChildren) {
-      return false;
-    }
-    return true;
+    return parentFullName !== placeholder.content.fullName && placeholder.content.canHaveChildren;
   }
 
   /*Validation of choice-element vs. placeholder relationship functions*/
   isElementWithoutChildrenToWrapper(element, placeholder) {
-    return placeholder.children.length !== 0 && element.children.length === 0;
+    return placeholder.children.length && !element.children.length;
   }
   isElementToRedundantNestedWrapper(element, placeholderWrapperAreaFullName, placeholder) {
-    return placeholderWrapperAreaFullName.includes(element.fullName) && placeholder.children.length !== 0;
+    return placeholderWrapperAreaFullName.includes(element.fullName) && placeholder.children.length;
   }
   isPlaceholderAsSameWrapper(elementName, placeholder) {
-    if (placeholder.content.fullName !== "" && elementName !== placeholder.content.fullName && elementName.includes(placeholder.content.fullName)) {
-      /*Optimization: None of next children can be same wrapper*/
+    if (placeholder.content.fullName && elementName !== placeholder.content.fullName && elementName.includes(placeholder.content.fullName)) {
       return false;
     }
-    if (elementName === placeholder.content.fullName && placeholder.children.length !== 0) {
+    if (elementName === placeholder.content.fullName && placeholder.children.length) {
       return true;
     }
 
@@ -495,7 +462,7 @@ class NVHFormattingEditorClass {
   }
   isParentLabelOfDropObject(parentLabel, dropObject) {
     let result = dropObject.content.fullName.includes(parentLabel);
-    let alternative = dropObject.content.fullName === "";
+    let alternative = !dropObject.content.fullName;
     if (!result && !alternative) {
       return false;
     }
@@ -532,12 +499,12 @@ class NVHFormattingEditorClass {
 
   hasDirectMarkupChild(fullName) {
     let result = [];
-    if (fullName === "" || window.store.schema.getElementByPath(fullName) === undefined) {
+    if (!fullName || !window.store.schema.getElementByPath(fullName)) {
       return result;
     }
     for (let child of window.store.schema.getElementByPath(fullName).children) {
       let config = window.nvhStore.getElementConfig(child.path);
-      if (config === undefined) {
+      if (!config) {
         continue;
       }
       if (config.type === "markup") {
@@ -556,7 +523,7 @@ class NVHFormattingEditorClass {
   }
   /*NOTE: Inspired by getFlagTextColor from store.js*/
   getColorLightVersion(colorHex) {
-    if (colorHex === null || colorHex === "") {
+    if (!colorHex) {
       return "transparent";
     }
     let tmp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorHex);
@@ -595,14 +562,10 @@ class NVHFormattingEditorClass {
     }
   }
   getUnicodeIcon(unicodeIcon) {
-    if (unicodeIcon) {
-      return unicodeIcon;
-    } else {
-      return "";
-    }
+    return unicodeIcon ? unicodeIcon : "";
   }
   isElementNonExisting(fullName) {
-    return fullName !== "" && window.nvhStore.getElementConfig(fullName) === undefined;
+    return fullName && !window.nvhStore.getElementConfig(fullName);
   }
   getMaxPossibleWidth() {
     switch(this.global.activeLayout) {

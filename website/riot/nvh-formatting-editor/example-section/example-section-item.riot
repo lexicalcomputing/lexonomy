@@ -1,7 +1,6 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
               {isEmptyPlaceholder() ? "element-holder-empty-placeholder" : "element-holder-used-placeholder"}
-              {nvhFormattingEditor.isMarkupTypeChild(props.schema.content.fullName) ? "element-holder-markup-type-child" : ""}
               {nvhFormattingEditor.isMarkupType(props.schema.content.fullName) ? "element-holder-markup-type" : ""}
               {nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isHovered ? "element-holder-markup-type-hovered" : ""}
               {nvhFormattingEditor.isMarkupType(props.schema.content.fullName) && props.schema.status.isActive ? "element-holder-markup-type-active" : ""}
@@ -451,12 +450,6 @@
     }
     .element-holder-column {
       flex-direction: column;
-    }
-    .element-holder-markup-type-child {
-      display: none;
-    }
-    .element-holder-markup-type:has(.element-holder-markup-type-child) {
-      outline: none;
     }
     .element-holder-markup-type-hovered:has(.element-holder-markup-type) {
       outline: 2px solid var(--color-is-hovered);

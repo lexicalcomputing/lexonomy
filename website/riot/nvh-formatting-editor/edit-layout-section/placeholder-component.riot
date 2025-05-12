@@ -20,7 +20,7 @@
             border: 2px solid {getBorderColor()}">
     <adder-component if={props.canHaveAdders && !props.state.status.isDragged
                         && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
-            onclick={() => nvhFormattingEditor.addElement(0, props.state, "row", null)}
+            onclick={() => nvhFormattingEditor.addElement(0, props.state, null)}
             onmouseenter={onAdderMouseEnter}
             onmouseleave={onAdderMouseLeave}
             onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
@@ -43,7 +43,7 @@
               canHaveAdders={nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
       <adder-component if={props.canHaveAdders && !props.state.status.isDragged
                           && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
-              onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, "row", null)}
+              onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, null)}
               onmouseenter={onAdderMouseEnter}
               onmouseleave={onAdderMouseLeave}
               onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
@@ -174,7 +174,7 @@
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          this.nvhFormattingEditor.clearIsHoveredStatus();
+          this.nvhFormattingEditor.clearHoveredStatuses(this.nvhFormattingEditor.currentLayout.schema);
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },

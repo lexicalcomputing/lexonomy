@@ -26,7 +26,7 @@
         class="tooltipped action"
         id="action-delete"
         data-tooltip="Delete"
-        onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentState, props.state)}>
+        onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
       <i class="small material-icons">delete</i>
     </div>
   </div>
@@ -53,7 +53,6 @@
         };
         state["releaseFunction"] = releaseFunction;
         global.mouseData = state;
-        global.draggedPlaceholder = state;
         state.status.isDragged = true;
 
         this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
