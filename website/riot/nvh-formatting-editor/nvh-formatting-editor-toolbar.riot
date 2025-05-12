@@ -203,21 +203,23 @@
       background-color: var(--color-red-dark);
     }
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #save-button-wrapper, #reset-icon-wrapper {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 4px 8px;
       text-wrap: nowrap;
-      color: white;
-      background-color: var(--color-black-normal);
-    }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #save-button-wrapper:hover, #reset-icon-wrapper:hover {
-      background-color: var(--color-black-dark);
       cursor: pointer;
     }
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper {
+      background-color: white;
+    }
     #save-button-wrapper {
+      color: white;
       background-color: var(--color-red-normal);
+    }
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover {
+      background-color: var(--color-grey-normal);
     }
     #save-button-wrapper:hover {
       background-color: var(--color-red-dark);
@@ -229,6 +231,7 @@
     .progress-label {
       display: flex;
       align-items: center;
+      width: 150px;
     }
   </style>
 
