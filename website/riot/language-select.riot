@@ -1,0 +1,56 @@
+<language-select>
+   <div class="input-field">
+      <input type="text"
+            class="autocomplete"
+            disabled={props.disabled}
+            placeholder="Type to search"
+            onblur={onLanguageBlur}>
+      <label>{props.label || "Language"}</label>
+      <span if={props.helperText}
+            class="helper-text">{props.helperText}</span>
+   </div>
+
+   <script>
+
+      export default{
+         onMounted(){
+            this.initAutocomplete()
+         },
+
+         onUpdated(){
+            this.initAutocomplete()
+         },
+
+         initAutocomplete(){
+            $("input", this.root).autocomplete({
+               data: this.store.data.siteconfig.langs.map(lang => {
+                  return {
+                     value: lang.code,
+                     label: lang.lang
+                  }
+               }),
+               onAutocomplete: language => {
+                  this.props.onChange(language.value)
+               }
+            })
+                  .val(this.store.getLanguageName(this.props.riotValue) || "")
+         },
+
+         onLanguageBlur(evt){
+            let lang = evt.target.value
+            if(lang){
+               let code = this.store.getLanguageCode(lang)
+               if(code){
+                  this.props.onChange(code)
+               } else {
+                  // change to the last valid value
+                  let languageName = this.store.getLanguageName(this.props.riotValue)
+                  $("input", this.root).val(languageName || "")
+               }
+            } else {
+               this.props.onChange("")
+            }
+         }
+      }
+   </script>
+</language-select>

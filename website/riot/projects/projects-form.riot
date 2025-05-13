@@ -57,12 +57,10 @@
                <label>Description</label>
             </div>
 
-            <div class="input-field mb-8">
-               <input type="text"
+            <div class="mb-8">
+               <language-select riot-value={state.project.language}
                      disabled={props.projectID}
-                     value={store.getLanguageName(state.project.language)}
-                     id="language">
-               <label>Language</label>
+                     on-change={onLanguageChange}/>
             </div>
 
             <div class="input-field mb-8">
@@ -337,7 +335,6 @@
                window.initFormSelects(this.root)
             }
 
-            this.initLanguages()
             this.refreshSaveBtnDisabled()
             $("#name", this.root).focus()
          },
@@ -348,7 +345,6 @@
 
          onWorkflowListLoadingChanged(){
             this.update()
-            this.initLanguages()
             this.refreshSaveBtnDisabled()
             $("#name", this.root).focus()
          },
@@ -401,26 +397,17 @@
                   })
          },
 
-         initLanguages(){
-            $("#language").autocomplete({
-               data: this.store.data.siteconfig.langs.map(lang => {
-                  return {
-                     value: lang.code,
-                     label: lang.lang
-                  }
-               }),
-               onAutocomplete: language => {
-                  this.state.project.language = language.value
-                  this.state.project.ref_corpus = null
-                  this.update()
-                  $("#ref_corpus").val("")
-                  this.refreshReferenceCorporaList()
-               }
-            })
+         onLanguageChange(language){
+            this.state.project.language = language
+            this.state.project.ref_corpus = null
+            this.update()
+            $("#ref_corpus").val("")
+            this.refreshReferenceCorporaList()
          },
 
          refreshReferenceCorporaList(){
-            if(this.state.corpora){
+            let refCorpusNode = $("#ref_corpus")
+            if(this.state.corpora && refCorpusNode[0]){
                let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
                      .map(corpus => {
                         return {

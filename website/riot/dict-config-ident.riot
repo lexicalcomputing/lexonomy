@@ -9,7 +9,7 @@
                id="ident_title"
                type="text"
                class="validate"
-               style="width:300px" />
+               style="width:300px"/>
          <label for="ident_title">Dictionary name</label>
          <span class="helper-text">A human-readable title for your dictionary, such as <i>My Esperanto Dictionary</i>.</span>
       </div>
@@ -27,15 +27,9 @@
       </div>
    </div>
    <div class="row">
-      <div class="input-field">
-         <input data-selected-locale={ state.data.lang }
-               type="text"
-               id="ident_lang"
-               class="autocomplete"
-               placeholder="Type to search"
-               style="width:300px">
-         <label for="ident_lang">Main language</label>
-      </div>
+      <language-select riot-value={state.data.lang}
+            on-change={onLangChange}
+            label="Main language"/>
    </div>
    <div class="row">
       <div class="input-field"
@@ -67,29 +61,10 @@
          },
 
          onMounted() {
-            $("#ident_lang").autocomplete({
-               data: this.store.data.siteconfig.langs.map(lang => {
-                  return {
-                     value: lang.code,
-                     label: lang.lang
-                  }
-               }),
-               onAutocomplete: language => {
-                  let direction = this.getLanguageDirection(language.value)
-                  if(direction != this.state.data.direction){
-                     this.state.data.direction = direction
-                     this.update()
-                     window.initFormSelects(this.root)
-                  }
-               }
-            })
             this.store.loadDictionaryConfig("ident")
                   .done(response => {
                      this.state.data = response.content
                      this.state.data.direction = this.state.data.direction || "ltr"
-                     if(this.state.data.lang){
-                        $("#ident_lang").val(this.store.getLanguageName(this.state.data.lang))
-                     }
                   })
                   .always(() => {
                      this.update({isLoading: false})
@@ -99,12 +74,22 @@
                   })
          },
 
+         onLangChange(lang){
+            this.state.data.lang = lang
+            let direction = this.getLanguageDirection(lang)
+            if(direction != this.state.data.direction){
+               this.state.data.direction = direction
+               window.initFormSelects(this.root)
+            }
+            this.update()
+         },
+
          saveData() {
             this.update({isSaving: true})
             this.store.updateDictionaryConfig("ident", {
                title: $("#ident_title").val(),
                blurb: $("#ident_blurb").val(),
-               lang: this.store.getLanguageCode($("#ident_lang").val()),
+               lang: this.state.data.lang,
                direction: $("#ident_direction").val()
             })
                   .done(this.store.loadDictionaryList.bind(this.store))
@@ -116,4 +101,11 @@
          }
       }
    </script>
+
+   <style>
+      language-select{
+         display: block;
+         width: 300px;
+      }
+   </style>
 </dict-config-ident>

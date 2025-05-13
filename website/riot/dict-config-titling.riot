@@ -75,14 +75,11 @@
       </div>
    </div>
    <div class="row">
-      <div class="input-field col s8">
-         <input data-selected-locale={ state.data.locale }
-               type="text"
-               id="locale"
-               class="autocomplete"
-               placeholder="Type to search for language"/>
-         <label for="locale">Alphabetical order</label>
-         <span class="helper-text">Select language to sort entries alphabetically in the entry list.</span>
+      <div class="col s8">
+         <language-select riot-value={state.data.locale}
+               on-change={onLocaleChange}
+               label="Alphabetical order"
+               helper-text="Select language to sort entries alphabetically in the entry list."/>
       </div>
    </div>
    <div class="row">
@@ -107,29 +104,13 @@
             }
          },
 
-         onAnnotationRadioChange(evt) {
-            this.state.data.headwordAnnotationsType = evt.target.value
-            this.update()
-         },
-
          onMounted() {
-            $("#locale").autocomplete({
-               data: this.store.data.siteconfig.langs.map(lang => {
-                  return {
-                     value: lang.code,
-                     label: lang.lang
-                  }
-               })
-            })
             this.store.loadDictionaryConfig("titling")
                   .done(response => {
                      this.state.data = response.content
                      this.state.data.numberEntries = this.state.data.numberEntries || 1000
                      this.state.data.headwordAnnotationsType = this.state.data.headwordAnnotationsType || "simple"
                      this.state.data.headwordAnnotations = this.state.data.headwordAnnotations || []
-                     if(this.state.data.locale){
-                        $("#locale").val(this.store.getLanguageName(this.state.data.locale))
-                     }
                   })
                   .always(() => {
                      this.update({isLoading: false})
@@ -138,13 +119,23 @@
                   })
          },
 
+         onAnnotationRadioChange(evt) {
+            this.state.data.headwordAnnotationsType = evt.target.value
+            this.update()
+         },
+
+         onLocaleChange(locale){
+            this.state.data.locale = locale
+            this.update()
+         },
+
          getConfigData() {
             let newData = {
                headword: $("#headword select").val(),
                headwordSorting: $("#headwordSorting select").val(),
                sortDesc: $("#sortDesc").is(":checked"),
                numberEntries: $("#numberEntries").val(),
-               locale: this.store.getLanguageCode($("#locale").val())
+               locale: this.state.data.locale
             }
             if ($("[name=hwannotype][value=advanced]").is(":checked")) {
                newData.headwordAnnotationsType = "advanced"
@@ -168,7 +159,7 @@
    <style type="scss">
       #headword element-select,
       #headwordSorting element-select,
-      #locale,
+      language-select,
       #numberEntries{
          display: block;
          max-width: 300px;
