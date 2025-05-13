@@ -594,7 +594,7 @@
         this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = props.styleOption.styles;
-        this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
+        this.state.isGroup = this.state.selectedPlaceholder.children.length;
       },
       onBeforeUpdate(props) {
         this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
@@ -611,7 +611,7 @@
         this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.hasDirectMarkupChild(this.state.selectedPlaceholder.content.fullName).length !== 0;
         this.state.styles = props.styleOption.styles;
-        this.state.isGroup = this.state.selectedPlaceholder.children.length !== 0;
+        this.state.isGroup = this.state.selectedPlaceholder.children.length;
       },
 
       getStyleOptionValue(option) {

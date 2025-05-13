@@ -41,20 +41,21 @@
       },
 
       getStyleOptions() {
+        let selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
         let result;
-        if (!this.nvhFormattingEditor.global.selectedPlaceholder.markupStyles) {
+        if (!selectedPlaceholder.markupStyles || selectedPlaceholder.children.length) {
           result = [];
           console.log("window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles = undefined; in 'styles-section.riot'");
         } else {
-          result = [...this.nvhFormattingEditor.global.selectedPlaceholder.markupStyles];
+          result = [...selectedPlaceholder.markupStyles];
         }
-        let name = this.nvhFormattingEditor.global.selectedPlaceholder.content.name;
-        let fullName = this.nvhFormattingEditor.global.selectedPlaceholder.content.fullName;
-        let styles = this.nvhFormattingEditor.global.selectedPlaceholder.styles;
-        let labelStyles = this.nvhFormattingEditor.global.selectedPlaceholder.labelStyles;
-        let bulletStyles = this.nvhFormattingEditor.global.selectedPlaceholder.bulletStyles;
+        let name = selectedPlaceholder.content.name;
+        let fullName = selectedPlaceholder.content.fullName;
+        let styles = selectedPlaceholder.styles;
+        let labelStyles = selectedPlaceholder.labelStyles;
+        let bulletStyles = selectedPlaceholder.bulletStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
-        if (this.nvhFormattingEditor.global.selectedPlaceholder && this.nvhFormattingEditor.global.selectedPlaceholder.children.length === 0) {
+        if (selectedPlaceholder && selectedPlaceholder.children.length === 0) {
           result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
         }
         result.splice(result.length, 0, {name: "bullet", fullName: "bullet", styles: bulletStyles, type: "bullet"});
