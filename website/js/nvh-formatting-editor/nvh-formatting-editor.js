@@ -13,7 +13,7 @@ class NVHFormattingEditorClass {
     this.dropdownTimeout = null,
     this.formattingEditorComponent = null,
     this.elementsSchema = null,
-    this.global = this.initializeGlobalAttributes(),
+    this.data = this.initializeDataAttributes(),
     this.currentLayout = {
       schema: null,
       elements: null,
@@ -36,7 +36,7 @@ class NVHFormattingEditorClass {
     riot.register('example-video-item', example_video_item);
   }
 
-  initializeGlobalAttributes() {
+  initializeDataAttributes() {
     return {
       canBeDropped: true,
       canBeDragged: true,
@@ -46,32 +46,35 @@ class NVHFormattingEditorClass {
         index: null,
       },
       mouseData: null,
+      draggedPlaceholder: null,
+      hoveredPlaceholder: null,
       selectedPlaceholder: null,
       selectedPlaceholderParentAreaFullName: "",
       activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
     }
   }
 
+  resetDataAttributes() {
+    this.data.canBeDropped = true;
+    this.data.canBeDragged = true;
+    this.data.canSelectPlaceholder = true;
+  }
+
   changeLayoutSchema() {
     if (window.innerWidth < 440) {
-      if (this.global.activeLayout !== "mobile") {
-        this.global.activeLayout = "mobile";
-        this.setClosestConfiguredLayout("mobile");
-      }
+      this.setClosestConfiguredLayout("mobile");
     } else if (window.innerWidth < 1020) {
-      if (this.global.activeLayout !== "tablet") {
-        this.global.activeLayout = "tablet";
-        this.setClosestConfiguredLayout("tablet");
-      }
+      this.setClosestConfiguredLayout("tablet");
     } else {
-      if (this.global.activeLayout !== "desktop") {
-        this.global.activeLayout = "desktop";
-        this.setClosestConfiguredLayout("desktop");
-      }
+      this.setClosestConfiguredLayout("desktop");
     }
   }
 
   setClosestConfiguredLayout(activeLayout) {
+    if (this.data.activeLayout === activeLayout) {
+      return
+    }
+    this.data.activeLayout = activeLayout;
     let mobileConfigured = !!this.layout.mobile.configured;
     let tabletConfigured = !!this.layout.tablet.configured;
     if (activeLayout === "mobile") {
@@ -126,7 +129,7 @@ class NVHFormattingEditorClass {
    })
   }
 
-  async parseAllEntries(exportedEntries) {
+  async stringifyAllEntries(exportedEntries) {
     await this.clearHtmlFile();
 
     let entriesList = await this.loadEntries();
@@ -138,7 +141,7 @@ class NVHFormattingEditorClass {
 
     for (let idx = 0; idx < entriesList.entriesList.length; idx++) {
       let entryJson = window.nvhStore.nvhToJson(entriesList.entriesList[idx].nvh);
-      htmlWrapper += this.parseEntry(entryJson);
+      htmlWrapper += this.stringifyEntry(entryJson);
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
       if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
         exportedEntries.exported = idx;
@@ -156,7 +159,7 @@ class NVHFormattingEditorClass {
     await this.appendToHtmlFile(htmlWrapper);
   }
 
-  parseEntry(entry) {
+  stringifyEntry(entry) {
     let schema = this.layout.pdf.configured ? this.layout.pdf.schema : this.layout.desktop.schema;
     let entryHTML = this.getEntryHTML(schema.children[0], entry);
     return entryHTML;
@@ -178,6 +181,18 @@ class NVHFormattingEditorClass {
     return resultChildren;
   }
 
+  clearPlaceholder(placeholder) {
+    placeholder.content.name = "";
+    placeholder.content.fullName = "";
+    placeholder.content.area = "";
+    placeholder.content.areaFullName = "";
+    placeholder.content.canHaveChildren = true;
+    placeholder.styles = {};
+    placeholder.markupStyles = [];
+    placeholder.labelStyles = {};
+    placeholder.bulletStyles = {};
+  }
+
   resetSchema() {
     this.initializeSchema();
     this.formattingEditorComponent.update();
@@ -185,13 +200,13 @@ class NVHFormattingEditorClass {
 
   initializeSchema() {
     this.currentLayout.schema = this.createSchema();
-    this.global.selectedPlaceholder = null;
-    this.global.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
+    this.data.selectedPlaceholderParentAreaFullName = "";
   }
 
   initializeSchemas() {
     let initialSchema = this.createSchema();
-    /* window.store.data.config.formatting.elements was used before
+    /* ASK: window.store.data.config.formatting.elements was used before
     the implementation of nvh-formatting-editor; but it is not used anymore;
     should it be removed?*/
     let defaultElements = window.store.data.config.formatting.elements;
@@ -199,30 +214,26 @@ class NVHFormattingEditorClass {
     for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
       this.layout[layout] = {
         configured: false,
-        schema: JSON.parse(JSON.stringify(initialSchema)),
-        elements: JSON.parse(JSON.stringify(defaultElements)),
+        schema: structuredClone(initialSchema),
+        elements: structuredClone(defaultElements),
         history: {
           index: 0,
-          schema: [JSON.parse(JSON.stringify(initialSchema))],
-          elements: [JSON.parse(JSON.stringify(defaultElements))],
+          schema: [structuredClone(initialSchema)],
+          elements: [structuredClone(defaultElements)],
         }
       }
     }
     this.layout.desktop.configured = true;
-    this.global.selectedPlaceholder = null;
-    this.global.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
+    this.data.selectedPlaceholderParentAreaFullName = "";
   }
 
   createSchema() {
     let root = window.store.schema.getRoot();
-    let schema = {
+    return {
       orientation: "column",
       children: [
         {
-          status: {
-            isActive: false,
-            isDragged: false,
-          },
           orientation: "column",
           type: "placeholder",
           content: {
@@ -240,63 +251,27 @@ class NVHFormattingEditorClass {
         }
       ]
     }
-    return schema;
-  }
-
-  clearStatuses(state) {
-    if (!state) {
-      return;
-    }
-    Array.from(state.children).map(child => this.clearStatuses(child));
-    state.children.map(child => {
-      child.status.isActive = false;
-      child.status.isHovered = false;
-      child.status.isDragged = false;
-    });
-  }
-
-  clearDraggedStatuses(state) {
-    if (!state) {
-      return;
-    }
-    Array.from(state.children).map(child => this.clearDraggedStatuses(child));
-    state.children.map(child => {
-      child.status.isDragged = false;
-    });
-  }
-
-  clearHoveredStatuses(state) {
-    if (!state) {
-      return;
-    }
-    Array.from(state.children).map(child => this.clearHoveredStatuses(child));
-    state.children.map(child => {
-      child.status.isHovered = false;
-    });
   }
 
   undoSchema() {
     if (this.currentLayout.history.index > 0) {
-      this.currentLayout.history.index -= 1;
-      this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
-      this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
-      this.clearStatuses(this.currentLayout.schema);
-      this.global.selectedPlaceholder = null;
-      this.global.selectedPlaceholderParentAreaFullName = "";
-      this.formattingEditorComponent.update();
+      this.goToHistory(-1)
     }
   }
 
   redoSchema() {
     if (this.currentLayout.history.index < this.currentLayout.history.schema.length - 1) {
-      this.currentLayout.history.index += 1;
-      this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
-      this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
-      this.clearStatuses(this.currentLayout.schema);
-      this.global.selectedPlaceholder = null;
-      this.global.selectedPlaceholderParentAreaFullName = "";
-      this.formattingEditorComponent.update();
+      this.goToHistory(1)
     }
+  }
+
+  goToHistory(index) {
+    this.currentLayout.history.index += index;
+    this.currentLayout.schema = structuredClone(this.currentLayout.history.schema.at(this.currentLayout.history.index));
+    this.currentLayout.elements = structuredClone(this.currentLayout.history.elements.at(this.currentLayout.history.index));
+    this.data.selectedPlaceholder = null;
+    this.data.selectedPlaceholderParentAreaFullName = "";
+    this.formattingEditorComponent.update();
   }
 
   createElementsSchema() {
@@ -320,24 +295,18 @@ class NVHFormattingEditorClass {
   }
 
   selectPlaceholder(child, parent) {
-    if (this.global.canSelectPlaceholder) {
-      let isActiveCurrent = child.status.isActive;
-      this.clearStatuses(this.currentLayout.schema);
-      child.status.isActive = !isActiveCurrent;
-      child.status.isHovered = true;
-      if (child.status.isActive) {
+    if (this.data.canSelectPlaceholder) {
+      if (!this.isPlaceholderActive(child)) {
         if (parent) {
-          this.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+          this.data.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
         }
-        this.global.selectedPlaceholder = child;
+        this.data.selectedPlaceholder = child;
       } else {
-        this.global.selectedPlaceholderParentAreaFullName = "";
-        this.global.selectedPlaceholder = null;
+        this.data.selectedPlaceholderParentAreaFullName = "";
+        this.data.selectedPlaceholder = null;
       }
-    } else {
-      child.status.isActive = false;
     }
-    this.global.canSelectPlaceholder = false;
+    this.data.canSelectPlaceholder = false;
   }
 
   isChildChoiceItemOfPlaceholder(child, parent) {
@@ -345,10 +314,7 @@ class NVHFormattingEditorClass {
   }
 
   isChildOfParent(parent) {
-    let data = this.global.mouseData;
-    if (!data) {
-      return true;
-    }
+    let data = this.data.mouseData;
     if (data?.type === "placeholder") {
       return this.isChildObjectOfParent(data, parent);
     }
@@ -359,12 +325,8 @@ class NVHFormattingEditorClass {
   }
 
   isChildObjectOfParent(childObject, parent) {
-    if (childObject.content.fullName === parent && childObject.children.length) {
-      return false;
-    }
-    let result = childObject.content.fullName.includes(parent);
-    let alternative = !childObject.content.fullName;
-    if (!result && !alternative) {
+    if (childObject.content.fullName === parent && childObject.children.length
+      || !childObject.content.fullName.includes(parent) && childObject.content.fullName) {
       return false;
     }
 
@@ -378,11 +340,6 @@ class NVHFormattingEditorClass {
 
   addElement(index, state, label) {
     let newElement = {
-      status: {
-        isActive: true,
-        isHovered: false,
-        isDragged: false,
-      },
       orientation: "row",
       type: "placeholder",
       content: {
@@ -398,20 +355,18 @@ class NVHFormattingEditorClass {
       bulletStyles: {},
       children: []
     };
-    this.clearStatuses(this.currentLayout.schema);
-    this.global.selectedPlaceholder = newElement;
-    this.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
+    this.data.selectedPlaceholder = newElement;
+    this.data.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
     this.formattingEditorComponent.update();
-    this.global.canSelectPlaceholder = false;
+    this.data.canSelectPlaceholder = false;
   }
 
   deleteElement(indexToDelete, parentState) {
-    this.clearStatuses(this.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
-    this.global.canSelectPlaceholder = false;
-    this.global.selectedPlaceholderParentAreaFullName = "";
-    this.global.selectedPlaceholder = null;
+    this.data.canSelectPlaceholder = false;
+    this.data.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
   }
 
   isMarkupType(fullName) {
@@ -419,10 +374,7 @@ class NVHFormattingEditorClass {
       return false;
     }
     let config = window.nvhStore.getElementConfig(fullName);
-    if (!config) {
-      return false;
-    }
-    return config.type === "markup";
+    return config?.type === "markup";
   }
 
   childWithInheritedArea(child, state) {
@@ -475,30 +427,34 @@ class NVHFormattingEditorClass {
     return true;
   }
   isChoiceElementValidToPlaceholder(choiceElement, placeholder, placeholderWrapperAreaFullName) {
-    if (this.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
-      return false;
-    }
-    if (this.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)) {
-      return false;
-    }
     for (let child of placeholder.children) {
-      if (!this.isParentLabelOfDropObject(choiceElement.fullName, child)) {
+      if (!this.isParentLabelOfDropObject(choiceElement.fullName, child)
+        || this.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
         return false;
       }
     }
-    for (let child of placeholder.children) {
-      if (this.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
-        return false;
-      }
-    }
-    if (!this.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)) {
+    if (!this.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)
+      || this.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)
+      || this.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
       return false;
     }
     return true;
   }
-
+  getDirectMarkupChildren(fullName) {
+    let result = [];
+    if (!fullName || !window.store.schema.getElementByPath(fullName)) {
+      return result;
+    }
+    for (let child of window.store.schema.getElementByPath(fullName).children) {
+      let config = window.nvhStore.getElementConfig(child.path);
+      if (config?.type === "markup") {
+        result.push({name: child.name, fullName: child.path, color: window.nvhStore.getElementColor(child.path)});
+      }
+    }
+    return result;
+  }
   createMarkupStyles(fullName) {
-    let markupChildren = this.hasDirectMarkupChild(fullName);
+    let markupChildren = this.getDirectMarkupChildren(fullName);
     let result = [];
     for (let child of markupChildren) {
       result.push({name: child.name, fullName: child.fullName, styles: {}});
@@ -522,28 +478,9 @@ class NVHFormattingEditorClass {
   }
 
   getIcon(iconItem) {
-    switch (iconItem) {
-      case "link":
-        return "🔗";
-      case "speaker":
-        return "🔊";
-      case "load-speaker":
-        return "📢";
-      case "music-note":
-        return "♫";
-      case "camera":
-        return "📹";
-      case "film-frames":
-        return "🎞";
-      case "film-projector":
-        return "📽";
-      case "movie-camera":
-        return "🎥";
-      case "framed-picture":
-        return "🖼";
-      default:
-        return ""
-    }
+    return {"link": "🔗", "speaker": "🔊", "load-speaker": "📢"
+      , "music-note": "♫", "camera": "📹", "film-frames": "🎞"
+      , "film-projector": "📽", "movie-camera": "🎥", "framed-picture": "🖼"}[iconItem];
   }
   getUnicodeIcon(unicodeIcon) {
     return unicodeIcon ? unicodeIcon : "";
@@ -552,7 +489,7 @@ class NVHFormattingEditorClass {
     return fullName && !window.nvhStore.getElementConfig(fullName);
   }
   getMaxPossibleWidth() {
-    switch(this.global.activeLayout) {
+    switch(this.data.activeLayout) {
       case "tablet":
         return "1020px";
       case "pdf":
@@ -563,6 +500,82 @@ class NVHFormattingEditorClass {
         // 2 * 5px padding + 2 * 3 px of margin = 16 px
         return (window.innerWidth * 0.8 - 16).toString() + "px";
     }
+  }
+
+  getCssStyles(state, styles) {
+    if (!styles) {
+      return;
+    }
+    let result_css = "";
+    for (let i = 0; i < Object.keys(styles).length; i++) {
+      let option = Object.keys(styles)[i];
+      let value = styles[option];
+      if (!value) {
+        continue;
+      }
+      if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
+      "border-color", "border-width", "container-width", "label-text-value",
+      "show-label-before"].includes(option)) {
+        continue;
+      }
+      if (["border-radius", "padding", "margin", "max-height", "font-size"].includes(option)) {
+        value = value + "px";
+      } else if (option === "box-shadow") {
+        value = value + "px " + value + "px " + value + "px " + "grey";
+      } else if (option === "text-decoration") {
+        let array = styles["text-decoration"];
+        if (!array) {
+          continue;
+        }
+        let values = "";
+        for (let feature of array) {
+          values = values + " " + feature;
+        }
+        value = values;
+      } else if (option === "border") {
+        let borderColor = styles?.["border-color"] || "black";
+        let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
+        value = borderWidth + " " + value + " " + borderColor;
+      } else if (option === "container-width-unit") {
+        if (styles["container-width"] && styles["container-width"]) {
+          if (styles[option] === "px") {
+            option = "width";
+            if (parseInt(styles["container-width"]) < parseInt(state.maxPossibleWidth)) {
+              value = styles["container-width"] + "px";
+            } else {
+              value = state.maxPossibleWidth + "px";
+            }
+            state.maxPossibleWidth = value;
+          } else if (styles[option] === "%") {
+            if (parseInt(styles["container-width"]) >= 100) {
+              styles["container-width"] = "100";
+            }
+            option = "width";
+            value = `${(parseInt(styles["container-width"]) / 100) * parseInt(state.maxPossibleWidth)}` + "px";
+            state.maxPossibleWidth = value;
+          } else {
+            continue;
+          }
+        } else {
+          continue;
+        }
+      } else if (option === "max-width") {
+        value = "min(" + styles["max-width"] + "px" + "," + "100%)";
+      }
+      result_css += option + ":" + value + ";";
+    }
+
+    return result_css;
+  }
+
+  isPlaceholderHovered(placeholder) {
+    return this.data.hoveredPlaceholder === placeholder;
+  }
+  isPlaceholderActive(placeholder) {
+    return this.data.selectedPlaceholder === placeholder;
+  }
+  isPlaceholderDragged(placeholder) {
+    return this.data.draggedPlaceholder === placeholder;
   }
 }
 

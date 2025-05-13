@@ -1,7 +1,7 @@
 <styles-section>
   <div class="styles-section-container">
-    <div if={!nvhFormattingEditor.global.selectedPlaceholder}>No element selected.  Select element in layout selection to style it.</div>
-    <div if={nvhFormattingEditor.global.selectedPlaceholder} class="style-section-option-wrapper">
+    <div if={!nvhFormattingEditor.data.selectedPlaceholder}>No element selected.  Select element in layout selection to style it.</div>
+    <div if={nvhFormattingEditor.data.selectedPlaceholder} class="style-section-option-wrapper">
       <div each={(child, index) in getStyleOptions()}
           class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
           style="color: {nvhStore.getElementColor(child.fullName)};"
@@ -9,7 +9,7 @@
         {!child.name ? "container": child.name}
       </div>
     </div>
-    <styles-section-item if={nvhFormattingEditor.global.selectedPlaceholder}
+    <styles-section-item if={nvhFormattingEditor.data.selectedPlaceholder}
                         class="styles-section-container-divider"
                         styleOption={currentStyleOption}
                         isLabelOptionStyle={currentStyleOption.type === "label"}
@@ -25,13 +25,13 @@
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
-        if (this.nvhFormattingEditor.global.selectedPlaceholder) {
+        if (this.nvhFormattingEditor.data.selectedPlaceholder) {
           let styleOptions = this.getStyleOptions();
           this.currentStyleOption = styleOptions[0];
         }
       },
       onBeforeUpdate(props) {
-        if (this.nvhFormattingEditor.global.selectedPlaceholder) {
+        if (this.nvhFormattingEditor.data.selectedPlaceholder) {
           let styleOptions = this.getStyleOptions();
           let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);
           if (!this.currentStyleOption || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
@@ -41,11 +41,11 @@
       },
 
       getStyleOptions() {
-        let selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
+        let selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
         let result;
         if (!selectedPlaceholder.markupStyles || selectedPlaceholder.children.length) {
           result = [];
-          console.log("window.nvhFormattingEditor.global.selectedPlaceholder.markupStyles = undefined; in 'styles-section.riot'");
+          console.log("window.nvhFormattingEditor.data.selectedPlaceholder.markupStyles = undefined; in 'styles-section.riot'");
         } else {
           result = [...selectedPlaceholder.markupStyles];
         }

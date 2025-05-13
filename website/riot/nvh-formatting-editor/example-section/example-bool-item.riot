@@ -1,12 +1,12 @@
 <example-bool-item>
   <div class="example-bool-item-wrapper">
     <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
-        style={props.getCssStyles(props.labelStyles)}>
+        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
       {state.labelTextValue}
     </pre>
-    <pre style={props.getCssStyles(props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</pre>
+    <pre style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</pre>
     <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
-        style={props.getCssStyles(props.labelStyles)}>
+        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
       {state.labelTextValue}
     </pre>
   </div>
@@ -19,8 +19,10 @@
       labelTextValue: null,
       showLabelBefore: null,
     },
+    nvhFormattingEditor: null,
 
     onBeforeMount(props) {
+      this.nvhFormattingEditor = window.nvhFormattingEditor;
       this.state = {
         yesValueText: props.styles["yes-value-text"],
         noValueText: props.styles["no-value-text"],

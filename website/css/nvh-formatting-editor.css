@@ -8,18 +8,26 @@ pre {
   margin: 0;
   font-family: "Roboto Condensed", sans-serif;
 }
-.element-holder-used-placeholder {
-  margin: 3px;
-}
-.element-holder-empty-placeholder {
-  margin: 0;
-}
 .element-holder {
   display: flex;
   flex-wrap: wrap;
   width: fit-content;
   align-items: baseline;
   line-height: 1;
+  margin: 3px;
+}
+.element-holder-has-bullet {
+  flex-wrap: nowrap;
+}
+.element-holder-list {
+  display: flex;
+  flex-wrap: wrap;
+  width: fit-content;
+  align-items: baseline;
+  line-height: 1;
+}
+.element-holder-list-column {
+  flex-direction: column;
 }
 .element-holder-content-block {
   display: flex;
@@ -28,18 +36,6 @@ pre {
 }
 .element-holder-column {
   flex-direction: column;
-}
-.element-holder-markup-type-child {
-  display: none;
-}
-.element-holder-markup-type:has(.element-holder-markup-type-child) {
-  outline: none;
-}
-.element-holder-markup-type-hovered:has(.element-holder-markup-type) {
-  outline: 2px solid var(--color-is-hovered);
-}
-.element-holder-markup-type-active:has(.element-holder-markup-type) {
-  outline: 2px solid var(--color-is-active);
 }
 .element-holder-hovered {
   outline: 2px solid var(--color-is-hovered);
@@ -50,7 +46,7 @@ pre {
 .element-holder-hovered:has(.element-holder-hovered-empty) {
   outline: none;
 }
-.element-holder-hovered:has( > .element-holder > .element-holder-hovered-empty-entry) {
+.element-holder-hovered:has( > .element-holder-list > .element-holder-hovered-empty-entry) {
   outline: none;
 }
 .element-holder-active {

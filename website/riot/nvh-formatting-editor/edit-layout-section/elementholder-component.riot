@@ -30,8 +30,8 @@
         parameters: [],
         run: this.onRelease,
       };
-      transferObject["releaseFunction"] = releaseFunction;
-      this.nvhFormattingEditor.global.mouseData = transferObject;
+      transferObject.releaseFunction = releaseFunction;
+      this.nvhFormattingEditor.data.mouseData = transferObject;
       this.nvhFormattingEditor.timeout = setTimeout(() => {
         let trash = document.getElementById("trash-icon");
         if (trash) {
@@ -39,23 +39,16 @@
           trash.classList.remove("trash-disabled");
         }
       }, 200);
-      this.nvhFormattingEditor.global.dropInfo.wasSuccessful = false;
+      this.nvhFormattingEditor.data.dropInfo.wasSuccessful = false;
     },
     onRelease() {
-      if (this.nvhFormattingEditor.global.dropInfo.wasSuccessful) {
-        this.props.state.content.name = "";
-        this.props.state.content.fullName = "";
-        this.props.state.content.area = "";
-        this.props.state.content.areaFullName = "";
-        this.props.state.content.canHaveChildren = true;
-        this.props.state.styles = {};
-        this.props.state.markupStyles = [];
-        this.props.state.labelStyles = {};
-        this.props.state.bulletStyles = {};
+      if (this.nvhFormattingEditor.data.dropInfo.wasSuccessful) {
+        this.nvhFormattingEditor.clearPlaceholder(this.props.state)
+        this.nvhFormattingEditor.data.hoveredPlaceholder = null;
       }
     },
     onMouseEnter(event) {
-      const data = this.nvhFormattingEditor.global.mouseData;
+      const data = this.nvhFormattingEditor.data.mouseData;
       if (data && data.type === "choice-item") {
         event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
       }

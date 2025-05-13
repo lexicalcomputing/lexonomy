@@ -1,11 +1,13 @@
 <example-section>
   <div class="example-section-container">
-    <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.global.activeLayout}">
+    <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
       <div if={state.exampleEntry === undefined}>Preview is loading ...</div>
       <div if={state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
       <example-section-item if={state.exampleEntry}
         each={child in nvhFormattingEditor.currentLayout.schema.children}
         onclick={() => onExampleSectionItemClick(child)}
+        onmouseenter={(event) => onExampleItemMouseEnter(event, child)}
+        onmouseleave={(event) => onExampleItemMouseLeave(event, child)}
         schema={child}
         entry={state.exampleEntry}
         class="example-section-item"
@@ -54,6 +56,20 @@
       onExampleSectionItemClick(state) {
         this.nvhFormattingEditor.selectPlaceholder(state, null);
         this.nvhFormattingEditor.formattingEditorComponent.update();
+      },
+      onExampleItemMouseEnter(event, state) {
+        if (!nvhFormattingEditor.data.mouseData) {
+          event.currentTarget.classList.add("placeholder-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
+          nvhFormattingEditor.formattingEditorComponent.update();
+        }
+      },
+      onExampleItemMouseLeave(event, state) {
+        if (!nvhFormattingEditor.data.mouseData) {
+          event.currentTarget.classList.remove("placeholder-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+          nvhFormattingEditor.formattingEditorComponent.update();
+        }
       },
     }
   </script>

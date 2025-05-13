@@ -181,9 +181,9 @@
          },
 
          isLayoutSchemaChange() {
-            let oldLayout = this.nvhFormattingEditor.global.activeLayout;
+            let oldLayout = this.nvhFormattingEditor.data.activeLayout;
             this.nvhFormattingEditor.changeLayoutSchema();
-            let newLayout = this.nvhFormattingEditor.global.activeLayout;
+            let newLayout = this.nvhFormattingEditor.data.activeLayout;
             if (oldLayout !== newLayout) {
                this.update();
             }

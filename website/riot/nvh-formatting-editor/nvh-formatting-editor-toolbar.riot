@@ -68,30 +68,30 @@
       <div onclick={onLayoutClick.bind(this, "desktop")}
           data-tooltip="Desktop layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
         <i class="material-icons">desktop_windows</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "tablet")}
           data-tooltip="Tablet layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
         <i class="material-icons">tablet</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "mobile")}
           data-tooltip="Mobile phone layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
         <i class="material-icons">phone_android</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "pdf")}
           data-tooltip="Export to PDF layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
         <i class="material-icons">picture_as_pdf</i>
       </div>
     </div>
     <div class="formatting-page-tutorial-container">
-      <a href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
+      <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
     </div>
   </div>
 
@@ -112,10 +112,9 @@
       },
 
       onLayoutClick(layoutName) {
-        this.nvhFormattingEditor.global.activeLayout = layoutName;
-        this.nvhFormattingEditor.global.selectedPlaceholder = null;
+        this.nvhFormattingEditor.data.activeLayout = layoutName;
+        this.nvhFormattingEditor.data.selectedPlaceholder = null;
         this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
-        this.nvhFormattingEditor.clearStatuses(this.nvhFormattingEditor.currentLayout.schema);
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onSectionClick(sectionName) {
@@ -123,7 +122,7 @@
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       async onExportPDF() {
-        await this.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
+        await this.nvhFormattingEditor.stringifyAllEntries(this.state.exportedEntries);
         this.update(this.state.exportedEntries.isLoading = true);
         let response = await this.nvhFormattingEditor.createPDF();
         const encodedPDFString = response.pdf_string;
@@ -176,7 +175,7 @@
     .formatting-page-containers {
       display: flex;
       gap: 25px;
-      background-color: var(--color-grey-light);
+      background-color: var(--color-grey-toolbar);
     }
     .formatting-page-visibility-container, .formatting-page-layout-container, .formatting-page-action-container {
       display: flex;
@@ -193,7 +192,7 @@
     }
 
     .item-inactive {
-      background-color: white;
+      background-color: transparent;
     }
     .item-active {
       background-color: var(--color-red-normal);
@@ -203,7 +202,7 @@
       background-color: var(--color-red-dark);
     }
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -211,15 +210,17 @@
       text-wrap: nowrap;
       cursor: pointer;
     }
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper {
-      background-color: white;
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #link-tutorial {
+      background-color: transparent;
+      text-decoration: none;
     }
     #save-button-wrapper {
       color: white;
       background-color: var(--color-red-normal);
     }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover {
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover, #link-tutorial:hover {
       background-color: var(--color-grey-normal);
+      color: black;
     }
     #save-button-wrapper:hover {
       background-color: var(--color-red-dark);

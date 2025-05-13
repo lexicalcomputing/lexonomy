@@ -1,8 +1,8 @@
 <example-url-item>
   <div class="example-url-item-wrapper">
-    <div class="example-url-item-url" style={props.getCssStyles(props.styles)}>
+    <div class="example-url-item-url" style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>
       <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
-          style={props.getCssStyles(props.labelStyles)}>
+          style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
         {state.labelTextValue}
       </pre>
       <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
@@ -13,7 +13,7 @@
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
       <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
-          style={props.getCssStyles(props.labelStyles)}>
+          style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
         {state.labelTextValue}
       </pre>
     </div>
