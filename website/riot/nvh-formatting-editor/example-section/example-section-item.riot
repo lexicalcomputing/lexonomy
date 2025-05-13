@@ -1,11 +1,11 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
+              {hasBullet() ? "element-holder-has-bullet" : ""}
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
         style={props.schema.children.length !== 0 ? getCssStyles(props.schema.styles) : ""}>
-    <pre if={(props.schema.bulletStyles["bullet-use-numbers"] || props.schema.bulletStyles["bullet-use-bullets"])
-            && (props.haveSiblings || props.schema.bulletStyles["bullet-use-with-single-item"])}
+    <pre if={hasBullet()}
         style={getCssStyles(props.schema.bulletStyles)}>
       {state.bulletValue}
     </pre>
@@ -430,6 +430,10 @@
             && this.labelStyles?.["show-label-before"] === false
             && this.props.schema.children;
       },
+      hasBullet() {
+        return (this.props.schema.bulletStyles["bullet-use-numbers"] || this.props.schema.bulletStyles["bullet-use-bullets"])
+            && (this.props.haveSiblings || this.props.schema.bulletStyles["bullet-use-with-single-item"])
+      }
     }
   </script>
 
@@ -445,6 +449,9 @@
       align-items: baseline;
       line-height: 1;
       margin: 3px;
+    }
+    .element-holder-has-bullet {
+      flex-wrap: nowrap;
     }
     .element-holder-list {
       display: flex;
