@@ -148,10 +148,14 @@
          </div>
       </div>
 
-      <div if={ dictData.public || dictData.userAccess }>
-         <div class="divider"></div>
-         <div if={dictData.licence}
-               class="section right grey-text ">
+      <div class="divider"></div>
+      <div class="displayFlex mt-6">
+         <div class="displayFlex grey-text"
+               style="gap: 0.2em;">
+            The dictionary has a maximum limit of {window.Formatter.num(store.data.config.dict_settings?.limits?.entries || 5000)} entries.<a href="https://www.sketchengine.eu/ask-a-question/">Contact us</a>about {store.data.config.dict_settings?.limits?.entries ? "changing" : "increasing"} your limit.
+         </div>
+         <div if={dictData.licence && (dictData.public || dictData.userAccess)}
+               class="ml-auto grey-text">
             Licence:
             <span class="mr-2">
                {dictData.licence.toUpperCase()}
