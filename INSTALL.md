@@ -6,14 +6,7 @@ This page explains what you must do to set up a local installation of Lexonomy o
 
 - You need [Node.js](https://nodejs.org/) installed on your computer to be able to build Lexonomy's frontend.
 
-- You need [Python](https://python.org) installed on your computer to run Lexonomy's backend. You need a version of Python which is >=&nbsp;3.10 and <&nbsp;3.11. 
-  <details style="display: inline">
-    <summary>Why?</summary>
-
-    - Lexonomy uses `match` syntax in its source code. This syntax is not supported in versions of Python older than 3.10. [More information...](https://stackoverflow.com/a/71851510/3918306)
-
-    - Lexonomy depends on Bottle version 0.12.20. This module has a dependecy on `inspect.getargspec` which has been removed from Python as of version 3.11. [More information...](https://stackoverflow.com/questions/78475272/equivalent-function-of-getargspec-in-python-3-11)
-  </details>
+- You need [Python3](https://python.org) installed on your computer to run Lexonomy's backend.
 
 # Preparing Lexonomy (part 1)
 
