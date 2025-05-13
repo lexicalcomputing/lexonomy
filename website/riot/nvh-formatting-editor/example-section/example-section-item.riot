@@ -8,7 +8,12 @@
             && (props.haveSiblings || props.schema.bulletStyles["bullet-use-with-single-item"])}
         style={getCssStyles(props.schema.bulletStyles)}>
       {state.bulletValue}
-    </pre> <!-- consider doing this way also labelstyles-->
+    </pre>
+    <pre if={isLabelBeforeValue()}
+        class="example-item-label-before"
+        style={getCssStyles(props.schema.labelStyles)}>
+      {props.schema.labelStyles["label-text-value"]}
+    </pre>
     <div if={!props.schema.children.length && props.schema.content.fullName === props.entry.path}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
@@ -95,6 +100,11 @@
                                 maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       </template>
     </div>
+    <pre if={isLabelAfterValue()} class="example-item-label-after"
+        class="example-item-label-before"
+        style={getCssStyles(props.schema.labelStyles)}>
+      {props.schema.labelStyles["label-text-value"]}
+    </pre>
   </div>
 
   <script>
@@ -105,6 +115,7 @@
         bulletValue: null,
         valueStylePairs: null,
         maxPossibleWidth: null,
+        labelStyles: null,
       },
       nvhFormattingEditor: null,
       nvhStore: null,
@@ -115,25 +126,27 @@
         props.schema["labelStyles"] = props?.schema?.labelStyles || {};
         props.schema["bulletStyles"] = props?.schema?.bulletStyles || {};
         this.state.maxPossibleWidth = props.maxPossibleWidth;
+        this.labelStyles = props.schema.labelStyles;
+        this.formatBulletValue();
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
         let fullName = props.schema.content.fullName;
         if (!fullName) {
           return;
         }
         this.formatValue(fullName);
-        this.formatBulletValue();
-        this.state.maxPossibleWidth = props.maxPossibleWidth;
       },
       onBeforeUpdate(props) {
         props.schema["labelStyles"] = props?.schema?.labelStyles || {};
         props.schema["bulletStyles"] = props?.schema?.bulletStyles || {};
         this.state.maxPossibleWidth = props.maxPossibleWidth;
+        this.labelStyles = props.schema.labelStyles;
+        this.formatBulletValue();
+        this.state.maxPossibleWidth = props.maxPossibleWidth;
         let fullName = props.schema.content.fullName;
         if (!fullName) {
           return;
         }
         this.formatValue(fullName);
-        this.formatBulletValue();
-        this.state.maxPossibleWidth = props.maxPossibleWidth;
       },
 
       onExampleItemMouseEnter(event, state) {
@@ -405,7 +418,18 @@
           widthReduction = 6 * this.props.schema.children.length;
         }
         return (parseInt(this.state.maxPossibleWidth) - widthReduction).toString() + "px";
-      }
+      },
+      isLabelBeforeValue() {
+        return this.labelStyles?.["label-text-value"]
+            && (this.labelStyles?.["show-label-before"] === undefined
+                || this.labelStyles?.["show-label-before"])
+            && this.props.schema.children;
+      },
+      isLabelAfterValue() {
+        return this.labelStyles?.["label-text-value"]
+            && this.labelStyles?.["show-label-before"] === false
+            && this.props.schema.children;
+      },
     }
   </script>
 
