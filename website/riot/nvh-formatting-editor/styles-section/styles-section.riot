@@ -55,9 +55,7 @@
         let labelStyles = selectedPlaceholder.labelStyles;
         let bulletStyles = selectedPlaceholder.bulletStyles;
         result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
-        if (selectedPlaceholder && selectedPlaceholder.children.length === 0) {
-          result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
-        }
+        result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
         result.splice(result.length, 0, {name: "bullet", fullName: "bullet", styles: bulletStyles, type: "bullet"});
         return result;
       },
