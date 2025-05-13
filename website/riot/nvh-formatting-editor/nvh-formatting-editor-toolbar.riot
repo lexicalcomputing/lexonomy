@@ -123,7 +123,7 @@
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       async onExportPDF() {
-        await this.nvhFormattingEditor.parseAllEntries(this.state.exportedEntries);
+        await this.nvhFormattingEditor.stringifyAllEntries(this.state.exportedEntries);
         this.update(this.state.exportedEntries.isLoading = true);
         let response = await this.nvhFormattingEditor.createPDF();
         const encodedPDFString = response.pdf_string;

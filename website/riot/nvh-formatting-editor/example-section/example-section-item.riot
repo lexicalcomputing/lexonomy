@@ -9,10 +9,10 @@
         style={getCssStyles(props.schema.bulletStyles)}>
       {state.bulletValue}
     </pre>
-    <pre if={isLabelBeforeValue()}
+    <pre if={this.labelStyles && isLabelBeforeValue()}
         class="example-item-label-before"
         style={getCssStyles(props.schema.labelStyles)}>
-      {props.schema.labelStyles["label-text-value"]}
+      {props.schema.labelStyles["label-text-value"]} a-a
     </pre>
     <div if={!props.schema.children.length && props.schema.content.fullName === props.entry.path}
         class="element-holder-content-wrapper">
@@ -100,7 +100,7 @@
                                 maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       </template>
     </div>
-    <pre if={isLabelAfterValue()} class="example-item-label-after"
+    <pre if={this.labelStyles && isLabelAfterValue()} class="example-item-label-after"
         class="example-item-label-before"
         style={getCssStyles(props.schema.labelStyles)}>
       {props.schema.labelStyles["label-text-value"]}
@@ -200,7 +200,7 @@
 
         let markupValueStylesPair = null;
         let valueStylesPair = null;
-        let markupChildren = nvhFormattingEditor.hasDirectMarkupChild(fullName);
+        let markupChildren = nvhFormattingEditor.getDirectMarkupChildren(fullName);
         if (markupChildren.length) { /*means that has markup children*/
           markupValueStylesPair = this.getMarkupValueStylePair();
           valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
@@ -420,15 +420,15 @@
         return (parseInt(this.state.maxPossibleWidth) - widthReduction).toString() + "px";
       },
       isLabelBeforeValue() {
-        return this.labelStyles?.["label-text-value"]
-            && (this.labelStyles?.["show-label-before"] === undefined
-                || this.labelStyles?.["show-label-before"])
-            && this.props.schema.children;
+        return this.labelStyles["label-text-value"]
+            && (this.labelStyles["show-label-before"] === undefined
+                || this.labelStyles["show-label-before"])
+            && this.props.schema.children.length;
       },
       isLabelAfterValue() {
-        return this.labelStyles?.["label-text-value"]
-            && this.labelStyles?.["show-label-before"] === false
-            && this.props.schema.children;
+        return this.labelStyles["label-text-value"]
+            && this.labelStyles["show-label-before"] === false
+            && this.props.schema.children.length;
       },
       hasBullet() {
         return (this.props.schema.bulletStyles["bullet-use-numbers"] || this.props.schema.bulletStyles["bullet-use-bullets"])

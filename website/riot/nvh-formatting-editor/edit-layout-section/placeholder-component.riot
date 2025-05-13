@@ -68,7 +68,7 @@
         markup styles will not appear in style section
         */
         if (!props.state["markupStyles"] || props.state["markupStyles"].length === 0) {
-          let markupChildren = this.nvhFormattingEditor.hasDirectMarkupChild(props.state.content.fullName);
+          let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.state.content.fullName);
           if (markupChildren.length !== 0 ) {
             props.state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(props.state.content.fullName);
           } else {
@@ -133,7 +133,7 @@
             state.labelStyles = {};
             state.bulletStyles = {};
 
-            let markupChildren = this.nvhFormattingEditor.hasDirectMarkupChild(data.fullName);
+            let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(data.fullName);
             if (markupChildren.length !== 0) {
               state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(data.fullName);
             }
