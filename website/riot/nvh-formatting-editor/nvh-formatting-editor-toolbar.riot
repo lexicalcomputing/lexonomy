@@ -91,7 +91,7 @@
       </div>
     </div>
     <div class="formatting-page-tutorial-container">
-      <a href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
+      <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
     </div>
   </div>
 
@@ -175,7 +175,7 @@
     .formatting-page-containers {
       display: flex;
       gap: 25px;
-      background-color: var(--color-grey-light);
+      background-color: var(--color-grey-toolbar);
     }
     .formatting-page-visibility-container, .formatting-page-layout-container, .formatting-page-action-container {
       display: flex;
@@ -192,7 +192,7 @@
     }
 
     .item-inactive {
-      background-color: white;
+      background-color: transparent;
     }
     .item-active {
       background-color: var(--color-red-normal);
@@ -202,7 +202,7 @@
       background-color: var(--color-red-dark);
     }
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -210,15 +210,17 @@
       text-wrap: nowrap;
       cursor: pointer;
     }
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper {
-      background-color: white;
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #link-tutorial {
+      background-color: transparent;
+      text-decoration: none;
     }
     #save-button-wrapper {
       color: white;
       background-color: var(--color-red-normal);
     }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover {
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover, #link-tutorial:hover {
       background-color: var(--color-grey-normal);
+      color: black;
     }
     #save-button-wrapper:hover {
       background-color: var(--color-red-dark);
