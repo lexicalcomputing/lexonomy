@@ -4,14 +4,14 @@
               {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
               {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
               {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
-        style={props.schema.children.length !== 0 ? getCssStyles(props.schema.styles) : ""}>
+        style={props.schema.children.length !== 0 ? nvhFormattingEditor.getCssStyles(state, props.schema.styles) : ""}>
     <pre if={hasBullet()}
-        style={getCssStyles(props.schema.bulletStyles)}>
+        style={nvhFormattingEditor.getCssStyles(state, props.schema.bulletStyles)}>
       {state.bulletValue}
     </pre>
     <pre if={this.labelStyles && isLabelBeforeValue()}
         class="example-item-label-before"
-        style={getCssStyles(props.schema.labelStyles)}>
+        style={nvhFormattingEditor.getCssStyles(state, props.schema.labelStyles)}>
       {props.schema.labelStyles["label-text-value"]} a-a
     </pre>
     <div if={!props.schema.children.length && props.schema.content.fullName === props.entry.path}
@@ -21,42 +21,42 @@
           value={state.value}
           styles={props.schema.styles}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
         <example-markup-item if={props.entry.value && ["int", "string", "list", "empty"].includes(state.type) && state.valueStylePairs}
           valueStylePairs={state.valueStylePairs}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
         <example-url-item if={props.entry.value && state.type === "url"}
           value={state.value}
           styles={props.schema.styles}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
         <example-bool-item if={props.entry.value && state.type === "bool"}
           value={state.value}
           styles={props.schema.styles}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
         <example-image-item if={props.entry.value && state.type === "image"}
           value={state.value}
           styles={props.schema.styles}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
         <example-audio-item if={props.entry.value && state.type === "audio"}
           value={state.value}
           styles={props.schema.styles}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
         <example-video-item if={props.entry.value && state.type === "video"}
           value={state.value}
           styles={props.schema.styles}
           labelStyles={props.schema.labelStyles}
-          get-css-styles={getCssStyles}
+          state={state}
         />
       </div>
     </div>
@@ -102,7 +102,7 @@
     </div>
     <pre if={this.labelStyles && isLabelAfterValue()} class="example-item-label-after"
         class="example-item-label-before"
-        style={getCssStyles(props.schema.labelStyles)}>
+        style={nvhFormattingEditor.getCssStyles(state, props.schema.labelStyles)}>
       {props.schema.labelStyles["label-text-value"]}
     </pre>
   </div>
@@ -318,71 +318,6 @@
         } else { /*markupChildValue is not present in markupValue*/
           return this.createValueObject(leftPunc + prefix + rightPunc, "", "");
         }
-      },
-      getCssStyles(styles) {
-        if (!styles) {
-          return;
-        }
-        let result_css = "";
-        for (let i = 0; i < Object.keys(styles).length; i++) {
-          let option = Object.keys(styles)[i];
-          let value = styles[option];
-          if (!value) {
-            continue;
-          }
-          if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
-          "border-color", "border-width", "container-width", "label-text-value",
-          "show-label-before"].includes(option)) {
-            continue;
-          }
-          if (["border-radius", "padding", "margin", "max-height", "font-size"].includes(option)) {
-            value = value + "px";
-          } else if (option === "box-shadow") {
-            value = value + "px " + value + "px " + value + "px " + "grey";
-          } else if (option === "text-decoration") {
-            let array = styles["text-decoration"];
-            if (!array) {
-              continue;
-            }
-            let values = "";
-            for (let feature of array) {
-              values = values + " " + feature;
-            }
-            value = values;
-          } else if (option === "border") {
-            let borderColor = styles?.["border-color"] || "black";
-            let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
-            value = borderWidth + " " + value + " " + borderColor;
-          } else if (option === "container-width-unit") {
-            if (styles["container-width"] && styles["container-width"]) {
-              if (styles[option] === "px") {
-                option = "width";
-                if (parseInt(styles["container-width"]) < parseInt(this.state.maxPossibleWidth)) {
-                  value = styles["container-width"] + "px";
-                } else {
-                  value = this.state.maxPossibleWidth + "px";
-                }
-                this.state.maxPossibleWidth = value;
-              } else if (styles[option] === "%") {
-                if (parseInt(styles["container-width"]) >= 100) {
-                  styles["container-width"] = "100";
-                }
-                option = "width";
-                value = `${(parseInt(styles["container-width"]) / 100) * parseInt(this.state.maxPossibleWidth)}` + "px";
-                this.state.maxPossibleWidth = value;
-              } else {
-                continue;
-              }
-            } else {
-              continue;
-            }
-          } else if (option === "max-width") {
-            value = "min(" + styles["max-width"] + "px" + "," + "100%)";
-          }
-          result_css += option + ":" + value + ";";
-        }
-
-        return result_css;
       },
       getPunc(option, styles) {
         if (!styles) {

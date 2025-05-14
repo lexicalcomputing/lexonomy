@@ -532,6 +532,72 @@ class NVHFormattingEditorClass {
         return (window.innerWidth * 0.8 - 16).toString() + "px";
     }
   }
+
+  getCssStyles(state, styles) {
+    if (!styles) {
+      return;
+    }
+    let result_css = "";
+    for (let i = 0; i < Object.keys(styles).length; i++) {
+      let option = Object.keys(styles)[i];
+      let value = styles[option];
+      if (!value) {
+        continue;
+      }
+      if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
+      "border-color", "border-width", "container-width", "label-text-value",
+      "show-label-before"].includes(option)) {
+        continue;
+      }
+      if (["border-radius", "padding", "margin", "max-height", "font-size"].includes(option)) {
+        value = value + "px";
+      } else if (option === "box-shadow") {
+        value = value + "px " + value + "px " + value + "px " + "grey";
+      } else if (option === "text-decoration") {
+        let array = styles["text-decoration"];
+        if (!array) {
+          continue;
+        }
+        let values = "";
+        for (let feature of array) {
+          values = values + " " + feature;
+        }
+        value = values;
+      } else if (option === "border") {
+        let borderColor = styles?.["border-color"] || "black";
+        let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
+        value = borderWidth + " " + value + " " + borderColor;
+      } else if (option === "container-width-unit") {
+        if (styles["container-width"] && styles["container-width"]) {
+          if (styles[option] === "px") {
+            option = "width";
+            if (parseInt(styles["container-width"]) < parseInt(state.maxPossibleWidth)) {
+              value = styles["container-width"] + "px";
+            } else {
+              value = state.maxPossibleWidth + "px";
+            }
+            state.maxPossibleWidth = value;
+          } else if (styles[option] === "%") {
+            if (parseInt(styles["container-width"]) >= 100) {
+              styles["container-width"] = "100";
+            }
+            option = "width";
+            value = `${(parseInt(styles["container-width"]) / 100) * parseInt(state.maxPossibleWidth)}` + "px";
+            state.maxPossibleWidth = value;
+          } else {
+            continue;
+          }
+        } else {
+          continue;
+        }
+      } else if (option === "max-width") {
+        value = "min(" + styles["max-width"] + "px" + "," + "100%)";
+      }
+      result_css += option + ":" + value + ";";
+    }
+
+    return result_css;
+  }
 }
 
 window.nvhFormattingEditor = new NVHFormattingEditorClass();

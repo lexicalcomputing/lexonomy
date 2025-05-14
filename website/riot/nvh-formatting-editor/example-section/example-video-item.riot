@@ -1,17 +1,17 @@
 <example-video-item>
   <div class="example-video-item-wrapper">
     <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
-        style={props.getCssStyles(props.labelStyles)}>
+        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
       {state.labelTextValue}
     </pre>
     <!-- Taken from nvh-item-media.riot -->
     <video if={state.showPlayer && !isYouTube()}
           controls
           src={props.value}
-          style={props.getCssStyles(props.styles)}>
+          style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>
     </video>
     <iframe if={state.showPlayer && isYouTube()}
-          style={props.getCssStyles(props.styles)}
+          style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}
           width="560"
           height="315"
           src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
@@ -28,7 +28,7 @@
       <a if={state.showUrl && !state.showUrlAsIcon} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>
     </div>
     <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
-        style={props.getCssStyles(props.labelStyles)}>
+        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
       {state.labelTextValue}
     </pre>
   </div>
