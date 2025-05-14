@@ -130,7 +130,7 @@ class NVHStoreClass {
                   window.store.data.entry.nvh = nvh
                   this.data.entry.children = this.data.entry.children.filter(child => child.name != "__lexonomy__completed")
                   if(completed){
-                     let element = this._addChildElement(this.data.entry, "entry.__lexonomy__completed")
+                     let element = this._addChildElement(this.data.entry, `${window.store.schema.getRoot().name}.__lexonomy__completed`)
                      element.value = "1"
                      //element.warnings = []
                      element.isValid = true

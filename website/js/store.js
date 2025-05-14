@@ -511,6 +511,7 @@ class StoreClass {
                   this.data.isEntryRevisionsLoaded = false
                   this.data.isEntryLoaded = true
                   this.loadEntryList()
+                  this.reloadStats()
                   this.trigger("entryChanged")
                }
             })
@@ -556,9 +557,27 @@ class StoreClass {
                         this.changeEntryId(nextEntry.id)
                      }
                   }
+                  this.reloadStats()
                   this.trigger("entryListChanged", response.id)
                }
             })
+   }
+
+   reloadStats(){
+      // TODO: mabye new endpoint to load just stats, not all configs
+      if(this.data.config.progress_tracking?.tracked){
+         return window.connection.get({
+            url: `${window.API_URL}${this.data.dictId}/config.json`,
+            failMessage: `Could not load dictionary progress data.`
+         })
+               .done(response => {
+                  if(response?.stats){
+                     this._calculateProgress(response.stats)
+                     this.data.stats = response.stats
+                     this.trigger("statsChanged", this.data.dictId)
+                  }
+               })
+      }
    }
 
    loadEntryRevisions(){
