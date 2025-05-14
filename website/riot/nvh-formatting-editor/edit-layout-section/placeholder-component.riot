@@ -67,20 +67,16 @@
         this.props.state["markupStyles"].length === 0 is necessary because if someone change entry structure,
         markup styles will not appear in style section
         */
-        if (!props.state["markupStyles"] || props.state["markupStyles"].length === 0) {
+        if (!props.state.markupStyles.length) {
           let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.state.content.fullName);
           if (markupChildren.length !== 0 ) {
-            props.state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(props.state.content.fullName);
+            props.state.markupStyles = this.nvhFormattingEditor.createMarkupStyles(props.state.content.fullName);
           } else {
-            props.state["markupStyles"] = [];
+            props.state.markupStyles = [];
           }
         }
-        if (!props.state["labelStyles"]) {
-          props.state["labelStyles"] = {};
-        }
-        if (!props.state["bulletStyles"]) {
-          props.state["bulletStyles"] = {};
-        }
+        this.props.state.labelStyles = this.props?.state?.labelStyles || {}
+        this.props.state.bulletStyles = this.props?.state?.bulletStyles || {}
       },
 
       onMouseUp(event, state) {
@@ -135,7 +131,7 @@
 
             let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(data.fullName);
             if (markupChildren.length !== 0) {
-              state["markupStyles"] = this.nvhFormattingEditor.createMarkupStyles(data.fullName);
+              state.markupStyles = this.nvhFormattingEditor.createMarkupStyles(data.fullName);
             }
           }
           if (data.releaseFunction) {

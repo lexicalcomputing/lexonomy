@@ -30,7 +30,7 @@
         parameters: [],
         run: this.onRelease,
       };
-      transferObject["releaseFunction"] = releaseFunction;
+      transferObject.releaseFunction = releaseFunction;
       this.nvhFormattingEditor.data.mouseData = transferObject;
       this.nvhFormattingEditor.timeout = setTimeout(() => {
         let trash = document.getElementById("trash-icon");

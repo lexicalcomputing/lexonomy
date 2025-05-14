@@ -51,7 +51,7 @@
           parameters: [event.currentTarget.parentElement.parentElement.parentElement.parentElement, this.props.index, this.props.parentState, this.props.state],
           run: this.onRelease,
         };
-        state["releaseFunction"] = releaseFunction;
+        state.releaseFunction = releaseFunction;
         data.mouseData = state;
         data.draggedPlaceholder = state;
 
