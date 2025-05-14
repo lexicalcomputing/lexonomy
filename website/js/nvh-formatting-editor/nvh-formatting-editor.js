@@ -58,6 +58,10 @@ class NVHFormattingEditorClass {
     this.data.canBeDropped = true;
     this.data.canBeDragged = true;
     this.data.canSelectPlaceholder = true;
+    this.data.dropInfo = {
+      wasSuccessful: false,
+      index: null,
+    };
   }
 
   changeLayoutSchema() {
