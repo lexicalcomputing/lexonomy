@@ -2,6 +2,7 @@
   <div class="edit-layout-container">
     <div class="scrollable-div">
       <template each={(child, index) in this.nvhFormattingEditor.currentLayout.schema.children}>
+        <!-- ASK: which state? -->
         <placeholder-component onclick={() => onPlaceholderClick(child)}
                 title={this.nvhFormattingEditor.isElementNonExisting(child.content.fullName)
                       ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Click RESET button to fix the formatting structure." : ""}

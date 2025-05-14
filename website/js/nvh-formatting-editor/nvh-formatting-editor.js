@@ -141,7 +141,7 @@ class NVHFormattingEditorClass {
 
     for (let idx = 0; idx < entriesList.entriesList.length; idx++) {
       let entryJson = window.nvhStore.nvhToJson(entriesList.entriesList[idx].nvh);
-      htmlWrapper += this.parseEntry(entryJson);
+      htmlWrapper += this.stringifyEntry(entryJson);
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
       if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
         exportedEntries.exported = idx;
@@ -159,7 +159,7 @@ class NVHFormattingEditorClass {
     await this.appendToHtmlFile(htmlWrapper);
   }
 
-  parseEntry(entry) {
+  stringifyEntry(entry) {
     let schema = this.layout.pdf.configured ? this.layout.pdf.schema : this.layout.desktop.schema;
     let entryHTML = this.getEntryHTML(schema.children[0], entry);
     return entryHTML;
@@ -179,6 +179,18 @@ class NVHFormattingEditorClass {
       }
     }
     return resultChildren;
+  }
+
+  clearPlaceholder(placeholder) {
+    placeholder.content.name = "";
+    placeholder.content.fullName = "";
+    placeholder.content.area = "";
+    placeholder.content.areaFullName = "";
+    placeholder.content.canHaveChildren = true;
+    placeholder.styles = {};
+    placeholder.markupStyles = [];
+    placeholder.labelStyles = {};
+    placeholder.bulletStyles = {};
   }
 
   resetSchema() {

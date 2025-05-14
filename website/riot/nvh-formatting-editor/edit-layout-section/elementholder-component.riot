@@ -43,15 +43,8 @@
     },
     onRelease() {
       if (this.nvhFormattingEditor.data.dropInfo.wasSuccessful) {
-        this.props.state.content.name = "";
-        this.props.state.content.fullName = "";
-        this.props.state.content.area = "";
-        this.props.state.content.areaFullName = "";
-        this.props.state.content.canHaveChildren = true;
-        this.props.state.styles = {};
-        this.props.state.markupStyles = [];
-        this.props.state.labelStyles = {};
-        this.props.state.bulletStyles = {};
+        this.nvhFormattingEditor.clearPlaceholder(this.props.state)
+        this.nvhFormattingEditor.data.hoveredPlaceholder = null;
       }
     },
     onMouseEnter(event) {
