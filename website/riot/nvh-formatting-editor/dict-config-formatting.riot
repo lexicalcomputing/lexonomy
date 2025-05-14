@@ -181,6 +181,7 @@
         if (oldSchema.orientation !== newSchema.orientation) {
           return true;
         }
+        // TODO: use method for comparison from misc.js
         if (JSON.stringify(oldSchema.styles) !== JSON.stringify(newSchema.styles)) {
           return true;
         }
@@ -214,6 +215,7 @@
         this.update({isSaving: true});
         this.nvhFormattingEditor.data.selectedPlaceholder = null;
         let elementsConfig = this.nvhStore.data.formatting.elements;
+        // TODO: use for loop
         let layoutConfig = {
           desktop: {
             schema: this.nvhFormattingEditor.layout.desktop.schema,
