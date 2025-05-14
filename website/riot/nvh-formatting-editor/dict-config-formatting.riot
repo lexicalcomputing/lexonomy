@@ -215,29 +215,14 @@
         this.update({isSaving: true});
         this.nvhFormattingEditor.data.selectedPlaceholder = null;
         let elementsConfig = this.nvhStore.data.formatting.elements;
-        // TODO: use for loop
-        let layoutConfig = {
-          desktop: {
-            schema: this.nvhFormattingEditor.layout.desktop.schema,
-            elements: this.nvhFormattingEditor.layout.desktop.elements,
-            configured: true,
-          },
-          tablet: {
-            schema: this.nvhFormattingEditor.layout.tablet.schema,
-            elements: this.nvhFormattingEditor.layout.tablet.elements,
-            configured: this.nvhFormattingEditor.layout.tablet.configured,
-          },
-          mobile: {
-            schema: this.nvhFormattingEditor.layout.mobile.schema,
-            elements: this.nvhFormattingEditor.layout.mobile.elements,
-            configured: this.nvhFormattingEditor.layout.mobile.configured,
-          },
-          pdf: {
-            schema: this.nvhFormattingEditor.layout.pdf.schema,
-            elements: this.nvhFormattingEditor.layout.pdf.elements,
-            configured: this.nvhFormattingEditor.layout.pdf.configured,
-          },
-        };
+        let layoutConfig = {};
+        for (let device of ["desktop", "tablet", "mobile", "pdf"]) {
+          layoutConfig[device] = {
+            schema: this.nvhFormattingEditor.layout[device].schema,
+            configured: this.nvhFormattingEditor.layout[device].configured,
+          }
+        }
+        layoutConfig.desktop.configured = true;
         this.store.updateDictionaryConfig("formatting", {
           elements: elementsConfig,
           layout: layoutConfig,

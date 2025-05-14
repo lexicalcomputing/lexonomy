@@ -198,6 +198,22 @@ class NVHFormattingEditorClass {
     placeholder.bulletStyles = {};
   }
 
+  fillPlaceholderWithData(placeholder, data) {
+    placeholder.content.name = data.name;
+    placeholder.content.fullName = data.fullName;
+    placeholder.content.area = data.name;
+    placeholder.content.areaFullName = data.fullName;
+    placeholder.content.canHaveChildren = data.children.length !== 0;
+    placeholder.styles = {};
+    placeholder.labelStyles = {};
+    placeholder.bulletStyles = {};
+
+    let markupChildren = this.getDirectMarkupChildren(data.fullName);
+    if (markupChildren.length !== 0) {
+      placeholder.markupStyles = this.createMarkupStyles(data.fullName);
+    }
+  }
+
   resetSchema() {
     this.initializeSchema();
     this.formattingEditorComponent.update();

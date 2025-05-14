@@ -79,7 +79,6 @@
         this.props.state.bulletStyles = this.props?.state?.bulletStyles || {}
       },
 
-      // TODO: unify IFs and FORs
       onMouseUp(event, state) {
         if (this.nvhFormattingEditor.data.canBeDropped) {
           const data = this.nvhFormattingEditor.data.mouseData;
@@ -88,53 +87,20 @@
           }
           if (data.type === "choice-item") {
             this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
-            if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
-              /*Can not drop label to be a wrapper, if it can not have children*/
-              this.nvhFormattingEditor.data.canBeDropped = false;
-              return;
-            }
-            if (this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
-              /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
+            if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)
+                || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)
+                || !this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
               this.nvhFormattingEditor.data.canBeDropped = false;
               return;
             }
             for (let child of state.children) {
-              if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
-                /*Can not place label to placeholder, because not all children labels are valid*/
+              if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
+                  || this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
                 this.nvhFormattingEditor.data.canBeDropped = false;
                 return;
               }
             }
-            for (let child of state.children) {
-              if (this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
-                /*Can not create redundant parent wrapper*/
-                this.nvhFormattingEditor.data.canBeDropped = false;
-                return;
-              }
-            }
-            if (!this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
-              /*
-              Dragged element can not be dropped because,
-              it is not a child element of the parent placeholder where I want to drop him.
-              */
-              this.nvhFormattingEditor.data.canBeDropped = false;
-              return;
-            }
-
-            // TODO: separate method
-            state.content.name = data.name;
-            state.content.fullName = data.fullName;
-            state.content.area = data.name;
-            state.content.areaFullName = data.fullName;
-            state.content.canHaveChildren = data.children.length !== 0;
-            state.styles = {};
-            state.labelStyles = {};
-            state.bulletStyles = {};
-
-            let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(data.fullName);
-            if (markupChildren.length !== 0) {
-              state.markupStyles = this.nvhFormattingEditor.createMarkupStyles(data.fullName);
-            }
+            this.nvhFormattingEditor.fillPlaceholderWithData(state, data);
           }
           if (data.releaseFunction) {
             data.releaseFunction.run(...data.releaseFunction.parameters);
@@ -213,39 +179,19 @@
         }
         return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.state.content.fullName));
       },
-      // TODO: unify IFs and FORs
       canBeDropped(state) {
         const data = this.nvhFormattingEditor.data.mouseData;
-        if (!data || data.type !== "choice-item") {
-          return false;
-        }
-
-        if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
-          /*Can not drop label to be a wrapper, if it can not have children*/
-          return false;
-        }
-        if (this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
-          /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
+        if (!data || data.type !== "choice-item"
+            || this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)
+            || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)
+            || !this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
           return false;
         }
         for (let child of state.children) {
-          if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
-            /*Can not place label to placeholder, because not all children labels are valid*/
+          if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
+              || this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
             return false;
           }
-        }
-        for (let child of state.children) {
-          if (this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
-            /*Can not create redundant parent wrapper*/
-            return false;
-          }
-        }
-        if (!this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
-          /*
-          Dragged element can not be dropped because,
-          it is not a child element of the parent placeholder where I want to drop him.
-          */
-          return false;
         }
         return true;
       },
