@@ -9,11 +9,11 @@
       <img src={props.value} style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}/>
     </a>
     <div class="example-image-item-icons">
-      <a if={state.showUrl && !state.showUrlAsIcon} href={props.value}>{props.value}</a>
-      <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
+      <a if={state.showUrl && !state.showUrlAsIcon} href={props.value} target="_blank">{props.value}</a>
+      <a if={state.showUrl && state.showUrlAsIcon} href={props.value} target="_blank">
         <pre>{nvhFormattingEditor.getIcon(state.iconItem)}</pre>
       </a>
-      <a if={state.showUrl && state.showUrlAsIcon} href={props.value}>
+      <a if={state.showUrl && state.showUrlAsIcon} href={props.value} target="_blank">
         <pre>{nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
       </a>
     </div>
