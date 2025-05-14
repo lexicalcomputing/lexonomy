@@ -1757,7 +1757,7 @@ def check_entry_completed(entry_nvh, configs):
 
 def filter_completed(entries, isCompleted):
     for idx, item in enumerate(entries):
-        if item['is_completed'] != isCompleted:
+        if item.get('is_completed', None) != isCompleted:
             del item[idx]
 
 def extractFirstText(nvhParsed):
