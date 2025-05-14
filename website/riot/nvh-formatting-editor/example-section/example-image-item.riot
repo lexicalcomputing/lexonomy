@@ -25,33 +25,16 @@
 
   <script>
     export default {
-      state: {
-        showImage: null,
-        showUrl: null,
-        makeImageClickable: null,
-        showUrlAsIcon: null,
-        iconItem: null,
-        unicodeIcon: null,
-        labelTextValue: null,
-        showLabelBefore: null,
-      },
-      nvhFormattingEditor: null,
-
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.setDefaultCss();
-        this.state = {
-          showImage: props.styles["show-image"] === undefined ? true : props.styles["show-image"],
-          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
-          makeImageClickable: props.styles["make-image-clickable"],
-          showUrlAsIcon: props.styles["show-url-as-icon"],
-          iconItem: props.styles["icon-item"],
-          unicodeIcon: props.styles["unicode-icon"],
-          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
-          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
-        };
+        this.refreshState(props);
       },
       onBeforeUpdate(props) {
+        this.refreshState(props);
+      },
+
+      refreshState(props) {
         this.state = {
           showImage: props.styles["show-image"] === undefined ? true : props.styles["show-image"],
           showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
@@ -63,14 +46,9 @@
           showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
         }
       },
-
       setDefaultCss() {
-        if (this.props.styles["margin"] === undefined) {
-          this.props.styles["margin"] = "20";
-        }
-        if (this.props.styles["border-radius"] === undefined) {
-          this.props.styles["border-radius"] = "50";
-        }
+        this.props.styles["margin"] ??= "20";
+        this.props.styles["border-radius"] ??= "50";
       },
     }
   </script>

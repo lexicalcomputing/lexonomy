@@ -626,9 +626,9 @@
     export default {
       state: {
         type: null,
-        selectedPlaceholder: null,
+        selectedLayoutContainer: null,
         selectedOption: "",
-        styles: null, // styles can not be taken from selectedPlaceholder because of markup type exception
+        styles: null, // styles can not be taken from selectedLayoutContainer because of markup type exception
         showFontDropdown: false,
         showAlignmentDropdown: false,
         isLabelOptionStyle: false,
@@ -637,30 +637,32 @@
         hasDirectMarkupChild: false,
         isGroup: false,
       },
-      nvhFormattingEditor: null,
-      nvhStore: null,
 
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
-        this.state.selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
-          let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
+        this.state.selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
+        if (this.state.selectedLayoutContainer !== null
+            && this.state.selectedLayoutContainer.content.fullName !== ""
+            && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
+          let config = this.nvhStore.getElementConfig(this.state.selectedLayoutContainer.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
           }
         }
         this.state.isLabelOptionStyle = props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = props.isBulletOptionStyle;
-        this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
-        this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedPlaceholder.content.fullName).length !== 0;
+        this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedLayoutContainer.content.fullName);
+        this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.fullName).length;
         this.state.styles = props.styleOption.styles;
-        this.state.isGroup = this.state.selectedPlaceholder.children.length;
+        this.state.isGroup = this.state.selectedLayoutContainer.children.length;
       },
       onBeforeUpdate(props) {
-        this.state.selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
-        if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
-          let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
+        this.state.selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
+        if (this.state.selectedLayoutContainer !== null
+            && this.state.selectedLayoutContainer.content.fullName !== ""
+            && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
+          let config = this.nvhStore.getElementConfig(this.state.selectedLayoutContainer.content.fullName);
           if (config !== undefined) {
             this.state.type = config.type;
           }
@@ -669,20 +671,16 @@
         }
         this.state.isLabelOptionStyle = props.isLabelOptionStyle;
         this.state.isBulletOptionStyle = props.isBulletOptionStyle;
-        this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedPlaceholder.content.fullName);
-        this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedPlaceholder.content.fullName).length !== 0;
+        this.state.isMarkupType = this.nvhFormattingEditor.isMarkupType(this.state.selectedLayoutContainer.content.fullName);
+        this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.fullName).length;
         this.state.styles = props.styleOption.styles;
-        this.state.isGroup = this.state.selectedPlaceholder.children.length;
+        this.state.isGroup = this.state.selectedLayoutContainer.children.length;
       },
 
       getStyleOptionValue(option) {
-        if (this.nvhFormattingEditor.data.selectedPlaceholder === null) {
-          return null;
-        }
-        if (this.state.styles === undefined) {
-          return null;
-        }
-        if (this.state.styles[option] === undefined) {
+        if (!this.nvhFormattingEditor.data.selectedLayoutContainer
+            || !this.state.styles
+            || !this.state.styles[option]) {
           return null;
         }
         return this.state.styles[option];
@@ -691,12 +689,8 @@
         if (value === null) {
           value = event.currentTarget.value;
         }
-        this.onChangeStyle2(option, value);
-      },
-      onChangeStyle2(option, value) {
-        let selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
-        if (selectedPlaceholder === null) {
-          console.log("There is no selected placeholder");
+        let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
+        if (selectedLayoutContainer === null) {
           return;
         }
         if (this.state.styles === undefined) {
@@ -765,7 +759,7 @@
         } else {
           this.state.styles[option] = value;
         }
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.updateEditor();
       },
       onDropdownClick(dropdownType) {
         this.nvhFormattingEditor.dropdownTimeout = setTimeout(() => {

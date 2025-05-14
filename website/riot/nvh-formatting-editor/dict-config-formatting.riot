@@ -77,6 +77,8 @@
   
   <script>
     export default {
+      bindings: [["nvhFormattingEditor", "updateEditor", "update"]],
+
       state: {
         toolbar: {
           isSaving: false,
@@ -94,17 +96,13 @@
           maxWidth: null,
         }
       },
-      nvhFormattingEditor: null,
-      nvhStore: null,
-      store: null,
 
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor,
         this.nvhStore = window.nvhStore,
         this.store = window.store,
         this.nvhFormattingEditor.elementsSchema = this.nvhFormattingEditor.createElementsSchema();
-        this.nvhFormattingEditor.formattingEditorComponent = this;
-        this.nvhFormattingEditor.data = this.nvhFormattingEditor.initializeDataAttributes();
+        this.nvhFormattingEditor.data = this.nvhFormattingEditor.getInitializedDataAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
 
@@ -136,13 +134,12 @@
       },
       onBeforeUpdate(props) {
         this.nvhFormattingEditor.resetDataAttributes();
-        /*
-        Change history, if I modified edit section in other way that using 'undo' or 'redo'.
-        */
-        let history = this.nvhFormattingEditor.currentLayout.history;
-        if (this.isSchemaChanged(history.schema.at(history.index), this.nvhFormattingEditor.currentLayout.schema)) {
+        let currentLayout = this.nvhFormattingEditor.currentLayout;
+        let history = currentLayout.history;
+        if (!this.nvhFormattingEditor.data.mouseData
+            && this.isSchemaChanged(history.schema.at(history.index), currentLayout.schema)) {
           history.schema.length = history.index + 1;
-          history.schema.push(structuredClone(this.nvhFormattingEditor.currentLayout.schema));
+          history.schema.push(structuredClone(currentLayout.schema));
           history.index += 1;
         }
       },
@@ -167,7 +164,7 @@
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
           this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
-          this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
+          this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");
         }
@@ -175,69 +172,23 @@
           data.releaseFunction.run(...data.releaseFunction.parameters);
           data.releaseFunction = null;
         }
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.update();
       },
       isSchemaChanged(oldSchema, newSchema) {
-        if (oldSchema.orientation !== newSchema.orientation) {
-          return true;
-        }
-        // TODO: use method for comparison from misc.js
-        if (JSON.stringify(oldSchema.styles) !== JSON.stringify(newSchema.styles)) {
-          return true;
-        }
-        if (JSON.stringify(oldSchema.markupStyles) !== JSON.stringify(newSchema.markupStyles)) {
-          return true;
-        }
-        if (JSON.stringify(oldSchema.labelStyles) !== JSON.stringify(newSchema.labelStyles)) {
-          return true;
-        }
-        if (JSON.stringify(oldSchema.bulletStyles) !== JSON.stringify(newSchema.bulletStyles)) {
-          return true;
-        }
-        if (oldSchema.content && newSchema.content) {
-          if (oldSchema.content.fullName !== newSchema.content.fullName) {
-            return true;
-          }
-        }
-        if (oldSchema.children.length !== newSchema.children.length) {
-          return true;
-        }
-
-        for (let i = 0; i < newSchema.children.length; i++) {
-          if (this.isSchemaChanged(oldSchema.children.at(i), newSchema.children.at(i))) {
-            return true;
-          }
-        }
-
-        return false;
+        return !window.objectEquals(oldSchema, newSchema);
       },
       saveSchemas() {
         this.update({isSaving: true});
-        this.nvhFormattingEditor.data.selectedPlaceholder = null;
+        this.nvhFormattingEditor.data.selectedLayoutContainer = null;
         let elementsConfig = this.nvhStore.data.formatting.elements;
-        // TODO: use for loop
-        let layoutConfig = {
-          desktop: {
-            schema: this.nvhFormattingEditor.layout.desktop.schema,
-            elements: this.nvhFormattingEditor.layout.desktop.elements,
-            configured: true,
-          },
-          tablet: {
-            schema: this.nvhFormattingEditor.layout.tablet.schema,
-            elements: this.nvhFormattingEditor.layout.tablet.elements,
-            configured: this.nvhFormattingEditor.layout.tablet.configured,
-          },
-          mobile: {
-            schema: this.nvhFormattingEditor.layout.mobile.schema,
-            elements: this.nvhFormattingEditor.layout.mobile.elements,
-            configured: this.nvhFormattingEditor.layout.mobile.configured,
-          },
-          pdf: {
-            schema: this.nvhFormattingEditor.layout.pdf.schema,
-            elements: this.nvhFormattingEditor.layout.pdf.elements,
-            configured: this.nvhFormattingEditor.layout.pdf.configured,
-          },
-        };
+        let layoutConfig = {};
+        for (let device of ["desktop", "tablet", "mobile", "pdf"]) {
+          layoutConfig[device] = {
+            schema: this.nvhFormattingEditor.layout[device].schema,
+            configured: this.nvhFormattingEditor.layout[device].configured,
+          }
+        }
+        layoutConfig.desktop.configured = true;
         this.store.updateDictionaryConfig("formatting", {
           elements: elementsConfig,
           layout: layoutConfig,
@@ -268,6 +219,7 @@
             adder.classList.remove("adder-highligth-dragged");
             adder.style.display = "";
           }
+          this.nvhFormattingEditor.data.mouseData.releaseFunction = null;
           this.nvhFormattingEditor.data.mouseData = null;
 
           let trash = document.getElementById("trash-icon");
@@ -281,7 +233,8 @@
           for (element of allElements) {
             element.classList.remove("cursor-grabbing");
           }
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.data.draggedLayoutContainer = null;
+          this.update();
         }
       },
       globalOnMouseDown() {
@@ -290,7 +243,7 @@
           for (element of allElements) {
             element.classList.add("cursor-grabbing");
           }
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.update();
         }
       },
 

@@ -3,11 +3,11 @@
     <div class="scrollable-div">
       <template each={(child, index) in this.nvhFormattingEditor.currentLayout.schema.children}>
         <!-- ASK: which state? -->
-        <placeholder-component onclick={() => onPlaceholderClick(child)}
+        <layout-container onclick={() => onLayoutContainerClick(child)}
                 title={this.nvhFormattingEditor.isElementNonExisting(child.content.fullName)
                       ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Click RESET button to fix the formatting structure." : ""}
-                onmouseenter={(event) => onPlaceholderMouseEnter(event, child)}
-                onmouseleave={(event) => onPlaceholderMouseLeave(event, child)}
+                onmouseenter={(event) => onLayoutContainerMouseEnter(event, child)}
+                onmouseleave={(event) => onLayoutContainerMouseLeave(event, child)}
                 class={getCssClass(child)}
                 state={this.nvhFormattingEditor.childWithInheritedArea(child, null)}
                 parentState={this.nvhFormattingEditor.currentLayout.schema}
@@ -21,36 +21,34 @@
 
   <script>
     export default {
-      nvhFormattingEditor: null,
-
       onBeforeMount() {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
       },
 
-      onPlaceholderClick(child) {
-        this.nvhFormattingEditor.selectPlaceholder(child, null);
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+      onLayoutContainerClick(child) {
+        this.nvhFormattingEditor.selectLayoutContainer(child, null);
+        this.nvhFormattingEditor.updateEditor();
       },
-      onPlaceholderMouseEnter(event, state) {
+      onLayoutContainerMouseEnter(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.add("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          event.currentTarget.classList.add("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
+          this.nvhFormattingEditor.updateEditor();
         }
       },
-      onPlaceholderMouseLeave(event, state) {
+      onLayoutContainerMouseLeave(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.remove("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          event.currentTarget.classList.remove("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
+          this.nvhFormattingEditor.updateEditor();
         }
       },
-      getCssClass(placeholder) {
-        cssClass = "placeholder placeholder-first";
-        cssClass += this.nvhFormattingEditor.isPlaceholderActive(placeholder) ? " placeholder-selected" : "";
-        cssClass += this.nvhFormattingEditor.isPlaceholderHovered(placeholder) && !this.nvhFormattingEditor.data.mouseData ? " placeholder-mouse-hover" : ""
-        cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
-        cssClass += this.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
+      getCssClass(layoutContainer) {
+        cssClass = "layout-container layout-container-first";
+        cssClass += this.nvhFormattingEditor.isLayoutContainerActive(layoutContainer) ? " layout-container-selected" : "";
+        cssClass += this.nvhFormattingEditor.isLayoutContainerHovered(layoutContainer) && !this.nvhFormattingEditor.data.mouseData ? " layout-container-mouse-hover" : ""
+        cssClass += layoutContainer.children.length === 0 ? " layout-container-no-children" : "";
+        cssClass += this.nvhFormattingEditor.isElementNonExisting(layoutContainer.content.fullName) ? " layout-container-non-existing" : "";
         return cssClass;
       }
     }
@@ -68,7 +66,7 @@
       min-width: 100%;
     }
 
-    .placeholder {
+    .layout-container {
       position: relative;
       border: 4px solid transparent;
       display: flex;
@@ -79,27 +77,27 @@
       width: 100%;
       cursor: pointer;
     }
-    .placeholder > .placeholder-inside-wrapper > .placeholder {
-      height: 100%; /*ensure that all "placeholders" children will have correct height*/
-      width: 100%; /*ensure that all "placeholders" children will have correct width*/
+    .layout-container > .layout-container-inside-wrapper > .layout-container {
+      height: 100%; /*ensure that all "layoutContainers" children will have correct height*/
+      width: 100%; /*ensure that all "layoutContainers" children will have correct width*/
     }
 
-    .placeholder-first {
+    .layout-container-first {
       border: 4px solid transparent !important;
     }
-    .placeholder-first > .action-panel {
+    .layout-container-first > .action-panel {
       display: none;
       top: 0;
       left: 0;
     }
-    .placeholder-first:hover > .action-panel {
+    .layout-container-first:hover > .action-panel {
       display: block;
     }
-    .placeholder-first:has(.placeholder:hover) > .action-panel {
+    .layout-container-first:has(.layout-container:hover) > .action-panel {
       display: none;
     }
 
-    .placeholder-selected {
+    .layout-container-selected {
       border: 4px solid var(--color-is-active) !important;
     }
 
@@ -128,37 +126,37 @@
       width: 100%;
     }
 
-    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper {
+    .layout-container-no-children:hover .adder-alone .plus-icon-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100%;
       width: 100%;
     }
-    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line {
+    .layout-container-no-children:hover .adder-alone .plus-icon-wrapper .adder-line {
       width: 0;
       height: 0;
     }
-    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper {
+    .layout-container-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper {
       opacity: 0.5;
     }
-    .placeholder-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper:hover {
+    .layout-container-no-children:hover .adder-alone .plus-icon-wrapper .adder-line .adder-icon-wrapper:hover {
       opacity: 1;
     }
 
-    .placeholder-mouse-hover {
+    .layout-container-mouse-hover {
       border: 4px solid var(--color-is-hovered) !important;
       box-shadow: 4px 4px 4px var(--color-is-hovered);
     }
-    .placeholder-mouse-hover:has(.placeholder-mouse-hover) {
+    .layout-container-mouse-hover:has(.layout-container-mouse-hover) {
       border: 4px solid transparent !important;
       box-shadow: none;
     }
 
-    .placeholder-non-existing {
+    .layout-container-non-existing {
       background-color: black !important;
     }
-    .placeholder-non-existing .adder {
+    .layout-container-non-existing .adder {
       display: none;
     }
   </style>

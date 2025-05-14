@@ -1,7 +1,7 @@
 <elements-choice-item>
   <div class="elements-choice-item-wrapper
-              {isValidToActivePlaceholder() ? "elements-choice-item-wrapper-valid" : ""}
-              {isInvalidToActivePlaceholder() ? "elements-choice-item-wrapper-invalid" : ""}"
+              {canBeDraggedToActiveLayoutContainer() ? "elements-choice-item-wrapper-valid" : ""}
+              {cannotBeDraggedToActiveLayoutContainer() ? "elements-choice-item-wrapper-invalid" : ""}"
       style="padding-left: {props.indentationLevel}px"
       onmousedown={() => onMouseDown(props.state)}>
     <div class="elements-choice-item-box"
@@ -17,9 +17,6 @@
 
   <script>
     export default {
-      nvhFormattingEditor: null,
-      nvhStore: null,
-
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
@@ -27,21 +24,19 @@
 
       onMouseDown(state) {
         this.nvhFormattingEditor.data.mouseData = this.props.state.data;
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.updateEditor();
       },
-      isValidToActivePlaceholder() {
-        if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
+      canBeDraggedToActiveLayoutContainer() {
+        if (!this.nvhFormattingEditor.data.selectedLayoutContainer) {
           return false;
         }
-        return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
-                                                                            this.nvhFormattingEditor.data.selectedPlaceholder,
-                                                                            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName);
+        return this.nvhFormattingEditor.isChoiceElementValidToLayoutContainer(this.props.state.data);
       },
-      isInvalidToActivePlaceholder() {
-        if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
+      cannotBeDraggedToActiveLayoutContainer() {
+        if (!this.nvhFormattingEditor.data.selectedLayoutContainer) {
           return false;
         }
-        return !this.isValidToActivePlaceholder();
+        return !this.canBeDraggedToActiveLayoutContainer();
       }
     }
   </script>

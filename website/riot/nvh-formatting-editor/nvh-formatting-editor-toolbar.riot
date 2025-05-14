@@ -97,6 +97,8 @@
 
   <script>
     export default {
+      bindings: [["nvhFormattingEditor", "updateToolbar", "update"]],
+
       state: {
         exportedEntries: {
           isLoading: false,
@@ -105,7 +107,6 @@
           total: 0,
         },
       },
-      nvhFormattingEditor: null,
 
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
@@ -113,13 +114,13 @@
 
       onLayoutClick(layoutName) {
         this.nvhFormattingEditor.data.activeLayout = layoutName;
-        this.nvhFormattingEditor.data.selectedPlaceholder = null;
+        this.nvhFormattingEditor.data.selectedLayoutContainer = null;
         this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.updateEditor();
       },
       onSectionClick(sectionName) {
         this.props.state.isSectionVisible[sectionName] = !this.props.state.isSectionVisible[sectionName];
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.updateEditor();
       },
       async onExportPDF() {
         await this.nvhFormattingEditor.stringifyAllEntries(this.state.exportedEntries);

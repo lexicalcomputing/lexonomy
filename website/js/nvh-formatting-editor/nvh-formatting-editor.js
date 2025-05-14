@@ -11,9 +11,8 @@ class NVHFormattingEditorClass {
   constructor() {
     this.timeout = null,
     this.dropdownTimeout = null,
-    this.formattingEditorComponent = null,
     this.elementsSchema = null,
-    this.data = this.initializeDataAttributes(),
+    this.data = this.getInitializedDataAttributes(),
     this.currentLayout = {
       schema: null,
       elements: null,
@@ -36,21 +35,24 @@ class NVHFormattingEditorClass {
     riot.register('example-video-item', example_video_item);
   }
 
-  // TODO: rename
-  initializeDataAttributes() {
+  updateEditor() {
+    this.trigger("updateEditor");
+  }
+
+  getInitializedDataAttributes() {
     return {
       canBeDropped: true,
       canBeDragged: true,
-      canSelectPlaceholder: true,
+      canSelectLayoutContainer: true,
       dropInfo: {
         wasSuccessful: false,
         index: null,
       },
       mouseData: null,
-      draggedPlaceholder: null,
-      hoveredPlaceholder: null,
-      selectedPlaceholder: null,
-      selectedPlaceholderParentAreaFullName: "",
+      draggedLayoutContainer: null,
+      hoveredLayoutContainer: null,
+      selectedLayoutContainer: null,
+      selectedLayoutContainerParentAreaFullName: "",
       activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
     }
   }
@@ -58,7 +60,7 @@ class NVHFormattingEditorClass {
   resetDataAttributes() {
     this.data.canBeDropped = true;
     this.data.canBeDragged = true;
-    this.data.canSelectPlaceholder = true;
+    this.data.canSelectLayoutContainer = true;
     this.data.dropInfo = {
       wasSuccessful: false,
       index: null,
@@ -150,7 +152,7 @@ class NVHFormattingEditorClass {
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
       if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
         exportedEntries.exported = idx;
-        this.formattingEditorComponent.update();
+        this.trigger("updateToolbar");
         await this.appendToHtmlFile(htmlWrapper);
         htmlWrapper = ""
       }
@@ -158,7 +160,7 @@ class NVHFormattingEditorClass {
     exportedEntries.inProgress = false;
     exportedEntries.total = 0;
     exportedEntries.exported = 0;
-    this.formattingEditorComponent.update();
+    this.trigger("updateToolbar");
 
     htmlWrapper += "</div>"
     await this.appendToHtmlFile(htmlWrapper);
@@ -186,27 +188,43 @@ class NVHFormattingEditorClass {
     return resultChildren;
   }
 
-  clearPlaceholder(placeholder) {
-    placeholder.content.name = "";
-    placeholder.content.fullName = "";
-    placeholder.content.area = "";
-    placeholder.content.areaFullName = "";
-    placeholder.content.canHaveChildren = true;
-    placeholder.styles = {};
-    placeholder.markupStyles = [];
-    placeholder.labelStyles = {};
-    placeholder.bulletStyles = {};
+  clearLayoutContainer(layoutContainer) {
+    layoutContainer.content.name = "";
+    layoutContainer.content.fullName = "";
+    layoutContainer.content.area = "";
+    layoutContainer.content.areaFullName = "";
+    layoutContainer.content.canHaveChildren = true;
+    layoutContainer.styles = {};
+    layoutContainer.markupStyles = [];
+    layoutContainer.labelStyles = {};
+    layoutContainer.bulletStyles = {};
+  }
+
+  fillLayoutContainerWithData(layoutContainer, data) {
+    layoutContainer.content.name = data.name;
+    layoutContainer.content.fullName = data.fullName;
+    layoutContainer.content.area = data.name;
+    layoutContainer.content.areaFullName = data.fullName;
+    layoutContainer.content.canHaveChildren = data.children.length !== 0;
+    layoutContainer.styles = {};
+    layoutContainer.labelStyles = {};
+    layoutContainer.bulletStyles = {};
+
+    let markupChildren = this.getDirectMarkupChildren(data.fullName);
+    if (markupChildren.length !== 0) {
+      layoutContainer.markupStyles = this.createMarkupStyles(data.fullName);
+    }
   }
 
   resetSchema() {
     this.initializeSchema();
-    this.formattingEditorComponent.update();
+    this.updateEditor()
   }
 
   initializeSchema() {
     this.currentLayout.schema = this.createSchema();
-    this.data.selectedPlaceholder = null;
-    this.data.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedLayoutContainer = null;
+    this.data.selectedLayoutContainerParentAreaFullName = "";
   }
 
   initializeSchemas() {
@@ -229,8 +247,8 @@ class NVHFormattingEditorClass {
       }
     }
     this.layout.desktop.configured = true;
-    this.data.selectedPlaceholder = null;
-    this.data.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedLayoutContainer = null;
+    this.data.selectedLayoutContainerParentAreaFullName = "";
   }
 
   createSchema() {
@@ -240,7 +258,7 @@ class NVHFormattingEditorClass {
       children: [
         {
           orientation: "column",
-          type: "placeholder",
+          type: "layout-container", // NOTE
           content: {
             name: root.path,
             fullName: root.path,
@@ -271,12 +289,13 @@ class NVHFormattingEditorClass {
   }
 
   goToHistory(index) {
-    this.currentLayout.history.index += index;
-    this.currentLayout.schema = structuredClone(this.currentLayout.history.schema.at(this.currentLayout.history.index));
-    this.currentLayout.elements = structuredClone(this.currentLayout.history.elements.at(this.currentLayout.history.index));
-    this.data.selectedPlaceholder = null;
-    this.data.selectedPlaceholderParentAreaFullName = "";
-    this.formattingEditorComponent.update();
+    let history = this.currentLayout.history
+    history.index += index;
+    this.currentLayout.schema = structuredClone(history.schema.at(history.index));
+    this.currentLayout.elements = structuredClone(history.elements.at(history.index));
+    this.data.selectedLayoutContainer = null;
+    this.data.selectedLayoutContainerParentAreaFullName = "";
+    this.updateEditor();
   }
 
   createElementsSchema() {
@@ -299,28 +318,28 @@ class NVHFormattingEditorClass {
     return objectStructure;
   }
 
-  selectPlaceholder(child, parent) {
-    if (this.data.canSelectPlaceholder) {
-      if (!this.isPlaceholderActive(child)) {
+  selectLayoutContainer(child, parent) {
+    if (this.data.canSelectLayoutContainer) {
+      if (!this.isLayoutContainerActive(child)) {
         if (parent) {
-          this.data.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+          this.data.selectedLayoutContainerParentAreaFullName = parent.content.areaFullName;
         }
-        this.data.selectedPlaceholder = child;
+        this.data.selectedLayoutContainer = child;
       } else {
-        this.data.selectedPlaceholderParentAreaFullName = "";
-        this.data.selectedPlaceholder = null;
+        this.data.selectedLayoutContainerParentAreaFullName = "";
+        this.data.selectedLayoutContainer = null;
       }
     }
-    this.data.canSelectPlaceholder = false;
+    this.data.canSelectLayoutContainer = false;
   }
 
-  isChildChoiceItemOfPlaceholder(child, parent) {
-    return child.includes(parent);
+  isChildChoiceItemOfLayoutContainer(child) {
+    return child.includes(this.data.selectedLayoutContainerParentAreaFullName);
   }
 
   isChildOfParent(parent) {
     let data = this.data.mouseData;
-    if (data?.type === "placeholder") {
+    if (data?.type === "layout-container") {
       return this.isChildObjectOfParent(data, parent);
     }
     if (data?.type === "choice-item") {
@@ -346,12 +365,12 @@ class NVHFormattingEditorClass {
   addElement(index, state, label) {
     let newElement = {
       orientation: "row",
-      type: "placeholder",
+      type: "layout-container",
       content: {
         name: label?.name || "",
         fullName: label?.fullName || "",
-        area: label?.area || "",
-        areaFullName: label?.areaFullName || "",
+        area: label?.area || state.content.area,
+        areaFullName: label?.areaFullName || state.content.areaFullName,
         canHaveChildren: !label ? true : window.store.schema.getElementByPath(label.fullName).children.length
       },
       styles: {},
@@ -360,18 +379,17 @@ class NVHFormattingEditorClass {
       bulletStyles: {},
       children: []
     };
-    this.data.selectedPlaceholder = newElement;
-    this.data.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
+    this.data.selectedLayoutContainer = newElement;
+    this.data.selectedLayoutContainerParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
-    this.formattingEditorComponent.update();
-    this.data.canSelectPlaceholder = false;
+    this.data.canSelectLayoutContainer = false;
   }
 
   deleteElement(indexToDelete, parentState) {
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
-    this.data.canSelectPlaceholder = false;
-    this.data.selectedPlaceholderParentAreaFullName = "";
-    this.data.selectedPlaceholder = null;
+    this.data.canSelectLayoutContainer = false;
+    this.data.selectedLayoutContainerParentAreaFullName = "";
+    this.data.selectedLayoutContainer = null;
   }
 
   isMarkupType(fullName) {
@@ -391,27 +409,27 @@ class NVHFormattingEditorClass {
     return child;
   }
 
-  canHaveAdders(parentFullName, placeholder) {
-    return parentFullName !== placeholder.content.fullName && placeholder.content.canHaveChildren;
+  canHaveAdders(parentFullName, layoutContainer) {
+    return parentFullName !== layoutContainer.content.fullName && layoutContainer.content.canHaveChildren;
   }
 
-  /*Validation of choice-element vs. placeholder relationship functions*/
-  isElementWithoutChildrenToWrapper(element, placeholder) {
-    return placeholder.children.length && !element.children.length;
+  /*Validation of choice-element vs. layoutContainer relationship functions*/
+  isElementWithoutChildrenToWrapper(element, layoutContainer) {
+    return layoutContainer.children.length && !element.children.length;
   }
-  isElementToRedundantNestedWrapper(element, placeholderWrapperAreaFullName, placeholder) {
-    return placeholderWrapperAreaFullName.includes(element.fullName) && placeholder.children.length;
+  isElementToRedundantNestedWrapper(element, layoutContainerWrapperAreaFullName, layoutContainer) {
+    return layoutContainerWrapperAreaFullName.includes(element.fullName) && layoutContainer.children.length;
   }
-  isPlaceholderAsSameWrapper(elementName, placeholder) {
-    if (placeholder.content.fullName && elementName !== placeholder.content.fullName && elementName.includes(placeholder.content.fullName)) {
+  isLayoutContainerAsSameWrapper(elementName, layoutContainer) {
+    if (layoutContainer.content.fullName && elementName !== layoutContainer.content.fullName && elementName.includes(layoutContainer.content.fullName)) {
       return false;
     }
-    if (elementName === placeholder.content.fullName && placeholder.children.length) {
+    if (elementName === layoutContainer.content.fullName && layoutContainer.children.length) {
       return true;
     }
 
-    for (let child of placeholder.children) {
-      if (this.isPlaceholderAsSameWrapper(elementName, child)) {
+    for (let child of layoutContainer.children) {
+      if (this.isLayoutContainerAsSameWrapper(elementName, child)) {
         return true;
       }
     }
@@ -431,16 +449,16 @@ class NVHFormattingEditorClass {
     }
     return true;
   }
-  isChoiceElementValidToPlaceholder(choiceElement, placeholder, placeholderWrapperAreaFullName) {
-    for (let child of placeholder.children) {
+  isChoiceElementValidToLayoutContainer(choiceElement) {
+    for (let child of this.data.selectedLayoutContainer.children) {
       if (!this.isParentLabelOfDropObject(choiceElement.fullName, child)
-        || this.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
+        || this.isLayoutContainerAsSameWrapper(choiceElement.fullName, child)) {
         return false;
       }
     }
-    if (!this.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)
-      || this.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)
-      || this.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
+    if (!this.isChildChoiceItemOfLayoutContainer(choiceElement.fullName)
+      || this.isElementToRedundantNestedWrapper(choiceElement, this.data.selectedLayoutContainerParentAreaFullName, this.data.selectedLayoutContainer)
+      || this.isElementWithoutChildrenToWrapper(choiceElement, this.data.selectedLayoutContainer)) {
       return false;
     }
     return true;
@@ -573,14 +591,14 @@ class NVHFormattingEditorClass {
     return result_css;
   }
 
-  isPlaceholderHovered(placeholder) {
-    return this.data.hoveredPlaceholder === placeholder;
+  isLayoutContainerHovered(layoutContainer) {
+    return this.data.hoveredLayoutContainer === layoutContainer;
   }
-  isPlaceholderActive(placeholder) {
-    return this.data.selectedPlaceholder === placeholder;
+  isLayoutContainerActive(layoutContainer) {
+    return this.data.selectedLayoutContainer === layoutContainer;
   }
-  isPlaceholderDragged(placeholder) {
-    return this.data.draggedPlaceholder === placeholder;
+  isLayoutContainerDragged(layoutContainer) {
+    return this.data.draggedLayoutContainer === layoutContainer;
   }
 }
 

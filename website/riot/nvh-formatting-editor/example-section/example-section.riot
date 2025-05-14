@@ -1,15 +1,15 @@
 <example-section>
   <div class="example-section-container">
     <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
-      <div if={state.exampleEntry === undefined}>Preview is loading ...</div>
-      <div if={state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
-      <example-section-item if={state.exampleEntry}
+      <div if={nvhStore.data.entry === undefined}>Preview is loading ...</div>
+      <div if={nvhStore.data.entry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
+      <example-section-item if={nvhStore.data.entry}
         each={child in nvhFormattingEditor.currentLayout.schema.children}
         onclick={() => onExampleSectionItemClick(child)}
         onmouseenter={(event) => onExampleItemMouseEnter(event, child)}
         onmouseleave={(event) => onExampleItemMouseLeave(event, child)}
         schema={child}
-        entry={state.exampleEntry}
+        entry={nvhStore.data.entry}
         class="example-section-item"
         isFormatting={true}
         bulletIndex={1}
@@ -19,13 +19,7 @@
 
   <script>
     export default {
-
-      state: {
-        exampleEntry: undefined
-      },
-      nvhFormattingEditor: null,
-      store: null,
-      nvhStore: null,
+      bindings: [["store", "entryChanged", "update"]],
 
       async getEntry() {
         let entriesList = await this.store.loadEntryList();
@@ -40,35 +34,27 @@
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.store = window.store;
         this.nvhStore = window.nvhStore;
-
         this.getEntry().then(res => {
-          if (!res) {
-            this.state.exampleEntry = null;
-          } else if (!this.nvhStore.data || !this.nvhStore.data.entry) {
-            this.state.exampleEntry = null;
-          } else {
-            this.state.exampleEntry = this.nvhStore.data.entry;
-          }
           this.update();
         });
       },
 
       onExampleSectionItemClick(state) {
-        this.nvhFormattingEditor.selectPlaceholder(state, null);
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.selectLayoutContainer(state, null);
+        this.nvhFormattingEditor.updateEditor();
       },
       onExampleItemMouseEnter(event, state) {
         if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.add("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
-          nvhFormattingEditor.formattingEditorComponent.update();
+          event.currentTarget.classList.add("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       onExampleItemMouseLeave(event, state) {
         if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.remove("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
-          nvhFormattingEditor.formattingEditorComponent.update();
+          event.currentTarget.classList.remove("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
+          this.nvhFormattingEditor.updateEditor();
         }
       },
     }
