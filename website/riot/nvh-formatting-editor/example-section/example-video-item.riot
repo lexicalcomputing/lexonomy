@@ -19,10 +19,10 @@
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen></iframe>
     <div class="example-video-item-url">
-      <a if={state.showIcon} href={props.value} target="_blank">
+      <a if={state.showIcon} href={props.value} class="link-no-decoration" target="_blank">
         <pre>{window.nvhFormattingEditor.getIcon(state.iconItem)}</pre>
       </a>
-      <a if={state.showIcon} href={props.value} target="_blank">
+      <a if={state.showIcon} href={props.value} class="link-no-decoration" target="_blank">
         <pre>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
       </a>
       <a if={state.showUrl && !state.showUrlAsIcon} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target="_blank">

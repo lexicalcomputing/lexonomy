@@ -5,10 +5,10 @@
           style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
         {state.labelTextValue}
       </pre>
-      <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
+      <a if={state.showUrl && state.showIcon} href={props.value} class="link-no-decoration" target={state.openUrlNewTab ? "_blank" : "_self"}>
         <pre>{window.nvhFormattingEditor.getIcon(state.iconItem)}</pre>
       </a>
-      <a if={state.showUrl && state.showIcon} href={props.value} target={state.openUrlNewTab ? "_blank" : "_self"}>
+      <a if={state.showUrl && state.showIcon} href={props.value} class="link-no-decoration" target={state.openUrlNewTab ? "_blank" : "_self"}>
         <pre>{window.nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
       </a>
       <a if={state.showUrl} class="tooltipped" data-tooltip={state.textAsUrlTooltip ? state.textReplacementForUrl : ""} href={props.value} target={this.state.openUrlNewTab ? "_blank" : "_self"}>{state.replaceUrlWithText && !state.textAsUrlTooltip ? state.textReplacementForUrl : props.value}</a>

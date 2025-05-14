@@ -421,7 +421,7 @@
     </div>
   </div>
   <div if={["video", "audio", "url"].includes(state.type) && (getStyleOptionValue("show-url") || getStyleOptionValue("show-url") == null)} class="styles-section-item-wrapper">
-    <div class="label">Show icon:</div>
+    <div class="label">Show icon options:</div>
     <div class="value-wrapper">
       <div class="value-item"
           onclick={onChangeStyle.bind(this, "show-icon", getStyleOptionValue("show-icon") === null ? true : !getStyleOptionValue("show-icon"))}
