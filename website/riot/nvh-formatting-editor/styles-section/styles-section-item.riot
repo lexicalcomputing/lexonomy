@@ -142,22 +142,52 @@
   <div class="styles-section-item-wrapper">
     <div class="label">Border width (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" class="input-range" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" max="10" step="1" onchange={onChangeStyle.bind(this, "border-width", null)}>
-      <input type="number" class="input-number" value={getStyleOptionValue("border-width") === null ? 0 : getStyleOptionValue("border-width")} min="0" onchange={onChangeStyle.bind(this, "border-width", null)}>
+      <input type="range"
+            class="input-range"
+            value={!getStyleOptionValue("border-width") ? 0 : getStyleOptionValue("border-width")}
+            min="0"
+            max="10"
+            step="1"
+            onchange={onChangeStyle.bind(this, "border-width", null)}>
+      <input type="number"
+            class="input-number"
+            value={!getStyleOptionValue("border-width") ? 0 : getStyleOptionValue("border-width")}
+            min="0"
+            onchange={onChangeStyle.bind(this, "border-width", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Box shadow (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" class="input-range" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
-      <input type="number" class="input-number" value={getStyleOptionValue("box-shadow") === null ? 0 : getStyleOptionValue("box-shadow")} min="0" onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="range"
+            class="input-range"
+            value={!getStyleOptionValue("box-shadow") ? 0 : getStyleOptionValue("box-shadow")}
+            min="0"
+            max="50"
+            step="1"
+            onchange={onChangeStyle.bind(this, "box-shadow", null)}>
+      <input type="number"
+            class="input-number"
+            value={!getStyleOptionValue("box-shadow") ? 0 : getStyleOptionValue("box-shadow")}
+            min="0"
+            onchange={onChangeStyle.bind(this, "box-shadow", null)}>
     </div>
   </div>
   <div class="styles-section-item-wrapper">
     <div class="label">Rounded corners (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" class="input-range" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "border-radius", null)}>
-      <input type="number" class="input-number" value={getStyleOptionValue("border-radius") === null ? 0 : getStyleOptionValue("border-radius")} min="0" onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="range"
+            class="input-range"
+            value={!getStyleOptionValue("border-radius") ? 0 : getStyleOptionValue("border-radius")}
+            min="0"
+            max="50"
+            step="1"
+            onchange={onChangeStyle.bind(this, "border-radius", null)}>
+      <input type="number"
+            class="input-number"
+            value={!getStyleOptionValue("border-radius") ? 0 : getStyleOptionValue("border-radius")}
+            min="0"
+            onchange={onChangeStyle.bind(this, "border-radius", null)}>
     </div>
   </div>
   <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
@@ -167,8 +197,18 @@
         class="material-icons tooltipped">help</i>
     </div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" class="input-range" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "margin", null)}>
-      <input type="number" class="input-number" value={getStyleOptionValue("margin") === null ? 0 : getStyleOptionValue("margin")} min="0" onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="range"
+            class="input-range"
+            value={!getStyleOptionValue("margin") ? 0 : getStyleOptionValue("margin")}
+            min="0"
+            max="50"
+            step="1"
+            onchange={onChangeStyle.bind(this, "margin", null)}>
+      <input type="number"
+            class="input-number"
+            value={!getStyleOptionValue("margin") ? 0 : getStyleOptionValue("margin")}
+            min="0"
+            onchange={onChangeStyle.bind(this, "margin", null)}>
     </div>
   </div>
   <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
@@ -178,8 +218,18 @@
         class="material-icons tooltipped">help</i>
     </div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" class="input-range" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" max="50" step="1" onchange={onChangeStyle.bind(this, "padding", null)}>
-      <input type="number" class="input-number" value={getStyleOptionValue("padding") === null ? 0 : getStyleOptionValue("padding")} min="0" onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="range"
+            class="input-range"
+            value={!getStyleOptionValue("padding") ? 0 : getStyleOptionValue("padding")}
+            min="0"
+            max="50"
+            step="1"
+            onchange={onChangeStyle.bind(this, "padding", null)}>
+      <input type="number"
+            class="input-number"
+            value={!getStyleOptionValue("padding") ? 0 : getStyleOptionValue("padding")}
+            min="0"
+            onchange={onChangeStyle.bind(this, "padding", null)}>
     </div>
   </div>
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
@@ -196,8 +246,19 @@
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Text size (px):</div>
     <div class="value-wrapper" style="gap: 10px;">
-      <input type="range" class="input-range" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" max="50" step="1" onchange={onChangeStyle.bind(this, "font-size", null)}>
-      <input type="number" class="input-number" value={getStyleOptionValue("font-size") === null ? 16 : getStyleOptionValue("font-size")} min="16" onchange={onChangeStyle.bind(this, "font-size", null)}>
+      <input type="range"
+            class="input-range"
+            value={!getStyleOptionValue("font-size") ? 8 : getStyleOptionValue("font-size")}
+            min="8"
+            max="50"
+            step="1"
+            onchange={onChangeStyle.bind(this, "font-size", null)}>
+      <input type="number"
+            class="input-number tooltipped"
+            data-tooltip={!getStyleOptionValue("font-size") ? "By default, the element has the text size of its parent. Set text size here to overwrite parent settings." : "Remove value to apply parent text size"}
+            value={getStyleOptionValue("font-size")}
+            min="1"
+            onchange={onChangeStyle.bind(this, "font-size", null)}>
     </div>
   </div>
   <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
