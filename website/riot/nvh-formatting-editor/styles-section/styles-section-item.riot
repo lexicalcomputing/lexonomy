@@ -582,7 +582,7 @@
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
-        this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
+        this.state.selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
         if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
           let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
@@ -597,7 +597,7 @@
         this.state.isGroup = this.state.selectedPlaceholder.children.length;
       },
       onBeforeUpdate(props) {
-        this.state.selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
+        this.state.selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
         if (this.state.selectedPlaceholder !== null && this.state.selectedPlaceholder.content.fullName !== "" && !props.isLabelOptionStyle && !props.isBulletOptionStyle) {
           let config = this.nvhStore.getElementConfig(this.state.selectedPlaceholder.content.fullName);
           if (config !== undefined) {
@@ -615,7 +615,7 @@
       },
 
       getStyleOptionValue(option) {
-        if (this.nvhFormattingEditor.global.selectedPlaceholder === null) {
+        if (this.nvhFormattingEditor.data.selectedPlaceholder === null) {
           return null;
         }
         if (this.state.styles === undefined) {
@@ -633,7 +633,7 @@
         this.onChangeStyle2(option, value);
       },
       onChangeStyle2(option, value) {
-        let selectedPlaceholder = this.nvhFormattingEditor.global.selectedPlaceholder;
+        let selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
         if (selectedPlaceholder === null) {
           console.log("There is no selected placeholder");
           return;

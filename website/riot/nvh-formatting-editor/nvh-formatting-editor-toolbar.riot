@@ -68,25 +68,25 @@
       <div onclick={onLayoutClick.bind(this, "desktop")}
           data-tooltip="Desktop layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
         <i class="material-icons">desktop_windows</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "tablet")}
           data-tooltip="Tablet layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
         <i class="material-icons">tablet</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "mobile")}
           data-tooltip="Mobile phone layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
         <i class="material-icons">phone_android</i>
       </div>
       <div onclick={onLayoutClick.bind(this, "pdf")}
           data-tooltip="Export to PDF layout"
           class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.global.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
+                {nvhFormattingEditor.data.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
         <i class="material-icons">picture_as_pdf</i>
       </div>
     </div>
@@ -112,8 +112,8 @@
       },
 
       onLayoutClick(layoutName) {
-        this.nvhFormattingEditor.global.activeLayout = layoutName;
-        this.nvhFormattingEditor.global.selectedPlaceholder = null;
+        this.nvhFormattingEditor.data.activeLayout = layoutName;
+        this.nvhFormattingEditor.data.selectedPlaceholder = null;
         this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
         this.nvhFormattingEditor.clearStatuses(this.nvhFormattingEditor.currentLayout.schema);
         this.nvhFormattingEditor.formattingEditorComponent.update();

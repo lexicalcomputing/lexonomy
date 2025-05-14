@@ -26,19 +26,19 @@
       },
 
       onMouseDown(state) {
-        this.nvhFormattingEditor.global.mouseData = this.props.state.data;
+        this.nvhFormattingEditor.data.mouseData = this.props.state.data;
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       isValidToActivePlaceholder() {
-        if (!this.nvhFormattingEditor.global.selectedPlaceholder) {
+        if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
           return false;
         }
         return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
-                                                                            this.nvhFormattingEditor.global.selectedPlaceholder,
-                                                                            this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName);
+                                                                            this.nvhFormattingEditor.data.selectedPlaceholder,
+                                                                            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName);
       },
       isInvalidToActivePlaceholder() {
-        if (!this.nvhFormattingEditor.global.selectedPlaceholder) {
+        if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
           return false;
         }
         return !this.isValidToActivePlaceholder();

@@ -31,14 +31,14 @@
         this.nvhFormattingEditor.formattingEditorComponent.update();
       },
       onPlaceholderMouseEnter(event, state) {
-        if (!this.nvhFormattingEditor.global.mouseData) {
+        if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onPlaceholderMouseLeave(event, state) {
-        if (!this.nvhFormattingEditor.global.mouseData) {
+        if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
           this.nvhFormattingEditor.formattingEditorComponent.update();
@@ -47,7 +47,7 @@
       getCssClass(placeholder) {
         cssClass = "placeholder placeholder-first";
         cssClass += placeholder.status.isActive ? " placeholder-selected" : "";
-        cssClass += placeholder.status.isHovered && !this.nvhFormattingEditor.global.mouseData ? " placeholder-mouse-hover" : ""
+        cssClass += placeholder.status.isHovered && !this.nvhFormattingEditor.data.mouseData ? " placeholder-mouse-hover" : ""
         cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
         cssClass += this.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
         return cssClass;

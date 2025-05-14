@@ -1,5 +1,5 @@
 <placeholder-component>
-  <action-panel if={!nvhFormattingEditor.global.mouseData}
+  <action-panel if={!nvhFormattingEditor.data.mouseData}
           class="action-panel
                 {props.state.status.isHovered ? "action-panel-hovered" : ""}"
           index={props.index}
@@ -84,34 +84,34 @@
       },
 
       onMouseUp(event, state) {
-        if (this.nvhFormattingEditor.global.canBeDropped) {
-          const data = this.nvhFormattingEditor.global.mouseData;
+        if (this.nvhFormattingEditor.data.canBeDropped) {
+          const data = this.nvhFormattingEditor.data.mouseData;
           if (!data) {
             return;
           }
           if (data.type === "choice-item") {
-            this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
             if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)) {
               /*Can not drop label to be a wrapper, if it can not have children*/
-              this.nvhFormattingEditor.global.canBeDropped = false;
+              this.nvhFormattingEditor.data.canBeDropped = false;
               return;
             }
             if (this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)) {
               /*Can not drop label to area with same fullName because it is redundant (redundant child wrapper)*/
-              this.nvhFormattingEditor.global.canBeDropped = false;
+              this.nvhFormattingEditor.data.canBeDropped = false;
               return;
             }
             for (let child of state.children) {
               if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)) {
                 /*Can not place label to placeholder, because not all children labels are valid*/
-                this.nvhFormattingEditor.global.canBeDropped = false;
+                this.nvhFormattingEditor.data.canBeDropped = false;
                 return;
               }
             }
             for (let child of state.children) {
               if (this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
                 /*Can not create redundant parent wrapper*/
-                this.nvhFormattingEditor.global.canBeDropped = false;
+                this.nvhFormattingEditor.data.canBeDropped = false;
                 return;
               }
             }
@@ -120,7 +120,7 @@
               Dragged element can not be dropped because,
               it is not a child element of the parent placeholder where I want to drop him.
               */
-              this.nvhFormattingEditor.global.canBeDropped = false;
+              this.nvhFormattingEditor.data.canBeDropped = false;
               return;
             }
 
@@ -142,33 +142,33 @@
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          this.nvhFormattingEditor.global.canBeDropped = false;
+          this.nvhFormattingEditor.data.canBeDropped = false;
         }
       },
       onAdderMouseEnter(event) {
-        const data = this.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.data.mouseData;
         if (data && data.type === "placeholder") {
           event.currentTarget.classList.add("adder-highligth-dragged");
         }
       },
       onAdderMouseLeave(event) {
-        const data = this.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.data.mouseData;
         if (data && data.type === "placeholder") {
           event.currentTarget.classList.remove("adder-highligth-dragged");
         }
       },
       onAdderMouseUp(event, state, index) {
-        if (this.nvhFormattingEditor.global.canBeDropped) {
-          const data = this.nvhFormattingEditor.global.mouseData;
+        if (this.nvhFormattingEditor.data.canBeDropped) {
+          const data = this.nvhFormattingEditor.data.mouseData;
           if (!data) {
             return;
           }
           if (data.type === "placeholder") {
             state.children.splice(index, 0, data);
-            this.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
-            this.nvhFormattingEditor.global.dropInfo.index = index;
-            this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
-            this.nvhFormattingEditor.global.canBeDropped = false;
+            this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
+            this.nvhFormattingEditor.data.dropInfo.index = index;
+            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
+            this.nvhFormattingEditor.data.canBeDropped = false;
           }
           if (data.releaseFunction) {
             data.releaseFunction.run(...data.releaseFunction.parameters);
@@ -179,14 +179,14 @@
         }
       },
       onPlaceholderMouseEnter(event, state, parentState) {
-        if (!this.nvhFormattingEditor.global.mouseData) {
+        if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onPlaceholderMouseLeave(event, state, parentState) {
-        if (!this.nvhFormattingEditor.global.mouseData) {
+        if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
           /*
@@ -216,7 +216,7 @@
         return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.state.content.fullName));
       },
       canBeDropped(state) {
-        const data = this.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.data.mouseData;
         if (!data || data.type !== "choice-item") {
           return false;
         }
@@ -253,7 +253,7 @@
       getPlaceholderCssClass(placeholder) {
         let cssClass = "placeholder";
         cssClass += placeholder.status.isActive ? " placeholder-selected" : "";
-        cssClass += placeholder.status.isHovered && !this.nvhFormattingEditor.global.mouseData ? " placeholder-mouse-hover" : "";
+        cssClass += placeholder.status.isHovered && !this.nvhFormattingEditor.data.mouseData ? " placeholder-mouse-hover" : "";
         cssClass += placeholder.content.name && placeholder.children.length !== 0 ? " placeholder-wrapping-content" : "";
         cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
         cssClass += placeholder.status.isDragged ? " placeholder-dragged" : "";
@@ -269,7 +269,7 @@
       },
       getAdderCssClass(placeholder, adderType) {
         let cssClass = "adder"
-        cssClass += !this.nvhFormattingEditor.global.mouseData || this.nvhFormattingEditor.global.mouseData.type === "placeholder" ? "" : " adder-invisible";
+        cssClass += !this.nvhFormattingEditor.data.mouseData || this.nvhFormattingEditor.data.mouseData.type === "placeholder" ? "" : " adder-invisible";
         if (adderType === "first") {
           cssClass += ` adder-${placeholder.children.length === 0 ? "column": placeholder.orientation}`;
           cssClass += placeholder.children.length === 0 ? " adder-alone" : "";

@@ -153,7 +153,7 @@
         if (!this.props.isFormatting) {
           return;
         }
-        if (!nvhFormattingEditor.global.mouseData) {
+        if (!nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           state.status.isHovered = true;
           nvhFormattingEditor.formattingEditorComponent.update();
@@ -163,7 +163,7 @@
         if (!this.props.isFormatting) {
           return;
         }
-        if (!nvhFormattingEditor.global.mouseData) {
+        if (!nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           state.status.isHovered = false;
           nvhFormattingEditor.formattingEditorComponent.update();

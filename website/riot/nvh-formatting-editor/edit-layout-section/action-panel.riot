@@ -45,14 +45,14 @@
     },
   
     onMouseDown(event, state, indexToDrag) {
-      let global = this.nvhFormattingEditor.global;
-      if (global.canBeDragged) {
+      let data = this.nvhFormattingEditor.data;
+      if (data.canBeDragged) {
         let releaseFunction = {
           parameters: [event.currentTarget.parentElement.parentElement.parentElement.parentElement, this.props.index, this.props.parentState, this.props.state],
           run: this.onRelease,
         };
         state["releaseFunction"] = releaseFunction;
-        global.mouseData = state;
+        data.mouseData = state;
         state.status.isDragged = true;
 
         this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
@@ -62,17 +62,17 @@
         }
         this.nvhFormattingEditor.formattingEditorComponent.update(); /*This forces Chrome browser to rerender placeholders and adders*/
       }
-      global.canBeDragged = false;
+      data.canBeDragged = false;
     },
     onRelease(htmlElement, indexToDelete, parentState, state) {
-      let global = this.nvhFormattingEditor.global;
+      let data = this.nvhFormattingEditor.data;
       /* If placeholder was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
       the desired element. */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
-                                && global.dropInfo.index < indexToDelete;
+                                && data.dropInfo.index < indexToDelete;
 
-      if (global.dropInfo.wasSuccessful) {
+      if (data.dropInfo.wasSuccessful) {
         if (wasIndexDecreased) {
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
         } else {
@@ -88,7 +88,7 @@
       rightAdder.style.display = "none";
     },
     duplicateElement() {
-      let copiedElement = JSON.parse(JSON.stringify(this.props.state));
+      let copiedElement = structuredClone(this.props.state);
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
       this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
       copiedElement.status.isHovered = false;

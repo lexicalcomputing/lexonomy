@@ -1,6 +1,6 @@
 <example-section>
   <div class="example-section-container">
-    <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.global.activeLayout}">
+    <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
       <div if={state.exampleEntry === undefined}>Preview is loading ...</div>
       <div if={state.exampleEntry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
       <example-section-item if={state.exampleEntry}

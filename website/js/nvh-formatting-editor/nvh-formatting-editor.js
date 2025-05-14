@@ -13,7 +13,7 @@ class NVHFormattingEditorClass {
     this.dropdownTimeout = null,
     this.formattingEditorComponent = null,
     this.elementsSchema = null,
-    this.global = this.initializeGlobalAttributes(),
+    this.data = this.initializeDataAttributes(),
     this.currentLayout = {
       schema: null,
       elements: null,
@@ -36,7 +36,7 @@ class NVHFormattingEditorClass {
     riot.register('example-video-item', example_video_item);
   }
 
-  initializeGlobalAttributes() {
+  initializeDataAttributes() {
     return {
       canBeDropped: true,
       canBeDragged: true,
@@ -63,10 +63,10 @@ class NVHFormattingEditorClass {
   }
 
   setClosestConfiguredLayout(activeLayout) {
-    if (this.global.activeLayout === activeLayout) {
+    if (this.data.activeLayout === activeLayout) {
       return
     }
-    this.global.activeLayout = activeLayout;
+    this.data.activeLayout = activeLayout;
     let mobileConfigured = !!this.layout.mobile.configured;
     let tabletConfigured = !!this.layout.tablet.configured;
     if (activeLayout === "mobile") {
@@ -180,8 +180,8 @@ class NVHFormattingEditorClass {
 
   initializeSchema() {
     this.currentLayout.schema = this.createSchema();
-    this.global.selectedPlaceholder = null;
-    this.global.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
+    this.data.selectedPlaceholderParentAreaFullName = "";
   }
 
   initializeSchemas() {
@@ -194,18 +194,18 @@ class NVHFormattingEditorClass {
     for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
       this.layout[layout] = {
         configured: false,
-        schema: JSON.parse(JSON.stringify(initialSchema)),
-        elements: JSON.parse(JSON.stringify(defaultElements)),
+        schema: structuredClone(initialSchema),
+        elements: structuredClone(defaultElements),
         history: {
           index: 0,
-          schema: [JSON.parse(JSON.stringify(initialSchema))],
-          elements: [JSON.parse(JSON.stringify(defaultElements))],
+          schema: [structuredClone(initialSchema)],
+          elements: [structuredClone(defaultElements)],
         }
       }
     }
     this.layout.desktop.configured = true;
-    this.global.selectedPlaceholder = null;
-    this.global.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
+    this.data.selectedPlaceholderParentAreaFullName = "";
   }
 
   createSchema() {
@@ -283,11 +283,11 @@ class NVHFormattingEditorClass {
 
   goToHistory(index) {
     this.currentLayout.history.index += index;
-    this.currentLayout.schema = JSON.parse(JSON.stringify(this.currentLayout.history.schema.at(this.currentLayout.history.index)));
-    this.currentLayout.elements = JSON.parse(JSON.stringify(this.currentLayout.history.elements.at(this.currentLayout.history.index)));
+    this.currentLayout.schema = structuredClone(this.currentLayout.history.schema.at(this.currentLayout.history.index));
+    this.currentLayout.elements = structuredClone(this.currentLayout.history.elements.at(this.currentLayout.history.index));
     this.clearStatuses(this.currentLayout.schema);
-    this.global.selectedPlaceholder = null;
-    this.global.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
+    this.data.selectedPlaceholderParentAreaFullName = "";
     this.formattingEditorComponent.update();
   }
 
@@ -312,24 +312,24 @@ class NVHFormattingEditorClass {
   }
 
   selectPlaceholder(child, parent) {
-    if (this.global.canSelectPlaceholder) {
+    if (this.data.canSelectPlaceholder) {
       let isActiveCurrent = child.status.isActive;
       this.clearStatuses(this.currentLayout.schema);
       child.status.isActive = !isActiveCurrent;
       child.status.isHovered = true;
       if (child.status.isActive) {
         if (parent) {
-          this.global.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
+          this.data.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
         }
-        this.global.selectedPlaceholder = child;
+        this.data.selectedPlaceholder = child;
       } else {
-        this.global.selectedPlaceholderParentAreaFullName = "";
-        this.global.selectedPlaceholder = null;
+        this.data.selectedPlaceholderParentAreaFullName = "";
+        this.data.selectedPlaceholder = null;
       }
     } else {
       child.status.isActive = false;
     }
-    this.global.canSelectPlaceholder = false;
+    this.data.canSelectPlaceholder = false;
   }
 
   isChildChoiceItemOfPlaceholder(child, parent) {
@@ -337,7 +337,7 @@ class NVHFormattingEditorClass {
   }
 
   isChildOfParent(parent) {
-    let data = this.global.mouseData;
+    let data = this.data.mouseData;
     if (data?.type === "placeholder") {
       return this.isChildObjectOfParent(data, parent);
     }
@@ -384,19 +384,19 @@ class NVHFormattingEditorClass {
       children: []
     };
     this.clearStatuses(this.currentLayout.schema);
-    this.global.selectedPlaceholder = newElement;
-    this.global.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
+    this.data.selectedPlaceholder = newElement;
+    this.data.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
     this.formattingEditorComponent.update();
-    this.global.canSelectPlaceholder = false;
+    this.data.canSelectPlaceholder = false;
   }
 
   deleteElement(indexToDelete, parentState) {
     this.clearStatuses(this.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
-    this.global.canSelectPlaceholder = false;
-    this.global.selectedPlaceholderParentAreaFullName = "";
-    this.global.selectedPlaceholder = null;
+    this.data.canSelectPlaceholder = false;
+    this.data.selectedPlaceholderParentAreaFullName = "";
+    this.data.selectedPlaceholder = null;
   }
 
   isMarkupType(fullName) {
@@ -520,7 +520,7 @@ class NVHFormattingEditorClass {
     return fullName && !window.nvhStore.getElementConfig(fullName);
   }
   getMaxPossibleWidth() {
-    switch(this.global.activeLayout) {
+    switch(this.data.activeLayout) {
       case "tablet":
         return "1020px";
       case "pdf":

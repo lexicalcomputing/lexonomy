@@ -30,7 +30,7 @@
         <div class="header-box">
           <i class="small material-icons">view_compact</i>
           <h2>Layout</h2>
-          <label if={nvhFormattingEditor.global.activeLayout !== "desktop" && nvhStore.data.formatting.layout}
+          <label if={nvhFormattingEditor.data.activeLayout !== "desktop" && nvhStore.data.formatting.layout}
                 class="checkbox"
                 style="margin-left: 20px;">
               <input type="checkbox" checked={nvhFormattingEditor.currentLayout.configured}/>
@@ -40,7 +40,7 @@
                   data-tooltip={nvhFormattingEditor.currentLayout.configured ?
                                 "Layout for this device is used.\nWhen viewing the dictionary on this device, current layout will be seen."
                                 : "Layout for this device is not used.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}>
-                Use {nvhFormattingEditor.global.activeLayout} layout
+                Use {nvhFormattingEditor.data.activeLayout} layout
               </span>
           </label>
         </div>
@@ -104,7 +104,7 @@
         this.store = window.store,
         this.nvhFormattingEditor.elementsSchema = this.nvhFormattingEditor.createElementsSchema();
         this.nvhFormattingEditor.formattingEditorComponent = this;
-        this.nvhFormattingEditor.global = this.nvhFormattingEditor.initializeGlobalAttributes();
+        this.nvhFormattingEditor.data = this.nvhFormattingEditor.initializeDataAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
 
@@ -121,11 +121,11 @@
             this.nvhFormattingEditor.layout[layout] = {
               configured: !formatting.layout[layout].configured ? false : formatting.layout[layout].configured,
               schema: formatting.layout[layout].schema,
-              elements: JSON.parse(JSON.stringify(layoutElements)),
+              elements: structuredClone(layoutElements),
               history: {
                 index: 0,
-                schema: [JSON.parse(JSON.stringify(formatting.layout[layout].schema))],
-                elements: [JSON.parse(JSON.stringify(layoutElements))],
+                schema: [structuredClone(formatting.layout[layout].schema)],
+                elements: [structuredClone(layoutElements)],
               }
             }
           }
@@ -140,19 +140,19 @@
         document.removeEventListener("mousedown", this.globalOnMouseDown);
       },
       onBeforeUpdate(props) {
-        this.nvhFormattingEditor.global = {
+        this.nvhFormattingEditor.data = {
           canBeDropped: true,
           canBeDragged: true,
           dropInfo: {
             wasSuccessful: false,
             index: null,
           },
-          mouseData: this.nvhFormattingEditor.global.mouseData,
+          mouseData: this.nvhFormattingEditor.data.mouseData,
           canSelectPlaceholder: true,
-          selectedPlaceholder: this.nvhFormattingEditor.global.selectedPlaceholder,
-          selectedPlaceholderParentAreaFullName: this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName,
+          selectedPlaceholder: this.nvhFormattingEditor.data.selectedPlaceholder,
+          selectedPlaceholderParentAreaFullName: this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName,
           parent: null,
-          activeLayout: this.nvhFormattingEditor.global.activeLayout,
+          activeLayout: this.nvhFormattingEditor.data.activeLayout,
         };
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
@@ -160,14 +160,14 @@
         if (this.isSchemaChanged(this.nvhFormattingEditor.currentLayout.history.schema.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.schema)) {
           this.nvhFormattingEditor.currentLayout.history.elements.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
           this.nvhFormattingEditor.currentLayout.history.schema.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
-          this.nvhFormattingEditor.currentLayout.history.elements.push(JSON.parse(JSON.stringify(this.nvhFormattingEditor.currentLayout.elements)));
-          this.nvhFormattingEditor.currentLayout.history.schema.push(JSON.parse(JSON.stringify(this.nvhFormattingEditor.currentLayout.schema)));
+          this.nvhFormattingEditor.currentLayout.history.elements.push(structuredClone(this.nvhFormattingEditor.currentLayout.elements));
+          this.nvhFormattingEditor.currentLayout.history.schema.push(structuredClone(this.nvhFormattingEditor.currentLayout.schema));
           this.nvhFormattingEditor.currentLayout.history.index += 1;
         }
       },
 
       onMouseEnter() {
-        const data = this.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.data.mouseData;
         if (data && data.type === "elementholder-label") {
           let trashIcon = document.getElementById("trash-icon");
           if (Array.from(trashIcon.classList).includes("trash-enabled")) {
@@ -180,13 +180,13 @@
         trashIcon.classList.remove("trash-dragged-over");
       },
       onMouseUp() {
-        const data = this.nvhFormattingEditor.global.mouseData;
+        const data = this.nvhFormattingEditor.data.mouseData;
         if (!data) {
           return;
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
-          this.nvhFormattingEditor.global.dropInfo.wasSuccessful = true;
-          this.nvhFormattingEditor.global.selectedPlaceholderParentAreaFullName = "";
+          this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
+          this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");
         }
@@ -232,7 +232,7 @@
       saveSchemas() {
         this.update({isSaving: true});
         this.nvhFormattingEditor.clearStatuses(this.nvhFormattingEditor.currentLayout.schema);
-        this.nvhFormattingEditor.global.selectedPlaceholder = null;
+        this.nvhFormattingEditor.data.selectedPlaceholder = null;
         let elementsConfig = this.nvhStore.data.formatting.elements;
         let layoutConfig = {
           desktop: {
@@ -269,24 +269,24 @@
         this.update({isSaving: true});
         let formatting = this.nvhStore.data.formatting;
         let layoutConfig = formatting.layout;
-        layoutConfig[this.nvhFormattingEditor.global.activeLayout].configured = !this.nvhFormattingEditor.currentLayout.configured;
+        layoutConfig[this.nvhFormattingEditor.data.activeLayout].configured = !this.nvhFormattingEditor.currentLayout.configured;
         this.store.updateDictionaryConfig("formatting", formatting)
               .always(() => {
                 this.state.isSaving = false;
-                this.nvhFormattingEditor.currentLayout.configured = layoutConfig[this.nvhFormattingEditor.global.activeLayout].configured;
+                this.nvhFormattingEditor.currentLayout.configured = layoutConfig[this.nvhFormattingEditor.data.activeLayout].configured;
                 this.update();
               });
       },
       globalOnMouseUp() {
         clearTimeout(this.nvhFormattingEditor.timeout);
-        if (this.nvhFormattingEditor.global.mouseData) {
+        if (this.nvhFormattingEditor.data.mouseData) {
           let adders = document.getElementsByClassName("adder");
           for (let adder of adders) {
             adder.classList.remove("adder-highligth");
             adder.classList.remove("adder-highligth-dragged");
             adder.style.display = "";
           }
-          this.nvhFormattingEditor.global.mouseData = null;
+          this.nvhFormattingEditor.data.mouseData = null;
 
           let trash = document.getElementById("trash-icon");
           if (trash != null) {
@@ -304,7 +304,7 @@
         }
       },
       globalOnMouseDown() {
-        if (this.nvhFormattingEditor.global.mouseData) {
+        if (this.nvhFormattingEditor.data.mouseData) {
           let allElements = document.querySelectorAll("*");
           for (element of allElements) {
             element.classList.add("cursor-grabbing");
