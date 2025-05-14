@@ -860,6 +860,8 @@ def dictconfig(dictID):
         return {"success": False}
     else:
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
+        if not user['loggedin'] and not configs['publico']['public']:
+            return {"success": True, "loggedin": False, "public": False}
         dict_stats = ops.getDictStats(ops.getDB(dictID))
 
         # WARNING consider if new config item does show personal data, than add to this list
