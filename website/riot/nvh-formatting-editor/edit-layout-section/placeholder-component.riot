@@ -79,6 +79,7 @@
         this.props.state.bulletStyles = this.props?.state?.bulletStyles || {}
       },
 
+      // TODO: unify IFs and FORs
       onMouseUp(event, state) {
         if (this.nvhFormattingEditor.data.canBeDropped) {
           const data = this.nvhFormattingEditor.data.mouseData;
@@ -120,6 +121,7 @@
               return;
             }
 
+            // TODO: separate method
             state.content.name = data.name;
             state.content.fullName = data.fullName;
             state.content.area = data.name;
@@ -211,6 +213,7 @@
         }
         return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.state.content.fullName));
       },
+      // TODO: unify IFs and FORs
       canBeDropped(state) {
         const data = this.nvhFormattingEditor.data.mouseData;
         if (!data || data.type !== "choice-item") {

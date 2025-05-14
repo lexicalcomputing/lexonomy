@@ -36,6 +36,7 @@ class NVHFormattingEditorClass {
     riot.register('example-video-item', example_video_item);
   }
 
+  // TODO: rename
   initializeDataAttributes() {
     return {
       canBeDropped: true,
