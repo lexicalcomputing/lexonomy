@@ -1,7 +1,7 @@
 <placeholder-component>
   <action-panel if={!nvhFormattingEditor.data.mouseData}
           class="action-panel
-                {props.state.status.isHovered ? "action-panel-hovered" : ""}"
+                {this.nvhFormattingEditor.isPlaceholderHovered(props.state) ? "action-panel-hovered" : ""}"
           index={props.index}
           parentState={props.parentState}
           state={props.state}
@@ -18,7 +18,7 @@
   <div class={getPlaceholderInsideWrapperCssClass(props.state)}
       style="background-color: {getBackgroundColor()};
             border: 2px solid {getBorderColor()}">
-    <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+    <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isPlaceholderDragged(props.state)
                         && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
             onclick={() => nvhFormattingEditor.addElement(0, props.state, null)}
             onmouseenter={onAdderMouseEnter}
@@ -33,7 +33,7 @@
               title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
                     ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
               onmouseup={(event) => onMouseUp(event, child)}
-              onmouseenter={(event) => onPlaceholderMouseEnter(event, child, props.state)}
+              onmouseenter={(event) => onPlaceholderMouseEnter(event, child)}
               onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
               class={getPlaceholderCssClass(child)}
               state={nvhFormattingEditor.childWithInheritedArea(child, props.state)}
@@ -41,7 +41,7 @@
               isBaseLevel={false}
               index={index}
               canHaveAdders={nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
-      <adder-component if={props.canHaveAdders && !props.state.status.isDragged
+      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isPlaceholderDragged(props.state)
                           && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
               onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, null)}
               onmouseenter={onAdderMouseEnter}
@@ -174,21 +174,21 @@
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          this.nvhFormattingEditor.clearHoveredStatuses(this.nvhFormattingEditor.currentLayout.schema);
+          this.nvhFormattingEditor.data.draggedPlaceholder = null;
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
-      onPlaceholderMouseEnter(event, state, parentState) {
+      onPlaceholderMouseEnter(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
-          state.status.isHovered = true;
+          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
       onPlaceholderMouseLeave(event, state, parentState) {
         if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
-          state.status.isHovered = false;
+          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
           /*
             This is a work-around.
             If I move a placeholder using arrows, sometimes I enter child placeholder
@@ -198,7 +198,7 @@
           const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
           if (classList.includes("placeholder")) {
             event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-            parentState.status.isHovered = true;
+            this.nvhFormattingEditor.data.hoveredPlaceholder = parentState;
           }
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
@@ -252,11 +252,11 @@
       },
       getPlaceholderCssClass(placeholder) {
         let cssClass = "placeholder";
-        cssClass += placeholder.status.isActive ? " placeholder-selected" : "";
-        cssClass += placeholder.status.isHovered && !this.nvhFormattingEditor.data.mouseData ? " placeholder-mouse-hover" : "";
+        cssClass += this.nvhFormattingEditor.isPlaceholderActive(placeholder) ? " placeholder-selected" : "";
+        cssClass += this.nvhFormattingEditor.isPlaceholderHovered(placeholder) && !this.nvhFormattingEditor.data.mouseData ? " placeholder-mouse-hover" : "";
         cssClass += placeholder.content.name && placeholder.children.length !== 0 ? " placeholder-wrapping-content" : "";
         cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
-        cssClass += placeholder.status.isDragged ? " placeholder-dragged" : "";
+        cssClass += this.nvhFormattingEditor.isPlaceholderDragged(placeholder) ? " placeholder-dragged" : "";
         cssClass += this.canBeDropped(placeholder) ? " placeholder-can-be-dropped" : "";
         cssClass += this.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
         return cssClass;

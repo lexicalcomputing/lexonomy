@@ -46,6 +46,8 @@ class NVHFormattingEditorClass {
         index: null,
       },
       mouseData: null,
+      draggedPlaceholder: null,
+      hoveredPlaceholder: null,
       selectedPlaceholder: null,
       selectedPlaceholderParentAreaFullName: "",
       activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
@@ -214,10 +216,6 @@ class NVHFormattingEditorClass {
       orientation: "column",
       children: [
         {
-          status: {
-            isActive: false,
-            isDragged: false,
-          },
           orientation: "column",
           type: "placeholder",
           content: {
@@ -237,38 +235,6 @@ class NVHFormattingEditorClass {
     }
   }
 
-  clearStatuses(state) {
-    if (!state) {
-      return;
-    }
-    Array.from(state.children).map(child => this.clearStatuses(child));
-    state.children.map(child => {
-      child.status.isActive = false;
-      child.status.isHovered = false;
-      child.status.isDragged = false;
-    });
-  }
-
-  clearDraggedStatuses(state) {
-    if (!state) {
-      return;
-    }
-    Array.from(state.children).map(child => this.clearDraggedStatuses(child));
-    state.children.map(child => {
-      child.status.isDragged = false;
-    });
-  }
-
-  clearHoveredStatuses(state) {
-    if (!state) {
-      return;
-    }
-    Array.from(state.children).map(child => this.clearHoveredStatuses(child));
-    state.children.map(child => {
-      child.status.isHovered = false;
-    });
-  }
-
   undoSchema() {
     if (this.currentLayout.history.index > 0) {
       this.goToHistory(-1)
@@ -285,7 +251,6 @@ class NVHFormattingEditorClass {
     this.currentLayout.history.index += index;
     this.currentLayout.schema = structuredClone(this.currentLayout.history.schema.at(this.currentLayout.history.index));
     this.currentLayout.elements = structuredClone(this.currentLayout.history.elements.at(this.currentLayout.history.index));
-    this.clearStatuses(this.currentLayout.schema);
     this.data.selectedPlaceholder = null;
     this.data.selectedPlaceholderParentAreaFullName = "";
     this.formattingEditorComponent.update();
@@ -313,11 +278,7 @@ class NVHFormattingEditorClass {
 
   selectPlaceholder(child, parent) {
     if (this.data.canSelectPlaceholder) {
-      let isActiveCurrent = child.status.isActive;
-      this.clearStatuses(this.currentLayout.schema);
-      child.status.isActive = !isActiveCurrent;
-      child.status.isHovered = true;
-      if (child.status.isActive) {
+      if (!this.isPlaceholderActive(child)) {
         if (parent) {
           this.data.selectedPlaceholderParentAreaFullName = parent.content.areaFullName;
         }
@@ -326,8 +287,6 @@ class NVHFormattingEditorClass {
         this.data.selectedPlaceholderParentAreaFullName = "";
         this.data.selectedPlaceholder = null;
       }
-    } else {
-      child.status.isActive = false;
     }
     this.data.canSelectPlaceholder = false;
   }
@@ -363,11 +322,6 @@ class NVHFormattingEditorClass {
 
   addElement(index, state, label) {
     let newElement = {
-      status: {
-        isActive: true,
-        isHovered: false,
-        isDragged: false,
-      },
       orientation: "row",
       type: "placeholder",
       content: {
@@ -383,7 +337,6 @@ class NVHFormattingEditorClass {
       bulletStyles: {},
       children: []
     };
-    this.clearStatuses(this.currentLayout.schema);
     this.data.selectedPlaceholder = newElement;
     this.data.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
@@ -392,7 +345,6 @@ class NVHFormattingEditorClass {
   }
 
   deleteElement(indexToDelete, parentState) {
-    this.clearStatuses(this.currentLayout.schema);
     parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
     this.data.canSelectPlaceholder = false;
     this.data.selectedPlaceholderParentAreaFullName = "";
@@ -597,6 +549,16 @@ class NVHFormattingEditorClass {
     }
 
     return result_css;
+  }
+
+  isPlaceholderHovered(placeholder) {
+    return this.data.hoveredPlaceholder === placeholder;
+  }
+  isPlaceholderActive(placeholder) {
+    return this.data.selectedPlaceholder === placeholder;
+  }
+  isPlaceholderDragged(placeholder) {
+    return this.data.draggedPlaceholder === placeholder;
   }
 }
 

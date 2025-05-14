@@ -53,7 +53,7 @@
         };
         state["releaseFunction"] = releaseFunction;
         data.mouseData = state;
-        state.status.isDragged = true;
+        data.draggedPlaceholder = state;
 
         this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
         let adders = document.getElementsByClassName("adder");
@@ -90,13 +90,13 @@
     duplicateElement() {
       let copiedElement = structuredClone(this.props.state);
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
-      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
-      copiedElement.status.isHovered = false;
+      this.nvhFormattingEditor.data.selectPlaceholder = null; /*onClick in placeholder will cause that the placeholder will have active status*/
+      this.nvhFormattingEditor.data.hoveredPlaceholder = null;
       this.nvhFormattingEditor.formattingEditorComponent.update();
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
-      this.props.state.status.isActive = false; /*onClick in placeholder will cause that the placeholder will have active status*/
+      this.nvhFormattingEditor.data.selectPlaceholder = null; /*onClick in placeholder will cause that the placeholder will have active status*/
     }
   }
 </script>

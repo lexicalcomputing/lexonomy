@@ -149,6 +149,8 @@
           },
           mouseData: this.nvhFormattingEditor.data.mouseData,
           canSelectPlaceholder: true,
+          draggedPlaceholder: this.nvhFormattingEditor.data.draggedPlaceholder,
+          hoveredPlaceholder: this.nvhFormattingEditor.data.hoveredPlaceholder,
           selectedPlaceholder: this.nvhFormattingEditor.data.selectedPlaceholder,
           selectedPlaceholderParentAreaFullName: this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName,
           parent: null,
@@ -231,7 +233,6 @@
       },
       saveSchemas() {
         this.update({isSaving: true});
-        this.nvhFormattingEditor.clearStatuses(this.nvhFormattingEditor.currentLayout.schema);
         this.nvhFormattingEditor.data.selectedPlaceholder = null;
         let elementsConfig = this.nvhStore.data.formatting.elements;
         let layoutConfig = {
@@ -299,7 +300,6 @@
           for (element of allElements) {
             element.classList.remove("cursor-grabbing");
           }
-          this.nvhFormattingEditor.clearDraggedStatuses(this.nvhFormattingEditor.currentLayout.schema);
           this.nvhFormattingEditor.formattingEditorComponent.update();
         }
       },

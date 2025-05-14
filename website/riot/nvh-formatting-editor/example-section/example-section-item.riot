@@ -1,9 +1,9 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
               {hasBullet() ? "element-holder-has-bullet" : ""}
-              {props.schema.status.isActive && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
-              {props.schema.status.isHovered && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
-              {props.schema.status.isHovered && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
+              {this.nvhFormattingEditor.isPlaceholderActive(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
+              {this.nvhFormattingEditor.isPlaceholderHovered(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
+              {this.nvhFormattingEditor.isPlaceholderHovered(props.schema) && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
         style={props.schema.children.length !== 0 ? nvhFormattingEditor.getCssStyles(state, props.schema.styles) : ""}>
     <pre if={hasBullet()}
         style={nvhFormattingEditor.getCssStyles(state, props.schema.bulletStyles)}>
@@ -65,7 +65,7 @@
       <example-section-item if={!childSchema.content.name /*empty placeholder*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
                             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
-                            onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                            onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema, props.schema)}
                             class="{props.isFormatting ? "example-section-item" : ""}"
                             schema={childSchema}
                             entry={props.entry}
@@ -77,7 +77,7 @@
                                 && childSchema.content.name /*render parent label*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
                             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
-                            onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                            onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema, props.schema)}
                             class="{props.isFormatting ? "example-section-item" : ""}"
                             schema={childSchema}
                             entry={props.entry}
@@ -90,7 +90,7 @@
                     && childSchema.content.name}>
         <example-section-item onclick={() => onExampleItemClick(childSchema, props.schema)}
                                 onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
-                                onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema)}
+                                onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema, props.schema)}
                                 class="{props.isFormatting ? "example-section-item" : ""}"
                                 schema={childSchema}
                                 entry={childEntry}
@@ -155,17 +155,22 @@
         }
         if (!nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
-          state.status.isHovered = true;
+          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
           nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
-      onExampleItemMouseLeave(event, state) {
+      onExampleItemMouseLeave(event, state, parentState) {
         if (!this.props.isFormatting) {
           return;
         }
         if (!nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
-          state.status.isHovered = false;
+          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+          const classList = Array.from(event.currentTarget.parentElement.parentElement.parentElement.classList);
+          if (classList.includes("example-section-item")) {
+            event.currentTarget.parentElement.parentElement.parentElement.classList.add("placeholder-mouse-hover");
+            this.nvhFormattingEditor.data.hoveredPlaceholder = parentState;
+          }
           nvhFormattingEditor.formattingEditorComponent.update();
         }
       },
