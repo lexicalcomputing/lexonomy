@@ -214,14 +214,24 @@ def verifyLogin(email, sessionkey):
 def verifyLoginAndDictAccess(email, sessionkey, dictDB):
     ret = verifyLogin(email, sessionkey)
     configs = readDictConfigs(dictDB)
-    dictAccess = configs["users"].get(email, {"canView": 0,
-                                              "canEdit": 0,
-                                              "canAdd": 0,
-                                              "canDelete": 0,
-                                              "canEditSource": 0,
-                                              "canConfig": 0,
-                                              "canDownload": 0,
-                                              "canUpload": 0})
+    if ret['loggedin']:
+        dictAccess = configs["users"].get(email, {"canView": 0,
+                                                  "canEdit": 0,
+                                                  "canAdd": 0,
+                                                  "canDelete": 0,
+                                                  "canEditSource": 0,
+                                                  "canConfig": 0,
+                                                  "canDownload": 0,
+                                                  "canUpload": 0})
+    else:
+        dictAccess = {"canView": 0,
+                      "canEdit": 0,
+                      "canAdd": 0,
+                      "canDelete": 0,
+                      "canEditSource": 0,
+                      "canConfig": 0,
+                      "canDownload": 0,
+                      "canUpload": 0}
 
     ret["dictAccess"] = dictAccess
     # Admin full access

@@ -100,6 +100,9 @@ def authDict(checkRights, errorRedirect=False):
                 if errorRedirect:
                     redirect("/#"+kwargs["dictID"])
                 else:
+                    if not res["loggedin"]:
+                        response.delete_cookie("email", path="/")
+                        response.delete_cookie("sessionkey", path="/")
                     return res
 
             kwargs["user"] = res
@@ -117,6 +120,8 @@ def auth(func, errorRedirect=False):
     def wrapper_verifyLogin(*args, **kwargs):
         res = ops.verifyLogin(request.cookies.email, request.cookies.sessionkey)
         if not res["loggedin"]:
+            response.delete_cookie("email", path="/")
+            response.delete_cookie("sessionkey", path="/")
             if errorRedirect:
                 redirect("/")
             else:
