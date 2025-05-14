@@ -111,11 +111,6 @@
         let formatting = this.store.data.config.formatting;
 
         if (formatting.layout) {
-          let desktopElements = formatting.layout.desktop.elements ? formatting.layout.desktop.elements : formatting.elements;
-          let tabletElements = formatting.layout.tablet.elements ? formatting.layout.tablet.elements : formatting.elements;
-          let mobileElements = formatting.layout.mobile.elements ? formatting.layout.mobile.elements : formatting.elements;
-          let pdfElements = formatting.layout.pdf.elements ? formatting.layout.pdf.elements : formatting.elements;
-
           for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
             let layoutElements = formatting.layout[layout].elements ? formatting.layout[layout].elements : formatting.elements;
             this.nvhFormattingEditor.layout[layout] = {
@@ -140,31 +135,15 @@
         document.removeEventListener("mousedown", this.globalOnMouseDown);
       },
       onBeforeUpdate(props) {
-        this.nvhFormattingEditor.data = {
-          canBeDropped: true,
-          canBeDragged: true,
-          dropInfo: {
-            wasSuccessful: false,
-            index: null,
-          },
-          mouseData: this.nvhFormattingEditor.data.mouseData,
-          canSelectPlaceholder: true,
-          draggedPlaceholder: this.nvhFormattingEditor.data.draggedPlaceholder,
-          hoveredPlaceholder: this.nvhFormattingEditor.data.hoveredPlaceholder,
-          selectedPlaceholder: this.nvhFormattingEditor.data.selectedPlaceholder,
-          selectedPlaceholderParentAreaFullName: this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName,
-          parent: null,
-          activeLayout: this.nvhFormattingEditor.data.activeLayout,
-        };
+        this.nvhFormattingEditor.resetDataAttributes();
         /*
         Change history, if I modified edit section in other way that using 'undo' or 'redo'.
         */
-        if (this.isSchemaChanged(this.nvhFormattingEditor.currentLayout.history.schema.at(this.nvhFormattingEditor.currentLayout.history.index), this.nvhFormattingEditor.currentLayout.schema)) {
-          this.nvhFormattingEditor.currentLayout.history.elements.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
-          this.nvhFormattingEditor.currentLayout.history.schema.length = this.nvhFormattingEditor.currentLayout.history.index + 1;
-          this.nvhFormattingEditor.currentLayout.history.elements.push(structuredClone(this.nvhFormattingEditor.currentLayout.elements));
-          this.nvhFormattingEditor.currentLayout.history.schema.push(structuredClone(this.nvhFormattingEditor.currentLayout.schema));
-          this.nvhFormattingEditor.currentLayout.history.index += 1;
+        let history = this.nvhFormattingEditor.currentLayout.history;
+        if (this.isSchemaChanged(history.schema.at(history.index), this.nvhFormattingEditor.currentLayout.schema)) {
+          history.schema.length = history.index + 1;
+          history.schema.push(structuredClone(this.nvhFormattingEditor.currentLayout.schema));
+          history.index += 1;
         }
       },
 

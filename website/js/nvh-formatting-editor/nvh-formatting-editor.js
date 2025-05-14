@@ -54,6 +54,12 @@ class NVHFormattingEditorClass {
     }
   }
 
+  resetDataAttributes() {
+    this.data.canBeDropped = true;
+    this.data.canBeDragged = true;
+    this.data.canSelectPlaceholder = true;
+  }
+
   changeLayoutSchema() {
     if (window.innerWidth < 440) {
       this.setClosestConfiguredLayout("mobile");

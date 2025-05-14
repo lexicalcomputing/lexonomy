@@ -79,6 +79,7 @@
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
         }
       }
+      data.draggedPlaceholder = null;
     },
     hideCloseAdders(htmlElement, indexToDrag) {
       let htmlElementChildren = Array.from(htmlElement.children);
