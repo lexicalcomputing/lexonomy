@@ -637,8 +637,6 @@
         hasDirectMarkupChild: false,
         isGroup: false,
       },
-      nvhFormattingEditor: null,
-      nvhStore: null,
 
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
@@ -676,13 +674,9 @@
       },
 
       getStyleOptionValue(option) {
-        if (this.nvhFormattingEditor.data.selectedPlaceholder === null) {
-          return null;
-        }
-        if (this.state.styles === undefined) {
-          return null;
-        }
-        if (this.state.styles[option] === undefined) {
+        if (!this.nvhFormattingEditor.data.selectedPlaceholder
+            || !this.state.styles
+            || !this.state.styles[option]) {
           return null;
         }
         return this.state.styles[option];
@@ -691,9 +685,6 @@
         if (value === null) {
           value = event.currentTarget.value;
         }
-        this.onChangeStyle2(option, value);
-      },
-      onChangeStyle2(option, value) {
         let selectedPlaceholder = this.nvhFormattingEditor.data.selectedPlaceholder;
         if (selectedPlaceholder === null) {
           return;

@@ -333,8 +333,8 @@ class NVHFormattingEditorClass {
     this.data.canSelectPlaceholder = false;
   }
 
-  isChildChoiceItemOfPlaceholder(child, parent) {
-    return child.includes(parent);
+  isChildChoiceItemOfPlaceholder(child) {
+    return child.includes(this.data.selectedPlaceholderParentAreaFullName);
   }
 
   isChildOfParent(parent) {
@@ -449,16 +449,16 @@ class NVHFormattingEditorClass {
     }
     return true;
   }
-  isChoiceElementValidToPlaceholder(choiceElement, placeholder, placeholderWrapperAreaFullName) {
-    for (let child of placeholder.children) {
+  isChoiceElementValidToPlaceholder(choiceElement) {
+    for (let child of this.data.selectedPlaceholder.children) {
       if (!this.isParentLabelOfDropObject(choiceElement.fullName, child)
         || this.isPlaceholderAsSameWrapper(choiceElement.fullName, child)) {
         return false;
       }
     }
-    if (!this.isChildChoiceItemOfPlaceholder(choiceElement.fullName, placeholderWrapperAreaFullName)
-      || this.isElementToRedundantNestedWrapper(choiceElement, placeholderWrapperAreaFullName, placeholder)
-      || this.isElementWithoutChildrenToWrapper(choiceElement, placeholder)) {
+    if (!this.isChildChoiceItemOfPlaceholder(choiceElement.fullName)
+      || this.isElementToRedundantNestedWrapper(choiceElement, this.data.selectedPlaceholderParentAreaFullName, this.data.selectedPlaceholder)
+      || this.isElementWithoutChildrenToWrapper(choiceElement, this.data.selectedPlaceholder)) {
       return false;
     }
     return true;

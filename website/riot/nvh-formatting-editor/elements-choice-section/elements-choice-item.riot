@@ -1,7 +1,7 @@
 <elements-choice-item>
   <div class="elements-choice-item-wrapper
-              {isValidToActivePlaceholder() ? "elements-choice-item-wrapper-valid" : ""}
-              {isInvalidToActivePlaceholder() ? "elements-choice-item-wrapper-invalid" : ""}"
+              {canBeDraggedToActivePlaceholder() ? "elements-choice-item-wrapper-valid" : ""}
+              {cannotBeDraggedToActivePlaceholder() ? "elements-choice-item-wrapper-invalid" : ""}"
       style="padding-left: {props.indentationLevel}px"
       onmousedown={() => onMouseDown(props.state)}>
     <div class="elements-choice-item-box"
@@ -17,9 +17,6 @@
 
   <script>
     export default {
-      nvhFormattingEditor: null,
-      nvhStore: null,
-
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
@@ -29,19 +26,17 @@
         this.nvhFormattingEditor.data.mouseData = this.props.state.data;
         this.nvhFormattingEditor.updateEditor();
       },
-      isValidToActivePlaceholder() {
+      canBeDraggedToActivePlaceholder() {
         if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
           return false;
         }
-        return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data,
-                                                                            this.nvhFormattingEditor.data.selectedPlaceholder,
-                                                                            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName);
+        return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data);
       },
-      isInvalidToActivePlaceholder() {
+      cannotBeDraggedToActivePlaceholder() {
         if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
           return false;
         }
-        return !this.isValidToActivePlaceholder();
+        return !this.canBeDraggedToActivePlaceholder();
       }
     }
   </script>

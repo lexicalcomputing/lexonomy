@@ -117,38 +117,28 @@
         maxPossibleWidth: null,
         labelStyles: null,
       },
-      nvhFormattingEditor: null,
-      nvhStore: null,
 
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
         this.nvhStore = window.nvhStore;
-        props.schema["labelStyles"] = props?.schema?.labelStyles || {};
-        props.schema["bulletStyles"] = props?.schema?.bulletStyles || {};
-        this.state.maxPossibleWidth = props.maxPossibleWidth;
-        this.labelStyles = props.schema.labelStyles;
-        this.formatBulletValue();
-        this.state.maxPossibleWidth = props.maxPossibleWidth;
-        let fullName = props.schema.content.fullName;
-        if (!fullName) {
-          return;
-        }
-        this.formatValue(fullName);
+        this.refreshState(props);
       },
       onBeforeUpdate(props) {
+        this.refreshState(props);
+      },
+
+      refreshState(props) {
         props.schema["labelStyles"] = props?.schema?.labelStyles || {};
         props.schema["bulletStyles"] = props?.schema?.bulletStyles || {};
         this.state.maxPossibleWidth = props.maxPossibleWidth;
         this.labelStyles = props.schema.labelStyles;
         this.formatBulletValue();
-        this.state.maxPossibleWidth = props.maxPossibleWidth;
         let fullName = props.schema.content.fullName;
         if (!fullName) {
           return;
         }
         this.formatValue(fullName);
       },
-
       onExampleItemMouseEnter(event, state) {
         if (!this.props.isFormatting) {
           return;

@@ -24,39 +24,15 @@
 
   <script>
     export default {
-      state: {
-        showPlayer: null,
-        showUrl: null,
-        replaceUrlWithText: null,
-        textReplacementForUrl: null,
-        textAsUrlTooltip: null,
-        showUrlAsIcon: null,
-        showIcon: null,
-        iconItem: null,
-        unicodeIcon: null,
-        labelTextValue: null,
-        showLabelBefore: null,
-      },
-      nvhFormattingEditor: null,
-
       onBeforeMount(props) {
         this.nvhFormattingEditor = window.nvhFormattingEditor;
-        this.state = {
-          showPlayer: props.styles["show-player"],
-          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
-          replaceUrlWithText: props.styles["replace-url-with-text"],
-          textReplacementForUrl: props.styles["text-replacement-for-url"],
-          textAsUrlTooltip: props.styles["text-as-url-tooltip"],
-          showUrlAsIcon: props.styles["show-url-as-icon"],
-          showIcon: props.styles["show-icon"],
-          iconItem: props.styles["icon-item"],
-          unicodeIcon: props.styles["unicode-icon"],
-          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
-          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
-        };
+        this.refreshState(props);
+      },
+      onBeforeUpdate(props) {
+        this.refreshState(props);
       },
 
-      onBeforeUpdate(props) {
+      refreshState(props) {
         this.state = {
           showPlayer: props.styles["show-player"],
           showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
