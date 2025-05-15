@@ -95,6 +95,7 @@ import example_video_item from "./riot/nvh-formatting-editor/example-section/exa
 import feedback_dialog from "./riot/feedback-dialog.riot"
 import forgot from "./riot/forgot.riot"
 import forgot_password from "./riot/forgot-password.riot"
+import layout_container from "./riot/nvh-formatting-editor/edit-layout-section/layout-container.riot"
 import lazy_dropdown from "./riot/lazy-dropdown.riot"
 import loading_overlay from "./riot/loading-overlay.riot"
 import login from "./riot/login.riot"
@@ -126,7 +127,6 @@ import nvh_ske_dialog from "./riot/nvh-editor/plugins/nvh-ske-dialog.riot"
 import nvh_source_code from "./riot/nvh-editor/nvh-source-code.riot"
 import nvh_widget_panel from "./riot/nvh-editor/nvh-widget-panel.riot"
 import open_dictionaries from "./riot/open-dictionaries.riot"
-import placeholder_component from "./riot/nvh-formatting-editor/edit-layout-section/placeholder-component.riot"
 import primary_button from "./riot/primary-button.riot"
 import project_batches from "./riot/projects/project-batches.riot"
 import project_dict_name from "./riot/projects/project-dict-name.riot"
@@ -214,6 +214,7 @@ riot_register("example-video-item", example_video_item)
 riot_register("feedback-dialog", feedback_dialog)
 riot_register("forgot", forgot)
 riot_register("forgot-password", forgot_password)
+riot_register("layout-container", layout_container)
 riot_register("lazy-dropdown", lazy_dropdown)
 riot_register("loading-overlay", loading_overlay)
 riot_register("login", login)
@@ -245,7 +246,6 @@ riot_register("nvh-ske-dialog", nvh_ske_dialog)
 riot_register("nvh-source-code", nvh_source_code)
 riot_register("nvh-widget-panel", nvh_widget_panel)
 riot_register("open-dictionaries", open_dictionaries)
-riot_register("placeholder-component", placeholder_component)
 riot_register("primary-button", primary_button)
 riot_register("project-batches", project_batches)
 riot_register("project-dict-name", project_dict_name)

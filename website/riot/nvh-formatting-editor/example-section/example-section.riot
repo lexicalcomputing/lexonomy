@@ -40,20 +40,20 @@
       },
 
       onExampleSectionItemClick(state) {
-        this.nvhFormattingEditor.selectPlaceholder(state, null);
+        this.nvhFormattingEditor.selectLayoutContainer(state, null);
         this.nvhFormattingEditor.updateEditor();
       },
       onExampleItemMouseEnter(event, state) {
         if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.add("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
+          event.currentTarget.classList.add("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
           this.nvhFormattingEditor.updateEditor();
         }
       },
       onExampleItemMouseLeave(event, state) {
         if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.remove("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+          event.currentTarget.classList.remove("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
           this.nvhFormattingEditor.updateEditor();
         }
       },

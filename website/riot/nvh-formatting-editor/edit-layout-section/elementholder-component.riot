@@ -6,7 +6,7 @@
       data-tooltip={props.state.content.fullName}
       onmousedown={!props.isBaseLevel && props.state.content.fullName ? () => onMouseDown() : () => {}}>
     <div class="content-box-wrapper-2">
-      <div class="placeholder-content-box {props.state.children.length === 0 ? "" : "placeholder-content-box-parent"}">
+      <div class="layout-container-content-box {props.state.children.length === 0 ? "" : "layout-container-content-box-parent"}">
         {getElementHolderLabel()}
       </div>
     </div>
@@ -40,8 +40,8 @@
     },
     onRelease() {
       if (this.nvhFormattingEditor.data.dropInfo.wasSuccessful) {
-        this.nvhFormattingEditor.clearPlaceholder(this.props.state)
-        this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+        this.nvhFormattingEditor.clearLayoutContainer(this.props.state)
+        this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
       }
     },
     onMouseEnter(event) {
@@ -108,7 +108,7 @@
 </script>
 
 <style>
-  .placeholder-content-box {
+  .layout-container-content-box {
     padding: 0 5px;
     margin: 2px;
     width: 100%;
@@ -116,7 +116,7 @@
     text-wrap: nowrap;
 
   }
-  .placeholder-content-box-parent {
+  .layout-container-content-box-parent {
     text-align: left;
     user-select: none;
     font-size: 14px;

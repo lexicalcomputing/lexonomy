@@ -1,7 +1,7 @@
-<placeholder-component>
+<layout-container>
   <action-panel if={!nvhFormattingEditor.data.mouseData}
           class="action-panel
-                {this.nvhFormattingEditor.isPlaceholderHovered(props.state) ? "action-panel-hovered" : ""}"
+                {this.nvhFormattingEditor.isLayoutContainerHovered(props.state) ? "action-panel-hovered" : ""}"
           index={props.index}
           parentState={props.parentState}
           state={props.state}
@@ -15,10 +15,10 @@
           state={props.state}
           canHaveAdders={props.canHaveAdders}>
   </add-children-component>
-  <div class={getPlaceholderInsideWrapperCssClass(props.state)}
+  <div class={getLayoutContainerInsideWrapperCssClass(props.state)}
       style="background-color: {getBackgroundColor()};
             border: 2px solid {getBorderColor()}">
-    <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isPlaceholderDragged(props.state)
+    <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.state)
                         && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
             onclick={() => nvhFormattingEditor.addElement(0, props.state, null)}
             onmouseenter={onAdderMouseEnter}
@@ -29,19 +29,19 @@
             index={0}
             state={props.state}/>
     <template each={(child, index) in props.state.children}>
-      <placeholder-component onclick={() => nvhFormattingEditor.selectPlaceholder(child, props.state)}
+      <layout-container onclick={() => nvhFormattingEditor.selectLayoutContainer(child, props.state)}
               title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
                     ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
               onmouseup={(event) => onMouseUp(event, child)}
-              onmouseenter={(event) => onPlaceholderMouseEnter(event, child)}
-              onmouseleave={(event) => onPlaceholderMouseLeave(event, child, props.state)}
-              class={getPlaceholderCssClass(child)}
+              onmouseenter={(event) => onLayoutContainerMouseEnter(event, child)}
+              onmouseleave={(event) => onLayoutContainerMouseLeave(event, child, props.state)}
+              class={getLayoutContainerCssClass(child)}
               state={nvhFormattingEditor.childWithInheritedArea(child, props.state)}
               parentState={props.state}
               isBaseLevel={false}
               index={index}
               canHaveAdders={nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
-      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isPlaceholderDragged(props.state)
+      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.state)
                           && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
               onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, null)}
               onmouseenter={onAdderMouseEnter}
@@ -74,6 +74,10 @@
         }
         this.props.state.labelStyles = this.props?.state?.labelStyles || {}
         this.props.state.bulletStyles = this.props?.state?.bulletStyles || {}
+        props.state.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
+      },
+      onBeforeUpdate(props) {
+        props.state.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
       },
 
       onMouseUp(event, state) {
@@ -83,7 +87,7 @@
             return;
           }
           if (data.type === "choice-item") {
-            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
+            this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
             if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)
                 || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)
                 || !this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
@@ -92,12 +96,12 @@
             }
             for (let child of state.children) {
               if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
-                  || this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
+                  || this.nvhFormattingEditor.isLayoutContainerAsSameWrapper(data.fullName, child)) {
                 this.nvhFormattingEditor.data.canBeDropped = false;
                 return;
               }
             }
-            this.nvhFormattingEditor.fillPlaceholderWithData(state, data);
+            this.nvhFormattingEditor.fillLayoutContainerWithData(state, data);
           }
           if (data.releaseFunction) {
             data.releaseFunction.run(...data.releaseFunction.parameters);
@@ -108,13 +112,13 @@
       },
       onAdderMouseEnter(event) {
         const data = this.nvhFormattingEditor.data.mouseData;
-        if (data && data.type === "placeholder") {
+        if (data && data.type === "layout-container") {
           event.currentTarget.classList.add("adder-highligth-dragged");
         }
       },
       onAdderMouseLeave(event) {
         const data = this.nvhFormattingEditor.data.mouseData;
-        if (data && data.type === "placeholder") {
+        if (data && data.type === "layout-container") {
           event.currentTarget.classList.remove("adder-highligth-dragged");
         }
       },
@@ -124,43 +128,43 @@
           if (!data) {
             return;
           }
-          if (data.type === "placeholder") {
+          if (data.type === "layout-container") {
             state.children.splice(index, 0, data);
             this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
             this.nvhFormattingEditor.data.dropInfo.index = index;
-            this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
+            this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
             this.nvhFormattingEditor.data.canBeDropped = false;
           }
           if (data.releaseFunction) {
             data.releaseFunction.run(...data.releaseFunction.parameters);
             data.releaseFunction = null;
           }
-          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
-          this.nvhFormattingEditor.data.draggedPlaceholder = null;
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
+          this.nvhFormattingEditor.data.draggedLayoutContainer = null;
           this.update();
         }
       },
-      onPlaceholderMouseEnter(event, state) {
+      onLayoutContainerMouseEnter(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.add("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
+          event.currentTarget.classList.add("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
           this.nvhFormattingEditor.updateEditor();
         }
       },
-      onPlaceholderMouseLeave(event, state, parentState) {
+      onLayoutContainerMouseLeave(event, state, parentState) {
         if (!this.nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.remove("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+          event.currentTarget.classList.remove("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
           /*
             This is a work-around.
-            If I move a placeholder using arrows, sometimes I enter child placeholder
-            without entering parent placeholder. I need to assure that after leaving child placeholder,
+            If I move a layoutContainer using arrows, sometimes I enter child layoutContainer
+            without entering parent layoutContainer. I need to assure that after leaving child layoutContainer,
             the parent will be hovered which is expected behaviour.
           */
           const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
-          if (classList.includes("placeholder")) {
-            event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-            this.nvhFormattingEditor.data.hoveredPlaceholder = parentState;
+          if (classList.includes("layout-container")) {
+            event.currentTarget.parentElement.parentElement.classList.add("layout-container-mouse-hover");
+            this.nvhFormattingEditor.data.hoveredLayoutContainer = parentState;
           }
           this.nvhFormattingEditor.updateEditor();
         }
@@ -187,37 +191,37 @@
         }
         for (let child of state.children) {
           if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
-              || this.nvhFormattingEditor.isPlaceholderAsSameWrapper(data.fullName, child)) {
+              || this.nvhFormattingEditor.isLayoutContainerAsSameWrapper(data.fullName, child)) {
             return false;
           }
         }
         return true;
       },
-      getPlaceholderCssClass(placeholder) {
-        let cssClass = "placeholder";
-        cssClass += this.nvhFormattingEditor.isPlaceholderActive(placeholder) ? " placeholder-selected" : "";
-        cssClass += this.nvhFormattingEditor.isPlaceholderHovered(placeholder) && !this.nvhFormattingEditor.data.mouseData ? " placeholder-mouse-hover" : "";
-        cssClass += placeholder.content.name && placeholder.children.length !== 0 ? " placeholder-wrapping-content" : "";
-        cssClass += placeholder.children.length === 0 ? " placeholder-no-children" : "";
-        cssClass += this.nvhFormattingEditor.isPlaceholderDragged(placeholder) ? " placeholder-dragged" : "";
-        cssClass += this.canBeDropped(placeholder) ? " placeholder-can-be-dropped" : "";
-        cssClass += this.nvhFormattingEditor.isElementNonExisting(placeholder.content.fullName) ? " placeholder-non-existing" : "";
+      getLayoutContainerCssClass(layoutContainer) {
+        let cssClass = "layout-container";
+        cssClass += this.nvhFormattingEditor.isLayoutContainerActive(layoutContainer) ? " layout-container-selected" : "";
+        cssClass += this.nvhFormattingEditor.isLayoutContainerHovered(layoutContainer) && !this.nvhFormattingEditor.data.mouseData ? " layout-container-mouse-hover" : "";
+        cssClass += layoutContainer.content.name && layoutContainer.children.length !== 0 ? " layout-container-wrapping-content" : "";
+        cssClass += layoutContainer.children.length === 0 ? " layout-container-no-children" : "";
+        cssClass += this.nvhFormattingEditor.isLayoutContainerDragged(layoutContainer) ? " layout-container-dragged" : "";
+        cssClass += this.canBeDropped(layoutContainer) ? " layout-container-can-be-dropped" : "";
+        cssClass += this.nvhFormattingEditor.isElementNonExisting(layoutContainer.content.fullName) ? " layout-container-non-existing" : "";
         return cssClass;
       },
-      getPlaceholderInsideWrapperCssClass(placeholder) {
-        let cssClass = `placeholder-inside-wrapper placeholder-inside-wrapper-${placeholder.orientation}`;
-        cssClass += !placeholder.content.fullName ? " placeholder-inside-wrapper-no-content" : "";
-        cssClass += !placeholder.content.fullName && placeholder.children.length !== 0 ? " placeholder-inside-wrapper-group" : "";
+      getLayoutContainerInsideWrapperCssClass(layoutContainer) {
+        let cssClass = `layout-container-inside-wrapper layout-container-inside-wrapper-${layoutContainer.orientation}`;
+        cssClass += !layoutContainer.content.fullName ? " layout-container-inside-wrapper-no-content" : "";
+        cssClass += !layoutContainer.content.fullName && layoutContainer.children.length !== 0 ? " layout-container-inside-wrapper-group" : "";
         return cssClass;
       },
-      getAdderCssClass(placeholder, adderType) {
+      getAdderCssClass(layoutContainer, adderType) {
         let cssClass = "adder"
-        cssClass += !this.nvhFormattingEditor.data.mouseData || this.nvhFormattingEditor.data.mouseData.type === "placeholder" ? "" : " adder-invisible";
+        cssClass += !this.nvhFormattingEditor.data.mouseData || this.nvhFormattingEditor.data.mouseData.type === "layout-container" ? "" : " adder-invisible";
         if (adderType === "first") {
-          cssClass += ` adder-${placeholder.children.length === 0 ? "column": placeholder.orientation}`;
-          cssClass += placeholder.children.length === 0 ? " adder-alone" : "";
+          cssClass += ` adder-${layoutContainer.children.length === 0 ? "column": layoutContainer.orientation}`;
+          cssClass += layoutContainer.children.length === 0 ? " adder-alone" : "";
         } else {
-          cssClass += ` adder-${placeholder.orientation}`;
+          cssClass += ` adder-${layoutContainer.orientation}`;
         }
         return cssClass;
       } 
@@ -225,38 +229,38 @@
   </script>
 
   <style>
-    .placeholder-inside-wrapper {
+    .layout-container-inside-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
       width: 100%;
       height: 100%;
     }
-    .placeholder-inside-wrapper-column {
+    .layout-container-inside-wrapper-column {
       flex-direction: column;
     }
-    .placeholder-inside-wrapper-row {
+    .layout-container-inside-wrapper-row {
       flex-direction: row;
     }
 
-    .placeholder-wrapping-content {
+    .layout-container-wrapping-content {
       border: 4px solid transparent;
     }
-    .placeholder-wrapping-content:has(.placeholder:hover) {
+    .layout-container-wrapping-content:has(.layout-container:hover) {
       border: 4px solid transparent;
     }
 
-    .placeholder-no-content {
+    .layout-container-no-content {
       padding: 10px;
     }
 
-    .placeholder-dragged {
+    .layout-container-dragged {
       opacity: 0.8;
     }
-    .placeholder-dragged * {
+    .layout-container-dragged * {
       opacity: 0.8;
     }
-    .placeholder-dragged .adder {
+    .layout-container-dragged .adder {
       display: none;
     }
     .adder-highligth {
@@ -282,10 +286,10 @@
       left: -4px;
       z-index: 100;
     }
-    .placeholder:has(.placeholder-mouse-hover) .action-panel-hovered {
+    .layout-container:has(.layout-container-mouse-hover) .action-panel-hovered {
       display: none;
     }
-    .placeholder:not(:has(.placeholder-mouse-hover)) .action-panel-hovered {
+    .layout-container:not(:has(.layout-container-mouse-hover)) .action-panel-hovered {
       display: block;
     }
 
@@ -306,23 +310,23 @@
       visibility: hidden;
     }
 
-    .placeholder-can-be-dropped {
+    .layout-container-can-be-dropped {
       background-color: var(--color-is-dragged-over-light);
     }
-    .placeholder-can-be-dropped > .placeholder-inside-wrapper {
+    .layout-container-can-be-dropped > .layout-container-inside-wrapper {
       background-color: var(--color-is-dragged-over-light) !important;
     }
-    .placeholder-can-be-dropped:hover {
+    .layout-container-can-be-dropped:hover {
       background-color:var(--color-yellow-light);
     }
-    .placeholder-can-be-dropped:hover > .placeholder-inside-wrapper{
+    .layout-container-can-be-dropped:hover > .layout-container-inside-wrapper{
       background-color:var(--color-yellow-light) !important;
     }
-    .placeholder-can-be-dropped:hover:has(.placeholder-can-be-dropped:hover) {
+    .layout-container-can-be-dropped:hover:has(.layout-container-can-be-dropped:hover) {
       background-color: var(--color-is-dragged-over-light);
     }
-    .placeholder-can-be-dropped:hover:has(.placeholder-can-be-dropped:hover) > .placeholder-inside-wrapper {
+    .layout-container-can-be-dropped:hover:has(.layout-container-can-be-dropped:hover) > .layout-container-inside-wrapper {
       background-color: var(--color-is-dragged-over-light) !important;
     }
   </style>
-</placeholder-component>
+</layout-container>

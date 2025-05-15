@@ -164,7 +164,7 @@
         }
         if (data.type === "choice-item" || data.type === "elementholder-label") {
           this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
-          this.nvhFormattingEditor.data.selectedPlaceholderParentAreaFullName = "";
+          this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
           let trashIcon = document.getElementById("trash-icon");
           trashIcon.classList.remove("trash-dragged-over");
         }
@@ -179,7 +179,7 @@
       },
       saveSchemas() {
         this.update({isSaving: true});
-        this.nvhFormattingEditor.data.selectedPlaceholder = null;
+        this.nvhFormattingEditor.data.selectedLayoutContainer = null;
         let elementsConfig = this.nvhStore.data.formatting.elements;
         let layoutConfig = {};
         for (let device of ["desktop", "tablet", "mobile", "pdf"]) {
@@ -233,7 +233,7 @@
           for (element of allElements) {
             element.classList.remove("cursor-grabbing");
           }
-          this.nvhFormattingEditor.data.draggedPlaceholder = null;
+          this.nvhFormattingEditor.data.draggedLayoutContainer = null;
           this.update();
         }
       },

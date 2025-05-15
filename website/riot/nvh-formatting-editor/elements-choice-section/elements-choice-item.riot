@@ -1,7 +1,7 @@
 <elements-choice-item>
   <div class="elements-choice-item-wrapper
-              {canBeDraggedToActivePlaceholder() ? "elements-choice-item-wrapper-valid" : ""}
-              {cannotBeDraggedToActivePlaceholder() ? "elements-choice-item-wrapper-invalid" : ""}"
+              {canBeDraggedToActiveLayoutContainer() ? "elements-choice-item-wrapper-valid" : ""}
+              {cannotBeDraggedToActiveLayoutContainer() ? "elements-choice-item-wrapper-invalid" : ""}"
       style="padding-left: {props.indentationLevel}px"
       onmousedown={() => onMouseDown(props.state)}>
     <div class="elements-choice-item-box"
@@ -26,17 +26,17 @@
         this.nvhFormattingEditor.data.mouseData = this.props.state.data;
         this.nvhFormattingEditor.updateEditor();
       },
-      canBeDraggedToActivePlaceholder() {
-        if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
+      canBeDraggedToActiveLayoutContainer() {
+        if (!this.nvhFormattingEditor.data.selectedLayoutContainer) {
           return false;
         }
-        return this.nvhFormattingEditor.isChoiceElementValidToPlaceholder(this.props.state.data);
+        return this.nvhFormattingEditor.isChoiceElementValidToLayoutContainer(this.props.state.data);
       },
-      cannotBeDraggedToActivePlaceholder() {
-        if (!this.nvhFormattingEditor.data.selectedPlaceholder) {
+      cannotBeDraggedToActiveLayoutContainer() {
+        if (!this.nvhFormattingEditor.data.selectedLayoutContainer) {
           return false;
         }
-        return !this.canBeDraggedToActivePlaceholder();
+        return !this.canBeDraggedToActiveLayoutContainer();
       }
     }
   </script>

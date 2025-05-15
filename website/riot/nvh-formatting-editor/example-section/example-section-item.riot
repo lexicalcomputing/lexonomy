@@ -1,9 +1,9 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
               {hasBullet() ? "element-holder-has-bullet" : ""}
-              {this.nvhFormattingEditor.isPlaceholderActive(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
-              {this.nvhFormattingEditor.isPlaceholderHovered(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
-              {this.nvhFormattingEditor.isPlaceholderHovered(props.schema) && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
+              {this.nvhFormattingEditor.isLayoutContainerActive(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
+              {this.nvhFormattingEditor.isLayoutContainerHovered(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
+              {this.nvhFormattingEditor.isLayoutContainerHovered(props.schema) && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
         style={props.schema.children.length !== 0 ? nvhFormattingEditor.getCssStyles(state, props.schema.styles) : ""}>
     <pre if={hasBullet()}
         style={nvhFormattingEditor.getCssStyles(state, props.schema.bulletStyles)}>
@@ -62,7 +62,7 @@
     </div>
     <div each={childSchema in props.schema.children}
         class="element-holder-list element-holder-list-{childSchema.orientation}">
-      <example-section-item if={!childSchema.content.name /*empty placeholder*/}
+      <example-section-item if={!childSchema.content.name /*empty layoutContainer*/}
                             onclick={() => onExampleItemClick(childSchema, props.schema)}
                             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
                             onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema, props.schema)}
@@ -144,8 +144,8 @@
           return;
         }
         if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.add("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = state;
+          event.currentTarget.classList.add("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
           this.nvhFormattingEditor.updateEditor();
         }
       },
@@ -154,19 +154,19 @@
           return;
         }
         if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.remove("placeholder-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+          event.currentTarget.classList.remove("layout-container-mouse-hover");
+          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
           const classList = Array.from(event.currentTarget.parentElement.parentElement.parentElement.classList);
           if (classList.includes("example-section-item")) {
-            event.currentTarget.parentElement.parentElement.parentElement.classList.add("placeholder-mouse-hover");
-            this.nvhFormattingEditor.data.hoveredPlaceholder = parentState;
+            event.currentTarget.parentElement.parentElement.parentElement.classList.add("layout-container-mouse-hover");
+            this.nvhFormattingEditor.data.hoveredLayoutContainer = parentState;
           }
           this.nvhFormattingEditor.updateEditor();
         }
       },
       onExampleItemClick(state, parentState) {
         if (this.props.isFormatting) {
-          nvhFormattingEditor.selectPlaceholder(state, parentState)
+          nvhFormattingEditor.selectLayoutContainer(state, parentState)
         }
       },
 

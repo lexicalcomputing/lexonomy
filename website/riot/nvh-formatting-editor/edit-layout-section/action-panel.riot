@@ -50,20 +50,20 @@
         };
         state.releaseFunction = releaseFunction;
         data.mouseData = state;
-        data.draggedPlaceholder = state;
+        data.draggedLayoutContainer = state;
 
         this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
         let adders = document.getElementsByClassName("adder");
         for (let adder of adders) {
           adder.classList.add("adder-highligth");
         }
-        this.nvhFormattingEditor.updateEditor(); /*This forces Chrome browser to rerender placeholders and adders*/
+        this.nvhFormattingEditor.updateEditor(); /*This forces Chrome browser to rerender layoutContainers and adders*/
       }
       data.canBeDragged = false;
     },
     onRelease(indexToDelete, parentState, state) {
       let data = this.nvhFormattingEditor.data;
-      /* If placeholder was dragged within the same parent but its index was decreased,
+      /* If layoutContainer was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
       the desired element. */
       const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
@@ -76,8 +76,8 @@
           parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
         }
       }
-      data.draggedPlaceholder = null;
-      data.hoveredPlaceholder = null;
+      data.draggedLayoutContainer = null;
+      data.hoveredLayoutContainer = null;
     },
     hideCloseAdders(htmlElement, indexToDrag) {
       let htmlElementChildren = Array.from(htmlElement.children);
@@ -89,13 +89,13 @@
     duplicateElement() {
       let copiedElement = structuredClone(this.props.state);
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
-      this.nvhFormattingEditor.data.selectPlaceholder = null; /*onClick in placeholder will cause that the placeholder will have active status*/
-      this.nvhFormattingEditor.data.hoveredPlaceholder = null;
+      this.nvhFormattingEditor.data.selectLayoutContainer = null; /*onClick in layoutContainer will cause that the layoutContainer will have active status*/
+      this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
       this.nvhFormattingEditor.updateEditor();
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
-      this.nvhFormattingEditor.data.selectPlaceholder = null; /*onClick in placeholder will cause that the placeholder will have active status*/
+      this.nvhFormattingEditor.data.selectLayoutContainer = null; /*onClick in layoutContainer will cause that the layoutContainer will have active status*/
     }
   }
 </script>
