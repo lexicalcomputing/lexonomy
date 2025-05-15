@@ -27,7 +27,7 @@
 
       onMouseDown(state) {
         this.nvhFormattingEditor.data.mouseData = this.props.state.data;
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.updateEditor();
       },
       isValidToActivePlaceholder() {
         if (!this.nvhFormattingEditor.data.selectedPlaceholder) {

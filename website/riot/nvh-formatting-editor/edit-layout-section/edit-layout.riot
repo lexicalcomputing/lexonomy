@@ -29,20 +29,20 @@
 
       onPlaceholderClick(child) {
         this.nvhFormattingEditor.selectPlaceholder(child, null);
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.nvhFormattingEditor.updateEditor();
       },
       onPlaceholderMouseEnter(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           this.nvhFormattingEditor.data.hoveredPlaceholder = state;
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       onPlaceholderMouseLeave(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.remove("placeholder-mouse-hover");
           this.nvhFormattingEditor.data.hoveredPlaceholder = null;
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       getCssClass(placeholder) {

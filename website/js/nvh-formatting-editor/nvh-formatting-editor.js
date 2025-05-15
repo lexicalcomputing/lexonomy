@@ -11,9 +11,8 @@ class NVHFormattingEditorClass {
   constructor() {
     this.timeout = null,
     this.dropdownTimeout = null,
-    this.formattingEditorComponent = null,
     this.elementsSchema = null,
-    this.data = this.initializeDataAttributes(),
+    this.data = this.getInitializedDataAttributes(),
     this.currentLayout = {
       schema: null,
       elements: null,
@@ -36,8 +35,11 @@ class NVHFormattingEditorClass {
     riot.register('example-video-item', example_video_item);
   }
 
-  // TODO: rename
-  initializeDataAttributes() {
+  updateEditor() {
+    this.trigger("updateEditor");
+  }
+
+  getInitializedDataAttributes() {
     return {
       canBeDropped: true,
       canBeDragged: true,
@@ -150,7 +152,7 @@ class NVHFormattingEditorClass {
       htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
       if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
         exportedEntries.exported = idx;
-        this.formattingEditorComponent.update();
+        this.trigger("updateToolbar");
         await this.appendToHtmlFile(htmlWrapper);
         htmlWrapper = ""
       }
@@ -158,7 +160,7 @@ class NVHFormattingEditorClass {
     exportedEntries.inProgress = false;
     exportedEntries.total = 0;
     exportedEntries.exported = 0;
-    this.formattingEditorComponent.update();
+    this.trigger("updateToolbar");
 
     htmlWrapper += "</div>"
     await this.appendToHtmlFile(htmlWrapper);
@@ -216,7 +218,7 @@ class NVHFormattingEditorClass {
 
   resetSchema() {
     this.initializeSchema();
-    this.formattingEditorComponent.update();
+    this.updateEditor()
   }
 
   initializeSchema() {
@@ -292,7 +294,7 @@ class NVHFormattingEditorClass {
     this.currentLayout.elements = structuredClone(this.currentLayout.history.elements.at(this.currentLayout.history.index));
     this.data.selectedPlaceholder = null;
     this.data.selectedPlaceholderParentAreaFullName = "";
-    this.formattingEditorComponent.update();
+    this.updateEditor();
   }
 
   createElementsSchema() {
@@ -379,7 +381,7 @@ class NVHFormattingEditorClass {
     this.data.selectedPlaceholder = newElement;
     this.data.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
-    this.formattingEditorComponent.update();
+    this.updateEditor();
     this.data.canSelectPlaceholder = false;
   }
 

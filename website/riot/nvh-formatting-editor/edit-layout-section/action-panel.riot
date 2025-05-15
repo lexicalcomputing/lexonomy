@@ -48,7 +48,7 @@
       let data = this.nvhFormattingEditor.data;
       if (data.canBeDragged) {
         let releaseFunction = {
-          parameters: [event.currentTarget.parentElement.parentElement.parentElement.parentElement, this.props.index, this.props.parentState, this.props.state],
+          parameters: [this.props.index, this.props.parentState, this.props.state],
           run: this.onRelease,
         };
         state.releaseFunction = releaseFunction;
@@ -60,11 +60,11 @@
         for (let adder of adders) {
           adder.classList.add("adder-highligth");
         }
-        this.nvhFormattingEditor.formattingEditorComponent.update(); /*This forces Chrome browser to rerender placeholders and adders*/
+        this.nvhFormattingEditor.updateEditor(); /*This forces Chrome browser to rerender placeholders and adders*/
       }
       data.canBeDragged = false;
     },
-    onRelease(htmlElement, indexToDelete, parentState, state) {
+    onRelease(indexToDelete, parentState, state) {
       let data = this.nvhFormattingEditor.data;
       /* If placeholder was dragged within the same parent but its index was decreased,
       it is necessary that "indexToDelete" has to be increased by one, so that I delete
@@ -94,7 +94,7 @@
       this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
       this.nvhFormattingEditor.data.selectPlaceholder = null; /*onClick in placeholder will cause that the placeholder will have active status*/
       this.nvhFormattingEditor.data.hoveredPlaceholder = null;
-      this.nvhFormattingEditor.formattingEditorComponent.update();
+      this.nvhFormattingEditor.updateEditor();
     },
     changeOrientation() {
       this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";

@@ -156,7 +156,7 @@
         if (!nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           this.nvhFormattingEditor.data.hoveredPlaceholder = state;
-          nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       onExampleItemMouseLeave(event, state, parentState) {
@@ -171,7 +171,7 @@
             event.currentTarget.parentElement.parentElement.parentElement.classList.add("placeholder-mouse-hover");
             this.nvhFormattingEditor.data.hoveredPlaceholder = parentState;
           }
-          nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       onExampleItemClick(state, parentState) {
@@ -294,7 +294,6 @@
       },
       getStyleToFullName(fullName) {
         if (!Array.isArray(this.props.schema.markupStyles)) {
-          console.log("this.props.schema.markupStyles is not iterable, this.props.schema.markupStyles = '", this.props.schema.markupStyles, "'.");
           return {};
         }
         for (let child of this.props.schema.markupStyles) {

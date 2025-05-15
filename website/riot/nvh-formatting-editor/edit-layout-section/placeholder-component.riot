@@ -139,14 +139,15 @@
             data.releaseFunction = null;
           }
           this.nvhFormattingEditor.data.hoveredPlaceholder = null;
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.data.draggedPlaceholder = null;
+          this.update();
         }
       },
       onPlaceholderMouseEnter(event, state) {
         if (!this.nvhFormattingEditor.data.mouseData) {
           event.currentTarget.classList.add("placeholder-mouse-hover");
           this.nvhFormattingEditor.data.hoveredPlaceholder = state;
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       onPlaceholderMouseLeave(event, state, parentState) {
@@ -164,7 +165,7 @@
             event.currentTarget.parentElement.parentElement.classList.add("placeholder-mouse-hover");
             this.nvhFormattingEditor.data.hoveredPlaceholder = parentState;
           }
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.updateEditor();
         }
       },
       getBorderColor() {

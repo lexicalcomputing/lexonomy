@@ -77,6 +77,8 @@
   
   <script>
     export default {
+      bindings: [["nvhFormattingEditor", "updateEditor", "update"]],
+
       state: {
         toolbar: {
           isSaving: false,
@@ -103,8 +105,7 @@
         this.nvhStore = window.nvhStore,
         this.store = window.store,
         this.nvhFormattingEditor.elementsSchema = this.nvhFormattingEditor.createElementsSchema();
-        this.nvhFormattingEditor.formattingEditorComponent = this;
-        this.nvhFormattingEditor.data = this.nvhFormattingEditor.initializeDataAttributes();
+        this.nvhFormattingEditor.data = this.nvhFormattingEditor.getInitializedDataAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
 
@@ -175,7 +176,7 @@
           data.releaseFunction.run(...data.releaseFunction.parameters);
           data.releaseFunction = null;
         }
-        this.nvhFormattingEditor.formattingEditorComponent.update();
+        this.update();
       },
       isSchemaChanged(oldSchema, newSchema) {
         if (oldSchema.orientation !== newSchema.orientation) {
@@ -253,6 +254,7 @@
             adder.classList.remove("adder-highligth-dragged");
             adder.style.display = "";
           }
+          this.nvhFormattingEditor.data.mouseData.releaseFunction = null;
           this.nvhFormattingEditor.data.mouseData = null;
 
           let trash = document.getElementById("trash-icon");
@@ -266,7 +268,8 @@
           for (element of allElements) {
             element.classList.remove("cursor-grabbing");
           }
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.nvhFormattingEditor.data.draggedPlaceholder = null;
+          this.update();
         }
       },
       globalOnMouseDown() {
@@ -275,7 +278,7 @@
           for (element of allElements) {
             element.classList.add("cursor-grabbing");
           }
-          this.nvhFormattingEditor.formattingEditorComponent.update();
+          this.update();
         }
       },
 
