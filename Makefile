@@ -15,7 +15,7 @@ build: website/bundle.js website/version.txt
 website/bundle.js: $(SOURCE_RIOT)
 	make -C website
 
-install: $(INSTALL_WEBSITE) $(SOURCE_DOCS) customization
+install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 	mkdir -p $(DESTDIR)$(INSTALLDIR)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
 
@@ -29,26 +29,6 @@ deploy:
 		cp website/config.js.template $(DEPLOYDIR)/website/config.js; \
 	fi
 
-	@# If CUSTOMIZATION is defined, remove previously deployed website/customization folder and deploy selected customization or all customizations.
-	@# - Browse all folders in /customization
-	@# - Extract subfolder from path $(folder) and remove trailing slash.
-	@# - If folder matches CUSTOMIZATION or CUSTOMIZATION is *, copy files from /customization/$(folder) to $(DEPLOYDIR)/website/customizartion/
-	@# - If customization folder contains Makefile, run it.
-	@if [ -n "$(CUSTOMIZATION)" ]; then \
-		rm -rf $(DEPLOYDIR)/website/customization; \
-		$(foreach folder,$(wildcard customization/*/),\
-			folder_name=$$(basename $$(echo $(folder) | sed 's:/*$$::')); \
-			if [ "$(CUSTOMIZATION)" = "$$folder_name" ] || [ "$(CUSTOMIZATION)" = "*" ]; then \
-				echo "Applying customization from $(folder)"; \
-				mkdir -p $(DEPLOYDIR)/website/$(folder); \
-				cp -R $(folder) $(DEPLOYDIR)/website/customization; \
-				if [ -f "$(folder)Makefile" ]; then \
-					make -C $(folder) update DEPLOYDIR=$(DEPLOYDIR); \
-				fi; \
-			fi; \
-		)\
-	fi
-
 	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
 	chmod -R g+rwX $(DEPLOYDIR)/data || :
@@ -57,5 +37,5 @@ deploy:
 website/version.txt:
 	git describe --always > $@
 
-dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) customization Makefile website/Makefile website/version.txt
+dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile website/version.txt
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^
