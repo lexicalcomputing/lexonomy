@@ -289,9 +289,10 @@ class NVHFormattingEditorClass {
   }
 
   goToHistory(index) {
-    this.currentLayout.history.index += index;
-    this.currentLayout.schema = structuredClone(this.currentLayout.history.schema.at(this.currentLayout.history.index));
-    this.currentLayout.elements = structuredClone(this.currentLayout.history.elements.at(this.currentLayout.history.index));
+    let history = this.currentLayout.history
+    history.index += index;
+    this.currentLayout.schema = structuredClone(history.schema.at(history.index));
+    this.currentLayout.elements = structuredClone(history.elements.at(history.index));
     this.data.selectedPlaceholder = null;
     this.data.selectedPlaceholderParentAreaFullName = "";
     this.updateEditor();
@@ -368,8 +369,8 @@ class NVHFormattingEditorClass {
       content: {
         name: label?.name || "",
         fullName: label?.fullName || "",
-        area: label?.area || "",
-        areaFullName: label?.areaFullName || "",
+        area: label?.area || state.content.area,
+        areaFullName: label?.areaFullName || state.content.areaFullName,
         canHaveChildren: !label ? true : window.store.schema.getElementByPath(label.fullName).children.length
       },
       styles: {},
@@ -381,7 +382,6 @@ class NVHFormattingEditorClass {
     this.data.selectedPlaceholder = newElement;
     this.data.selectedPlaceholderParentAreaFullName = state.content.areaFullName;
     state.children.splice(index, 0, newElement);
-    this.updateEditor();
     this.data.canSelectPlaceholder = false;
   }
 

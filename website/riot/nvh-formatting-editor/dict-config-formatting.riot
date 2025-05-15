@@ -137,13 +137,12 @@
       },
       onBeforeUpdate(props) {
         this.nvhFormattingEditor.resetDataAttributes();
-        /*
-        Change history, if I modified edit section in other way that using 'undo' or 'redo'.
-        */
-        let history = this.nvhFormattingEditor.currentLayout.history;
-        if (this.isSchemaChanged(history.schema.at(history.index), this.nvhFormattingEditor.currentLayout.schema)) {
+        let currentLayout = this.nvhFormattingEditor.currentLayout;
+        let history = currentLayout.history;
+        if (!this.nvhFormattingEditor.data.mouseData
+            && this.isSchemaChanged(history.schema.at(history.index), currentLayout.schema)) {
           history.schema.length = history.index + 1;
-          history.schema.push(structuredClone(this.nvhFormattingEditor.currentLayout.schema));
+          history.schema.push(structuredClone(currentLayout.schema));
           history.index += 1;
         }
       },
@@ -179,38 +178,7 @@
         this.update();
       },
       isSchemaChanged(oldSchema, newSchema) {
-        if (oldSchema.orientation !== newSchema.orientation) {
-          return true;
-        }
-        // TODO: use method for comparison from misc.js
-        if (JSON.stringify(oldSchema.styles) !== JSON.stringify(newSchema.styles)) {
-          return true;
-        }
-        if (JSON.stringify(oldSchema.markupStyles) !== JSON.stringify(newSchema.markupStyles)) {
-          return true;
-        }
-        if (JSON.stringify(oldSchema.labelStyles) !== JSON.stringify(newSchema.labelStyles)) {
-          return true;
-        }
-        if (JSON.stringify(oldSchema.bulletStyles) !== JSON.stringify(newSchema.bulletStyles)) {
-          return true;
-        }
-        if (oldSchema.content && newSchema.content) {
-          if (oldSchema.content.fullName !== newSchema.content.fullName) {
-            return true;
-          }
-        }
-        if (oldSchema.children.length !== newSchema.children.length) {
-          return true;
-        }
-
-        for (let i = 0; i < newSchema.children.length; i++) {
-          if (this.isSchemaChanged(oldSchema.children.at(i), newSchema.children.at(i))) {
-            return true;
-          }
-        }
-
-        return false;
+        return !window.objectEquals(oldSchema, newSchema);
       },
       saveSchemas() {
         this.update({isSaving: true});
