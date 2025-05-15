@@ -255,7 +255,7 @@
             onchange={onChangeStyle.bind(this, "font-size", null)}>
       <input type="number"
             class="input-number tooltipped"
-            data-tooltip={!getStyleOptionValue("font-size") ? "By default, the element has the text size of its parent. Set text size here to overwrite parent settings." : "Remove value to apply parent text size"}
+            data-tooltip="By default, the element has the text size of its parent. Set the text size here to overwrite the parent settings. Leave empty to use the parent size."
             value={getStyleOptionValue("font-size")}
             min="1"
             onchange={onChangeStyle.bind(this, "font-size", null)}>
