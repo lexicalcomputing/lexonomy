@@ -875,6 +875,14 @@ def dictconfig(dictID):
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res
 
+@get(siteconfig["rootPath"]+"<dictID>/stats.json")
+@authDict(["canView"])
+def dictstats(dictID):
+    if not ops.dictExists(dictID):
+        return {"success": False}
+    else:
+        dict_stats = ops.getDictStats(ops.getDB(dictID))
+        return {"success": True, 'stats': dict_stats}
 
 @post(siteconfig["rootPath"]+"<dictID>/random.json") # OK
 @authDict(["canView"])
