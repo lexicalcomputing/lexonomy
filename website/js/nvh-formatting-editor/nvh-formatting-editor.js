@@ -258,7 +258,7 @@ class NVHFormattingEditorClass {
       children: [
         {
           orientation: "column",
-          type: "layout-container", // NOTE
+          type: "layout-container",
           content: {
             name: root.path,
             fullName: root.path,
