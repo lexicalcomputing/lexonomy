@@ -615,10 +615,16 @@
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("no-value-text") === null ? "" : getStyleOptionValue("no-value-text")} onchange={onChangeStyle.bind(this, "no-value-text", null)}></textarea>
     </div>
   </div>
-  <div if={(state.type === "empty")} class="label">Set text:</div>
-  <div if={(state.type === "empty")} class="styles-section-item-wrapper">
+  <div if={(state.type === "empty") || state.isEmpty} class="label">Set custom text:</div>
+  <div if={(state.type === "empty") || state.isEmpty} class="styles-section-item-wrapper">
     <div class="value-wrapper">
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value") === null ? "" : getStyleOptionValue("text-value")} onchange={onChangeStyle.bind(this, "text-value", null)}></textarea>
+    </div>
+  </div>
+  <div class="label">Set custom CSS:</div>
+  <div class="styles-section-item-wrapper">
+    <div class="value-wrapper">
+      <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("custom-css") === null ? "" : getStyleOptionValue("custom-css")} onchange={onChangeStyle.bind(this, "custom-css", null)}></textarea>
     </div>
   </div>
 
@@ -636,6 +642,7 @@
         isMarkupType: false,
         hasDirectMarkupChild: false,
         isGroup: false,
+        isEmpty: false,
       },
 
       onBeforeMount(props) {
@@ -656,6 +663,7 @@
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.fullName).length;
         this.state.styles = props.styleOption.styles;
         this.state.isGroup = this.state.selectedLayoutContainer.children.length;
+        this.state.isEmpty = !this.state.selectedLayoutContainer.content.fullName
       },
       onBeforeUpdate(props) {
         this.state.selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
@@ -675,6 +683,7 @@
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.fullName).length;
         this.state.styles = props.styleOption.styles;
         this.state.isGroup = this.state.selectedLayoutContainer.children.length;
+        this.state.isEmpty = !this.state.selectedLayoutContainer.content.fullName
       },
 
       getStyleOptionValue(option) {
