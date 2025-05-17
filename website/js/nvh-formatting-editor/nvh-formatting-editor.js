@@ -538,7 +538,7 @@ class NVHFormattingEditorClass {
       }
       if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
       "border-color", "border-width", "container-width", "label-text-value",
-      "show-label-before"].includes(option)) {
+      "show-label-before", "custom-css", "text-value"].includes(option)) {
         continue;
       }
       if (["border-radius", "padding", "margin", "max-height", "font-size"].includes(option)) {
@@ -586,6 +586,10 @@ class NVHFormattingEditorClass {
         value = "min(" + styles["max-width"] + "px" + "," + "100%)";
       }
       result_css += option + ":" + value + ";";
+    }
+
+    if (styles["custom-css"]) {
+      result_css += styles["custom-css"];
     }
 
     return result_css;

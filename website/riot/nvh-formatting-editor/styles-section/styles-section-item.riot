@@ -315,7 +315,7 @@
       </div>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">
       Left punctuation:
       <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
@@ -364,7 +364,7 @@
       </div>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">
       Left punctuation (custom):
       <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
@@ -374,7 +374,7 @@
       <input type="string" class="input-text" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -419,7 +419,7 @@
       </div>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" class="input-text" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
@@ -615,10 +615,16 @@
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("no-value-text") === null ? "" : getStyleOptionValue("no-value-text")} onchange={onChangeStyle.bind(this, "no-value-text", null)}></textarea>
     </div>
   </div>
-  <div if={(state.type === "empty")} class="label">Set text:</div>
-  <div if={(state.type === "empty")} class="styles-section-item-wrapper">
+  <div if={(state.type === "empty") || state.isEmpty} class="label">Set custom text:</div>
+  <div if={(state.type === "empty") || state.isEmpty} class="styles-section-item-wrapper">
     <div class="value-wrapper">
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value") === null ? "" : getStyleOptionValue("text-value")} onchange={onChangeStyle.bind(this, "text-value", null)}></textarea>
+    </div>
+  </div>
+  <div class="label">Set custom CSS:</div>
+  <div class="styles-section-item-wrapper">
+    <div class="value-wrapper">
+      <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("custom-css") === null ? "" : getStyleOptionValue("custom-css")} onchange={onChangeStyle.bind(this, "custom-css", null)}></textarea>
     </div>
   </div>
 
@@ -636,6 +642,7 @@
         isMarkupType: false,
         hasDirectMarkupChild: false,
         isGroup: false,
+        isEmpty: false,
       },
 
       onBeforeMount(props) {
@@ -656,6 +663,7 @@
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.fullName).length;
         this.state.styles = props.styleOption.styles;
         this.state.isGroup = this.state.selectedLayoutContainer.children.length;
+        this.state.isEmpty = !this.state.selectedLayoutContainer.content.fullName
       },
       onBeforeUpdate(props) {
         this.state.selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
@@ -675,6 +683,7 @@
         this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.fullName).length;
         this.state.styles = props.styleOption.styles;
         this.state.isGroup = this.state.selectedLayoutContainer.children.length;
+        this.state.isEmpty = !this.state.selectedLayoutContainer.content.fullName
       },
 
       getStyleOptionValue(option) {

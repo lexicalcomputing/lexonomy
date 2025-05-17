@@ -14,6 +14,11 @@
         style={nvhFormattingEditor.getCssStyles(state, props.schema.labelStyles)}>
       {props.schema.labelStyles["label-text-value"]}
     </pre>
+    <div if={props.schema.content.fullName === "" && props.schema.styles["text-value"]}
+        id="custom-text"
+        style={nvhFormattingEditor.getCssStyles(state, props.schema.styles)}>
+      {props.schema.styles["text-value"]}
+    </div>
     <div if={!props.schema.children.length && props.schema.content.fullName === props.entry.path}
         class="element-holder-content-wrapper">
       <div class="element-holder-content-block">
