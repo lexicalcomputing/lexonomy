@@ -315,7 +315,7 @@
       </div>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">
       Left punctuation:
       <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
@@ -364,7 +364,7 @@
       </div>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">
       Left punctuation (custom):
       <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
@@ -374,7 +374,7 @@
       <input type="string" class="input-text" value={getStyleOptionValue("leftPunc") === null ? "" : getStyleOptionValue("leftPunc")} onchange={onChangeStyle.bind(this, "leftPunc", null)}>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation:</div>
     <div class="value-wrapper">
       <div class="value-item"
@@ -419,7 +419,7 @@
       </div>
     </div>
   </div>
-  <div if={["string", "list", "int"].includes(state.type) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
+  <div if={(["string", "list", "int"].includes(state.type) && !state.isGroup) || state.isBulletOptionStyle} class="styles-section-item-wrapper">
     <div class="label">Right punctuation (custom):</div>
     <div class="value-wrapper" style="gap: 10px;">
       <input type="string" class="input-text" value={getStyleOptionValue("rightPunc") === null ? "" : getStyleOptionValue("rightPunc")} onchange={onChangeStyle.bind(this, "rightPunc", null)}>
