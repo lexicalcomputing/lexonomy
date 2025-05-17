@@ -1,15 +1,15 @@
 <example-section-item>
   <div class="element-holder element-holder-{props.schema.orientation}
               {hasBullet() ? "element-holder-has-bullet" : ""}
-              {this.nvhFormattingEditor.isLayoutContainerActive(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
-              {this.nvhFormattingEditor.isLayoutContainerHovered(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
-              {this.nvhFormattingEditor.isLayoutContainerHovered(props.schema) && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
+              {nvhFormattingEditor.isLayoutContainerActive(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-active" : ""}
+              {nvhFormattingEditor.isLayoutContainerHovered(props.schema) && (hasChildWithContent(props.schema) || isDisplayLabel()) ? "element-holder-hovered" : ""}
+              {nvhFormattingEditor.isLayoutContainerHovered(props.schema) && !hasChildWithContent(props.schema) && !isDisplayLabel() ? "element-holder-hovered-empty" : ""}"
         style={props.schema.children.length !== 0 ? nvhFormattingEditor.getCssStyles(state, props.schema.styles) : ""}>
     <pre if={hasBullet()}
         style={nvhFormattingEditor.getCssStyles(state, props.schema.bulletStyles)}>
       {state.bulletValue}
     </pre>
-    <pre if={this.labelStyles && isLabelBeforeValue()}
+    <pre if={labelStyles && isLabelBeforeValue()}
         class="example-item-label-before"
         style={nvhFormattingEditor.getCssStyles(state, props.schema.labelStyles)}>
       {props.schema.labelStyles["label-text-value"]}
@@ -100,7 +100,7 @@
                                 maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
       </template>
     </div>
-    <pre if={this.labelStyles && isLabelAfterValue()} class="example-item-label-after"
+    <pre if={labelStyles && isLabelAfterValue()} class="example-item-label-after"
         class="example-item-label-before"
         style={nvhFormattingEditor.getCssStyles(state, props.schema.labelStyles)}>
       {props.schema.labelStyles["label-text-value"]}

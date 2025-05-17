@@ -1,8 +1,8 @@
 <dict-config-formatting>
   <loading-overlay if={state.isSaving}/>
-  <h1 class="formatting-page-title">Entry Formatting</h1>
+  <h1 id="formatting-page-title">Entry Formatting</h1>
   <nvh-formatting-editor-toolbar state={state.toolbar} save-schemas={saveSchemas}/>
-  <div class="formatting-page-wrapper-container">
+  <div id="formatting-page-wrapper-container">
     <div if={state.toolbar.isSectionVisible.elements}
         id="elements-container"
         class="formatting-page-container">
@@ -105,6 +105,7 @@
         this.nvhFormattingEditor.data = this.nvhFormattingEditor.getInitializedDataAttributes();
         document.addEventListener("mouseup", this.globalOnMouseUp);
         document.addEventListener("mousedown", this.globalOnMouseDown);
+        this.resetFullscreen();
 
         let formatting = this.store.data.config.formatting;
 
@@ -173,6 +174,10 @@
           data.releaseFunction = null;
         }
         this.update();
+      },
+      resetFullscreen() {
+        let wideContainer = document.getElementsByClassName("wideContainer")[0];
+        wideContainer.classList.remove("fullscreen");
       },
       isSchemaChanged(oldSchema, newSchema) {
         return !window.objectEquals(oldSchema, newSchema);
@@ -298,6 +303,16 @@
       --color-red-dark: #a61423;
     }
 
+    :host.wideContainer.fullscreen {
+      margin: 0;
+      max-width: 100vw;
+    }
+    #formatting-page-title.fullscreen {
+      display: none
+    }
+    #formatting-page-wrapper-container.fullscreen {
+      height: 85vh;
+    }
 
     .scrollable-div {
       position: relative;
@@ -332,10 +347,10 @@
       color: red;
     }
 
-    .formatting-page-title {
+    #formatting-page-title {
       text-wrap: nowrap;
     }
-    .formatting-page-wrapper-container {
+    #formatting-page-wrapper-container {
       display: flex;
       height: 700px;
       overflow-x: auto;
@@ -350,7 +365,7 @@
     }
     .elements-choice-section-wrapper {
       width: 200px;
-      height: 600px;
+      height: 90%;
     }
 
     .style-section {
@@ -376,11 +391,14 @@
     .formatting-page-container {
       padding-right: 1.5em;
       padding-left: 1.5em;
+      height: 100%;
     }
     #editing-container, #example-container {
       border-right: 1px solid #dcdee3;
     }
-
+    #editing-container {
+      flex-grow: 1;
+    }
 
     .editing-header {
       display: flex;
@@ -390,7 +408,7 @@
     }
     .editing-layout-wrapper {
       width: 100%;
-      height: 600px;
+      height: 90%;
     }
     .edit-layout {
       width: fit-content;
