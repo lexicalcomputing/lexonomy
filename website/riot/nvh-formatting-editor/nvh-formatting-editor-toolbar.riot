@@ -92,6 +92,7 @@
     </div>
     <div class="formatting-page-tutorial-container">
       <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
+      <div id="link-fullscreen" onclick={toggleFullscreen}>{state.isFullscreen ? "Exit" : "Enter"} fullscreen</div>
     </div>
   </div>
 
@@ -106,6 +107,7 @@
           exported: 0,
           total: 0,
         },
+        isFullscreen: false,
       },
 
       onBeforeMount(props) {
@@ -121,6 +123,22 @@
       onSectionClick(sectionName) {
         this.props.state.isSectionVisible[sectionName] = !this.props.state.isSectionVisible[sectionName];
         this.nvhFormattingEditor.updateEditor();
+      },
+      toggleFullscreen() {
+        let components = [
+          document.getElementById("formatting-page-title"),
+          document.getElementsByClassName("wideContainer")[0],
+          document.getElementById("formatting-page-wrapper-container"),
+        ];
+        for (let component of components) {
+          if (!this.state.isFullscreen) {
+            component.classList.add("fullscreen");
+          } else {
+            component.classList.remove("fullscreen");
+          }
+        }
+        this.state.isFullscreen = !this.state.isFullscreen;
+        this.update();
       },
       async onExportPDF() {
         await this.nvhFormattingEditor.stringifyAllEntries(this.state.exportedEntries);
@@ -203,7 +221,7 @@
       background-color: var(--color-red-dark);
     }
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial, #link-fullscreen {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -211,7 +229,7 @@
       text-wrap: nowrap;
       cursor: pointer;
     }
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #link-tutorial {
+    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #link-tutorial, #link-fullscreen {
       background-color: transparent;
       text-decoration: none;
     }
@@ -219,7 +237,7 @@
       color: white;
       background-color: var(--color-red-normal);
     }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover, #link-tutorial:hover {
+    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover, #link-tutorial:hover, #link-fullscreen:hover {
       background-color: var(--color-grey-normal);
       color: black;
     }
