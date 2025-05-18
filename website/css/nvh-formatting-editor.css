@@ -6,7 +6,11 @@
 /*example-section-item.riot*/
 pre {
   margin: 0;
+  text-wrap: wrap;
   font-family: "Roboto Condensed", sans-serif;
+}
+.link-no-decoration {
+  text-decoration: none;
 }
 .element-holder {
   display: flex;
@@ -58,7 +62,6 @@ pre {
 .element-holder-content-active {
   outline: 2px solid var(--color-is-active) !important;
 }
-
 .example-item-label-vertical {
   width: fit-content;
   text-wrap: nowrap;

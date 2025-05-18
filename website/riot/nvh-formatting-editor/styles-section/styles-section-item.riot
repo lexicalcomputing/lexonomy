@@ -615,7 +615,7 @@
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("no-value-text") === null ? "" : getStyleOptionValue("no-value-text")} onchange={onChangeStyle.bind(this, "no-value-text", null)}></textarea>
     </div>
   </div>
-  <div if={(state.type === "empty") || state.isEmpty} class="label">Set custom text:</div>
+  <div if={((state.type === "empty") || state.isEmpty) && !state.isLabelOptionStyle && !state.isBulletOptionStyle} class="label">Set custom text:</div>
   <div if={(state.type === "empty") || state.isEmpty} class="styles-section-item-wrapper">
     <div class="value-wrapper">
       <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value") === null ? "" : getStyleOptionValue("text-value")} onchange={onChangeStyle.bind(this, "text-value", null)}></textarea>
