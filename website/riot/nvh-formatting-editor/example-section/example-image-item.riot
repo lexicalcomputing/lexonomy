@@ -1,66 +1,68 @@
 <example-image-item>
-  <div class="example-image-item-wrapper">
-    <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
-        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
-      {state.labelTextValue}
-    </pre>
-    <img id="example-image-item-image" if={state.showImage && !state.makeImageClickable} src={props.value} style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}/>
-    <a if={state.showImage && state.makeImageClickable} class="link-no-decoration" href={props.value} target="_blank">
-      <img src={props.value} style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}/>
-    </a>
-    <div class="example-image-item-icons">
-      <a if={state.showUrl && !state.showUrlAsIcon} href={props.value} target="_blank">{props.value}</a>
-      <a if={state.showUrl && state.showUrlAsIcon} href={props.value} class="link-no-decoration" target="_blank">
-        <pre>{nvhFormattingEditor.getIcon(state.iconItem)}</pre>
+   <div class="example-image-item-wrapper">
+      <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-vertical"
+         style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
+         {state.labelTextValue}
+      </pre>
+      <img id="example-image-item-image" if={state.showImage && !state.makeImageClickable} src={props.value} style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}/>
+      <a if={state.showImage && state.makeImageClickable} class="link-no-decoration" href={props.value} target="_blank">
+         <img src={props.value} style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}/>
       </a>
-      <a if={state.showUrl && state.showUrlAsIcon} href={props.value} class="link-no-decoration" target="_blank">
-        <pre>{nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
-      </a>
-    </div>
-    <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
-        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
-      {state.labelTextValue}
-    </pre>
-  </div>
+      <div class="example-image-item-icons">
+         <a if={state.showUrl && !state.showUrlAsIcon} href={props.value} target="_blank">{props.value}</a>
+         <a if={state.showUrl && state.showUrlAsIcon} href={props.value} class="link-no-decoration" target="_blank">
+            <pre>{nvhFormattingEditor.getIcon(state.iconItem)}</pre>
+         </a>
+         <a if={state.showUrl && state.showUrlAsIcon} href={props.value} class="link-no-decoration" target="_blank">
+            <pre>{nvhFormattingEditor.getUnicodeIcon(state.unicodeIcon)}</pre>
+         </a>
+      </div>
+      <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-vertical"
+         style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
+         {state.labelTextValue}
+      </pre>
+   </div>
 
-  <script>
-    export default {
-      onBeforeMount(props) {
-        this.nvhFormattingEditor = window.nvhFormattingEditor;
-        this.setDefaultCss();
-        this.refreshState(props);
-      },
-      onBeforeUpdate(props) {
-        this.refreshState(props);
-      },
+   <script>
+      export default {
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.setDefaultCss();
+            this.refreshState(props);
+         },
 
-      refreshState(props) {
-        this.state = {
-          showImage: props.styles["show-image"] === undefined ? true : props.styles["show-image"],
-          showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
-          makeImageClickable: props.styles["make-image-clickable"],
-          showUrlAsIcon: props.styles["show-url-as-icon"],
-          iconItem: props.styles["icon-item"],
-          unicodeIcon: props.styles["unicode-icon"],
-          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
-          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
-        }
-      },
-      setDefaultCss() {
-        this.props.styles["margin"] ??= "20";
-        this.props.styles["border-radius"] ??= "50";
-      },
-    }
-  </script>
+         onBeforeUpdate(props) {
+            this.refreshState(props);
+         },
 
-  <style>
-    .example-image-item-wrapper {
-      display: flex;
-      flex-direction: column;
-    }
-    .example-image-item-icons {
-      display: flex;
-      align-items: center;
-    }
-  </style>
+         refreshState(props) {
+            this.state = {
+               showImage: props.styles["show-image"] === undefined ? true : props.styles["show-image"],
+               showUrl: props.styles["show-url"] === undefined ? true : props.styles["show-url"],
+               makeImageClickable: props.styles["make-image-clickable"],
+               showUrlAsIcon: props.styles["show-url-as-icon"],
+               iconItem: props.styles["icon-item"],
+               unicodeIcon: props.styles["unicode-icon"],
+               labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+               showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
+            }
+         },
+
+         setDefaultCss() {
+            this.props.styles["margin"] ??= "20";
+            this.props.styles["border-radius"] ??= "50";
+         },
+      }
+   </script>
+
+   <style>
+      .example-image-item-wrapper {
+         display: flex;
+         flex-direction: column;
+      }
+      .example-image-item-icons {
+         display: flex;
+         align-items: center;
+      }
+   </style>
 </example-image-item>

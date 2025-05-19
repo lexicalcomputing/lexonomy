@@ -1,24 +1,25 @@
 <elements-choice-section>
-  <div class="elements-choice-section-container">
-    <elements-choice-item if={nvhStore.getElementConfig(props.elementsSchema.data.fullName) && nvhStore.getElementConfig(props.elementsSchema.data.fullName).type !== "markup"}
-                          state={props.elementsSchema}
-                          indentationLevel={5}/>
-  </div>
+   <div class="elements-choice-section-container">
+      <elements-choice-item if={nvhStore.getElementConfig(props.elementsSchema.data.fullName)
+            && nvhStore.getElementConfig(props.elementsSchema.data.fullName).type !== "markup"}
+         state={props.elementsSchema}
+         indentationLevel={5}/>
+   </div>
 
-  <script>
-    export default {
-      onBeforeMount(props) {
-        this.nvhStore = window.nvhStore;
-      },
-    }
-  </script>
+   <script>
+      export default {
+         onBeforeMount(props) {
+         this.nvhStore = window.nvhStore;
+         },
+      }
+   </script>
 
-  <style>
-    .elements-choice-section-container {
-      width: fit-content;
-      height: 100%;
-      min-width: 100%;
-      overflow-y: auto;
-    }
-  </style>
+   <style>
+      .elements-choice-section-container {
+         width: fit-content;
+         height: 100%;
+         min-width: 100%;
+         overflow-y: auto;
+      }
+   </style>
 </elements-choice-section>

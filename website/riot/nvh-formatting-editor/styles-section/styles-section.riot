@@ -1,106 +1,108 @@
 <styles-section>
-  <div class="styles-section-container">
-    <div if={!nvhFormattingEditor.data.selectedLayoutContainer}>No container selected. Select container in layout panel to style it.</div>
-    <div if={nvhFormattingEditor.data.selectedLayoutContainer} class="style-section-option-wrapper">
-      <div each={(child, index) in getStyleOptions()}
-          class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
-          style="color: {nvhStore.getElementColor(child.fullName)};"
-          onclick={() => changeStyleOption(child.fullName)}>
-        {!child.name ? "container": child.name}
+   <div class="styles-section-container">
+      <div if={!nvhFormattingEditor.data.selectedLayoutContainer}>No container selected. Select container in layout panel to style it.</div>
+      <div if={nvhFormattingEditor.data.selectedLayoutContainer} class="style-section-option-wrapper">
+         <div each={(child, index) in getStyleOptions()}
+            class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
+            style="color: {nvhStore.getElementColor(child.fullName)};"
+            onclick={() => changeStyleOption(child.fullName)}>
+            {!child.name ? "container": child.name}
+         </div>
       </div>
-    </div>
-    <styles-section-item if={nvhFormattingEditor.data.selectedLayoutContainer}
-                        class="styles-section-container-divider"
-                        styleOption={currentStyleOption}
-                        isLabelOptionStyle={currentStyleOption.type === "label"}
-                        isBulletOptionStyle={currentStyleOption.type === "bullet"}/>
-  </div>
+      <styles-section-item if={nvhFormattingEditor.data.selectedLayoutContainer}
+         class="styles-section-container-divider"
+         styleOption={currentStyleOption}
+         isLabelOptionStyle={currentStyleOption.type === "label"}
+         isBulletOptionStyle={currentStyleOption.type === "bullet"}/>
+   </div>
 
-  <script>
-    export default {
-      currentStyleOption: null,
+   <script>
+      export default {
+         currentStyleOption: null,
 
-      onBeforeMount(props) {
-        this.nvhFormattingEditor = window.nvhFormattingEditor;
-        this.nvhStore = window.nvhStore;
-        if (this.nvhFormattingEditor.data.selectedLayoutContainer) {
-          let styleOptions = this.getStyleOptions();
-          this.currentStyleOption = styleOptions[0];
-        }
-      },
-      onBeforeUpdate(props) {
-        if (this.nvhFormattingEditor.data.selectedLayoutContainer) {
-          let styleOptions = this.getStyleOptions();
-          let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);
-          if (!this.currentStyleOption || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
-            this.currentStyleOption = styleOptions[0];
-          }
-        }
-      },
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.nvhStore = window.nvhStore;
+            if (this.nvhFormattingEditor.data.selectedLayoutContainer) {
+               let styleOptions = this.getStyleOptions();
+               this.currentStyleOption = styleOptions[0];
+            }
+         },
 
-      getStyleOptions() {
-        let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
-        let result;
-        if (!selectedLayoutContainer.markupStyles || selectedLayoutContainer.children.length) {
-          result = [];
-        } else {
-          result = [...selectedLayoutContainer.markupStyles];
-        }
-        let name = selectedLayoutContainer.content.name;
-        let fullName = selectedLayoutContainer.content.fullName;
-        let styles = selectedLayoutContainer.styles;
-        let labelStyles = selectedLayoutContainer.labelStyles;
-        let bulletStyles = selectedLayoutContainer.bulletStyles;
-        result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
-        result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
-        result.splice(result.length, 0, {name: "bullet", fullName: "bullet", styles: bulletStyles, type: "bullet"});
-        return result;
-      },
-      changeStyleOption(fullName) {
-        for (let styleOption of this.getStyleOptions()) {
-          if (styleOption.fullName === fullName) {
-            this.currentStyleOption = styleOption;
-            this.update();
-            return;
-          }
-        }
+         onBeforeUpdate(props) {
+            if (this.nvhFormattingEditor.data.selectedLayoutContainer) {
+               let styleOptions = this.getStyleOptions();
+               let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);
+               if (!this.currentStyleOption || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
+                  this.currentStyleOption = styleOptions[0];
+               }
+            }
+         },
+
+         getStyleOptions() {
+            let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
+            let result;
+            if (!selectedLayoutContainer.markupStyles || selectedLayoutContainer.children.length) {
+               result = [];
+            } else {
+               result = [...selectedLayoutContainer.markupStyles];
+            }
+            let name = selectedLayoutContainer.content.name;
+            let fullName = selectedLayoutContainer.content.fullName;
+            let styles = selectedLayoutContainer.styles;
+            let labelStyles = selectedLayoutContainer.labelStyles;
+            let bulletStyles = selectedLayoutContainer.bulletStyles;
+            result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
+            result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
+            result.splice(result.length, 0, {name: "bullet", fullName: "bullet", styles: bulletStyles, type: "bullet"});
+            return result;
+         },
+
+         changeStyleOption(fullName) {
+            for (let styleOption of this.getStyleOptions()) {
+               if (styleOption.fullName === fullName) {
+                  this.currentStyleOption = styleOption;
+                  this.update();
+                  return;
+               }
+            }
+         }
       }
-    }
-  </script>
-  
-  <style>
-    .styles-section-container {
-      padding: 2px;
-      height: 100%;
-      min-width: 100%;
-      overflow-y: auto;
-    }
-    .styles-section-container-divider {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding-top: 10px;
-    }
-    .style-section-option-item {
-      padding: 0 5px;
-      width: fit-content;
-      cursor: pointer;
-      background-color: var(--color-grey-light);
-      text-wrap: nowrap;
-      border-bottom: 2px solid black;
-    }
-    .style-section-option-item:hover {
-      background-color: var(--color-grey-very-light);
-    }
-    .style-section-option-item-current {
-      background-color: white;
-      border: 2px solid black;
-      border-bottom: none;
-    }
-    .style-section-option-wrapper {
-      display: flex;
-      width: 100%;
-      overflow-x: scroll;
-    }
-  </style>
+   </script>
+   
+   <style>
+      .styles-section-container {
+         padding: 2px;
+         height: 100%;
+         min-width: 100%;
+         overflow-y: auto;
+      }
+      .styles-section-container-divider {
+         display: flex;
+         flex-direction: column;
+         gap: 2px;
+         padding-top: 10px;
+      }
+      .style-section-option-item {
+         padding: 0 5px;
+         width: fit-content;
+         cursor: pointer;
+         background-color: var(--color-grey-light);
+         text-wrap: nowrap;
+         border-bottom: 2px solid black;
+      }
+      .style-section-option-item:hover {
+         background-color: var(--color-grey-very-light);
+      }
+      .style-section-option-item-current {
+         background-color: white;
+         border: 2px solid black;
+         border-bottom: none;
+      }
+      .style-section-option-wrapper {
+         display: flex;
+         width: 100%;
+         overflow-x: scroll;
+      }
+   </style>
 </styles-section>

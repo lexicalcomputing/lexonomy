@@ -1,45 +1,43 @@
 <example-basic-item>
-  <div class="example-basic-item-wrapper">
-    <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
-        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
-      {state.labelTextValue}
-    </pre>
-    <pre style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>
-      {props.value}
-    </pre>
-    <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
-        style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
-      {state.labelTextValue}
-    </pre>
-  </div>
-  
-  </div>
+   <div class="example-basic-item-wrapper">
+      <pre if={state.labelTextValue !== "" && state.showLabelBefore} class="example-item-label-before"
+         style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
+         {state.labelTextValue}
+      </pre>
+      <pre style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>
+         {props.value}
+      </pre>
+      <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
+         style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
+         {state.labelTextValue}
+      </pre>
+   </div>
 
-  <script>
-    export default {
-      onBeforeMount(props) {
-        this.nvhFormattingEditor = window.nvhFormattingEditor;
-        this.refreshState(props);
-      },
-      onBeforeUpdate(props) {
-        this.refreshState(props);
-      },
+   <script>
+      export default {
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.refreshState(props);
+         },
 
-      refreshState(props) {
-        this.state = {
-          labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
-          showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
-        }
+         onBeforeUpdate(props) {
+            this.refreshState(props);
+         },
+
+         refreshState(props) {
+            this.state = {
+               labelTextValue: props.labelStyles === undefined || props.labelStyles["label-text-value"] === undefined ? "" : props.labelStyles["label-text-value"],
+               showLabelBefore: props.labelStyles === undefined || props.labelStyles["show-label-before"] === undefined ? true : props.labelStyles["show-label-before"],
+            }
+         }
       }
-    }
-  </script>
+   </script>
 
-  <style>
-    .example-basic-item-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-  </style>
-
+   <style>
+      .example-basic-item-wrapper {
+         display: flex;
+         flex-wrap: wrap;
+         align-items: center;
+      }
+   </style>
 </example-basic-item>

@@ -1,125 +1,129 @@
 <action-panel>
-  <div class="action-panel-wrapper">
-    <div if={!props.isBaseLevel} 
-        class="tooltipped action"
-        id="action-drag"
-        data-tooltip="Drag"
-        onmousedown={(event) => onMouseDown(event, props.state, props.index)}>
-      <i class="small material-icons">drag_handle</i>
-    </div>
-    <div if={!props.isBaseLevel}
-        class="tooltipped action"
-        id="action-duplicate"
-        data-tooltip="Duplicate"
-        onclick={duplicateElement}>
-      <i class="small material-icons">content_copy</i>
-    </div>
-    <div class="tooltipped action"
-        data-tooltip={props.state.orientation === "column"
-          ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
+   <div class="action-panel-wrapper">
+      <div if={!props.isBaseLevel} 
+         class="tooltipped action"
+         id="action-drag"
+         data-tooltip="Drag"
+         onmousedown={(event) => onMouseDown(event, props.state, props.index)}>
+         <i class="small material-icons">drag_handle</i>
+      </div>
+      <div if={!props.isBaseLevel}
+         class="tooltipped action"
+         id="action-duplicate"
+         data-tooltip="Duplicate"
+         onclick={duplicateElement}>
+         <i class="small material-icons">content_copy</i>
+      </div>
+      <div class="tooltipped action"
+         data-tooltip={props.state.orientation === "column"
+            ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
             : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
-        onclick={changeOrientation}>
-      <i class="small material-icons" if={props.state.orientation === "column"}>swap_vert</i>
-      <i class="small material-icons" if={props.state.orientation === "row"}>swap_horiz</i>
-    </div>
-    <div if={!props.isBaseLevel}
-        class="tooltipped action"
-        id="action-delete"
-        data-tooltip="Delete"
-        onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
-      <i class="small material-icons">delete</i>
-    </div>
-  </div>
+         onclick={changeOrientation}>
+         <i class="small material-icons" if={props.state.orientation === "column"}>swap_vert</i>
+         <i class="small material-icons" if={props.state.orientation === "row"}>swap_horiz</i>
+      </div>
+      <div if={!props.isBaseLevel}
+         class="tooltipped action"
+         id="action-delete"
+         data-tooltip="Delete"
+         onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
+         <i class="small material-icons">delete</i>
+      </div>
+   </div>
 
-<script>
-  export default {
-    onBeforeMount(props) {
-      this.parentLengthOriginal = props.parentState.children.length;
-      this.nvhFormattingEditor = window.nvhFormattingEditor;
-    },
-    onBeforeUpdate(props) {
-      this.parentLengthOriginal = props.parentState.children.length;
-    },
-  
-    onMouseDown(event, state, indexToDrag) {
-      let data = this.nvhFormattingEditor.data;
-      if (data.canBeDragged) {
-        let releaseFunction = {
-          parameters: [this.props.index, this.props.parentState, this.props.state],
-          run: this.onRelease,
-        };
-        state.releaseFunction = releaseFunction;
-        data.mouseData = state;
-        data.draggedLayoutContainer = state;
+   <script>
+      export default {
+         onBeforeMount(props) {
+            this.parentLengthOriginal = props.parentState.children.length;
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+         },
 
-        this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
-        let adders = document.getElementsByClassName("adder");
-        for (let adder of adders) {
-          adder.classList.add("adder-highligth");
-        }
-        this.nvhFormattingEditor.updateEditor(); /*This forces Chrome browser to rerender layoutContainers and adders*/
+         onBeforeUpdate(props) {
+            this.parentLengthOriginal = props.parentState.children.length;
+         },
+
+         onMouseDown(event, state, indexToDrag) {
+            let data = this.nvhFormattingEditor.data;
+            if (data.canBeDragged) {
+               let releaseFunction = {
+                  parameters: [this.props.index, this.props.parentState, this.props.state],
+                  run: this.onRelease,
+               };
+               state.releaseFunction = releaseFunction;
+               data.mouseData = state;
+               data.draggedLayoutContainer = state;
+
+               this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
+               let adders = document.getElementsByClassName("adder");
+               for (let adder of adders) {
+                  adder.classList.add("adder-highligth");
+               }
+               this.nvhFormattingEditor.updateEditor(); /*This forces Chrome browser to rerender layoutContainers and adders*/
+            }
+            data.canBeDragged = false;
+         },
+
+         onRelease(indexToDelete, parentState, state) {
+            let data = this.nvhFormattingEditor.data;
+            /* If layoutContainer was dragged within the same parent but its index was decreased,
+            it is necessary that "indexToDelete" has to be increased by one, so that I delete
+            the desired element. */
+            const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
+                                    && data.dropInfo.index < indexToDelete;
+
+            if (data.dropInfo.wasSuccessful) {
+               if (wasIndexDecreased) {
+                  parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
+               } else {
+                  parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
+               }
+            }
+            data.draggedLayoutContainer = null;
+            data.hoveredLayoutContainer = null;
+         },
+
+         hideCloseAdders(htmlElement, indexToDrag) {
+            let htmlElementChildren = Array.from(htmlElement.children);
+            let leftAdder = htmlElementChildren[indexToDrag * 2];
+            let rightAdder = htmlElementChildren[indexToDrag * 2 + 2];
+            leftAdder.style.display = "none";
+            rightAdder.style.display = "none";
+         },
+
+         duplicateElement() {
+            let copiedElement = structuredClone(this.props.state);
+            this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
+            this.nvhFormattingEditor.data.selectLayoutContainer = null;
+            this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
+            this.nvhFormattingEditor.updateEditor();
+         },
+
+         changeOrientation() {
+            this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
+            this.nvhFormattingEditor.data.selectLayoutContainer = null;
+         }
       }
-      data.canBeDragged = false;
-    },
-    onRelease(indexToDelete, parentState, state) {
-      let data = this.nvhFormattingEditor.data;
-      /* If layoutContainer was dragged within the same parent but its index was decreased,
-      it is necessary that "indexToDelete" has to be increased by one, so that I delete
-      the desired element. */
-      const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
-                                && data.dropInfo.index < indexToDelete;
+   </script>
 
-      if (data.dropInfo.wasSuccessful) {
-        if (wasIndexDecreased) {
-          parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
-        } else {
-          parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
-        }
+   <style>
+      .action-panel-wrapper {
+         display: flex;
+         height: 36px;
+         border: 1px solid black;
+         background-color: white;
       }
-      data.draggedLayoutContainer = null;
-      data.hoveredLayoutContainer = null;
-    },
-    hideCloseAdders(htmlElement, indexToDrag) {
-      let htmlElementChildren = Array.from(htmlElement.children);
-      let leftAdder = htmlElementChildren[indexToDrag * 2];
-      let rightAdder = htmlElementChildren[indexToDrag * 2 + 2];
-      leftAdder.style.display = "none";
-      rightAdder.style.display = "none";
-    },
-    duplicateElement() {
-      let copiedElement = structuredClone(this.props.state);
-      this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
-      this.nvhFormattingEditor.data.selectLayoutContainer = null; /*onClick in layoutContainer will cause that the layoutContainer will have active status*/
-      this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-      this.nvhFormattingEditor.updateEditor();
-    },
-    changeOrientation() {
-      this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
-      this.nvhFormattingEditor.data.selectLayoutContainer = null; /*onClick in layoutContainer will cause that the layoutContainer will have active status*/
-    }
-  }
-</script>
-
-<style>
-  .action-panel-wrapper {
-    display: flex;
-    height: 36px;
-    border: 1px solid black;
-    background-color: white;
-  }
-  .action {
-    cursor: pointer;
-    border: 1px solid black;
-  }
-  .action:hover {
-    background-color: var(--color-grey-normal);
-  }
-  #action-drag {
-    cursor: grab;
-  }
-  .action {
-    user-select: none;
-  }
-</style>
-
+      .action {
+         cursor: pointer;
+         border: 1px solid black;
+      }
+      .action:hover {
+         background-color: var(--color-grey-normal);
+      }
+      #action-drag {
+         cursor: grab;
+      }
+      .action {
+         user-select: none;
+      }
+   </style>
 </action-panel>

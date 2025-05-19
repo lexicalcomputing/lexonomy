@@ -1,258 +1,257 @@
 <nvh-formatting-editor-toolbar>
-  <div class="formatting-page-containers">
-    <div class="formatting-page-action-container">
-      <div id="save-button-wrapper"
-          onclick={props.saveSchemas}
-          data-tooltip="Save formatting (including layout and styles)"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">save</i>
+   <div class="formatting-page-containers">
+      <div class="formatting-page-action-container">
+         <div id="save-button-wrapper"
+            onclick={props.saveSchemas}
+            data-tooltip="Save formatting (including layout and styles)"
+            class="tooltipped formatting-page-action-item">
+            <i class="material-icons">save</i>
+         </div>
+         <div id="undo-icon-wrapper" 
+            onclick={nvhFormattingEditor.undoSchema.bind(nvhFormattingEditor)}
+            data-tooltip="Step back"
+            class="tooltipped formatting-page-action-item">
+            <i class="material-icons">undo</i>
+         </div>
+         <div id="redo-icon-wrapper" 
+            onclick={nvhFormattingEditor.redoSchema.bind(nvhFormattingEditor)}
+            data-tooltip="Step forward"
+            class="tooltipped formatting-page-action-item">
+            <i class="material-icons">redo</i>
+         </div>
+         <div id="reset-icon-wrapper" 
+            onclick={nvhFormattingEditor.resetSchema.bind(nvhFormattingEditor)}
+            data-tooltip="Reset current layout"
+            class="tooltipped formatting-page-action-item">
+            <i class="material-icons">refresh</i>
+         </div>
+         <div id="export-pdf"
+            onclick={onExportPDF}
+            data-tooltip="Export all entries of dictionary to PDF"
+            class="tooltipped formatting-page-action-item">
+            Export to PDF
+         </div>
+         <div class="progress-label" if={state.exportedEntries.inProgress}>
+            {state.exportedEntries.exported} / {state.exportedEntries.total}
+         </div>
+         <div class="progress-label" if={state.exportedEntries.isLoading}>
+            Wait please
+         </div>
       </div>
-      <div id="undo-icon-wrapper" 
-          onclick={nvhFormattingEditor.undoSchema.bind(nvhFormattingEditor)}
-          data-tooltip="Step back"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">undo</i>
+      <div class="formatting-page-visibility-container">
+         <div onclick={onSectionClick.bind(this, "elements")}
+            data-tooltip="Element list panel"
+            class="tooltipped formatting-page-visibility-item
+               {!props.state.isSectionVisible.elements ? "item-inactive" : "item-active"}">
+            <i class="material-icons">sort</i>
+         </div>
+         <div onclick={onSectionClick.bind(this, "editing")}
+            data-tooltip="Layout panel"
+            class="tooltipped formatting-page-visibility-item
+               {!props.state.isSectionVisible.editing ? "item-inactive" : "item-active"}">
+            <i class="material-icons">view_compact</i>
+         </div>
+         <div onclick={onSectionClick.bind(this, "style")}
+            data-tooltip="Style panel"
+            class="tooltipped formatting-page-visibility-item
+               {!props.state.isSectionVisible.style ? "item-inactive" : "item-active"}">
+            <i class="material-icons">palette</i>
+         </div>
+         <div onclick={onSectionClick.bind(this, "example")}
+            data-tooltip="Preview panel"
+            class="tooltipped formatting-page-visibility-item
+               {!props.state.isSectionVisible.example ? "item-inactive" : "item-active"}">
+            <i class="material-icons">visibility</i>
+         </div>
       </div>
-      <div id="redo-icon-wrapper" 
-          onclick={nvhFormattingEditor.redoSchema.bind(nvhFormattingEditor)}
-          data-tooltip="Step forward"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">redo</i>
+      <div class="formatting-page-layout-container">
+         <div onclick={onLayoutClick.bind(this, "desktop")}
+            data-tooltip="Desktop layout"
+            class="tooltipped formatting-page-layout-item
+              {nvhFormattingEditor.data.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
+            <i class="material-icons">desktop_windows</i>
+         </div>
+         <div onclick={onLayoutClick.bind(this, "tablet")}
+            data-tooltip="Tablet layout"
+            class="tooltipped formatting-page-layout-item
+               {nvhFormattingEditor.data.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
+            <i class="material-icons">tablet</i>
+         </div>
+         <div onclick={onLayoutClick.bind(this, "mobile")}
+            data-tooltip="Mobile phone layout"
+            class="tooltipped formatting-page-layout-item
+               {nvhFormattingEditor.data.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
+            <i class="material-icons">phone_android</i>
+         </div>
+         <div onclick={onLayoutClick.bind(this, "pdf")}
+            data-tooltip="Export to PDF layout"
+            class="tooltipped formatting-page-layout-item
+               {nvhFormattingEditor.data.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
+            <i class="material-icons">picture_as_pdf</i>
+         </div>
       </div>
-      <div id="reset-icon-wrapper" 
-          onclick={nvhFormattingEditor.resetSchema.bind(nvhFormattingEditor)}
-          data-tooltip="Reset current layout"
-          class="tooltipped formatting-page-action-item">
-        <i class="material-icons">refresh</i>
+      <div class="formatting-page-tutorial-container">
+         <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
+         <div id="link-fullscreen" onclick={toggleFullscreen}>{state.isFullscreen ? "Exit" : "Enter"} fullscreen</div>
       </div>
-      <div id="export-pdf"
-          onclick={onExportPDF}
-          data-tooltip="Export all entries of dictionary to PDF"
-          class="tooltipped formatting-page-action-item">
-        Export to PDF
-      </div>
-      <div class="progress-label" if={state.exportedEntries.inProgress}>
-        {state.exportedEntries.exported} / {state.exportedEntries.total}
-      </div>
-      <div class="progress-label" if={state.exportedEntries.isLoading}>
-        Wait please
-      </div>
-    </div>
-    <div class="formatting-page-visibility-container">
-      <div onclick={onSectionClick.bind(this, "elements")}
-          data-tooltip="Element list panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.elements ? "item-inactive" : "item-active"}">
-        <i class="material-icons">sort</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "editing")}
-          data-tooltip="Layout panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.editing ? "item-inactive" : "item-active"}">
-        <i class="material-icons">view_compact</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "style")}
-          data-tooltip="Style panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.style ? "item-inactive" : "item-active"}">
-        <i class="material-icons">palette</i>
-      </div>
-      <div onclick={onSectionClick.bind(this, "example")}
-          data-tooltip="Preview panel"
-          class="tooltipped formatting-page-visibility-item
-                {!props.state.isSectionVisible.example ? "item-inactive" : "item-active"}">
-        <i class="material-icons">visibility</i>
-      </div>
-    </div>
-    <div class="formatting-page-layout-container">
-      <div onclick={onLayoutClick.bind(this, "desktop")}
-          data-tooltip="Desktop layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.data.activeLayout !== "desktop" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">desktop_windows</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "tablet")}
-          data-tooltip="Tablet layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.data.activeLayout !== "tablet" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">tablet</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "mobile")}
-          data-tooltip="Mobile phone layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.data.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">phone_android</i>
-      </div>
-      <div onclick={onLayoutClick.bind(this, "pdf")}
-          data-tooltip="Export to PDF layout"
-          class="tooltipped formatting-page-layout-item
-                {nvhFormattingEditor.data.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
-        <i class="material-icons">picture_as_pdf</i>
-      </div>
-    </div>
-    <div class="formatting-page-tutorial-container">
-      <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
-      <div id="link-fullscreen" onclick={toggleFullscreen}>{state.isFullscreen ? "Exit" : "Enter"} fullscreen</div>
-    </div>
-  </div>
+   </div>
 
-  <script>
-    export default {
-      bindings: [["nvhFormattingEditor", "updateToolbar", "update"]],
+   <script>
+      export default {
+         bindings: [["nvhFormattingEditor", "updateToolbar", "update"]],
 
-      state: {
-        exportedEntries: {
-          isLoading: false,
-          inProgress: false,
-          exported: 0,
-          total: 0,
-        },
-        isFullscreen: false,
-      },
+         state: {
+            exportedEntries: {
+               isLoading: false,
+               inProgress: false,
+               exported: 0,
+               total: 0,
+            },
+            isFullscreen: false,
+         },
 
-      onBeforeMount(props) {
-        this.nvhFormattingEditor = window.nvhFormattingEditor;
-      },
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+         },
 
-      onLayoutClick(layoutName) {
-        this.nvhFormattingEditor.data.activeLayout = layoutName;
-        this.nvhFormattingEditor.data.selectedLayoutContainer = null;
-        this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
-        this.nvhFormattingEditor.updateEditor();
-      },
-      onSectionClick(sectionName) {
-        this.props.state.isSectionVisible[sectionName] = !this.props.state.isSectionVisible[sectionName];
-        this.nvhFormattingEditor.updateEditor();
-      },
-      toggleFullscreen() {
-        let components = [
-          document.getElementById("formatting-page-title"),
-          document.getElementsByClassName("wideContainer")[0],
-          document.getElementById("formatting-page-wrapper-container"),
-        ];
-        for (let component of components) {
-          if (!this.state.isFullscreen) {
-            component.classList.add("fullscreen");
-          } else {
-            component.classList.remove("fullscreen");
-          }
-        }
-        this.state.isFullscreen = !this.state.isFullscreen;
-        this.update();
-      },
-      async onExportPDF() {
-        await this.nvhFormattingEditor.stringifyAllEntries(this.state.exportedEntries);
-        this.update(this.state.exportedEntries.isLoading = true);
-        let response = await this.nvhFormattingEditor.createPDF();
-        const encodedPDFString = response.pdf_string;
+         onLayoutClick(layoutName) {
+            this.nvhFormattingEditor.data.activeLayout = layoutName;
+            this.nvhFormattingEditor.data.selectedLayoutContainer = null;
+            this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
+            this.nvhFormattingEditor.updateEditor();
+         },
 
-        /*
-          Convert encoded PDF string to array of bytes, and use it as an input for Blob to generate URL.
-          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
-        */
-        // const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString); // Not available on Chrome
+         onSectionClick(sectionName) {
+            this.props.state.isSectionVisible[sectionName] = !this.props.state.isSectionVisible[sectionName];
+            this.nvhFormattingEditor.updateEditor();
+         },
 
-        /*
-          This should be available for both Mozilla and Chrome.
-          https://developer.mozilla.org/en-US/docs/Web/API/Window/atob
-          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-        */
-        const bytesArrayPDF = Uint8Array.from(atob(encodedPDFString), c => c.charCodeAt(0));
-        const blob = new Blob([bytesArrayPDF], { type: 'application/pdf' });
-        const blobUrl = URL.createObjectURL(blob);
-        
-        /*
-          Because of asynchronous creating of a PDF file,
-          I need to create a temporary <a> element a simulate clicking on it.
-          <a> element in html code would not download PDF file.
-        */
-        const tmpLink = document.createElement("a");
-        tmpLink.href = blobUrl;
-        tmpLink.download = "entries.pdf"
-        document.body.appendChild(tmpLink)
-        tmpLink.click();
-        document.body.removeChild(tmpLink)
+         toggleFullscreen() {
+            let components = [
+               document.getElementById("formatting-page-title"),
+               document.getElementsByClassName("wideContainer")[0],
+               document.getElementById("formatting-page-wrapper-container"),
+            ];
+            for (let component of components) {
+               if (!this.state.isFullscreen) {
+                  component.classList.add("fullscreen");
+               } else {
+                  component.classList.remove("fullscreen");
+               }
+            }
+            this.state.isFullscreen = !this.state.isFullscreen;
+            this.update();
+         },
 
-        URL.revokeObjectURL(blobUrl);
-        this.update(this.state.exportedEntries.isLoading = false);
-      },
-    }
-  </script>
+         async onExportPDF() {
+            await this.nvhFormattingEditor.stringifyAllEntries(this.state.exportedEntries);
+            this.update(this.state.exportedEntries.isLoading = true);
+            let response = await this.nvhFormattingEditor.createPDF();
+            const encodedPDFString = response.pdf_string;
 
-  <style>
-    .formatting-page-layout-item, .formatting-page-visibility-item, .formatting-page-action-item {
-      padding: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: white;
-      cursor: pointer;
-    }
-    .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover, .formatting-page-action-item {
-      background-color: var(--color-grey-normal);
-    }
-    .formatting-page-containers {
-      display: flex;
-      gap: 25px;
-      background-color: var(--color-grey-toolbar);
-    }
-    .formatting-page-visibility-container, .formatting-page-layout-container, .formatting-page-action-container {
-      display: flex;
-    }
-    .formatting-page-action-container {
-      gap: 5px;
-    }
-    .formatting-page-tutorial-container {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      justify-content: end;
-      margin-right: 10px;
-    }
+            /*
+               Convert encoded PDF string to array of bytes, and use it as an input for Blob to generate URL.
+               https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
+            */
+            // const bytesArrayPDF = Uint8Array.fromBase64(encodedPDFString); // Not available on Chrome
 
-    .item-inactive {
-      background-color: transparent;
-    }
-    .item-active {
-      background-color: var(--color-red-normal);
-      color: white;
-    }
-    .item-active:hover {
-      background-color: var(--color-red-dark);
-    }
+            /*
+               This should be available for both Mozilla and Chrome.
+               https://developer.mozilla.org/en-US/docs/Web/API/Window/atob
+               https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+            */
+            const bytesArrayPDF = Uint8Array.from(atob(encodedPDFString), c => c.charCodeAt(0));
+            const blob = new Blob([bytesArrayPDF], { type: 'application/pdf' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            /*
+               Because of asynchronous creating of a PDF file,
+               I need to create a temporary <a> element a simulate clicking on it.
+               <a> element in html code would not download PDF file.
+            */
+            const tmpLink = document.createElement("a");
+            tmpLink.href = blobUrl;
+            tmpLink.download = "entries.pdf"
+            document.body.appendChild(tmpLink)
+            tmpLink.click();
+            document.body.removeChild(tmpLink)
 
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial, #link-fullscreen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 8px;
-      text-wrap: nowrap;
-      cursor: pointer;
-    }
-    #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #link-tutorial, #link-fullscreen {
-      background-color: transparent;
-      text-decoration: none;
-    }
-    #save-button-wrapper {
-      color: white;
-      background-color: var(--color-red-normal);
-    }
-    #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover, #link-tutorial:hover, #link-fullscreen:hover {
-      background-color: var(--color-grey-normal);
-      color: black;
-    }
-    #save-button-wrapper:hover {
-      background-color: var(--color-red-dark);
-    }
-    #export-pdf {
-      margin-left: 10px;
-    }
+            URL.revokeObjectURL(blobUrl);
+            this.update(this.state.exportedEntries.isLoading = false);
+         },
+      }
+   </script>
 
-    .progress-label {
-      display: flex;
-      align-items: center;
-      width: 150px;
-    }
-  </style>
-
+   <style>
+      .formatting-page-layout-item, .formatting-page-visibility-item, .formatting-page-action-item {
+         padding: 5px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         background-color: white;
+         cursor: pointer;
+      }
+      .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover, .formatting-page-action-item {
+         background-color: var(--color-grey-normal);
+      }
+      .formatting-page-containers {
+         display: flex;
+         gap: 25px;
+         background-color: var(--color-grey-toolbar);
+      }
+      .formatting-page-visibility-container, .formatting-page-layout-container, .formatting-page-action-container {
+         display: flex;
+      }
+      .formatting-page-action-container {
+         gap: 5px;
+      }
+      .formatting-page-tutorial-container {
+         display: flex;
+         width: 100%;
+         align-items: center;
+         justify-content: end;
+         margin-right: 10px;
+      }
+      .item-inactive {
+         background-color: transparent;
+      }
+      .item-active {
+         background-color: var(--color-red-normal);
+         color: white;
+      }
+      .item-active:hover {
+         background-color: var(--color-red-dark);
+      }
+      #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial, #link-fullscreen {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         padding: 4px 8px;
+         text-wrap: nowrap;
+         cursor: pointer;
+      }
+      #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #link-tutorial, #link-fullscreen {
+         background-color: transparent;
+         text-decoration: none;
+      }
+      #save-button-wrapper {
+         color: white;
+         background-color: var(--color-red-normal);
+      }
+      #undo-icon-wrapper:hover, #redo-icon-wrapper:hover, #export-pdf:hover, #reset-icon-wrapper:hover, #link-tutorial:hover, #link-fullscreen:hover {
+         background-color: var(--color-grey-normal);
+         color: black;
+      }
+      #save-button-wrapper:hover {
+         background-color: var(--color-red-dark);
+      }
+      #export-pdf {
+         margin-left: 10px;
+      }
+      .progress-label {
+         display: flex;
+         align-items: center;
+         width: 150px;
+      }
+   </style>
 </nvh-formatting-editor-toolbar>

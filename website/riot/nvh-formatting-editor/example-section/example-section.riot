@@ -1,94 +1,93 @@
 <example-section>
-  <div class="example-section-container">
-    <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
-      <div if={nvhStore.data.entry === undefined}>Preview is loading ...</div>
-      <div if={nvhStore.data.entry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
-      <example-section-item if={nvhStore.data.entry}
-        each={child in nvhFormattingEditor.currentLayout.schema.children}
-        onclick={() => onExampleSectionItemClick(child)}
-        onmouseenter={(event) => onExampleItemMouseEnter(event, child)}
-        onmouseleave={(event) => onExampleItemMouseLeave(event, child)}
-        schema={child}
-        entry={nvhStore.data.entry}
-        class="example-section-item"
-        isFormatting={true}
-        bulletIndex={1}
-        maxPossibleWidth={nvhFormattingEditor.getMaxPossibleWidth()}/>
-    <div>
-  </div>
+   <div class="example-section-container">
+      <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
+         <div if={nvhStore.data.entry === undefined}>Preview is loading ...</div>
+         <div if={nvhStore.data.entry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
+         <example-section-item if={nvhStore.data.entry}
+            each={child in nvhFormattingEditor.currentLayout.schema.children}
+            onclick={() => onExampleSectionItemClick(child)}
+            onmouseenter={(event) => onExampleItemMouseEnter(event, child)}
+            onmouseleave={(event) => onExampleItemMouseLeave(event, child)}
+            schema={child}
+            entry={nvhStore.data.entry}
+            class="example-section-item"
+            isFormatting={true}
+            bulletIndex={1}
+            maxPossibleWidth={nvhFormattingEditor.getMaxPossibleWidth()}/>
+      <div>
+   </div>
 
-  <script>
-    export default {
-      bindings: [["store", "entryChanged", "update"]],
+   <script>
+      export default {
+         bindings: [["store", "entryChanged", "update"]],
 
-      async getEntry() {
-        let entriesList = await this.store.loadEntryList();
-        if (!entriesList || entriesList.entries.length === 0) {
-          return null;
-        }
-        this.store.changeEntryId(entriesList.entries[0].id);
-        return await this.store.loadEntry();
-      },
+         async getEntry() {
+            let entriesList = await this.store.loadEntryList();
+            if (!entriesList || entriesList.entries.length === 0) {
+               return null;
+            }
+            this.store.changeEntryId(entriesList.entries[0].id);
+            return await this.store.loadEntry();
+         },
 
-      onBeforeMount(props) {
-        this.nvhFormattingEditor = window.nvhFormattingEditor;
-        this.store = window.store;
-        this.nvhStore = window.nvhStore;
-        this.getEntry().then(res => {
-          this.update();
-        });
-      },
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.store = window.store;
+            this.nvhStore = window.nvhStore;
+            this.getEntry().then(res => {
+               this.update();
+            });
+         },
 
-      onExampleSectionItemClick(state) {
-        this.nvhFormattingEditor.selectLayoutContainer(state, null);
-        this.nvhFormattingEditor.updateEditor();
-      },
-      onExampleItemMouseEnter(event, state) {
-        if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.add("layout-container-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
-          this.nvhFormattingEditor.updateEditor();
-        }
-      },
-      onExampleItemMouseLeave(event, state) {
-        if (!nvhFormattingEditor.data.mouseData) {
-          event.currentTarget.classList.remove("layout-container-mouse-hover");
-          this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-          this.nvhFormattingEditor.updateEditor();
-        }
-      },
-    }
-  </script>
+         onExampleSectionItemClick(state) {
+            this.nvhFormattingEditor.selectLayoutContainer(state, null);
+            this.nvhFormattingEditor.updateEditor();
+         },
 
-  <style>
-    .example-section-container {
-      width: fit-content;
-      height: 100%;
-    }
+         onExampleItemMouseEnter(event, state) {
+            if (!nvhFormattingEditor.data.mouseData) {
+               event.currentTarget.classList.add("layout-container-mouse-hover");
+               this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
+               this.nvhFormattingEditor.updateEditor();
+            }
+         },
 
-    .scrollable-div-layout {
-      display: flex;
-      flex-wrap: wrap;
-      flex-direction: column;
-      width: 80vw !important;
-      height: 100%;
-      padding: 5px;
-      overflow-y: auto;
-    }
+         onExampleItemMouseLeave(event, state) {
+            if (!nvhFormattingEditor.data.mouseData) {
+               event.currentTarget.classList.remove("layout-container-mouse-hover");
+               this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
+               this.nvhFormattingEditor.updateEditor();
+            }
+         },
+      }
+   </script>
 
-    .scrollable-div-layout-tablet {
-      width: 1020px !important;
-    }
-    .scrollable-div-layout-pdf {
-      width: 980px !important;
-      font-family: sans-serif;
-    }
-    .scrollable-div-layout-mobile {
-      width: 440px !important;
-    }
-
-    .example-section-item {
-      cursor: pointer;
-    }
-  </style>
+   <style>
+      .example-section-container {
+         width: fit-content;
+         height: 100%;
+      }
+      .scrollable-div-layout {
+         display: flex;
+         flex-wrap: wrap;
+         flex-direction: column;
+         width: 80vw !important;
+         height: 100%;
+         padding: 5px;
+         overflow-y: auto;
+      }
+      .scrollable-div-layout-tablet {
+         width: 1020px !important;
+      }
+      .scrollable-div-layout-pdf {
+         width: 980px !important;
+         font-family: sans-serif;
+      }
+      .scrollable-div-layout-mobile {
+         width: 440px !important;
+      }
+      .example-section-item {
+         cursor: pointer;
+      }
+   </style>
 </example-section>
