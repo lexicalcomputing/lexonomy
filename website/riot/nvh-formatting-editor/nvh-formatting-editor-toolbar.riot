@@ -131,6 +131,8 @@
                document.getElementById("formatting-page-title"),
                document.getElementsByClassName("wideContainer")[0],
                document.getElementById("formatting-page-wrapper-container"),
+               document.getElementsByTagName("app-header")[0],
+               document.getElementsByTagName("app-footer")[0],
             ];
             for (let component of components) {
                if (!this.state.isFullscreen) {
