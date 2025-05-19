@@ -877,7 +877,7 @@ def dictconfig(dictID):
 
 @get(siteconfig["rootPath"]+"<dictID>/stats.json")
 @authDict(["canEdit", "canEditSource", "canConfig"])
-def dictstats(dictID):
+def dictstats(dictID, user, dictDB, configs):
     if not ops.dictExists(dictID):
         return {"success": False}
     else:
