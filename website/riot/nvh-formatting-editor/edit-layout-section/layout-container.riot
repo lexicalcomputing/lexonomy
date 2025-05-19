@@ -1,87 +1,87 @@
 <layout-container>
    <action-panel if={!nvhFormattingEditor.data.mouseData}
       class="action-panel
-            {this.nvhFormattingEditor.isLayoutContainerHovered(props.state) ? "action-panel-hovered" : ""}"
+            {this.nvhFormattingEditor.isLayoutContainerHovered(props.schema) ? "action-panel-hovered" : ""}"
       index={props.index}
-      parentState={props.parentState}
-      state={props.state}
+      parentSchema={props.parentSchema}
+      schema={props.schema}
       isBaseLevel={props.isBaseLevel}/>
    <elementholder-component class="elementholder"
-      state={props.state}
+      schema={props.schema}
       canHaveAdders={props.canHaveAdders}
       isBaseLevel={props.isBaseLevel}/>
    <add-children-component getBackgroundColor={getBackgroundColor}
       class="add-children-component"
-      state={props.state}
+      schema={props.schema}
       canHaveAdders={props.canHaveAdders}>
    </add-children-component>
-   <div class={getLayoutContainerInsideWrapperCssClass(props.state)}
+   <div class={getLayoutContainerInsideWrapperCssClass(props.schema)}
       style="background-color: {getBackgroundColor()};
          border: 2px solid {getBorderColor()}">
-      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.state)
-            && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
-         onclick={() => nvhFormattingEditor.addElement(0, props.state, null)}
+      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema)
+            && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
+         onclick={() => nvhFormattingEditor.addElement(0, props.schema, null)}
          onmouseenter={onAdderMouseEnter}
          onmouseleave={onAdderMouseLeave}
-         onmouseup={(event) => onAdderMouseUp(event, props.state, 0)}
-         class={getAdderCssClass(props.state, "first")}
-         orientation={props.state.children.length === 0 ? "column": props.state.orientation}
+         onmouseup={(event) => onAdderMouseUp(event, props.schema, 0)}
+         class={getAdderCssClass(props.schema, "first")}
+         orientation={props.schema.children.length === 0 ? "column": props.schema.orientation}
          index={0}
-         state={props.state}/>
-      <template each={(child, index) in props.state.children}>
-         <layout-container onclick={() => nvhFormattingEditor.selectLayoutContainer(child, props.state)}
+         schema={props.schema}/>
+      <template each={(child, index) in props.schema.children}>
+         <layout-container onclick={() => nvhFormattingEditor.selectLayoutContainer(child, props.schema)}
             title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
                ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
             onmouseup={(event) => onMouseUp(event, child)}
             onmouseenter={(event) => onLayoutContainerMouseEnter(event, child)}
-            onmouseleave={(event) => onLayoutContainerMouseLeave(event, child, props.state)}
+            onmouseleave={(event) => onLayoutContainerMouseLeave(event, child, props.schema)}
             class={getLayoutContainerCssClass(child)}
-            state={nvhFormattingEditor.childWithInheritedArea(child, props.state)}
-            parentState={props.state}
+            schema={nvhFormattingEditor.childWithInheritedArea(child, props.schema)}
+            parentSchema={props.schema}
             isBaseLevel={false}
             index={index}
-            canHaveAdders={nvhFormattingEditor.canHaveAdders(props.state.content.areaFullName, child)}/>
-         <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.state)
-               && nvhFormattingEditor.isChildOfParent(props.state.content.areaFullName)}
-            onclick={() => nvhFormattingEditor.addElement(index + 1, props.state, null)}
+            canHaveAdders={nvhFormattingEditor.canHaveAdders(props.schema.content.areaFullName, child)}/>
+         <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema)
+               && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
+            onclick={() => nvhFormattingEditor.addElement(index + 1, props.schema, null)}
             onmouseenter={onAdderMouseEnter}
             onmouseleave={onAdderMouseLeave}
-            onmouseup={(event) => onAdderMouseUp(event, props.state, index + 1)}
-            class={getAdderCssClass(props.state, "other")}
-            orientation={props.state.orientation}
+            onmouseup={(event) => onAdderMouseUp(event, props.schema, index + 1)}
+            class={getAdderCssClass(props.schema, "other")}
+            orientation={props.schema.orientation}
             index={index + 1}
-            state={props.state}/>
+            schema={props.schema}/>
       </template>
    </div>
 
    <script>
       export default {
          onBeforeMount(props) {
-         this.nvhFormattingEditor = window.nvhFormattingEditor;
-         this.nvhStore = window.nvhStore;
-         /* 
-         Initialize labelStyles and markupStyles in case any of them is undefined
-         this.props.state["markupStyles"].length === 0 is necessary because if someone change entry structure,
-         markup styles will not appear in style section
-         */
-         if (!props.state.markupStyles.length) {
-            let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.state.content.fullName);
-            if (markupChildren.length !== 0 ) {
-               props.state.markupStyles = this.nvhFormattingEditor.createMarkupStyles(props.state.content.fullName);
-            } else {
-               props.state.markupStyles = [];
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.nvhStore = window.nvhStore;
+            /* 
+            Initialize labelStyles and markupStyles in case any of them is undefined
+            this.props.schema["markupStyles"].length === 0 is necessary because if someone change entry structure,
+            markup styles will not appear in style section
+            */
+            if (!props.schema.markupStyles.length) {
+               let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.schema.content.fullName);
+               if (markupChildren.length !== 0 ) {
+                  props.schema.markupStyles = this.nvhFormattingEditor.createMarkupStyles(props.schema.content.fullName);
+               } else {
+                  props.schema.markupStyles = [];
+               }
             }
-         }
-         props.state.labelStyles = props?.state?.labelStyles || {}
-         props.state.bulletStyles = props?.state?.bulletStyles || {}
-         props.state.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
+            props.schema.labelStyles = props?.schema?.labelStyles || {}
+            props.schema.bulletStyles = props?.schema?.bulletStyles || {}
+            props.schema.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
          },
 
          onBeforeUpdate(props) {
-            props.state.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
+            props.schema.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
          },
 
-         onMouseUp(event, state) {
+         onMouseUp(event, schema) {
             if (this.nvhFormattingEditor.data.canBeDropped) {
                const data = this.nvhFormattingEditor.data.mouseData;
                if (!data) {
@@ -89,20 +89,20 @@
                }
                if (data.type === "choice-item") {
                   this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
-                  if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)
-                        || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)
-                        || !this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
+                  if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, schema)
+                        || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.schema.content.areaFullName, schema)
+                        || !this.nvhFormattingEditor.isChildOfParent(this.props.schema.content.areaFullName)) {
                      this.nvhFormattingEditor.data.canBeDropped = false;
                      return;
                   }
-                  for (let child of state.children) {
+                  for (let child of schema.children) {
                      if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
                            || this.nvhFormattingEditor.isLayoutContainerAsSameWrapper(data.fullName, child)) {
                         this.nvhFormattingEditor.data.canBeDropped = false;
                         return;
                      }
                   }
-                  this.nvhFormattingEditor.fillLayoutContainerWithData(state, data);
+                  this.nvhFormattingEditor.fillLayoutContainerWithData(schema, data);
                }
                if (data.releaseFunction) {
                   data.releaseFunction.run(...data.releaseFunction.parameters);
@@ -126,14 +126,14 @@
             }
          },
 
-         onAdderMouseUp(event, state, index) {
+         onAdderMouseUp(event, schema, index) {
             if (this.nvhFormattingEditor.data.canBeDropped) {
                const data = this.nvhFormattingEditor.data.mouseData;
                if (!data) {
                   return;
                }
                if (data.type === "layout-container") {
-                  state.children.splice(index, 0, data);
+                  schema.children.splice(index, 0, data);
                   this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
                   this.nvhFormattingEditor.data.dropInfo.index = index;
                   this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
@@ -149,15 +149,15 @@
             }
          },
 
-         onLayoutContainerMouseEnter(event, state) {
+         onLayoutContainerMouseEnter(event, schema) {
             if (!this.nvhFormattingEditor.data.mouseData) {
                event.currentTarget.classList.add("layout-container-mouse-hover");
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
+               this.nvhFormattingEditor.data.hoveredLayoutContainer = schema;
                this.nvhFormattingEditor.updateEditor();
             }
          },
 
-         onLayoutContainerMouseLeave(event, state, parentState) {
+         onLayoutContainerMouseLeave(event, schema, parentSchema) {
             if (!this.nvhFormattingEditor.data.mouseData) {
                event.currentTarget.classList.remove("layout-container-mouse-hover");
                this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
@@ -170,35 +170,35 @@
                const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
                if (classList.includes("layout-container")) {
                   event.currentTarget.parentElement.parentElement.classList.add("layout-container-mouse-hover");
-                  this.nvhFormattingEditor.data.hoveredLayoutContainer = parentState;
+                  this.nvhFormattingEditor.data.hoveredLayoutContainer = parentSchema;
                }
                this.nvhFormattingEditor.updateEditor();
             }
          },
 
          getBorderColor() {
-            return !this.props.state.content.name ? "#c7ced1" : "transparent";
+            return !this.props.schema.content.name ? "#c7ced1" : "transparent";
          },
 
          getBackgroundColor() {
-            if (!this.props.state.content.name || this.props.isBaseLevel) {
+            if (!this.props.schema.content.name || this.props.isBaseLevel) {
                return "#ffffff";
             }
-            if (this.props.state.children.length === 0) {
+            if (this.props.schema.children.length === 0) {
                return "transparent";
             }
-            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.state.content.fullName));
+            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.schema.content.fullName));
          },
 
-         canBeDropped(state) {
+         canBeDropped(schema) {
             const data = this.nvhFormattingEditor.data.mouseData;
             if (!data || data.type !== "choice-item"
-                  || this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, state)
-                  || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.state.content.areaFullName, state)
-                  || !this.nvhFormattingEditor.isChildOfParent(this.props.state.content.areaFullName)) {
+                  || this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, schema)
+                  || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.schema.content.areaFullName, schema)
+                  || !this.nvhFormattingEditor.isChildOfParent(this.props.schema.content.areaFullName)) {
                return false;
             }
-            for (let child of state.children) {
+            for (let child of schema.children) {
                if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
                   || this.nvhFormattingEditor.isLayoutContainerAsSameWrapper(data.fullName, child)) {
                   return false;
