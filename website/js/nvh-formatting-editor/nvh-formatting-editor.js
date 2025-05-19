@@ -139,6 +139,7 @@ class NVHFormattingEditorClass {
    async stringifyAllEntries(exportedEntries) {
       await this.clearHtmlFile();
 
+      const transferSize = 700000;
       let entriesList = await this.loadEntries();
       exportedEntries.inProgress = true;
       exportedEntries.total = entriesList.entriesList.length;
@@ -150,7 +151,7 @@ class NVHFormattingEditorClass {
          let entryJson = window.nvhStore.nvhToJson(entriesList.entriesList[idx].nvh);
          htmlWrapper += this.stringifyEntry(entryJson);
          htmlWrapper += `<div style="height: 1px; width: 980px; background-color: grey; margin: 2px 0"></div>`
-         if (htmlWrapper.length > 700000) { // Do not send all entries at once to backend, set some limit
+         if (htmlWrapper.length > transferSize) { // Do not send all entries at once to backend, set some limit
             exportedEntries.exported = idx;
             this.trigger("updateToolbar");
             await this.appendToHtmlFile(htmlWrapper);
