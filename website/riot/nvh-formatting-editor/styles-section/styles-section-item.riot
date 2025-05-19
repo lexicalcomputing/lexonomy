@@ -688,7 +688,8 @@
          getStyleOptionValue(option) {
             if (!this.nvhFormattingEditor.data.selectedLayoutContainer
                   || !this.state.styles
-                  || !this.state.styles[option]) {
+                  || this.state.styles[option] === null
+                  || this.state.styles[option] === undefined) {
                return null;
             }
             return this.state.styles[option];
