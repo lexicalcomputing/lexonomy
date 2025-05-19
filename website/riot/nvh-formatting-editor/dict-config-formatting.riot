@@ -181,8 +181,28 @@
          },
 
          resetFullscreen() {
-            let wideContainer = document.getElementsByClassName("wideContainer")[0];
-            wideContainer.classList.remove("fullscreen");
+            this.prepareFullscreenCss();
+            let components = [
+               document.getElementsByClassName("wideContainer")[0],
+               document.getElementsByTagName("app-header")[0],
+               document.getElementsByTagName("app-footer")[0],
+            ]
+            for (let component of components) {
+               component.classList.remove("fullscreen");
+            }
+         },
+
+         prepareFullscreenCss() {
+            let style = document.createElement('style');
+            style.textContent = `
+               app-header[page="dict-config-formatting"].fullscreen {
+                  display: none;
+               }
+               main.main:has(app-header[page="dict-config-formatting"]) app-footer.fullscreen {
+                  display: none;
+               }
+            `;
+            document.head.appendChild(style);
          },
 
          isSchemaChanged(oldSchema, newSchema) {
@@ -322,7 +342,7 @@
          display: none
       }
       #formatting-page-wrapper-container.fullscreen {
-         height: 85vh;
+         height: 95vh;
       }
       .scrollable-div {
          position: relative;

@@ -92,7 +92,7 @@
       </div>
       <div class="formatting-page-tutorial-container">
          <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
-         <div id="link-fullscreen" onclick={toggleFullscreen}>{state.isFullscreen ? "Exit" : "Enter"} fullscreen</div>
+         <div id="link-fullscreen" class={state.isFullscreen ? "item-active": ""} onclick={toggleFullscreen}>{state.isFullscreen ? "Exit" : "Enter"} fullscreen</div>
       </div>
    </div>
 
@@ -131,6 +131,8 @@
                document.getElementById("formatting-page-title"),
                document.getElementsByClassName("wideContainer")[0],
                document.getElementById("formatting-page-wrapper-container"),
+               document.getElementsByTagName("app-header")[0],
+               document.getElementsByTagName("app-footer")[0],
             ];
             for (let component of components) {
                if (!this.state.isFullscreen) {
@@ -216,11 +218,12 @@
          background-color: transparent;
       }
       .item-active {
-         background-color: var(--color-red-normal);
+         background-color: var(--color-red-normal) !important;
          color: white;
       }
       .item-active:hover {
-         background-color: var(--color-red-dark);
+         background-color: var(--color-red-dark) !important;
+         color: white !important;
       }
       #undo-icon-wrapper, #redo-icon-wrapper, #export-pdf, #reset-icon-wrapper, #save-button-wrapper, #link-tutorial, #link-fullscreen {
          display: flex;
