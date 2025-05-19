@@ -4,7 +4,7 @@
          class="tooltipped action"
          id="action-drag"
          data-tooltip="Drag"
-         onmousedown={(event) => onMouseDown(event, props.state, props.index)}>
+         onmousedown={(event) => onMouseDown(event, props.schema, props.index)}>
          <i class="small material-icons">drag_handle</i>
       </div>
       <div if={!props.isBaseLevel}
@@ -15,18 +15,18 @@
          <i class="small material-icons">content_copy</i>
       </div>
       <div class="tooltipped action"
-         data-tooltip={props.state.orientation === "column"
+         data-tooltip={props.schema.orientation === "column"
             ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
             : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
          onclick={changeOrientation}>
-         <i class="small material-icons" if={props.state.orientation === "column"}>swap_vert</i>
-         <i class="small material-icons" if={props.state.orientation === "row"}>swap_horiz</i>
+         <i class="small material-icons" if={props.schema.orientation === "column"}>swap_vert</i>
+         <i class="small material-icons" if={props.schema.orientation === "row"}>swap_horiz</i>
       </div>
       <div if={!props.isBaseLevel}
          class="tooltipped action"
          id="action-delete"
          data-tooltip="Delete"
-         onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentState)}>
+         onclick={() => nvhFormattingEditor.deleteElement(props.index, props.parentSchema)}>
          <i class="small material-icons">delete</i>
       </div>
    </div>
@@ -34,24 +34,24 @@
    <script>
       export default {
          onBeforeMount(props) {
-            this.parentLengthOriginal = props.parentState.children.length;
+            this.parentLengthOriginal = props.parentSchema.children.length;
             this.nvhFormattingEditor = window.nvhFormattingEditor;
          },
 
          onBeforeUpdate(props) {
-            this.parentLengthOriginal = props.parentState.children.length;
+            this.parentLengthOriginal = props.parentSchema.children.length;
          },
 
-         onMouseDown(event, state, indexToDrag) {
+         onMouseDown(event, schema, indexToDrag) {
             let data = this.nvhFormattingEditor.data;
             if (data.canBeDragged) {
                let releaseFunction = {
-                  parameters: [this.props.index, this.props.parentState, this.props.state],
+                  parameters: [this.props.index, this.props.parentSchema, this.props.schema],
                   run: this.onRelease,
                };
-               state.releaseFunction = releaseFunction;
-               data.mouseData = state;
-               data.draggedLayoutContainer = state;
+               schema.releaseFunction = releaseFunction;
+               data.mouseData = schema;
+               data.draggedLayoutContainer = schema;
 
                this.hideCloseAdders(event.currentTarget.parentElement.parentElement.parentElement.parentElement, indexToDrag);
                let adders = document.getElementsByClassName("adder");
@@ -63,19 +63,19 @@
             data.canBeDragged = false;
          },
 
-         onRelease(indexToDelete, parentState, state) {
+         onRelease(indexToDelete, parentSchema, schema) {
             let data = this.nvhFormattingEditor.data;
             /* If layoutContainer was dragged within the same parent but its index was decreased,
             it is necessary that "indexToDelete" has to be increased by one, so that I delete
             the desired element. */
-            const wasIndexDecreased = this.props.parentState.children.length > this.parentLengthOriginal
+            const wasIndexDecreased = this.props.parentSchema.children.length > this.parentLengthOriginal
                                     && data.dropInfo.index < indexToDelete;
 
             if (data.dropInfo.wasSuccessful) {
                if (wasIndexDecreased) {
-                  parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete + 1);
+                  parentSchema.children = Array.from(parentSchema.children).filter((child, index) => index != indexToDelete + 1);
                } else {
-                  parentState.children = Array.from(parentState.children).filter((child, index) => index != indexToDelete);
+                  parentSchema.children = Array.from(parentSchema.children).filter((child, index) => index != indexToDelete);
                }
             }
             data.draggedLayoutContainer = null;
@@ -91,15 +91,15 @@
          },
 
          duplicateElement() {
-            let copiedElement = structuredClone(this.props.state);
-            this.props.parentState.children.splice(this.props.index + 1, 0, copiedElement);
+            let copiedElement = structuredClone(this.props.schema);
+            this.props.parentSchema.children.splice(this.props.index + 1, 0, copiedElement);
             this.nvhFormattingEditor.data.selectLayoutContainer = null;
             this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
             this.nvhFormattingEditor.updateEditor();
          },
 
          changeOrientation() {
-            this.props.state.orientation === "column" ? this.props.state.orientation = "row" : this.props.state.orientation = "column";
+            this.props.schema.orientation === "column" ? this.props.schema.orientation = "row" : this.props.schema.orientation = "column";
             this.nvhFormattingEditor.data.selectLayoutContainer = null;
          }
       }

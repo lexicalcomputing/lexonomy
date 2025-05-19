@@ -2,19 +2,18 @@
    <div class="edit-layout-container">
       <div class="scrollable-div">
          <template each={(child, index) in nvhFormattingEditor.currentLayout.schema.children}>
-         <!-- ASK: which state? -->
-         <layout-container onclick={() => onLayoutContainerClick(child)}
-            title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
-                  ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Click RESET button to fix the formatting structure." : ""}
-            onmouseenter={(event) => onLayoutContainerMouseEnter(event, child)}
-            onmouseleave={(event) => onLayoutContainerMouseLeave(event, child)}
-            class={getCssClass(child)}
-            state={nvhFormattingEditor.childWithInheritedArea(child, null)}
-            parentState={nvhFormattingEditor.currentLayout.schema}
-            isBaseLevel={true}
-            index={index}
-            canHaveAdders={true}
-            isMarkupType={nvhFormattingEditor.isMarkupType(child.content.fullName)}/>
+            <layout-container onclick={() => onLayoutContainerClick(child)}
+               title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
+                     ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Click RESET button to fix the formatting structure." : ""}
+               onmouseenter={(event) => onLayoutContainerMouseEnter(event, child)}
+               onmouseleave={(event) => onLayoutContainerMouseLeave(event, child)}
+               class={getCssClass(child)}
+               schema={nvhFormattingEditor.childWithInheritedArea(child, null)}
+               parentSchema={nvhFormattingEditor.currentLayout.schema}
+               isBaseLevel={true}
+               index={index}
+               canHaveAdders={true}
+               isMarkupType={nvhFormattingEditor.isMarkupType(child.content.fullName)}/>
          </template>
       </div>
    </div>
@@ -30,15 +29,15 @@
             this.nvhFormattingEditor.updateEditor();
          },
 
-         onLayoutContainerMouseEnter(event, state) {
+         onLayoutContainerMouseEnter(event, schema) {
             if (!this.nvhFormattingEditor.data.mouseData) {
                event.currentTarget.classList.add("layout-container-mouse-hover");
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
+               this.nvhFormattingEditor.data.hoveredLayoutContainer = schema;
                this.nvhFormattingEditor.updateEditor();
             }
          },
 
-         onLayoutContainerMouseLeave(event, state) {
+         onLayoutContainerMouseLeave(event, schema) {
             if (!this.nvhFormattingEditor.data.mouseData) {
                event.currentTarget.classList.remove("layout-container-mouse-hover");
                this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
