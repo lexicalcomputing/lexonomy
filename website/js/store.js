@@ -585,6 +585,11 @@ class StoreClass {
                if(response.success){
                   this.data.entry.nvh = response.content
                   this.reloadStats()
+                  let entryInEntryList = this.data.entryList.find(e =>e.id == response.id)
+                  if(entryInEntryList){
+                     entryInEntryList.is_completed = completed
+                     this.trigger("entryListChanged")
+                  }
                   M.toast({html: `Entry marked as ${completed ? 'completed' : 'incomplete'}.`})
                } else {
                   M.toast({html: `Entry was not updated: ${response.feedback || ""}`})
