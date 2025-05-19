@@ -1,67 +1,68 @@
 <adder-component>
-  <div class="plus-icon-wrapper">
-    <div class="adder-line adder-line-{props.orientation}">
-      <div class="tooltipped adder-icon-wrapper"
-          data-tooltip={!this.nvhFormattingEditor.data.mouseData ? "Insert empty container" : ""}
-          onmouseenter={onMouseEnter}
-          onmouseleave={onMouseLeave}>
-        <i class="small material-icons adder-icon">add_box</i>
-      <div>
-    </div>
-  <div>
-  
-  <script>
-    export default {
-      onBeforeMount(props) {
-        this.nvhFormattingEditor = window.nvhFormattingEditor;
-      },
+   <div class="plus-icon-wrapper">
+      <div class="adder-line adder-line-{props.orientation}">
+         <div class="tooltipped adder-icon-wrapper"
+            data-tooltip={!nvhFormattingEditor.data.mouseData ? "Insert empty container" : ""}
+            onmouseenter={onMouseEnter}
+            onmouseleave={onMouseLeave}>
+            <i class="small material-icons adder-icon">add_box</i>
+         <div>
+      </div>
+   <div>
 
-      onMouseEnter(event) {
-        const data = this.nvhFormattingEditor.data.mouseData;
-        if (data && data.type === "choice-item") {
-          event.currentTarget.classList.add("adder-icon-wrapper-highligth-dragged");
-        }
-      },
-      onMouseLeave(event) {
-        event.currentTarget.classList.remove("adder-icon-wrapper-highligth-dragged");
-      },
-    }
-  </script>
+   <script>
+      export default {
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+         },
 
-  <style>
-    .plus-icon-wrapper {
-      display: none;
-      user-select: none;
-    }
-    .adder-icon-wrapper-highligth-dragged {
-      color: var(--color-is-dragged-over);
-      transform: scale(1.1);
-    }
-    .adder-icon-wrapper {
-      background-color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 20px;
-      width: 20px;
-    }
-    .adder-icon {
-      color: var(--color-is-dragged-over);
-      z-index: 1000;
-    }
-    .adder-line {
-      background-color: var(--color-is-dragged-over);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .adder-line-column {
-      width: 100%;
-      height: 2px;
-    }
-    .adder-line-row {
-      height: 100%;
-      width: 2px;
-    }
-  </style>
+         onMouseEnter(event) {
+            const data = this.nvhFormattingEditor.data.mouseData;
+            if (data && data.type === "choice-item") {
+               event.currentTarget.classList.add("adder-icon-wrapper-highligth-dragged");
+            }
+         },
+         
+         onMouseLeave(event) {
+            event.currentTarget.classList.remove("adder-icon-wrapper-highligth-dragged");
+         },
+      }
+   </script>
+
+   <style>
+      .plus-icon-wrapper {
+         display: none;
+         user-select: none;
+      }
+      .adder-icon-wrapper-highligth-dragged {
+         color: var(--color-is-dragged-over);
+         transform: scale(1.1);
+      }
+      .adder-icon-wrapper {
+         background-color: white;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         height: 20px;
+         width: 20px;
+      }
+      .adder-icon {
+         color: var(--color-is-dragged-over);
+         z-index: 1000;
+      }
+      .adder-line {
+         background-color: var(--color-is-dragged-over);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+      }
+      .adder-line-column {
+         width: 100%;
+         height: 2px;
+      }
+      .adder-line-row {
+         height: 100%;
+         width: 2px;
+      }
+   </style>
 </adder-component>

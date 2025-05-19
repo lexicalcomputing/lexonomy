@@ -1,149 +1,148 @@
 <elementholder-component>
-  <div class="tooltipped content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
+   <div class="tooltipped content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
       style="color: {getColor()};
             background-color: {getBackgroundColor()};
             border: 1px solid {props.isBaseLevel ? this.nvhStore.getElementColor(props.state.content.fullName) : "transparent"};"
       data-tooltip={props.state.content.fullName}
       onmousedown={!props.isBaseLevel && props.state.content.fullName ? () => onMouseDown() : () => {}}>
-    <div class="content-box-wrapper-2">
-      <div class="layout-container-content-box {props.state.children.length === 0 ? "" : "layout-container-content-box-parent"}">
-        {getElementHolderLabel()}
+      <div class="content-box-wrapper-2">
+         <div class="layout-container-content-box {props.state.children.length === 0 ? "" : "layout-container-content-box-parent"}">
+         {getElementHolderLabel()}
+         </div>
       </div>
-    </div>
-  </div>
+   </div>
 
-<script>
-  export default {
-    onBeforeMount(props) {
-      this.nvhFormattingEditor = window.nvhFormattingEditor;
-      this.nvhStore = window.nvhStore;
-    },
+   <script>
+   export default {
+      onBeforeMount(props) {
+         this.nvhFormattingEditor = window.nvhFormattingEditor;
+         this.nvhStore = window.nvhStore;
+      },
 
-    onMouseDown() {
-      transferObject = {
-        type: "elementholder-label"
-      };
-      let releaseFunction = {
-        parameters: [],
-        run: this.onRelease,
-      };
-      transferObject.releaseFunction = releaseFunction;
-      this.nvhFormattingEditor.data.mouseData = transferObject;
-      this.nvhFormattingEditor.timeout = setTimeout(() => {
-        let trash = document.getElementById("trash-icon");
-        if (trash) {
-          trash.classList.add("trash-enabled");
-          trash.classList.remove("trash-disabled");
-        }
-      }, 200);
-      this.nvhFormattingEditor.data.dropInfo.wasSuccessful = false;
-    },
-    onRelease() {
-      if (this.nvhFormattingEditor.data.dropInfo.wasSuccessful) {
-        this.nvhFormattingEditor.clearLayoutContainer(this.props.state)
-        this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-      }
-    },
-    onMouseEnter(event) {
-      const data = this.nvhFormattingEditor.data.mouseData;
-      if (data && data.type === "choice-item") {
-        event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
-      }
-    },
-    onMouseLeave(event) {
-      event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
-    },
+      onMouseDown() {
+         transferObject = {
+            type: "elementholder-label"
+         };
+         let releaseFunction = {
+            parameters: [],
+            run: this.onRelease,
+         };
+         transferObject.releaseFunction = releaseFunction;
+         this.nvhFormattingEditor.data.mouseData = transferObject;
+         this.nvhFormattingEditor.timeout = setTimeout(() => {
+         let trash = document.getElementById("trash-icon");
+            if (trash) {
+               trash.classList.add("trash-enabled");
+               trash.classList.remove("trash-disabled");
+            }
+         }, 200);
+         this.nvhFormattingEditor.data.dropInfo.wasSuccessful = false;
+      },
+      onRelease() {
+         if (this.nvhFormattingEditor.data.dropInfo.wasSuccessful) {
+            this.nvhFormattingEditor.clearLayoutContainer(this.props.state)
+            this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
+         }
+      },
+      onMouseEnter(event) {
+         const data = this.nvhFormattingEditor.data.mouseData;
+         if (data && data.type === "choice-item") {
+            event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
+         }
+      },
+      onMouseLeave(event) {
+         event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
+      },
 
-    getElementHolderLabel() {
-      let childrenCount = this.props.state.children.length;
-      let name = this.props.state.content.name;
-      if (!name) {
-        return "container";
-      }
-      if (childrenCount === 0) {
-        return name;
-      } else {
-        return name + " group";
-      }
-    },
-    getColor() {
-      let childrenCount = this.props.state.children.length;
-      let name = this.props.state.content.name;
-      let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
-      if (this.props.isBaseLevel) {
-        if (childrenCount === 0) {
-          return "#ffffff";
-        }
-        return color;
-      }
-      if (!name) {
-        return "black";
-      } else {
-        if (childrenCount === 0) {
-          return "white";
-        }
-        return color;
-      }
-    },
-    getBackgroundColor() {
-      let childrenCount = this.props.state.children.length;
-      let name = this.props.state.content.name;
-      let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
-      if (this.props.isBaseLevel) {
-        if (childrenCount === 0) {
-          return color;
-        }
-        return "#ffffff";
-      }
-      if (!name) {
-        return "#c7ced1";
-      } else {
-        if (childrenCount === 0) {
-          return color;
-        }
-        return this.nvhFormattingEditor.getColorLightVersion(color);
-      }
-    },
-  }
-</script>
+      getElementHolderLabel() {
+         let childrenCount = this.props.state.children.length;
+         let name = this.props.state.content.name;
+         if (!name) {
+            return "container";
+         }
+         if (childrenCount === 0) {
+            return name;
+         } else {
+            return name + " group";
+         }
+      },
+      getColor() {
+         let childrenCount = this.props.state.children.length;
+         let name = this.props.state.content.name;
+         let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
+         if (this.props.isBaseLevel) {
+            if (childrenCount === 0) {
+               return "#ffffff";
+            }
+            return color;
+         }
+         if (!name) {
+            return "black";
+         } else {
+            if (childrenCount === 0) {
+               return "white";
+            }
+            return color;
+         }
+      },
+      getBackgroundColor() {
+         let childrenCount = this.props.state.children.length;
+         let name = this.props.state.content.name;
+         let color = this.nvhStore.getElementColor(this.props.state.content.fullName);
+         if (this.props.isBaseLevel) {
+            if (childrenCount === 0) {
+               return color;
+            }
+            return "#ffffff";
+         }
+         if (!name) {
+            return "#c7ced1";
+         } else {
+            if (childrenCount === 0) {
+               return color;
+            }
+            return this.nvhFormattingEditor.getColorLightVersion(color);
+         }
+      },
+   }
+   </script>
 
-<style>
-  .layout-container-content-box {
-    padding: 0 5px;
-    margin: 2px;
-    width: 100%;
-    text-align: center;
-    text-wrap: nowrap;
+   <style>
+      .layout-container-content-box {
+         padding: 0 5px;
+         margin: 2px;
+         width: 100%;
+         text-align: center;
+         text-wrap: nowrap;
 
-  }
-  .layout-container-content-box-parent {
-    text-align: left;
-    user-select: none;
-    font-size: 14px;
-  }
-  .content-box-wrapper {
-    background-color: green;
-    padding-right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: grab;
-    user-select: none;
-  }
-  .content-box-wrapper-base {
-    cursor: default;
-  }
-  .content-box-wrapper-2 {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-  }
-  .inside-adder-icon {
-    color: var(--color-can-be-dropped) !important;
-  }
-  .inside-adder-highligth-dragged-icon {
-    color: var(--color-is-dragged-over) !important;
-  }
-</style>
-
+      }
+      .layout-container-content-box-parent {
+         text-align: left;
+         user-select: none;
+         font-size: 14px;
+      }
+      .content-box-wrapper {
+         background-color: green;
+         padding-right: 20px;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         cursor: grab;
+         user-select: none;
+      }
+      .content-box-wrapper-base {
+         cursor: default;
+      }
+      .content-box-wrapper-2 {
+         display: flex;
+         flex-direction: row;
+         width: 100%;
+      }
+      .inside-adder-icon {
+         color: var(--color-can-be-dropped) !important;
+      }
+      .inside-adder-highligth-dragged-icon {
+         color: var(--color-is-dragged-over) !important;
+      }
+   </style>
 </elementholder-component>
