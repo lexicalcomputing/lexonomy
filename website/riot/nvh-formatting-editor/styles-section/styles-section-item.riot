@@ -242,7 +242,11 @@
       </div>
    </div>
    <div if={["string", "list", "int", "bool"].includes(state.type) || state.isLabelOptionStyle || state.isBulletOptionStyle} class="styles-section-item-wrapper">
-      <div class="label">Text size (px):</div>
+      <div class="label">
+         Text size (px):
+         <i data-tooltip="The font size is inherited from the parent element. Use the slider or type a value to change this. Leave empty to use the parent font."
+            class="material-icons tooltipped">help</i>
+      </div>
       <div class="value-wrapper" style="gap: 10px;">
          <input type="range"
             class="input-range"
@@ -252,8 +256,7 @@
             step="1"
             onchange={onChangeStyle.bind(this, "font-size", null)}>
          <input type="number"
-            class="input-number tooltipped"
-            data-tooltip="By default, the element has the text size of its parent. Set the text size here to overwrite the parent settings. Leave empty to use the parent size."
+            class="input-number"
             value={getStyleOptionValue("font-size")}
             min="1"
             onchange={onChangeStyle.bind(this, "font-size", null)}>
@@ -619,7 +622,11 @@
          <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value") === null ? "" : getStyleOptionValue("text-value")} onchange={onChangeStyle.bind(this, "text-value", null)}></textarea>
       </div>
    </div>
-   <div class="label">Set custom CSS:</div>
+   <div class="label">
+      Set custom CSS:
+      <i data-tooltip="Allows inserting CSS for advanced styling. CSS syntax rules apply. For example, for a grey line to appear above the element, insert this CSS: border-top: 1px solid silver;"
+         class="material-icons tooltipped">help</i>
+   </div>
    <div class="styles-section-item-wrapper">
       <div class="value-wrapper">
          <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("custom-css") === null ? "" : getStyleOptionValue("custom-css")} onchange={onChangeStyle.bind(this, "custom-css", null)}></textarea>
