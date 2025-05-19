@@ -114,37 +114,23 @@ class NVHStoreClass {
    toggleCompleted(){
       this.data.isSavingCompleted = true
       this.trigger("isSavingCompletedChanged")
-      let nvh = window.store.data.entry.nvh
-      let lines = nvh.split("\n")
-      let completed = !lines.find(line => line.trim().startsWith("__lexonomy__completed:"))
-      let indentSize = this.guessNvhIndentSize(nvh)
-      if(completed){
-         lines.push(`${" ".repeat(indentSize)}__lexonomy__completed: 1`)
-      } else {
-         lines = lines.filter(line => !line.trim().startsWith("__lexonomy__completed:"))
-      }
-      nvh = lines.join("\n")
-      return window.store.updateEntry(nvh)
+      let completed = !this.isEntryCompleted()
+      return window.store.toggleEntryCompleted(completed)
             .always(response => {
                if(response.success){
-                  window.store.data.entry.nvh = nvh
-                  this.data.entry.children = this.data.entry.children.filter(child => child.name != "__lexonomy__completed")
+                  let completedElementPath = `${window.store.schema.getRoot().name}.__lexonomy__completed`
+                  this.data.entry.children = this.data.entry.children.filter(child => child.path != completedElementPath)
                   if(completed){
-                     let element = this._addChildElement(this.data.entry, `${window.store.schema.getRoot().name}.__lexonomy__completed`)
+                     let element = this._addChildElement(this.data.entry, completedElementPath)
                      element.value = "1"
-                     //element.warnings = []
                      element.isValid = true
                   }
-                  this.trigger("updateElements", [this.data.entry])
                   this.addStateToHistory()
-                  window.store.updateCompletedCount(completed ? 1 : -1)
-                  M.toast({html: `Entry marked as ${completed ? 'completed' : 'incomplete'}.`})
-               } else {
-                  M.toast({html: `Entry was not updated: ${response.feedback || ""}`})
+                  this.trigger("updateElements", [this.data.entry])
+                  this.trigger("entryUpdated")
                }
                this.data.isSavingCompleted = false
                this.trigger("isSavingCompletedChanged")
-               this.trigger("entryUpdated")
             })
    }
 
@@ -799,10 +785,10 @@ class NVHStoreClass {
       }
    }
 
-   isEntryCompleted(entry){
-      entry = this.data.entry
+   isEntryCompleted(){
       if(window.store.data.config.progress_tracking?.tracked){
-         return !!this.findElement(el => el.name == "__lexonomy__completed")
+         let completedValue = this.findElement(el => el.name == "__lexonomy__completed")?.value
+         return completedValue && !["false", "0", "no"].includes(completedValue)
       }
       return false
    }

@@ -563,11 +563,39 @@ class StoreClass {
             })
    }
 
+   toggleEntryCompleted(completed){
+      let nvh = this.data.entry.nvh
+      let lines = nvh.split("\n")
+      lines = lines.filter(line => !line.trim().startsWith("__lexonomy__completed:"))
+      if(completed){
+         let indentSize = window.nvhStore.guessNvhIndentSize(nvh)
+         lines.push(`${" ".repeat(indentSize)}__lexonomy__completed: 1`)
+      }
+      nvh = lines.join("\n")
+
+      return window.connection.post({
+         url: `${window.API_URL}${this.data.dictId}/entryupdate.json`,
+         data: {
+            id: this.data.entryId,
+            nvh: nvh
+         },
+         failMessage: "Could not toggle entry completed status."
+      })
+            .always(response => {
+               if(response.success){
+                  this.data.entry.nvh = response.content
+                  this.reloadStats()
+                  M.toast({html: `Entry marked as ${completed ? 'completed' : 'incomplete'}.`})
+               } else {
+                  M.toast({html: `Entry was not updated: ${response.feedback || ""}`})
+               }
+            })
+   }
+
    reloadStats(){
-      // TODO: mabye new endpoint to load just stats, not all configs
       if(this.data.config.progress_tracking?.tracked){
          return window.connection.get({
-            url: `${window.API_URL}${this.data.dictId}/config.json`,
+            url: `${window.API_URL}${this.data.dictId}/stats.json`,
             failMessage: `Could not load dictionary progress data.`
          })
                .done(response => {
@@ -952,12 +980,6 @@ class StoreClass {
       if(dictionary){
          dictionary[attrName] = attrValue
       }
-   }
-
-   updateCompletedCount(change){
-      this.data.stats.completed_entries += change
-      this._calculateProgress(this.data.stats)
-      this.trigger("statsChanged", this.data.dictId)
    }
 
    importFile(data){
