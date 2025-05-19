@@ -51,7 +51,7 @@
          </div>
       </div>
    </div>
-   <div class="styles-section-item-wrapper">
+   <div if={!state.isMarkupType && !state.hasDirectMarkupChild} class="styles-section-item-wrapper">
       <div class="label">
          Container width:
          <i data-tooltip="If left empty (recommended), the element automatically sets width depending on the content. Set a percentage of the parent container. To set a fixed width, use pixels."
