@@ -2428,10 +2428,11 @@ def changeFavDict(userEmail, dictID, status):
 
 def get_iso639_1():
     codes = []
-    for line in open("libs/iso-639-3.tab").readlines():
-        la = line.split("\t")
-        if la[3] != "" and la[3] != "Part1":
-            codes.append({'code':la[3], 'code3':la[1], 'lang':la[6]})
+    with open("libs/iso-639-3.tab") as f:
+        for line in f:
+            la = line.split("\t")
+            if la[3] != "" and la[3] != "Part1":
+                codes.append({'code':la[3], 'code3':la[1], 'lang':la[6]})
     return codes
 
 def get_locales():
