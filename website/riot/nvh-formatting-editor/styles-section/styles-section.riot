@@ -1,6 +1,6 @@
 <styles-section>
   <div class="styles-section-container">
-    <div if={!nvhFormattingEditor.data.selectedLayoutContainer}>No element selected.  Select element in layout selection to style it.</div>
+    <div if={!nvhFormattingEditor.data.selectedLayoutContainer}>No container selected. Select container in layout panel to style it.</div>
     <div if={nvhFormattingEditor.data.selectedLayoutContainer} class="style-section-option-wrapper">
       <div each={(child, index) in getStyleOptions()}
           class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
