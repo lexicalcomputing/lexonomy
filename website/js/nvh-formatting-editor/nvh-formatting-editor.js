@@ -230,7 +230,7 @@ class NVHFormattingEditorClass {
 
    initializeSchemas() {
       let initialSchema = this.createSchema();
-      /* ASK: window.store.data.config.formatting.elements was used before
+      /* NOTE: window.store.data.config.formatting.elements was used before
       the implementation of nvh-formatting-editor; but it is not used anymore;
       should it be removed?*/
       let defaultElements = window.store.data.config.formatting.elements;
