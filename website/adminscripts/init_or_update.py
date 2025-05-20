@@ -257,35 +257,33 @@ def update_dict_db():
                     raise Exception('schema not in NVH format')
 
     def dict_stats_3_3(conn):
-        # try:
-        old_entry_count = 0
-        old_completed_entries = 0
-        old_stats = conn.execute("SELECT id, json FROM configs WHERE id IN ('entry_count', 'completed_entries')")
-        for item in old_stats.fetch_all():
-            if item['id'] == 'entry_count':
-                old_entry_count = int(item['json'])
-            elif item['id'] == 'completed_entries':
-                old_completed_entries = int(item['json'])
+        if not conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='stats'").fetchone():
+            old_entry_count = 0
+            old_completed_entries = 0
+            old_stats = conn.execute("SELECT id, json FROM configs WHERE id IN ('entry_count', 'completed_entries')")
+            for item in old_stats.fetchall():
+                if item['id'] == 'entry_count':
+                    old_entry_count = int(item['json'])
+                elif item['id'] == 'completed_entries':
+                    old_completed_entries = int(item['json'])
 
-        conn.execute("DELETE FROM configs WHERE id='entry_count'")
-        conn.execute("DELETE FROM configs WHERE id='completed_entries'")
-        progress_tracking = {"node": "__lexonomy__completed", "tracked": False}
-        conn.execute("INSERT INTO configs VALUES (?, ?)", ('progress_tracking', json.dumps(progress_tracking)))
+            conn.execute("DELETE FROM configs WHERE id='entry_count'")
+            conn.execute("DELETE FROM configs WHERE id='completed_entries'")
+            progress_tracking = {"node": "__lexonomy__completed", "tracked": False}
+            conn.execute("INSERT INTO configs VALUES (?, ?)", ('progress_tracking', json.dumps(progress_tracking)))
 
-        total_entries = int(conn.execute("SELECT COUNT(*) AS total FROM entries").fetchone()['total'])
-        if total_entries != old_entry_count:
-            sys.stderr.write(f'entry count difference: old: {old_entry_count} new: {total_entries}\n')
+            total_entries = int(conn.execute("SELECT COUNT(*) AS total FROM entries").fetchone()['total'])
+            if total_entries != old_entry_count:
+                sys.stderr.write(f'entry count difference: old: {old_entry_count} new: {total_entries}\n')
 
-        total_competed = int(conn.execute("SELECT COUNT(*) AS total FROM entries WHERE nvh LIKE '%__lexonomy__completed:%").fetchone()['total'])
-        if total_competed != old_completed_entries:
-            sys.stderr.write(f'entry count difference: old: {old_entry_count} new: {total_entries}\n')
+            total_competed = int(conn.execute("SELECT COUNT(*) AS total FROM entries WHERE nvh LIKE '%__lexonomy__completed:%'").fetchone()['total'])
+            if total_competed != old_completed_entries:
+                sys.stderr.write(f'entry count difference: old: {old_entry_count} new: {total_entries}\n')
 
-        conn.execute("CREATE TABLE stats (id TEXT PRIMARY KEY, value INTEGER)")
-        conn.execute("INSERT INTO stats VALUES ('entry_count', ?)", (total_entries,))
-        conn.execute("INSERT INTO stats VALUES ('completed_entries', ?)", (total_competed,))
-        conn.commit()
-        # except (IndexError, TypeError):
-        #     pass
+            conn.execute("CREATE TABLE stats (id TEXT PRIMARY KEY, value INTEGER)")
+            conn.execute("INSERT INTO stats VALUES ('entry_count', ?)", (total_entries,))
+            conn.execute("INSERT INTO stats VALUES ('completed_entries', ?)", (total_competed,))
+            conn.commit()
 
     # ===========================================
     # main
