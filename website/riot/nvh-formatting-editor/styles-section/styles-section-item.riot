@@ -627,7 +627,7 @@
       <i data-tooltip="Allows inserting CSS for advanced styling. CSS syntax rules apply. For example, for a grey line to appear above the element, insert this CSS: border-top: 1px solid silver;"
          class="material-icons tooltipped">help</i>
    </div>
-   <div style="color: red;">{!nvhFormattingEditor.isStringCssValid(this.state.styles) ? "The CSS may contain invalid syntax or duplicate styles." : ""}<div>
+   <div style="color: red;">{!nvhFormattingEditor.isStringCssValid(this.state.styles) ? "The CSS contains invalid syntax." : ""}<div>
    <div class="styles-section-item-wrapper">
       <div class="value-wrapper">
          <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("custom-css") === null ? "" : getStyleOptionValue("custom-css")} onchange={onChangeStyle.bind(this, "custom-css", null)}></textarea>

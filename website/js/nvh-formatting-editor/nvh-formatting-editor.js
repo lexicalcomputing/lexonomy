@@ -611,17 +611,24 @@ class NVHFormattingEditorClass {
       if (!customStyles) {
          return true
       }
-      customStyles = customStyles.trimEnd();
-      const style = document.createElement('style');
-      style.textContent = `tmp {
-         ${customStyles}
-      }`
-      let stylesCount = customStyles.split(";").filter(e => e.length);
 
-      document.head.appendChild(style);
-      let result = style.sheet.cssRules[0].style.length === stylesCount.length;
-      document.head.removeChild(style);
-      return result;
+      customStyles = customStyles.trimEnd().split(";").filter(e => e.length)
+      let textContent = ""
+      for (let i = 0; i < customStyles.length; i++) {
+         textContent += `tmp${i}{${customStyles[i]};}`
+      }
+      const style = document.createElement('style')
+      style.textContent = textContent
+
+      document.head.appendChild(style)
+      let cssRules = style.sheet.cssRules
+      for (let i = 0; i < cssRules.length; i++) {
+         if (!cssRules[i].style.length) {
+            return false
+         }
+      }
+      document.head.removeChild(style)
+      return true
    }
 
    isLayoutContainerHovered(layoutContainer) {
