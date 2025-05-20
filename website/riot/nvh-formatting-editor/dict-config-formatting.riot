@@ -68,6 +68,11 @@
          <div class="header-box">
             <i class="small material-icons">visibility</i>
             <h2>Preview</h2>
+            <div if={!dictData.isEntryListLoaded || dictData.entryList.length}
+               class="entry-dropdown-wrapper">
+               <entry-dropdown on-change={onExampleEntryChanged}/>
+               <i class="small material-icons grey-text">search</i>
+            </div>
          </div>
          <div class="example-section-wrapper">
             <example-section class="example-section"/>
@@ -178,6 +183,10 @@
                data.releaseFunction = null;
             }
             this.update();
+         },
+
+         onExampleEntryChanged(entry) {
+            this.store.changeEntryId(entry.id);
          },
 
          resetFullscreen() {
@@ -438,7 +447,7 @@
       .cursor-grabbing {
          cursor: grabbing !important;
       }
-      .resizeHandle{
+      .resizeHandle {
          cursor: ew-resize;
          width: 5px;
          min-width: 5px;
@@ -446,8 +455,16 @@
          background-color: whitesmoke;
          margin: 0 10px;
       }
-      .resizeHandle:hover{
+      .resizeHandle:hover {
          background-color: #cfcfcf;
+      }
+      .entry-dropdown-wrapper {
+         display: flex;
+         align-items: center;
+         gap: 5px;
+      }
+      input[type="text"] {
+         margin: 0;
       }
    </style>
 </dict-config-formatting>
