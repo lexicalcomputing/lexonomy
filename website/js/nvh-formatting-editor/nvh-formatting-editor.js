@@ -571,7 +571,7 @@ class NVHFormattingEditorClass {
             let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
             value = borderWidth + " " + value + " " + borderColor;
          } else if (option === "container-width-unit") {
-            if (styles["container-width"] && styles["container-width"]) {
+            if (styles["container-width"]) {
                if (styles[option] === "px") {
                   option = "width";
                   if (parseInt(styles["container-width"]) < parseInt(state.maxPossibleWidth)) {
@@ -599,11 +599,36 @@ class NVHFormattingEditorClass {
          result_css += option + ":" + value + ";";
       }
 
-      if (styles["custom-css"]) {
-         result_css += styles["custom-css"];
+      if (this.isStringCssValid(styles) && styles["custom-css"]) {
+         result_css += styles["custom-css"] + ";";
       }
 
       return result_css;
+   }
+
+   isStringCssValid(styles) {
+      let customStyles = styles?.["custom-css"]
+      if (!customStyles) {
+         return true
+      }
+
+      customStyles = customStyles.trimEnd().split(";").filter(e => e.length)
+      let textContent = ""
+      for (let i = 0; i < customStyles.length; i++) {
+         textContent += `tmp${i}{${customStyles[i]};}`
+      }
+      const style = document.createElement('style')
+      style.textContent = textContent
+
+      document.head.appendChild(style)
+      let cssRules = style.sheet.cssRules
+      for (let i = 0; i < cssRules.length; i++) {
+         if (!cssRules[i].style.length) {
+            return false
+         }
+      }
+      document.head.removeChild(style)
+      return true
    }
 
    isLayoutContainerHovered(layoutContainer) {
