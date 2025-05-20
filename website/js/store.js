@@ -1397,6 +1397,7 @@ class StoreClass {
          } else {
             data.searchtext = this.data.search.searchtext
             data.modifier = this.data.search.modifier
+            data.isCompleted = "null"
          }
       } else {
          data.advanced_query = this.data.search.advanced_query
