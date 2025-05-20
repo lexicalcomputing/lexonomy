@@ -256,7 +256,7 @@ def update_dict_db():
                 else:
                     raise Exception('schema not in NVH format')
 
-    def dict_stats_3_3(conn):
+    def dict_stats_3_31(conn):
         if not conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='stats'").fetchone():
             old_entry_count = 0
             old_completed_entries = 0
@@ -302,6 +302,8 @@ def update_dict_db():
             # ========================
             # UPDATES
             # ========================
+            # WARING !!!
+            # dict version MUST be the same as package version with the updated feature
             try:
                 if versiontuple(version) < versiontuple('2.153'):
                     new_version = '2.153'
@@ -323,9 +325,9 @@ def update_dict_db():
                     formatting_path_keys_3_2(conn)
                     print(f'OK ({new_version}): {file}')
 
-                if versiontuple(version) < versiontuple('3.3'):
-                    new_version = '3.3'
-                    dict_stats_3_3(conn)
+                if versiontuple(version) < versiontuple('3.31'):
+                    new_version = '3.31'
+                    dict_stats_3_31(conn)
                     print(f'OK ({new_version}): {file}')
 
                 if new_version:
