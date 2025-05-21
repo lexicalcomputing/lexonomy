@@ -19,34 +19,37 @@
          </div>
       </a>
    </div>
-   <div class="footer-logos">
-      <div class="logolint">
-         <a target="_blank"
-               href="https://www.sketchengine.eu/"
-               title="Sketch Engine">
-            <img class="skelogo"
-                  src="img/logo_ske_small.png"/>
+
+   <div class="footer-copyright positionRelative">
+      <div class="displayFlex justifyCenter gap20 mb-4">
+         <div>
+            Lexonomy is developed by <a href="https://www.lexicalcomputing.com/" target="_blank">Lexical Computing</a>
+         </div>
+         <a if={ dictData.siteconfig && dictData.siteconfig.consent.terms}
+               href="javascript:void(0);"
+               class="termsOfUse"
+               onclick={onTermsOfUseClick}>
+            Terms of use
          </a>
       </div>
-      <div class="version ml-auto white-text">
-         Version: { window.LEXONOMY_VERSION }
+      <div class="displayFlex gap50 justifyCenter alignCenter">
+         <div class="logolint">
+            <a target="_blank"
+                  href="https://www.sketchengine.eu/"
+                  title="Sketch Engine">
+               <img class="skelogo"
+                     src="img/logo_ske_small.png"/>
+            </a>
+         </div>
+         <a href="https://github.com/lexicalcomputing/lexonomy"
+               title="GitHub"
+               target="_blank">
+            <img src="img/github.png"/>
+         </a>
       </div>
-   </div>
-   <div class="footer-copyright">
-      Lexonomy is developed by <a href="https://www.lexicalcomputing.com/" target="_blank">Lexical Computing</a>
-      <a class="right"
-            href="https://github.com/lexicalcomputing/lexonomy"
-            title="GitHub"
-            target="_blank">
-         <img src="img/github.png"/>
-      </a>
-
-      <a if={ dictData.siteconfig && dictData.siteconfig.consent.terms}
-            href="javascript:void(0);"
-            class="termsOfUse right"
-            onclick={onTermsOfUseClick}>
-         Terms of use
-      </a>
+      <div class="version grey-text text-darken-2">
+         v. {window.LEXONOMY_VERSION}
+      </div>
    </div>
 
    <script>
@@ -124,13 +127,9 @@
             }
          }
       }
-      .footer-logos{
-         padding: 15px 20px 15px 50px;
-         background: #d9d9d8;
-      }
       .footer-copyright{
          font-weight: 300;
-         padding: 15px 15px 15px 50px;
+         padding: 25px;
          background: #b8b8b8;
       }
       .logolint a img{
@@ -145,6 +144,10 @@
       }
       .version{
          font-weight: 100;
+         font-size: 12px;
+         position: absolute;
+         right: 10px;
+         bottom: 5px;
       }
    </style>
 </app-footer>
