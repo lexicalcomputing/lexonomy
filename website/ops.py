@@ -1291,10 +1291,21 @@ def listUsers(searchtext, howmany):
         for r in c.fetchall():
             users.append({"email": r["email"], "dictionaries": []})
         total = len(users)
+
     for user in users:
         c = conn.execute("SELECT * FROM user_dict, dicts WHERE user_dict.dict_id=dicts.id AND user_email=? ORDER BY dicts.id", (user["email"],))
         for r in c.fetchall():
-            user["dictionaries"].append({"id": r["dict_id"], "title": r["title"]})
+            dict_info = {"id": r["dict_id"], "title": r["title"]}
+            dictDB = getDB(r["dict_id"])
+            configs = readDictConfigs(dictDB)
+            if configs['progress_tracking'].get('tracked', False):
+                stats = {}
+                c_stats = dictDB.execute('SELECT * FROM stats')
+                for r_stats in c_stats.fetchall():
+                    stats[r_stats['id']] = r_stats['value']
+                dict_info['stats'] = stats
+            user["dictionaries"].append(dict_info)
+
     return {"entries":users, "total": total}
 
 def createUser(email, user, manager=0):
@@ -1374,6 +1385,16 @@ def listDicts(searchtext, howmany):
         for r in c.fetchall():
             dicts.append({"id": r["id"], "title": r["title"], "language": str(r["language"] or ""), "creator": str(r["creator"] or "")})
         total = len(dicts)
+
+    for d in dicts:
+        dictDB = getDB(d["id"])
+        configs = readDictConfigs(dictDB)
+        if configs['progress_tracking'].get('tracked', False):
+            d['stats'] = {}
+            c_stats = dictDB.execute('SELECT * FROM stats')
+            for r_stats in c_stats.fetchall():
+                d['stats'][r_stats['id']] = r_stats['value']
+
     return {"entries": dicts, "total": total}
 
 def readDict(dictId):
