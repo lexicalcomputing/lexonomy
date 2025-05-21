@@ -118,7 +118,7 @@ class NVHStoreClass {
       return window.store.toggleEntryCompleted(completed)
             .always(response => {
                if(response.success){
-                  let completedElementPath = `${window.store.schema.getRoot().name}.__lexonomy__completed`
+                  let completedElementPath = `${window.store.schema.getRoot().name}.__lexonomy__complete`
                   this.data.entry.children = this.data.entry.children.filter(child => child.path != completedElementPath)
                   if(completed){
                      let element = this._addChildElement(this.data.entry, completedElementPath)
@@ -787,7 +787,7 @@ class NVHStoreClass {
 
    isEntryCompleted(){
       if(window.store.data.config.progress_tracking?.tracked){
-         let completedValue = this.findElement(el => el.name == "__lexonomy__completed")?.value
+         let completedValue = this.findElement(el => el.name == "__lexonomy__complete")?.value
          return completedValue && !["false", "0", "no"].includes(completedValue)
       }
       return false

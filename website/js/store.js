@@ -566,10 +566,10 @@ class StoreClass {
    toggleEntryCompleted(completed){
       let nvh = this.data.entry.nvh
       let lines = nvh.split("\n")
-      lines = lines.filter(line => !line.trim().startsWith("__lexonomy__completed:"))
+      lines = lines.filter(line => !line.trim().startsWith("__lexonomy__complete:"))
       if(completed){
          let indentSize = window.nvhStore.guessNvhIndentSize(nvh)
-         lines.push(`${" ".repeat(indentSize)}__lexonomy__completed: 1`)
+         lines.push(`${" ".repeat(indentSize)}__lexonomy__complete: 1`)
       }
       nvh = lines.join("\n")
 
