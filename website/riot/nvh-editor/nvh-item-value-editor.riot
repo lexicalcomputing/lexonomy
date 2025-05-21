@@ -380,24 +380,26 @@
                const markupNodes = $(".nvh-editable-div", this.root).find(`span[path="${elementPath}"]`)
                markupNodes.each((idx, el) => {
                   let markupValue = el.textContent
-                  let preceedingText = window.getElementPreceedingText(el)
-                  // searchText = text before node and all but last character of
-                  // actual node. So the count works properly when values are overlapping.
-                  // For examples if markupValue is "aa" and preceeding text is "aaa"
-                  // correct index of markupValue is 3 (counting from 0)
-                  let searchText = preceedingText + markupValue.substring(0, markupValue.length - 1)
-                  let markupElement = this.nvhStore._addChildElement(this.props.element, elementPath)
-                  markupElement.value = markupValue.replaceAll("#", "##")
-                  preceedingValueCount = window.countAllSubstrings(searchText, markupValue)
-                  if(preceedingValueCount){
-                     markupElement.value += `#${preceedingValueCount + 1}`
+                  if(markupValue !== ""){
+                     let preceedingText = window.getElementPreceedingText(el)
+                     // searchText = text before node and all but last character of
+                     // actual node. So the count works properly when values are overlapping.
+                     // For examples if markupValue is "aa" and preceeding text is "aaa"
+                     // correct index of markupValue is 3 (counting from 0)
+                     let searchText = preceedingText + markupValue.substring(0, markupValue.length - 1)
+                     let markupElement = this.nvhStore._addChildElement(this.props.element, elementPath)
+                     markupElement.value = markupValue.replaceAll("#", "##")
+                     preceedingValueCount = window.countAllSubstrings(searchText, markupValue)
+                     if(preceedingValueCount){
+                        markupElement.value += `#${preceedingValueCount + 1}`
+                     }
+                     [...el.attributes].filter(attr => attr.name.startsWith("child_"))
+                           .forEach(attr => {
+                              let childPath = attr.name.substring(6)  //remove prefix child_
+                              let childElement = this.nvhStore._addChildElement(markupElement, childPath)
+                                 childElement.value = window.unescapeHTML(attr.value)
+                           })
                   }
-                  [...el.attributes].filter(attr => attr.name.startsWith("child_"))
-                        .forEach(attr => {
-                           let childPath = attr.name.substring(6)  //remove prefix child_
-                           let childElement = this.nvhStore._addChildElement(markupElement, childPath)
-                              childElement.value = window.unescapeHTML(attr.value)
-                        })
                })
             })
          },
