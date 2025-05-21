@@ -64,7 +64,7 @@
             this.props.schema["markupStyles"].length === 0 is necessary because if someone change entry structure,
             markup styles will not appear in style section
             */
-            if (!props.schema.markupStyles.length) {
+            if (!props.schema.markupStyles?.length) {
                let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.schema.content.fullName);
                if (markupChildren.length !== 0 ) {
                   props.schema.markupStyles = this.nvhFormattingEditor.createMarkupStyles(props.schema.content.fullName);
