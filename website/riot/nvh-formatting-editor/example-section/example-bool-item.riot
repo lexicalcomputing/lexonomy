@@ -4,7 +4,7 @@
          style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
          {state.labelTextValue}
       </pre>
-      <pre style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</pre>
+      <div style={nvhFormattingEditor.getCssStyles(props.state, props.styles)}>{props.value === "1" ? state.yesValueText : state.noValueText}</div>
       <pre if={state.labelTextValue !== "" && !state.showLabelBefore} class="example-item-label-after"
          style={nvhFormattingEditor.getCssStyles(props.state, props.labelStyles)}>
          {state.labelTextValue}
