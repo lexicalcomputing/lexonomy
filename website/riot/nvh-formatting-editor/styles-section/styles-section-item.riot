@@ -627,12 +627,13 @@
       <i data-tooltip="Allows inserting CSS for advanced styling. CSS syntax rules apply. For example, for a grey line to appear above the element, insert this CSS: border-top: 1px solid silver;"
          class="material-icons tooltipped">help</i>
    </div>
-   <div style="color: red;">{!nvhFormattingEditor.isStringCssValid(this.state.styles) ? "The CSS contains invalid syntax." : ""}<div>
+   <div style="color: red;">{!nvhFormattingEditor.isStringCssValid(this.state.styles) ? "The CSS contains invalid syntax." : ""}</div>
    <div class="styles-section-item-wrapper">
       <div class="value-wrapper">
          <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("custom-css") === null ? "" : getStyleOptionValue("custom-css")} onchange={onChangeStyle.bind(this, "custom-css", null)}></textarea>
       </div>
    </div>
+   <div id="reset-styles-button" onclick={resetStyles}>Reset styles</div>
 
    <script>
       export default {
@@ -810,6 +811,11 @@
                }
             this.update();
             }, 500);
+         },
+
+         resetStyles() {
+            Object.keys(this.state.styles).forEach(style => delete this.state.styles[style]);
+            this.nvhFormattingEditor.updateEditor();
          }
       }
    </script>
@@ -946,6 +952,16 @@
       }
       .value-item-border-dotted {
          border: 2px dotted black;
+      }
+      #reset-styles-button {
+         background-color: var(--color-grey-light);
+         width: fit-content;
+         margin-top: 5px;
+         padding: 3px;
+         cursor: pointer;
+      }
+      #reset-styles-button:hover {
+         background-color: var(--color-grey-normal);
       }
    </style>
 </styles-section-item>
