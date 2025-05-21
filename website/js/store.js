@@ -1375,7 +1375,8 @@ class StoreClass {
    getEntrySearchParams(howmany, offset){
       let data = {
          howmany: howmany || this.data.config.titling.numberEntries || 500,
-         offset: offset || 0
+         offset: offset || 0,
+         isCompleted: "null"
       }
       if(this.data.search.tab == "basic"){
          data.isCompleted = String(this.data.search.isCompleted ?? null)
@@ -1397,7 +1398,6 @@ class StoreClass {
          } else {
             data.searchtext = this.data.search.searchtext
             data.modifier = this.data.search.modifier
-            data.isCompleted = "null"
          }
       } else {
          data.advanced_query = this.data.search.advanced_query
