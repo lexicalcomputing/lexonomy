@@ -289,8 +289,8 @@
             for (let child of this.props.entry.children) {
                if (nvhFormattingEditor.isMarkupType(child.path)) {
                   object = {
-                  value: child.value,
-                  styles: this.getStyleToFullName(child.path),
+                     value: child.value,
+                     styles: this.getStyleToFullName(child.path),
                   };
                   result.push(object);
                }
