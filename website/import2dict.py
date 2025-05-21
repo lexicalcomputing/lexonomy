@@ -363,7 +363,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         if r_pr:
             progress_config = json.loads(r_pr['json'])
         else:
-            progress_config = {"node": "__lexonomy__completed", "tracked": False}
+            progress_config = {"node": "__lexonomy__complete", "tracked": False}
 
         # max entry id form DB is exists
         max_entryID = db.execute("SELECT MAX(id) AS max_ID FROM entries").fetchone()['max_ID']

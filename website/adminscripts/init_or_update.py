@@ -269,14 +269,14 @@ def update_dict_db():
 
             conn.execute("DELETE FROM configs WHERE id='entry_count'")
             conn.execute("DELETE FROM configs WHERE id='completed_entries'")
-            progress_tracking = {"node": "__lexonomy__completed", "tracked": False}
+            progress_tracking = {"node": "__lexonomy__complete", "tracked": False}
             conn.execute("INSERT INTO configs VALUES (?, ?)", ('progress_tracking', json.dumps(progress_tracking)))
 
             total_entries = int(conn.execute("SELECT COUNT(*) AS total FROM entries").fetchone()['total'])
             if total_entries != old_entry_count:
                 sys.stderr.write(f'entry count difference: old: {old_entry_count} new: {total_entries}\n')
 
-            total_competed = int(conn.execute("SELECT COUNT(*) AS total FROM entries WHERE nvh LIKE '%__lexonomy__completed:%'").fetchone()['total'])
+            total_competed = int(conn.execute("SELECT COUNT(*) AS total FROM entries WHERE nvh LIKE '%__lexonomy__complete:%'").fetchone()['total'])
             if total_competed != old_completed_entries:
                 sys.stderr.write(f'entry count difference: old: {old_entry_count} new: {total_entries}\n')
 

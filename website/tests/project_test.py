@@ -239,14 +239,14 @@ class TestQueries(unittest.TestCase):
             if s == 'sensitive':
                 annot_nvh = str(r2.json()['nvh']) + \
                             f'    sensitive: {random.choice(sensitive_values)}\n' + \
-                            f'    __lexonomy__completed: {title}\n'
+                            f'    __lexonomy__complete: {title}\n'
             elif s == 'images':
                 annot_nvh = str(r2.json()['nvh']) + \
                             f'    image: {random.choice(images_values)}\n' + \
-                            f'    __lexonomy__completed: {title}\n'
+                            f'    __lexonomy__complete: {title}\n'
             else:
                 annot_nvh = str(r2.json()['nvh']) + \
-                            f'   __lexonomy__completed: {title}\n'
+                            f'   __lexonomy__complete: {title}\n'
 
             API_ENDPOINT_3 = self.website + f"{dict_id}/entryupdate.json"
             data = {'id': 1,
