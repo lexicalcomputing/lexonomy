@@ -58,10 +58,13 @@
             <tr class="dictionaryRow">
                <td colspan="5">
                   <div class="dictionaryList" style="display: none;">
-                     <div each={dictionary in user.dictionaries}>
+                     <div each={dictionary in user.dictionaries}
+                           class="displayFlex gap20">
                         <a href="#/{dictionary.id}">
                            {dictionary.title ? dictionary.title : "--no title--"}
                         </a>
+                        <dict-progress if={dictionary.stats}
+                              stats={dictionary.stats}/>
                      </div>
                   </div>
                </td>

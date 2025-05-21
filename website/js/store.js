@@ -388,9 +388,7 @@ class StoreClass {
          failMessage: `Could not load the dictionary.`
       })
             .done(response => {
-               if(response?.stats){
-                  this._calculateProgress(response.stats)
-               }
+               this._calculateProgress(response?.stats)
             })
    }
 
@@ -874,6 +872,13 @@ class StoreClass {
          },
          failMessage: "Dictionary list could not be loaded."
       })
+         .done(response => {
+            if(response.success){
+               response.entries.forEach(dictionary => {
+                  this._calculateProgress(dictionary.stats)
+               })
+            }
+         })
    }
 
    loadAdminUserList(searchtext, howmany){
@@ -885,6 +890,15 @@ class StoreClass {
          },
          failMessage: "User list could not be loaded."
       })
+         .done(response => {
+            if(response.success){
+               response.entries.forEach(user => {
+                  user.dictionaries.forEach(dictionary => {
+                     this._calculateProgress(dictionary.stats)
+                  })
+               })
+            }
+         })
    }
 
    createUser(email, isManager){
@@ -1711,26 +1725,26 @@ class StoreClass {
                currentUserCanDelete: true
             })
          }
-         if(d.stats){
-            this._calculateProgress(d.stats)
-         }
+         this._calculateProgress(d.stats)
       })
       this.trigger("dictionaryListChanged")
    }
 
    _calculateProgress(stats){
-      if(stats.entry_count){
-         let progress = stats.completed_entries / stats.entry_count * 100
-         if(progress > 0 && progress < 1){
-            progress = 1
-         } else if (progress > 99 && progress < 100){
-            progress = 99
+      if(stats){
+         if(stats.entry_count){
+            let progress = stats.completed_entries / stats.entry_count * 100
+            if(progress > 0 && progress < 1){
+               progress = 1
+            } else if (progress > 99 && progress < 100){
+               progress = 99
+            } else {
+               progress = Math.round(progress)
+            }
+            stats.progress = progress
          } else {
-            progress = Math.round(progress)
+            stats.progress = 0
          }
-         stats.progress = progress
-      } else {
-         stats.progress = 0
       }
    }
 }

@@ -28,6 +28,8 @@
                <th>ID</th>
                <th>Language</th>
                <th>Author</th>
+               <th if={state.hasProgressColumn}
+                     class="progressColumn">Progress</th>
                <th class="actionColumn"></th>
             </tr>
          </thead>
@@ -45,6 +47,10 @@
                </td>
                <td class="dict-lang">
                   { dict.creator }
+               </td>
+               <td if={state.hasProgressColumn}>
+                  <dict-progress if={dict.stats}
+                        stats={dict.stats}/>
                </td>
                <td class="dict-actions">
                   <a href="#/{dict.id}/edit"
@@ -98,7 +104,8 @@
             howmany: 500,
             hasMore: false,
             searchDebounceTimer: null,
-            searchRequest: null
+            searchRequest: null,
+            hasProgressColumn: true
          },
 
          onMounted(){
@@ -118,6 +125,7 @@
                         this.state.hasMore = true
                      }
                      this.state.dictionaries = payload.entries
+                     this.state.hasProgressColumn = this.state.dictionaries.find(d => !!d.stats)
                   })
                   .always(() => {
                      this.update({isLoading: false})
@@ -206,6 +214,10 @@
       }
       .showMoreBtn{
          margin: 30px 0;
+      }
+      .progressColumn{
+         min-width: 100px;
+         text-align: center;
       }
    </style>
 

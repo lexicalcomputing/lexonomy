@@ -29,7 +29,7 @@
          },
 
          refreshStats(){
-            this.state.stats = this.store.getDictStats(this.props.dictId)
+            this.state.stats = this.props.stats || this.store.getDictStats(this.props.dictId)
          }
       }
    </script>
