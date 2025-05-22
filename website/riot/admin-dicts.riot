@@ -4,6 +4,7 @@
       <span class="searchBox input-field inputWithRightIcon">
          <i class="material-icons prefix grey-text">search</i>
          <input id="searchBox"
+               value={state.query}
                oninput={onSearchInput}
                style="width: 150px;">
          <i onclick={onSearchCancelClick}
