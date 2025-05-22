@@ -862,7 +862,6 @@ def dictconfig(dictID):
         user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
         if not user['loggedin'] and not configs['publico']['public']:
             return {"success": True, "loggedin": False, "public": False}
-        dict_stats = ops.getDictStats(ops.getDB(dictID))
 
         # WARNING consider if new config item does show personal data, than add to this list
         hide_items = ["siteconfig", "download", "users"]
@@ -870,7 +869,14 @@ def dictconfig(dictID):
             configs.pop(item)
 
         res = {"success": True, "publicInfo": {**configs["ident"], **configs["publico"]},
-               "userAccess": user["dictAccess"], "configs": configs, 'stats': dict_stats}
+               "userAccess": user["dictAccess"], "configs": configs}
+
+        if user['loggedin'] and (user['dictAccess']['canEdit'] or user['dictAccess']['canEditSource']):
+            dictDB = ops.getDB(dictID)
+            configs = ops.readDictConfigs(dictDB)
+            if configs['progress_tracking'].get('tracked', False):
+                res['stats'] =  ops.getDictStats(ops.getDB(dictID))
+            res['last_edit'] = ops.lastEdit(dictDB)
 
         res["publicInfo"]["blurb"] = ops.markdown_text(str(configs["ident"]["blurb"] or ""))
         return res

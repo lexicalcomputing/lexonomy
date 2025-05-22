@@ -275,17 +275,28 @@ def getDmlLexSchemaItems(modules, xlingual_langs=[], linking_relations=[], etymo
         return ''.join(schema), desc_dict, list(used_modules)
 
 
+def lastEdit(db):# last edited
+    c = db.execute("SELECT [when], email FROM history ORDER BY [when] DESC")
+    last_update = c.fetchone()
+    if last_update:
+        return {'when': last_update["when"], 'email': last_update["email"]}
+
+
 def getDictStats(db):
     stats = {}
-    c = db.execute("SELECT * FROM stats")
-    for i in c.fetchall():
-        stats[i['id']] = int(i['value'])
-    if stats.get('entry_count', False) and stats.get('completed_entries', False):
-        stats['completed_per'] = (int(stats['completed_entries']) / int(stats['entry_count'])) * 100
+    try:
+        c = db.execute("SELECT * FROM stats")
+        for i in c.fetchall():
+            stats[i['id']] = int(i['value'])
+        if stats.get('entry_count', False) and stats.get('completed_entries', False):
+            stats['completed_per'] = (int(stats['completed_entries']) / int(stats['entry_count'])) * 100
 
-    c = db.execute("select count(*) as need_resave from entries where needs_resave=1 or needs_refresh=1 or needs_refac=1")
-    r = c.fetchone()
-    stats["need_resave"] = r["need_resave"]
+        # need resave
+        c = db.execute("select count(*) as need_resave from entries where needs_resave=1 or needs_refresh=1 or needs_refac=1")
+        r = c.fetchone()
+        stats["need_resave"] = r["need_resave"]
+    except sqlite3.OperationalError as e:
+        pass
     return stats
 
 
@@ -1006,10 +1017,9 @@ def getDictsByUser(email):
                     info["owners"].append(user_email)
             # dict stats
             if configs['progress_tracking'].get('tracked', False):
-                info['stats'] = {}
-                c_stats = dictDB.execute('SELECT * FROM stats')
-                for r_stats in c_stats.fetchall():
-                    info['stats'][r_stats['id']] = r_stats['value']
+                info['stats'] = getDictStats(dictDB)
+
+            info['last_edit'] = lastEdit(dictDB)
         except:
             info["broken"] = True
         dicts.append(info)
@@ -1299,11 +1309,8 @@ def listUsers(searchtext, howmany):
             dictDB = getDB(r["dict_id"])
             configs = readDictConfigs(dictDB)
             if configs['progress_tracking'].get('tracked', False):
-                stats = {}
-                c_stats = dictDB.execute('SELECT * FROM stats')
-                for r_stats in c_stats.fetchall():
-                    stats[r_stats['id']] = r_stats['value']
-                dict_info['stats'] = stats
+                dict_info['stats'] = getDictStats(dictDB)
+            dict_info['last_edit'] = lastEdit(dictDB)
             user["dictionaries"].append(dict_info)
 
     return {"entries":users, "total": total}
@@ -1390,10 +1397,8 @@ def listDicts(searchtext, howmany):
         dictDB = getDB(d["id"])
         configs = readDictConfigs(dictDB)
         if configs['progress_tracking'].get('tracked', False):
-            d['stats'] = {}
-            c_stats = dictDB.execute('SELECT * FROM stats')
-            for r_stats in c_stats.fetchall():
-                d['stats'][r_stats['id']] = r_stats['value']
+            d['stats'] = getDictStats(dictDB)
+        d['last_edit'] = lastEdit(dictDB)
 
     return {"entries": dicts, "total": total}
 

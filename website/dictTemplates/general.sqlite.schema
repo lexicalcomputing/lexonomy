@@ -3,7 +3,7 @@ INSERT INTO configs VALUES('ident','{	"title": "Simple Dictionary",	"blurb": "Th
 INSERT INTO configs VALUES('publico','{	"public": false}');
 INSERT INTO configs VALUES('ske','{"exampleContainer": ""}');
 INSERT INTO configs VALUES('titling','{"headword": "entry", "headwordSorting": "entry"}');
-INSERT INTO configs VALUES('progress_tracking', '{"node": "__lexonomy__completed", "tracked": false}');
+INSERT INTO configs VALUES('progress_tracking', '{"node": "__lexonomy__complete", "tracked": false}');
 CREATE TABLE searchables (id INTEGER PRIMARY KEY AUTOINCREMENT, entry_id INTEGER REFERENCES entries (id) ON DELETE CASCADE, txt TEXT, level INTEGER);
 CREATE TABLE history (
     id             INTEGER  PRIMARY KEY AUTOINCREMENT,

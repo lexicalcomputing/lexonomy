@@ -32,5 +32,5 @@
         "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span><br><small class=\"grey-text\">%(pos)</small>"
     },
     "formatting": {},
-    "progress_tracking": {"node": "__lexonomy__completed", "tracked": true}
+    "progress_tracking": {"node": "__lexonomy__complete", "tracked": true}
 }
