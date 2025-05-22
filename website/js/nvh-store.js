@@ -658,7 +658,7 @@ class NVHStoreClass {
                && hasEntry,
          code: uA.canEditSource
                && (hasEntry || !!this.data.brokenEntryNvh),
-         history: uA.canEdit
+         history: (uA.canEdit || uA.canEditSource)
                && !isNewEntry
       }
    }
