@@ -61,8 +61,6 @@
             this.nvhStore = window.nvhStore;
             /* 
             Initialize labelStyles and markupStyles in case any of them is undefined
-            this.props.schema["markupStyles"].length === 0 is necessary because if someone change entry structure,
-            markup styles will not appear in style section
             */
             if (!props.schema.markupStyles?.length) {
                let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.schema.content.fullName);
@@ -163,8 +161,7 @@
                this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
                /*
                   This is a work-around.
-                  If I move a layoutContainer using arrows, sometimes I enter child layoutContainer
-                  without entering parent layoutContainer. I need to assure that after leaving child layoutContainer,
+                  I need to assure that after leaving child layoutContainer,
                   the parent will be hovered which is expected behaviour.
                */
                const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
