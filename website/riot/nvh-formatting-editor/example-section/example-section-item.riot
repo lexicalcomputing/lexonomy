@@ -207,7 +207,7 @@
             let markupValueStylesPair = null;
             let valueStylesPair = null;
             let markupChildren = nvhFormattingEditor.getDirectMarkupChildren(fullName);
-            if (markupChildren.length) { /*means that has markup children*/
+            if (markupChildren.length) {
                markupValueStylesPair = this.getMarkupValueStylePair();
                valueStylesPair = this.getValueStylePair(this.props.entry.value, markupValueStylesPair, this.props.schema.styles);
                this.state.valueStylePairs = valueStylesPair;
@@ -259,8 +259,8 @@
                let splittedValue = value.split(child.value);
                if (splittedValue[0]) {
                   let normalObject = {
-                  value: result.length === 0 ? leftPunc + splittedValue[0] : splittedValue[0], /*prepend left punc only before first normalObject*/
-                  styles: styles,
+                     value: result.length === 0 ? leftPunc + splittedValue[0] : splittedValue[0], /*prepend left punc only before first normalObject*/
+                     styles: styles,
                   };
                   result.push(normalObject);
                }
