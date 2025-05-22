@@ -260,11 +260,10 @@ def entryflag(dictID, user, dictDB, configs):
 
 @post(siteconfig["rootPath"]+"<dictID>/history.json")
 @authDict(["canEdit", "canEditSource"])
-def history(dictID):
+def history(dictID, user, dictDB, configs):
     if not ops.dictExists(dictID):
         return redirect("/")
-    user, configs = ops.verifyLoginAndDictAccess(request.cookies.email, request.cookies.sessionkey, ops.getDB(dictID))
-    history = ops.readDictHistory(ops.getDB(dictID), dictID, configs, request.forms.id)
+    history = ops.readDictHistory(dictDB, dictID, configs, request.forms.id)
     res_history = []
     for item in history:
         res_history.append(item)
