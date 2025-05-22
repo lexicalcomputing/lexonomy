@@ -30,6 +30,7 @@
                <th>Author</th>
                <th if={state.hasProgressColumn}
                      class="progressColumn">Progress</th>
+               <th class="lastEditColumn">Last edit</th>
                <th class="actionColumn"></th>
             </tr>
          </thead>
@@ -51,6 +52,9 @@
                <td if={state.hasProgressColumn}>
                   <dict-progress if={dict.stats}
                         stats={dict.stats}/>
+               </td>
+               <td>
+                  <dict-last-edited last-edit={dict.last_edit}/>
                </td>
                <td class="dict-actions">
                   <a href="#/{dict.id}/edit"

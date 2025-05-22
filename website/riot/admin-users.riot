@@ -58,14 +58,23 @@
             <tr class="dictionaryRow">
                <td colspan="5">
                   <div class="dictionaryList" style="display: none;">
-                     <div each={dictionary in user.dictionaries}
-                           class="displayFlex gap20">
-                        <a href="#/{dictionary.id}">
-                           {dictionary.title ? dictionary.title : "--no title--"}
-                        </a>
-                        <dict-progress if={dictionary.stats}
-                              stats={dictionary.stats}/>
-                     </div>
+                     <table class="dictionaryTable">
+                        <tr each={dictionary in user.dictionaries}>
+                           <td>
+                              <a href="#/{dictionary.id}">
+                                 {dictionary.title ? dictionary.title : "--no title--"}
+                              </a>
+                           </td>
+                           <td if={user.hasProgressColumn}>
+                              <dict-progress if={dictionary.stats}
+                                    stats={dictionary.stats}/>
+                           </td>
+                           <td>
+                              <dict-last-edited last-edit={dictionary.last_edit}
+                                    label="last updated"/>
+                           </td>
+                        </tr>
+                     </table>
                   </div>
                </td>
             </tr>
@@ -141,6 +150,7 @@
                         user.dictionaries.sort((a, b) => {
                            return a.title.localeCompare(b.title)
                         })
+                        user.hasProgressColumn = !!user.dictionaries.find(dict => dict.stats)
                      })
                   })
                   .always(() => {
@@ -269,7 +279,7 @@
       }
    </script>
 
-   <style>
+   <style type="scss">
       .topBar{
          display: flex;
          align-items: center;
@@ -280,8 +290,11 @@
          display: inline-block;
          margin: 0 15px 0 0;
       }
-      .userTable tbody:hover tr{
+      .userTable > tbody:hover > tr{
          background-color: rgba(242,242,242,0.5);
+      }
+      .userTable td{
+         padding: 10px 10px;
       }
       .userRow{
          border: none;
@@ -289,17 +302,23 @@
       .toggleIcon{
          transition: transform 0.2s;
       }
-      .dictionaryRow td{
+      .dictionaryRow > td{
          padding: 0 0.7rem 0 85px;
       }
       .tableWrapper{
          min-height: 50vh;
       }
-      table td{
-         padding: 10px 10px;
-      }
       .dictionaryList{
          padding: 0 0 10px 0;
+      }
+      .dictionaryTable{
+         width: auto;
+         tr{
+            border-bottom: none;
+         }
+         td{
+            padding: 5px 20px;
+         }
       }
       .toggleColumn,
       .dictionaryColumn,

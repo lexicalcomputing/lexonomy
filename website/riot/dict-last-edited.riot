@@ -1,0 +1,7 @@
+<dict-last-edited>
+   <small if={props.lastEdit && props.lastEdit.when}
+         class="tooltipped grey-text cursorDefault noWrap"
+         data-tooltip="{props.lastEdit.when.split('.')[0]}, {props.lastEdit.email}">
+      {props.label || ""} {window.dateToTimeAgo(new Date(props.lastEdit.when + " UTC"))}
+   </small>
+</dict-last-edited>

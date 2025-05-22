@@ -51,6 +51,7 @@
                   <th class="sizeColumn">Size</th>
                   <th if={state.hasProgressColumn}
                        class="progressColumn">Progress</th>
+                  <th class="lastEditColumn">Last edit</th>
                   <th class="actionColumn"></th>
                </tr>
             </thead>
@@ -89,6 +90,9 @@
                   <td if={state.hasProgressColumn}>
                      <dict-progress if={dict.stats}
                            dict-id={dict.id}/>
+                  </td>
+                  <td>
+                     <dict-last-edited last-edit={dict.last_edit}/>
                   </td>
                   <td class="dict-actions">
                      <div class="buttons">
@@ -438,6 +442,7 @@
       .checkboxColumn,
       .favoriteColumn,
       .sizeColumn,
+      .lastEditColumn,
       .actionColumn{
          width: 1px;
       }

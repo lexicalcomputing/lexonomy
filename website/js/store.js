@@ -356,7 +356,8 @@ class StoreClass {
                   Object.assign(this.data, {
                         config: response.configs,
                         userAccess: response.userAccess,
-                        stats: response.stats
+                        stats: response.stats,
+                        lastEdit: response.last_edit
                      },
                      response.publicInfo
                   )
