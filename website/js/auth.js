@@ -136,8 +136,6 @@ class AuthClass {
    }
 
    consent(){
-      this.data.isCheckingAuth = true
-      this.trigger("checkingAuthChanged")
       return window.connection.post({
          url: `${window.API_URL}consent.json`,
          data: {
@@ -148,10 +146,6 @@ class AuthClass {
             .done(response => {
                this.data.consent = true
                this.trigger("authChanged")
-            })
-            .always(response => {
-               this.data.isCheckingAuth = false
-               this.trigger("checkingAuthChanged")
             })
    }
 
