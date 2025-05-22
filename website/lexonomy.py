@@ -259,6 +259,7 @@ def entryflag(dictID, user, dictDB, configs):
     return {"success": success, "id": request.forms.id, 'error': error}
 
 @post(siteconfig["rootPath"]+"<dictID>/history.json")
+@authDict(["canEdit", "canEditSource"])
 def history(dictID):
     if not ops.dictExists(dictID):
         return redirect("/")
