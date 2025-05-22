@@ -68,7 +68,7 @@
                   <input type="checkbox"
                         checked={dictData.search.isCompleted === true}
                         onclick={onIsCompletedClick.bind(this, true)}>
-                  <span>Only complete</span>
+                  <span>Complete only</span>
                </label>
             </div>
             <div class="inputField mb-2">
@@ -76,7 +76,7 @@
                   <input type="checkbox"
                         checked={dictData.search.isCompleted === false}
                         onclick={onIsCompletedClick.bind(this, false)}>
-                  <span>Only incomplete</span>
+                  <span>Incomplete only</span>
                </label>
             </div>
          </div>
@@ -168,7 +168,7 @@
          },
 
          onIsCompletedClick(isCompleted){
-            this.dictData.search.isCompleted = isCompleted
+            this.dictData.search.isCompleted = this.dictData.search.isCompleted === isCompleted ? null : isCompleted
             this.search()
          },
 
