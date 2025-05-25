@@ -1650,8 +1650,12 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         params.append(os.path.join(save_path, "merged_config.json"))
 
     if entries_path:
-        subprocess.Popen([currdir + "/import2dict.py", dbpath, entries_path, email, hwNode] + params,
-                        stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            subprocess.Popen([currdir + "/import2dict.py", dbpath, entries_path, email, hwNode] + params,
+                            stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
+        logfile_f.close()
     else:
         return 'No entries', "", ""
 
