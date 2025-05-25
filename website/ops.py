@@ -790,7 +790,7 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
 
             updateDictStats(dictDB,'entry_count', len(examples))
 
-    dictDB.commit()
+        dictDB.commit()
 
     users = {email: {"canView": 1,
                      "canEdit": 1,
