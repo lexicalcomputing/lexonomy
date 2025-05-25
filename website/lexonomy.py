@@ -541,21 +541,17 @@ def makedict(user):
 @auth
 def makedictjson(user):
     if len(request.files) > 0:
-        supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-        if supported_formats.match(request.files.get("import_entries").filename):
-            res = ops.makeDict(request.forms.url, None, request.forms.title,
-                               request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
-                               addExamples=False,
-                               deduplicate=True if request.forms.deduplicate=='true' else False,
-                               bottle_files=request.files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
-        else:
-            return{"success": False, "url": request.forms.url,
-                   "error": 'Unsupported format for import file. An .xml or .nvh file are required.', 'msg': ''}
+        res = ops.makeDict(request.forms.url, None, request.forms.title,
+                           request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
+                           addExamples=False,
+                           deduplicate=True if request.forms.deduplicate=='true' else False,
+                           input_files={fname: bottlefile.file for fname, bottlefile in request.files},
+                           hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
     else:
         res = ops.makeDict(request.forms.url, json.loads(request.forms.structure),
                            request.forms.title, request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=request.forms.addExamples=="true",
-                           deduplicate=False, bottle_files={}, hwNode=None, titling_node=None)
+                           deduplicate=False, input_files={}, hwNode=None, titling_node=None)
     return res
 
 
@@ -564,46 +560,17 @@ def makedictjson(user):
 def makedictjson(user):
     files = {}
     template_dir = os.path.join(currdir, 'dictTemplates', 'template_' + request.forms.template_id)
-
-    f1 = None
-    f2 = None
-    f3 = None
-    f4 = None
-    f5 = None
-    f6 = None
-
-    for file_name in os.listdir(template_dir):
-        if file_name == 'configs.json':
-            f1 = open(os.path.join(template_dir, file_name), 'rb')
-            files['config'] = bottle.FileUpload(f1, '', file_name)
-        elif file_name == 'entries.nvh':
-            f2 = open(os.path.join(template_dir, file_name), 'rb')
-            files['import_entries'] = bottle.FileUpload(f2, '', file_name)
-        elif file_name == 'custom_editor.css':
-            f3 = open(os.path.join(template_dir, file_name), 'rb')
-            files['ce_css'] = bottle.FileUpload(f3, '', file_name)
-        elif file_name == 'custom_editor.js':
-            f4 = open(os.path.join(template_dir, file_name), 'rb')
-            files['ce_js'] = bottle.FileUpload(f4, '', file_name)
-        elif file_name == 'structure.nvh':
-            f5 = open(os.path.join(template_dir, file_name), 'rb')
-            files['structure'] = bottle.FileUpload(f5, '', file_name)
-        elif file_name == 'styles.css':
-            f6 = open(os.path.join(template_dir, file_name), 'rb')
-            files['styles'] = bottle.FileUpload(f6, '', file_name)
-
+    for file in ['configs.json', 'entries.nvh', 'custom_editor.css', 'custom_editor.js', 'structure.nvh', 'styles.css']:
+        if os.path.isfile(file):
+            files[file] = open(os.path.join(template_dir, file_name), 'rb')
     res = ops.makeDict(request.forms.url, None, request.forms.title,
                        request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                        addExamples=False,
                        deduplicate=True if request.forms.deduplicate=='true' else False,
-                       bottle_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
-
-    for i in [f1,f2,f3,f4,f5,f6]:
-        if i != None:
-            i.close()
-
+                       input_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
+    for f in files:
+        f.close()
     return res
-
 
 @post(siteconfig["rootPath"]+"<dictID>/clone.json")
 @authDict(["canView"])
@@ -967,7 +934,7 @@ def importjson(dictID, user, dictDB, configs):
                                                 deduplicate=True if request.forms.deduplicate.lower()=='true' else False,
                                                 purge=True if request.forms.purge.lower()=='true' else False,
                                                 purge_all=True if request.forms.purge_all.lower()=='true' else False,
-                                                bottle_files=request.files)
+                                                input_files={fname: bottlefile.file for fname, bottlefile in request.files.items()})
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
 

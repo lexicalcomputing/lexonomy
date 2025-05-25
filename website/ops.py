@@ -740,7 +740,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
 
 
 def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, addExamples=False, deduplicate=False,
-             bottle_files={}, hwNode=None, titling_node=None):
+             input_files=None, hwNode=None, titling_node=None):
     if title == "":
         title = "?"
     if blurb == "":
@@ -752,7 +752,7 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
     #init db schema
     dictDB = initDict(dictID, title, lang, blurb, email, dmlex)
 
-    if not bottle_files:
+    if not input_files:
         if structure_json.get('nvhSchema', False):
             # DICTIONARY STRUCTURE
             if not structure_json.get('root', False):
@@ -803,9 +803,9 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
     attachDict(dictDB, dictID, users, dict_config)
 
-    if bottle_files:
+    if input_files:
         err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate,
-                                                           bottle_files=bottle_files, titling_node=titling_node)
+                                                           input_files=input_files, titling_node=titling_node)
         return {'url': dictID, 'success': True if not err else False, 'upload_error': err,
                 'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
 
@@ -1573,16 +1573,12 @@ def getImportProgress(file_path):
         return {'per': 0, 'done': 0, 'total': 0}, False, ['No log file found'], ['No log file found'], file_path
 
 
-def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, bottle_files={}, titling_node=None):
+def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=False, input_files=None, titling_node=None):
     """
     return progress, finished status, error messages
     """
-    supported_formats = re.compile('^.*\.(xml|nvh)$', re.IGNORECASE)
-    # XML file transforamtion
-    if bottle_files.get("import_entries", False):
-        if not supported_formats.match(bottle_files["import_entries"].filename):
-            return 'Unsupported format for import file. An .xml or .nvh file are required.', '', ''
-
+    if not input_files:
+        input_files = {}
     save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
     while os.path.exists(save_path):
         save_path = os.path.join(siteconfig["dataDir"], "uploads", next(tempfile._get_candidate_names()))
@@ -1595,12 +1591,14 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     # CONFIG
     # ====================================
     # safe all files as received
-    for _, value in bottle_files.items():
-        value.save(os.path.join(save_path, value.filename))
+    for _, value in input_files.items():
+        filename = getattr(value, "filename", "entries.nvh")
+        with open(os.path.join(save_path, filename), "wb") as dst:
+            shutil.copyfileobj(value, dst, length=1024*1024)
 
     entries_path = None
-    if bottle_files.get('import_entries', False):
-        entries_path = os.path.join(save_path, bottle_files.get('import_entries').filename)
+    if input_files.get('entries.nvh'):
+        entries_path = os.path.join(save_path, 'entries.nvh')
         logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
 
     config = {'styles': {},
@@ -1609,30 +1607,30 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
 
     has_config = False
     # if config.json received rewrite the default one
-    if bottle_files.get('config'): # Must be first !!!
-        config = json.loads(bottle_files.get('config').file.read())
-        if not config.get('styles', False):
+    if input_files.get('configs.json'): # Must be first !!!
+        config = json.loads(input_files.get('configs.json').read())
+        if not config.get('styles'):
             config['styles'] = {}
-        if not config.get('editting', False):
+        if not config.get('editting'):
             config['editting'] = {}
-        if not config.get('structure', False):
+        if not config.get('structure'):
             config['structure'] = {}
         has_config = True
 
-    if bottle_files.get('ce_css'):
-        config['editting']['css'] =  bottle_files.get('ce_css').file.read().decode('utf-8')
+    if input_files.get('custom_editor.css'):
+        config['editting']['css'] =  input_files.get('custom_editor.css').read().decode('utf-8')
         has_config = True
 
-    if bottle_files.get('ce_js'):
-        config['editting']['js'] =  bottle_files.get('ce_js').file.read().decode('utf-8')
+    if input_files.get('custom_editor.js'):
+        config['editting']['js'] =  input_files.get('custom_editor.js').read().decode('utf-8')
         has_config = True
 
-    if bottle_files.get('structure'):
-        config['structure']['nvhSchema'] = bottle_files.get('structure').file.read().decode('utf-8')
+    if input_files.get('structure.nvh'):
+        config['structure']['nvhSchema'] = input_files.get('structure.nvh').read().decode('utf-8')
         has_config = True
 
-    if bottle_files.get('styles'):
-        config['styles']['css']= bottle_files.get('styles').file.read().decode('utf-8')
+    if input_files.get('styles.css'):
+        config['styles']['css']= input_files.get('styles.css').read().decode('utf-8')
         has_config = True
     # ====================================
     params = []

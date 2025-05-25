@@ -507,7 +507,7 @@
                fd.append("url", this.state.url)
                fd.append("hwNode", this.state.headwordElement)
                fd.append("addExamples", false)
-               fd.append("import_entries", this.state.file)
+               fd.append("entries.nvh", this.state.file)
                this.store.createDictionary(fd, {
                   processData: false,
                   contentType: false
