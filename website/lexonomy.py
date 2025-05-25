@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import io
 import sys
 import functools
 import ops
@@ -60,7 +61,7 @@ def strip_path():
 def profiler(callback):
     def wrapper(*args, **kwargs):
         if request.query.prof:
-            import cProfile, pstats, io
+            import cProfile, pstats
             profile = cProfile.Profile()
             profile.enable()
         body = callback(*args, **kwargs)
@@ -1113,67 +1114,38 @@ def pushtest():
 def pushapioptions():
     return {}
 
-# @post(siteconfig["rootPath"] + "push.api") TODO FIX
-# def pushapi():
-#     data = json.loads(request.body.getvalue().decode('utf-8'))
-#     user = ops.verifyUserApiKey(data["email"], data["apikey"])
-#     if not user["valid"]:
-#         return {"success": False}
-#     else:
-#         if data["command"] == "makeDict":
-#             dictID = ops.suggestDictId()
-#             dictTitle = re.sub(r"^\s+", "", data["dictTitle"])
-#             if dictTitle == "":
-#                 dictTitle = dictID
-#             dictBlurb = data["dictBlurb"]
-#             addExamples = data["addExamples"]
-#             poses = []
-#             labels = []
-#             if "poses" in data:
-#                 poses = data["poses"]
-#             if "labels" in data:
-#                 labels = data["labels"]
-#             if data.get("format") == "teilex0":
-#                 dictFormat = "teilex0"
-#             else:
-#                 dictFormat = "push"
-#             res, error = ops.makeDict(dictID, dictFormat, dictTitle, dictBlurb, user["email"], addExamples)
-#             if not res:
-#                 return {"success": False, "error": error}
-#             else:
-#                 if dictFormat == "push":
-#                     dictDB = ops.getDB(dictID)
-#                     configs = ops.readDictConfigs(dictDB)
-#                     if configs["structure"]["elements"].get("partOfSpeech"):
-#                         for pos in poses:
-#                             configs["structure"]["elements"]["partOfSpeech"]["values"].append({"value": pos, "caption": ""})
-#                     if configs["structure"]["elements"].get("collocatePartOfSpeech"):
-#                         for pos in poses:
-#                             configs["structure"]["elements"]["collocatePartOfSpeech"]["values"].append({"value": pos, "caption":""})
-#                     if configs["structure"]["elements"].get("label"):
-#                         for label in labels:
-#                             configs["structure"]["elements"]["label"]["values"].append({"value":label, "caption": ""})
-#                     ops.updateDictConfig(dictDB, dictID, "structure", configs["structure"])
-#                 return {"success": True, "dictID": dictID}
-#         elif data["command"] == "listDicts":
-#             dicts = ops.getDictsByUser(user["email"])
-#             return {"entries": dicts, "success": True}
-#         elif data["command"] == "createEntries":
-#             dictID = data["dictID"]
-#             entryXmls = data["entryXmls"]
-#             dictDB = ops.getDB(dictID)
-#             configs = ops.readDictConfigs(dictDB)
-#             dictAccess = configs["users"].get(user["email"])
-#             if dictAccess and (dictAccess["canEdit"] or dictAccess["canUpload"]):
-#                 for entry in entryXmls:
-#                     if data.get("format") == "teilex0":
-#                         entry = ops.preprocessLex0(entry)
-#                     ops.createEntry(dictDB, configs, None, entry, user["email"], {"apikey": data["apikey"]})
-#                 return {"success": True}
-#             else:
-#                 return {"success": False}
-#         else:
-#             return {"success": False}
+@post(siteconfig["rootPath"] + "push.api")
+def pushapi():
+    data = json.loads(request.body.getvalue().decode('utf-8'))
+    user = ops.verifyUserApiKey(data["email"], data["apikey"])
+    if not user["valid"]:
+        return {"success": False}
+    else:
+        if data["command"] == "makeDict":
+            dictID = ops.suggestDictId()
+            dictDB = ops.initDict(dictID, data["dictTitle"], data["lang"], data["dictBlurb"], user["email"], True)
+            users = {data["email"]: {"canView": 1, "canEdit": 1, "canAdd": 1,
+                                     "canDelete": 1, "canEditSource": 1, "canConfig": 1,
+                                     "canDownload": 1,"canUpload": 1}}
+            dict_config = {"limits": {"entries": ops.DEFAULT_ENTRY_LIMIT}}
+            ops.attachDict(dictDB, dictID, users, dict_config)
+            return {"dictid": dictID, "success": True}
+        elif data["command"] == "createEntries":
+            dictDB = ops.getDB(data["dictID"])
+            configs = ops.readDictConfigs(dictDB)
+            dictAccess = configs["users"].get(user["email"])
+            if dictAccess and dictAccess["canUpload"]:
+                err, import_message, upload_file_path = ops.importfile(data["dictID"], data["email"], hwNode="entry", deduplicate=False,
+                                                               input_files={'entries.nvh': io.BytesIO(data["payload"].encode("utf-8"))}, titling_node="headword")
+                return {'url': data["dictID"], 'success': True if not err else False, 'upload_error': err,
+                    'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
+            else:
+                return {"success": False, 'error': 'User not authorized to perform this operation on the given dictionary'}
+        elif data["command"] == "listDicts":
+            dicts = ops.getDictsByUser(user["email"])
+            return {"entries": dicts, "success": True}
+        else:
+            return {"success": False}
 
 @get(siteconfig["rootPath"]+"publicdicts.json")
 def publicdicts():
