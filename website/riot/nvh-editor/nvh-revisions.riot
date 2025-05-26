@@ -20,7 +20,7 @@
             onclick={onRevisionClick.bind(this, revision)}>
          <div class="nvh-time">
             <b>
-               {window.dateToTimeAgo(new Date(revision.when + " UTC"))}
+               {window.dateToTimeAgo(new Date(revision.when + "Z"))}
             </b>
             &nbsp;
             <small class="grey-text">
