@@ -372,7 +372,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         else:
             entryID = 0
 
-        entry_inserted = 0
         limit_reached = False
 
         while import_entries:
@@ -380,7 +379,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             entry_str = entry.dump_string()
             entry_json = ops.nvh2jsonDump(entry)
 
-            if entry_inserted >= max_import:
+            if entries_inserted >= max_import:
                 limit_reached = True
                 break
 
@@ -406,7 +405,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
 
                 if progress_config['tracked'] and progress_config['node'] in entry_str:
                     completed_entries += 1
-                entries_inserted += 1
 
             # Updating existing
             else:
@@ -422,14 +420,15 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
                 if progress_config['tracked'] and progress_config['node'] in entry_str and progress_config['node'] not in r['nvh']:
                     completed_entries += 1
 
-            if entry_inserted % 100 == 0:
-                log_info("IMPORTED: PER:%.2d, COUNT:%d/%d" % ((entry_inserted/entry_count*100), entry_inserted, entry_count))
+            entries_inserted += 1
+            if entries_inserted % 100 == 0:
+                log_info("IMPORTED: PER:%.2d, COUNT:%d/%d" % ((entries_inserted/entry_count*100), entries_inserted, entry_count))
 
         if limit_reached:
             log_info("IMPORTED (%s): PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
-                    "email inquiries@sketchengine.eu and give details of your dictionary project." % (dict_id, entry_inserted, entry_count))
+                    "email inquiries@sketchengine.eu and give details of your dictionary project." % (dict_id, entries_inserted, entry_count))
         else:
-            log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entry_inserted, entry_count))
+            log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entries_inserted, entry_count))
 
         db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, title, sortkey) VALUES (?,?,?,?,?,?,?,?)", entries_insert_payload)
         db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
