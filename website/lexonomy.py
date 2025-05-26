@@ -987,7 +987,7 @@ def entrylist(dictID, user, dictDB, configs):
     else:
         total, entries = ops.listEntries(dictDB, dictID, configs, request.forms.searchtext, request.forms.modifier, request.forms.howmany, request.forms.offset, request.forms.sortdesc, False)
 
-    if request.forms.isCompleted.lower() != 'null':
+    if request.forms.isCompleted.lower() not in ['null', '']:
         ops.filter_completed(entries, True if request.forms.isCompleted.lower() == 'true' else False)
     return {"success": True, "entries": entries, "total": total}
 
