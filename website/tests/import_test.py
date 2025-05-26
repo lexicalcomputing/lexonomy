@@ -44,8 +44,7 @@ class TestImportNVH(unittest.TestCase):
                 'clean': 'on'
                 }
         f = open(os.path.join(current_dir, 'test_import.nvh'), 'rb')
-        files = {'import_entries': f}
-
+        files = {'entries': f}
         r = requests.post(url=self.website + "/make.json", data=data, files=files, cookies=self.cookies)
         f.close()
         self.update_upload_file_path(r.json()['upload_file_path'])
@@ -100,7 +99,7 @@ class TestImportXML(unittest.TestCase):
                 'clean': 'on'
                 }
         f = open(os.path.join(current_dir, 'test_import.xml'), 'rb')
-        files = {'import_entries': f}
+        files = {'entries': f}
 
         r = requests.post(url=self.website + "/make.json", data=data, files=files, cookies=self.cookies)
         f.close()
@@ -197,7 +196,7 @@ class TestImportToExisting(unittest.TestCase):
             "hwNode": "entry",
         }
         f = open(os.path.join(current_dir, "test_import.nvh"), "rb")
-        files = {"import_entries": f}
+        files = {"entries": f}
         r = requests.post(
             url=self.website + f"/{self.dicID}/import.json",
             data=data,

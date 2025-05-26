@@ -181,7 +181,7 @@
 
          onImportClick() {
             var fd = new FormData()
-            fd.append("entries.nvh", this.state.file)
+            fd.append("entries", this.state.file)
             fd.append("purge", $("#purge").is(":checked"))
             fd.append("purge_all", $("#purge_all").is(":checked"))
             fd.append("hwNode", this.state.headwordElement)

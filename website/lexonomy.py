@@ -542,11 +542,23 @@ def makedict(user):
 @auth
 def makedictjson(user):
     if len(request.files) > 0:
+        input_files = {}
+        for fname, bottlefile in request.files.items():
+            if fname != 'entries':
+                input_files[fname] = bottlefile.file
+            else:
+                data_format = ops.check_entries_format(bottlefile.file)
+                if data_format in ['xml', 'nvh']:
+                    bottlefile.file.seek(0)
+                    input_files['entries.' + data_format] = bottlefile.file
+                else:
+                    return{"success": False, "url": request.forms.url,
+                           "error": 'Unsupported format for import file. File in XML or NVH format are required.', 'msg': ''}
         res = ops.makeDict(request.forms.url, None, request.forms.title,
                            request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                            addExamples=False,
                            deduplicate=True if request.forms.deduplicate=='true' else False,
-                           input_files={fname: bottlefile.file for fname, bottlefile in request.files},
+                           input_files=input_files,
                            hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
     else:
         res = ops.makeDict(request.forms.url, json.loads(request.forms.structure),
@@ -561,15 +573,15 @@ def makedictjson(user):
 def makedictjson(user):
     files = {}
     template_dir = os.path.join(currdir, 'dictTemplates', 'template_' + request.forms.template_id)
-    for file in ['configs.json', 'entries.nvh', 'custom_editor.css', 'custom_editor.js', 'structure.nvh', 'styles.css']:
-        if os.path.isfile(file):
-            files[file] = open(os.path.join(template_dir, file_name), 'rb')
+    for file_name in ['configs.json', 'entries.nvh', 'custom_editor.css', 'custom_editor.js', 'structure.nvh', 'styles.css']:
+        if os.path.isfile(os.path.join(template_dir, file_name)):
+            files[file_name] = open(os.path.join(template_dir, file_name), 'rb')
     res = ops.makeDict(request.forms.url, None, request.forms.title,
                        request.forms.language, "", user["email"], dmlex=request.forms.dmlex=="true",
                        addExamples=False,
                        deduplicate=True if request.forms.deduplicate=='true' else False,
                        input_files=files, hwNode=request.forms.hwNode, titling_node=request.forms.titling_node)
-    for f in files:
+    for _, f in files.items():
         f.close()
     return res
 
@@ -931,11 +943,24 @@ def download(dictID, user, dictDB, configs):
 @post(siteconfig["rootPath"]+"<dictID>/import.json") # OK
 @authDict(["canUpload"])
 def importjson(dictID, user, dictDB, configs):
+    input_files = {}
+    for fname, bottlefile in request.files.items():
+        if fname != 'entries':
+            input_files[fname] = bottlefile.file
+        else:
+            data_format = ops.check_entries_format(bottlefile.file)
+            if data_format in ['xml', 'nvh']:
+                bottlefile.file.seek(0)
+                input_files['entries.' + data_format] = bottlefile.file
+            else:
+                return{"success": False, "url": request.forms.url,
+                        "error": 'Unsupported format for import file. File in XML or NVH format are required.', 'msg': ''}
+
     err, msg, upload_file_path = ops.importfile(dictID, user["email"], configs['structure']['root'],
                                                 deduplicate=True if request.forms.deduplicate.lower()=='true' else False,
                                                 purge=True if request.forms.purge.lower()=='true' else False,
                                                 purge_all=True if request.forms.purge_all.lower()=='true' else False,
-                                                input_files={fname: bottlefile.file for fname, bottlefile in request.files.items()})
+                                                input_files=input_files)
     return{"error": err, 'msg': msg, 'upload_file_path': upload_file_path}
 
 

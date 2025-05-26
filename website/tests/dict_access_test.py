@@ -46,7 +46,7 @@ class TestDictAccessPublic(unittest.TestCase):
             "clean": "on",
         }
         f = open(os.path.join(current_dir, "test_import.nvh"), "rb")
-        files = {"import_entries": f}
+        files = {"entries": f}
 
         r = requests.post(
             url=self.website + "/make.json", data=data, files=files, cookies=cookies
@@ -160,7 +160,7 @@ class TestDictAccessPrivate(unittest.TestCase):
             "clean": "on",
         }
         f = open(os.path.join(current_dir, "test_import.nvh"), "rb")
-        files = {"import_entries": f}
+        files = {"entries": f}
 
         r = requests.post(
             url=self.website + "/make.json", data=data, files=files, cookies=cookies

@@ -48,7 +48,7 @@ class TestDictFromFiles(unittest.TestCase):
         structure_f = open(os.path.join(current_dir, 'new_dict_from_template', 'structure.nvh'), 'rb')
         styles_f = open(os.path.join(current_dir, 'new_dict_from_template', 'styles.css'), 'rb')
 
-        files = {'import_entries': enties_f,
+        files = {'entries': enties_f,
                  'config': config_f,
                  'ce_css': ce_css_f,
                  'ce_js': ce_js_f,

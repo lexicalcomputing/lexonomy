@@ -1591,14 +1591,17 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     # CONFIG
     # ====================================
     # safe all files as received
-    for _, value in input_files.items():
-        filename = getattr(value, "filename", "entries.nvh")
+    for filename, value in input_files.items():
         with open(os.path.join(save_path, filename), "wb") as dst:
             shutil.copyfileobj(value, dst, length=1024*1024)
+        value.seek(0)
 
     entries_path = None
     if input_files.get('entries.nvh'):
         entries_path = os.path.join(save_path, 'entries.nvh')
+        logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
+    elif input_files.get('entries.xml'):
+        entries_path = os.path.join(save_path, 'entries.xml')
         logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
 
     config = {'styles': {},
@@ -1608,7 +1611,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
     has_config = False
     # if config.json received rewrite the default one
     if input_files.get('configs.json'): # Must be first !!!
-        config = json.loads(input_files.get('configs.json').read())
+        config = json.loads(input_files.get('configs.json').read().decode('utf-8'))
         if not config.get('styles'):
             config['styles'] = {}
         if not config.get('editting'):
@@ -2884,3 +2887,28 @@ def json2nvh(jsonEntry, paths=False):
     if type(jsonEntry) == str:
         jsonEntry = json.loads(jsonEntry, paths)
     return json2nvhLevel(jsonEntry,nvh(None))
+
+def check_entries_format(entries_fd):
+    def is_xml(entries):
+        import xml.etree.ElementTree as ET
+        try:
+            ET.fromstring(entries)
+            return True
+        except ET.ParseError:
+            return False
+        except Exception as e:
+            return False
+    def is_nvh(entries):
+        nvh_line_re = re.compile('([ \t])*[^:]+:.*')
+        for line in entries.split('\n'):
+            if not nvh_line_re.match(line) and line != '':
+                return False
+        return True
+
+    entries = entries_fd.read().decode('utf-8-sig')
+    if is_xml(entries):
+        return 'xml'
+    elif is_nvh(entries):
+        return 'nvh'
+
+    return None
