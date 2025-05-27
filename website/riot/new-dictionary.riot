@@ -445,6 +445,7 @@
          },
 
          onCreateDictionaryFromTemplateClick(template_id){
+            this.update({isLoading: true})
             let data = {
                url: this.state.url,
                hwNode: 'Entry',
@@ -458,7 +459,10 @@
             this.store.createDictionaryFromTemplate(data)
                   .done(response => {
                      if (response.success) {
-                        route("/" + response.url)
+                        this.state.newDictId = response.url
+                        setTimeout(() => {
+                           this.checkImportProgress(response.upload_file_path)
+                        }, 200) // small wait is enough in most cases so the first checkImport request succeed
                      }
                   })
                   .always(response => {
