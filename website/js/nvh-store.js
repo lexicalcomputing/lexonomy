@@ -402,31 +402,17 @@ class NVHStoreClass {
    }
 
    nvhToJson(nvh){
-      const getParent = indent => {
-         if(!indent){
-            return null
-         } else if (indent == 1){
-            return json
-         } else {
-            let actualLevel = 1
-            let parent = json
-            while (actualLevel < indent){
-               parent = parent.children[parent.children.length - 1]
-               actualLevel++
-            }
-            return parent
-         }
-      }
       let json
       let el
       let elements = this.parseNvh(nvh)
       let lastIndent = 0
+      let stack = []
       elements.forEach((element, idx) => {
          if(element.indent > lastIndent + 1){
             throw `Incorrect indent on line ${idx + 1}: '${element.name}: ${element.value}'`
          }
          lastIndent = element?.indent || 0
-         let parent = getParent(element.indent)
+         let parent = stack[element.indent - 1] || null
          let name = element.name.split(".").pop()
          el = {
             id: this._getNewElementId(),
@@ -438,6 +424,8 @@ class NVHStoreClass {
             warnings: [],
             path: parent ? `${parent.path}.${name}` : name
          }
+         stack[element.indent] = el
+         stack.length = element.indent + 1  // Remove keys from any deeper levels that are no longer applicable.
          if(idx == 0){
             json = el
          } else {
