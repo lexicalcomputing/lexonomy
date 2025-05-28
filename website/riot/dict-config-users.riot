@@ -74,9 +74,14 @@
                </tr>
             </tbody>
          </table>
+         <div if={state.userLimit}
+               class="{state.data.users.length >= state.userLimit ? 'message messageError mt-6' : 'grey-text mt-2 mb-4'}">
+            Total <span>{state.data.users.length}</span> users out of <span>{state.userLimit}</span>. To increase the limit contact us at <a href="mailto:inquiries@sketchengine.eu">inquiries@sketchengine.eu</a>.
+         </div>
          <br>
          <div>
-            <button class="btn"
+            <button if={!state.userLimit || state.data.users.length < state.userLimit}
+                  class="btn"
                   onclick={doAddUser}>
                <i class="material-icons right">add</i>
                Add new user
@@ -130,6 +135,7 @@
                label: "Upload",
                help: "Can upload dictionary."
             }]
+            this.state.userLimit = this.dictData.config.dict_settings.limits.users
          },
 
          onEmailInput(idx, evt){

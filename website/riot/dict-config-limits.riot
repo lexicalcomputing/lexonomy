@@ -3,33 +3,56 @@
    <h1 class="pageTitle">Limits</h1>
    <dict-configuration-issues config-id="limits"/>
    <template if={!state.isLoading}>
-      <div class="entryLimit input-field mb-6">
+      <div class="input-field mb-6">
+         <input id="userLimit"
+               type="number"
+               min=1
+               oninput={onUserLimitInput}
+               value={state.limits.users || ""}/>
+         <label class="noWrap">Maximum number of users</label>
+         <span if={state.limits.users && state.limits.users < state.userCount}
+               class="helper-text red-text">Dictionary has already {state.userCount} users.</span>
+      </div>
+
+      <div class="input-field mb-6">
          <input id="entryLimit"
-               oninput={onLimitInput}
-               value={state.entries || ""}/>
-         <label for="elements"
-               class="noWrap">Maximum number of entries</label>
+               type="number"
+               min=1
+               oninput={onEntryLimitInput}
+               value={state.limits.entries || ""}/>
+         <label class="noWrap">Maximum number of entries</label>
+         <span if={state.limits.entries && state.limits.entries < dictData.dictionaryList.length}
+               class="helper-text red-text">Dictionary has already {dictData.dictionaryList.length} entries.</span>
       </div>
 
       <dict-config-buttons save-data={saveData}
-            disabled={state.isSaveDisabled}/>
+            disabled={!state.limits.entries || state.limits.entries < 1 || (state.limits.users !== "" && state.limits.users < 1)}/>
    </template>
 
 
    <script>
       export default {
+         bindings: [["store", "entryListChanged", "update"]],
+
          state: {
             isLoading: true,
             isSaving: false,
             isSaveDisabled: false,
-            entries: 5000
+            limits: null,
+            userCount: null
          },
 
          onMounted() {
+            this.store.loadDictionaryConfig("users")
+                  .done(response => {
+                     if(response.success){
+                        this.update({userCount: Object.keys(response.content).length})
+                     }
+                  })
             this.store.loadDictionaryConfig("dict_settings")
                   .done(response => {
                      if(response.content && response.content.limits){
-                        this.state.entries = response.content.limits.entries
+                        this.state.limits = Object.assign({users: "", entries: 5000}, response.content.limits)
                      }
                   })
                   .always(() => {
@@ -39,22 +62,24 @@
 
          saveData(){
             this.update({isSaving: true})
-            this.store.updateDictionarySettings({
-               limits: {
-                  entries: $("#entryLimit").val() * 1
-               }
-            })
+            this.store.updateDictionarySettings({limits: this.state.limits})
                   .always(() => this.update({isSaving: false}))
          },
 
-         onLimitInput(evt){
-            this.update({isSaveDisabled: evt.target.value && isNaN(evt.target.value)})
+         onUserLimitInput(evt){
+            this.state.limits.users = evt.target.value
+            this.update()
+         },
+
+         onEntryLimitInput(evt){
+            this.state.limits.entries = evt.target.value
+            this.update()
          }
       }
    </script>
 
    <style>
-      .entryLimit{
+      input{
          max-width: 200px;
       }
    </style>
