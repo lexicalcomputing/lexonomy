@@ -227,7 +227,12 @@
                            onchange={onUploadFileChange}
                            id="file">
                   </div>
-                  <label for="title">File with entries in NVH format</label>
+                  <label for="title">File with entries in NVH
+                     <span class="hint tooltipped"
+                           data-tooltip="Name-Value Hierarchy (NVH) is a simple markup language for writing dictionaries (<a href='https://guide.lexonomy.eu/structure/understand-nvh/' target='_blank'>more</a>).">
+                        <i class="material-icons">help</i>
+                     </span>
+                     or XML format</label>
                   <div class="file-path-wrapper">
                      <input class="file-path validate"
                            type="text">
@@ -235,16 +240,41 @@
                </div>
             </div>
             <div class="row">
-               <div class="input-field headwordInputField">
-                  <input id="Headword"
+               <div class="input-field entryElementInputField">
+                  <input id="entryElement"
                         type="text"
                         class="validate"
-                        value={state.headwordElement}
+                        value={state.entryElement}
+                        disabled={!state.file}
+                        required
+                        oninput={onEntryElementInput}/>
+                  <label for="title">Entry element *</label>
+                  <i if={state.fileReader.readyState == 1}
+                        class="entryElementSpinner material-icons grey-text spin">donut_large</i>
+               </div>
+               <div class="input-field eadwordElementInputField">
+                  <input if={!state.headwordOptions.length}
+                        id="headwordElement"
+                        type="text"
+                        class="validate"
+                        disabled={!state.file}
                         required
                         oninput={onHeadwordElementInput}/>
+                  <div if={state.headwordOptions.length}>
+                     <select
+                           id="headwordElement"
+                           disabled={!state.file}
+                           onchange={onHeadwordElementSelectChange}>
+                        <option value="">-select element-</option>
+                        <option each={option in state.headwordOptions}
+                              value={option.value}>
+                           <span style="color: {option.color}; margin-left: {option.indent * 15}px">
+                              {option.label}
+                           </span>
+                        </option>
+                     </select>
+                  </div>
                   <label for="title">Headword element *</label>
-                  <i if={state.fileReader.readyState == 1}
-                        class="headwordElementSpinner material-icons grey-text spin">donut_large</i>
                </div>
             </div>
             <div class="row">
@@ -365,7 +395,9 @@
             isLoading: false,
             errorMessage: "",
             file: null,
-            headword: null,
+            headwordElement: null,
+            entryElement: null,
+            headwordOptions: [],
             language: {
                value: "",
                label: ""
@@ -381,9 +413,7 @@
             this.structureStore.data.mode = "dmlex"
             this.structureStore.data.tab = "visual"
             this.state.fileReader = new FileReader
-            this.state.fileReader.onload = function(e) {
-               this.update({headwordElement: this.store.guessEntryElementFromFile(this.state.fileReader.result)})
-            }.bind(this)
+            this.state.fileReader.onload = this.onFileLoaded.bind(this)
             this.refreshDictionaryTitle()
             this.store.suggestUrl()
                   .done(response => {
@@ -432,8 +462,48 @@
             this.update()
          },
 
+         onFileLoaded(){
+            let trimmed = this.state.fileReader.result.trim()
+            let headwordOptions = []
+            let isEmpty = !trimmed.length
+            let entryElement = ""
+            if(!isEmpty){
+               entryElement = this.store.guessEntryElementFromFile(this.state.fileReader.result)
+               let fileIsNvh = trimmed.split("\n")[0].trim().match(new RegExp(`^(\s*)([a-zA-Z0-9-_.]+):(.*)$`))
+               if(fileIsNvh){
+                  try{
+                     headwordOptions = this.getUniquePathsFromNvh(this.state.fileReader.result).map((path, idx) => {
+                        let parts = path.split(".")
+                        return {
+                           value: path,
+                           indent: parts.length - 1,
+                           label: parts.pop(),
+                           color: this.schema.getColorByIndex(idx)
+                        }
+                     })
+                  } catch(e){}
+               }
+            }
+            this.update({
+               isEmpty: isEmpty,
+               entryElement: entryElement,
+               headwordOptions: headwordOptions
+            })
+            window.initFormSelects(this.root)
+         },
+
          onHeadwordElementInput(evt){
             this.state.headwordElement = evt.target.value
+            this.refreshMakeDictButtonDisabled()
+         },
+
+         onHeadwordElementSelectChange(evt){
+            this.state.headwordElement = evt.target.value
+            this.refreshMakeDictButtonDisabled()
+         },
+
+         onEntryElementInput(evt){
+            this.state.entryElement = evt.target.value
             this.refreshMakeDictButtonDisabled()
          },
 
@@ -467,7 +537,7 @@
                   })
                   .always(response => {
                      if(!response || !response.success){
-                        this.state.errorMessage = response.error || "Unknown error"
+                        this.state.errorMessage = response.error || response.upload_error || "Unknown error"
                         this.update({isLoading: false})
                      }
                   })
@@ -509,24 +579,23 @@
                fd.append("deduplicate", $("#deduplicate").is(":checked"))
                fd.append("title", this.state.title)
                fd.append("url", this.state.url)
-               fd.append("hwNode", this.state.headwordElement)
+               fd.append("hwNode", this.state.entryElement)
+               fd.append("titling_node", this.state.headwordElement)
                fd.append("addExamples", false)
                fd.append("entries", this.state.file)
                this.store.createDictionary(fd, {
                   processData: false,
                   contentType: false
                })
-                     .done(response => {
-                        if (response.success) {
+                     .always(response => {
+                        if (response && response.success) {
+                           window.showToast("Import started.")
                            this.state.newDictId = response.url
                            this.checkImportProgress(response.upload_file_path)
-                        }
-                     })
-                     .always(response => {
-                        if(!response || !response.success){
+                        } else {
                            this.state.errorMessage = response.error || "Unknown error"
+                           this.update({isLoading: false})
                         }
-                        this.update({isLoading: false})
                      })
             }
          },
@@ -546,6 +615,31 @@
                         }
                      }
                   })
+         },
+
+         getUniquePathsFromNvh(nvh) {
+            let lines = nvh.split("\n")
+            let stack = []
+            let paths = new Set()
+            let indentSize = window.nvhStore.guessNvhIndentSize(nvh)
+
+            for (let line of lines) {
+               if (line.trim()){
+                  let leadingSpaces = line.match(/^(\s*)/)[0].length
+                  let level = leadingSpaces / indentSize
+                  let keyMatch = line.match(/^\s*([^:]+)\s*:/)
+                  if (keyMatch){
+                     let key = keyMatch[1].trim()
+                     if(!key.startsWith("__lexonomy__")){
+                        stack[level] = key
+                        // Remove keys from any deeper levels that are no longer applicable.
+                        stack.length = level + 1
+                        paths.add(stack.join("."))
+                     }
+                  }
+               }
+            }
+            return [...paths]
          },
 
          getPageTitle(){
@@ -575,6 +669,7 @@
                      disabled = !this.state.file
                            || this.state.fileReader.readyState == 1
                            || !this.state.headwordElement
+                           || !this.state.entryElement
                   } else if(this.props.step == "empty"){
                      disabled = this.schema.isEmpty()
                            || !this.schema.isValid
@@ -596,7 +691,8 @@
       }
       .titleInputField,
       .uploadFileInputField,
-      .headwordInputField{
+      .entryElementInputField,
+      .eadwordElementInputField{
          max-width: 450px;
       }
       .templateWrapper{
@@ -616,7 +712,7 @@
       .cardOption{
          min-height: 210px;
       }
-      .headwordElementSpinner{
+      .entryElementSpinner{
          position: absolute;
          right: 8px;
          top: 8px;
