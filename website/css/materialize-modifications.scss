@@ -449,7 +449,13 @@ textarea.materialize-textarea:focus:not([readonly])+label{
 .material-tooltip{
    max-width: 500px;
    text-align: left;
+   .tooltip-content{
+      a{
+         color: #fff;
+      }
+   }
 }
+
 
 .progress{
    background-color: #d3d3d3;

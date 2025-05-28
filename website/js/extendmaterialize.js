@@ -116,7 +116,9 @@ $.extend(M.Dropdown.prototype, dropdownExtension)
 
 let tooltipExtension = {
    old_open: M.Tooltip.prototype.open,
+   old_animateIn: M.Tooltip.prototype._animateIn,
    old_animateOut: M.Tooltip.prototype._animateOut,
+   old_setupEventHandlers: M.Tooltip.prototype._setupEventHandlers,
 
    open: function(params){
       if(this.el.getAttribute('data-tooltip')?.trim() || this.options.html?.trim()){
@@ -124,12 +126,35 @@ let tooltipExtension = {
       }
    },
 
+   _setupEventHandlers: function(){
+      this.old_setupEventHandlers()
+      this._handleElMouseEnterBound = this._handleElMouseEnter.bind(this)
+      this._handleElMouseLeaveBound = this._handleElMouseLeave.bind(this)
+   },
+
+   _animateIn: function(){
+      this.old_animateIn()
+      this.tooltipEl.addEventListener("mouseenter", this._handleElMouseEnterBound)
+      this.tooltipEl.addEventListener("mouseleave", this._handleElMouseLeaveBound)
+      this.tooltipEl.style.pointerEvents = "initial"
+    },
+
    _animateOut: function(){
       this.tooltipEl.removeEventListener("mouseenter", this._handleElMouseEnterBound)
       this.tooltipEl.removeEventListener("mouseleave", this._handleElMouseLeaveBound)
       this.old_animateOut()
       this.tooltipEl.style.pointerEvents = "none"
       this.onClose && this.onClose()
+   },
+
+   _handleElMouseEnter: function(){
+      this.isOpen = true
+      this.isHovered = true
+      this.isFocused = true
+   },
+
+   _handleElMouseLeave(){
+      this._handleMouseLeave()
    }
 }
 $.extend(M.Tooltip.prototype, tooltipExtension)
