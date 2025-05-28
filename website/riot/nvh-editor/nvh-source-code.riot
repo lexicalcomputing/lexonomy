@@ -4,6 +4,8 @@
       <div class="nvh-code-editor"
             onkeydown={editorOnKeyDown}
             onkeyup={editorOnKeyUp}>{state.sourceCode}</div>
+      <div class="nvh-autocomplete"></div>
+      <div class="nvh-suggestions z-depth-1"></div>
    </div>
 
    <div if={!Object.keys(state.warnings).length}
@@ -25,8 +27,6 @@
       <small class="ml-auto grey-text mr-4">Ctrl+s or ⌘+s to save</small>
    </div>
 
-   <div class="nvh-autocomplete"></div>
-   <div class="nvh-suggestions z-depth-1"></div>
 
    <script>
       export default {
@@ -273,7 +273,7 @@
             $(".nvh-suggestions").html(this.state.suggestions.map(s => `<div>${s.split(".").pop()}</div>`))
                   .show()
                   .css({
-                     top: `calc(${1.3125 * (row + 2)}rem + 0px)`,
+                     top: `calc(${1.3125 * row}rem)`,
                      left: `calc(2.625rem + ${col}ch)`
                   })
             this.refreshSuggestionCursor()
@@ -312,10 +312,9 @@
          },
 
          showAutocomplete(elementPath, row, col){
-            let magicNumber = (22 - (window.getCookie("fontSize") || 16)) * 0.5 //different interface font size correction
             $(".nvh-autocomplete").show()
                   .css({
-                     top: `calc(${1.3125 * (row + 1)}rem + ${magicNumber}px)`,
+                     top: `calc(${1.3125 * (row - 1)}rem)`,
                      left: `calc(2.625rem + 5px + ${col}ch)`
                   })
             this.updateAutocomplete(elementPath)
