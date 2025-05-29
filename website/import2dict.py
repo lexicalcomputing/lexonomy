@@ -372,7 +372,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         else:
             entryID = 0
 
-        limit_reached = False
 
         while import_entries:
             entry = import_entries.pop(0)
@@ -380,7 +379,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             entry_json = ops.nvh2jsonDump(entry)
 
             if entries_inserted >= max_import:
-                limit_reached = True
                 break
 
             action = "create"
@@ -424,11 +422,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             if entries_inserted % 100 == 0:
                 log_info("IMPORTED: PER:%.2d, COUNT:%d/%d" % ((entries_inserted/entry_count*100), entries_inserted, entry_count))
 
-        if limit_reached:
-            log_info("IMPORTED (%s): PER:100, COUNT:%d/%d, MSG:Entry limit was reached. To remove the limit, " \
-                    "email inquiries@sketchengine.eu and give details of your dictionary project." % (dict_id, entries_inserted, entry_count))
-        else:
-            log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entries_inserted, entry_count))
+        log_info("IMPORTED (%s): PER:100, COUNT:%d/%d"  % (dict_id, entries_inserted, entry_count))
 
         db.executemany("INSERT INTO entries(id, nvh, json, needs_refac, needs_resave, needs_refresh, title, sortkey) VALUES (?,?,?,?,?,?,?,?)", entries_insert_payload)
         db.executemany("UPDATE entries SET nvh=?, json=?, needs_refac=?, needs_resave=?, needs_refresh=?, title=?, sortkey=? WHERE id=?", entries_update_payload)
