@@ -6,6 +6,7 @@ class AuthClass {
          authorized: false
       }
       this.resetUser()
+      window.dispatcher.on("userCameBack", this.onUserCameBack.bind(this))
    }
 
    resetUser(){
@@ -17,6 +18,20 @@ class AuthClass {
          ske_apiKey: null,
          ske_username: null
       })
+   }
+
+   onUserCameBack(){
+      if (this.data.authorized) {
+         window.connection.post({
+            url: `${window.API_URL}login.json`,
+            failMessage: "Could not check authorization cookie."
+         })
+               .always(response => {
+                  if (response.success && !response.loggedin) {
+                     this.invalidateSession()
+                  }
+               })
+      }
    }
 
    checkAuthCookie(){
