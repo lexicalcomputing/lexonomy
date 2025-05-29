@@ -49,7 +49,8 @@
             </span>
             <span class="nvh-values">
                <label class="inlineBlock verticalMiddle">
-                  <input type="checkbox"
+                  <input id="hideValue"
+                        type="checkbox"
                         checked={state.style.hideValue ? 'checked' : ''}
                         name="hideValue"
                         onchange={onCheckboxChange}/>
@@ -372,6 +373,9 @@
             $("#label").val(this.state.style.label)
             if($("#hidden")[0]){
                $("#hidden")[0].checked = !!this.state.style.hidden
+            }
+            if($("#hideValue")[0]){
+               $("#hideValue")[0].checked = !!this.state.style.hideValue
             }
          },
 
