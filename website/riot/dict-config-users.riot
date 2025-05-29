@@ -75,7 +75,7 @@
                      </a>
                      <a if={dictData.config.creator != user.email}
                            class="btn btn-floating btn-flat right tooltipped"
-                           onclick={onChangeOwnerClick.bind(this, user.email)}
+                           onclick={onChangeOwnerClick.bind(this, user)}
                            data-tooltip="Change dictionary owner">
                         <i class="material-icons">group</i>
                      </a>
@@ -175,13 +175,13 @@
             this.update()
          },
 
-         onChangeOwnerClick(email){
+         onChangeOwnerClick(user){
             window.modal.open({
                title: "Change dictionary owner",
                small: true,
                tag: "raw-html",
                props: {
-                  content: `Do you want to change dictionary owner to: <b>${email}</b>? This user will automatically receive all privileges. <br><br> You will not be able to undo this. <br>All changes will be saved before changing the owner.`
+                  content: `Do you want to change dictionary owner to: <b>${user.email}</b>? This user will automatically receive all privileges. <br><br> You will not be able to undo this. <br>All changes will be saved before changing the owner.`
                },
                buttons: [{
                   label: "change owner",
@@ -191,7 +191,7 @@
                         new_creator: email
                      })
                      modal.close()
-                  }.bind(this, email)
+                  }.bind(this, user.email)
                }]
             })
          },
