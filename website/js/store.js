@@ -64,10 +64,8 @@ class StoreClass {
       this.changeDictionary(dictId)
       entryId && this.changeEntryId(entryId)
       editorMode ??= "edit"
-      if(["edit", "code"].includes(editorMode) && !this.data.userAccess.canEdit){
-         editorMode = "view"
-      }
       this.data.editorMode = editorMode
+      this.updateEditorModeAcordingToRights()
    }
 
    changeDictionary(dictId){
@@ -341,9 +339,6 @@ class StoreClass {
                      this.trigger("unauthorizedDictionary")
                      return
                   }
-                  if(!response.userAccess.canEdit){
-                     this.data.editorMode = "view"
-                  }
                   this.schema.update(response.configs.structure?.nvhSchema || "")
                   response.configs.formatting ??= {}
                   response.configs.formatting.elements ??= {}
@@ -364,6 +359,7 @@ class StoreClass {
 
                   this.data.isDictionaryLoaded = true
                   this.data.isDictionaryLoading = false
+                  this.updateEditorModeAcordingToRights()
                   if(this.data.siteconfig.showDictionaryNameInPageTitle){
                      document.title = `Lexonomy - ${this.data.title}`
                   }
@@ -1691,6 +1687,15 @@ class StoreClass {
          }
       })
       return entryList
+   }
+
+   updateEditorModeAcordingToRights(){
+      if(this.data.isDictionaryLoaded && !this.data.isDictionaryLoading){
+         if((this.data.editorMode == "edit" && !this.data.userAccess.canEdit)
+            || (this.data.editorMode == "code" && !this.data.userAccess.canEditSource)){
+            this.data.editorMode = "view"
+         }
+      }
    }
 
    guessEntryElementFromFile(content){
