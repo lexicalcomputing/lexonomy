@@ -76,7 +76,7 @@
          },
 
          onAddElementClick(elementPath, parent){
-            if(elementPath.startsWith(this.props.element.path)){
+            if(elementPath != this.props.element.path && elementPath.startsWith(this.props.element.path)){
                this.nvhStore.addChildElement(parent, elementPath, 0)
             } else {
                let element = this.props.element
