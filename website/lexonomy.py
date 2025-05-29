@@ -1046,6 +1046,12 @@ def configupdate(dictID, user, dictDB, configs):
 def dict_access_update(dictID, user, dictDB, configs):
     new_user_rights = json.loads(request.forms.users)
 
+    main_db = ops.getMainDB()
+    d = main_db.execute("SELECT configs FROM dicts WHERE id=?", (dictID,))
+    user_limit = int(json.loads(d.fetchone()['configs'])['limits'].get('users', 0))
+    if user_limit > 0 and len(new_user_rights.keys()) > user_limit:
+        return {"success": False, "error": "User limit exceeded."}
+
     if configs['creator'] not in new_user_rights.keys():
         if request.forms.new_creator:
             ops.updateDictCreator(dictID, request.forms.new_creator)
