@@ -381,28 +381,30 @@ window.loadScript = (src) => {
          if(!success){
             window.showToast(`Could not load script "${src}".`)
          }
-         script.setAttribute("loaded", success * 1)
+         script.setAttribute("loaded", success)
          window.dispatcher.trigger(`SCRIPT_LOADED_${id}`, {
             script: src,
             success: success
          })
       }
-
       let id = window.idEscape(src)
       let script = document.getElementById(id)
       window.dispatcher.one(`SCRIPT_LOADED_${id}`, result => {
          result.success ? resolve(result) : reject(result)
       })
       if(!script){
+         // script element does not exist -> create
          script = document.createElement("script")
-         script.onload = onScriptLoaded.bind(null, true)
-         script.onerror = onScriptLoaded.bind(null, false)
+         script.onload = onScriptLoaded.bind(null, 1)
+         script.onerror = onScriptLoaded.bind(null, 0)
          script.id = id
          script.src = `${src}?ver=${window.LEXONOMY_VERSION}`
          document.head.appendChild(script)
       } else if (script.attributes.loaded){
-         onScriptLoaded(script.attributes.loaded == 1)
+         // script element exists and it has been already loaded -> run callback
+         onScriptLoaded(script.getAttribute("loaded"))
       }
+      // if script element exists and it has not been loaded -> SCRIPT_LOADED event will be triggered once script is loaded
    })
 }
 
@@ -412,7 +414,7 @@ window.loadStylesheet = (href) => {
          if(!success){
             window.showToast(`Could not load stylesheet "${href}".`)
          }
-         link.setAttribute("loaded", success * 1)
+         link.setAttribute("loaded", success)
          window.dispatcher.trigger(`STYLESHEET_LOADED_${id}`, {
             link: href,
             success: success
@@ -427,13 +429,13 @@ window.loadStylesheet = (href) => {
          link = document.createElement("link")
          link.rel = 'stylesheet'
          link.type = 'text/css'
-         link.onload = onLinkLoaded.bind(null, true)
-         link.onerror = onLinkLoaded.bind(null, false)
+         link.onload = onLinkLoaded.bind(null, 1)
+         link.onerror = onLinkLoaded.bind(null, 0)
          link.id = id
          link.href = `${href}?ver=${window.LEXONOMY_VERSION}`
          document.head.appendChild(link)
       } else if(link.attributes.loaded){
-         onLinkLoaded(link.attributes.loaded == 1)
+         onLinkLoaded(link.getAttribute("loaded"))
       }
    })
 }
