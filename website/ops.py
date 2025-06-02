@@ -1512,7 +1512,7 @@ def download(dictDB, dictID, export_type):
             yield r['nvh'].rstrip('\n') + '\n'
 
     elif export_type == 'xml':
-        yield "<"+dictID+">\n"
+        yield "<dict_"+dictID+">\n"
         c = dictDB.execute("select id, nvh from entries")
 
         for r in c.fetchall():
@@ -1522,7 +1522,7 @@ def download(dictDB, dictID, export_type):
             yield '\n'.join(result_xml)
             yield "\n"
 
-        yield "</"+dictID+">\n"
+        yield "</dict_"+dictID+">\n"
 
 def purge(dictDB, email, historiography):
     dictDB.execute("insert into history(entry_id, action, [when], email, xml, historiography) select id, 'purge', ?, ?, xml, ? from entries", (str(datetime.datetime.utcnow()), email, json.dumps(historiography)))

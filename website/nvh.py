@@ -716,9 +716,9 @@ class nvh:
 
         if self.value and self.name:
             if not [x.name for x in self.children if xtag_re.match(x.name)]:
-                result_xml.append(self.indent + '<' + self.name + '>' + self.value + '</' + self.name + '>')
+                result_xml.append(self.indent + '<' + self.name + '>' + self.value)
             else:
-                result_xml.append(self.indent + '<' + self.name + get_xml_atts(self.children) + '>' + self.value + '</' + self.name + '>')
+                result_xml.append(self.indent + '<' + self.name + get_xml_atts(self.children) + '>' + self.value)
         elif self.name:
             if not [x.name for x in self.children if xtag_re.match(x.name)]:
                 result_xml.append(self.indent + '<' + self.name + '>')
@@ -727,6 +727,11 @@ class nvh:
 
         for c in self.children:
             c.dump_xml(result_xml)
+        if self.name:
+            if self.children:
+                result_xml.append(self.indent + '</' + self.name + '>')
+            else:
+                result_xml[-1] += '</' + self.name + '>'
 
     def clean_duplicate_nodes(self, out=sys.stderr, reported=set()):
         curr_pos = 0
