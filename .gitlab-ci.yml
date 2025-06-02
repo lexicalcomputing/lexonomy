@@ -12,7 +12,7 @@ dist beta:
         - VERSION=$(git describe --tags --always)
         - VERSION=${VERSION:5}
         - rpmdev-bumpspec --new=${VERSION} lexonomy-beta.spec
-        - mock --verbose -r /etc/mock/ske/fedora-32-x86_64.cfg --buildsrpm --spec lexonomy-beta.spec --sources . --resultdir .
+        - mock --verbose -r /etc/mock/ske/fedora-40-x86_64.cfg --buildsrpm --spec lexonomy-beta.spec --sources . --resultdir .
     artifacts:
         paths:
             - "*.src.rpm"
@@ -32,17 +32,17 @@ build f32:
         paths:
         - "*fc32*.rpm"
 
-build f36:
+build f40:
     tags:
         - mock
     stage: build
     script:
-        - mock --verbose -r /etc/mock/ske/fedora-36-x86_64.cfg --rebuild lexonomy-*.src.rpm --resultdir .
+        - mock --verbose -r /etc/mock/ske/fedora-40-x86_64.cfg --rebuild lexonomy-*.src.rpm --resultdir .
     except:
         - branches
     artifacts:
         paths:
-        - "*fc36*.rpm"
+        - "*fc40*.rpm"
 
 update repo:
     tags:
@@ -53,13 +53,12 @@ update repo:
         - createrepo_c --update /rpm_packages/f32_src
         - mv *.fc32.*.rpm /rpm_packages/f32/
         - createrepo_c --update /rpm_packages/f32
-        - mv *.fc36.src.rpm /rpm_packages/f36_src/
-        - createrepo_c --update /rpm_packages/f36_src
-        - mv *.fc36.*.rpm /rpm_packages/f36/
-        - createrepo_c --update /rpm_packages/f36
+        - mv *.fc40.src.rpm /rpm_packages/fc40_src/
+        - createrepo_c --update /rpm_packages/fc40_src
+        - mv *.fc40.*.rpm /rpm_packages/fc40/
+        - createrepo_c --update /rpm_packages/fc40
     except:
         - branches
     dependencies:
         - build f32
-        - build f36
-
+        - build f40
