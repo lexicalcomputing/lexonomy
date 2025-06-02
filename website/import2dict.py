@@ -314,15 +314,21 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
         # =============
         structure = {"root": entry_element, "nvhSchema": schema_string, 'mode': 'custom', 'tab': 'visual'}
         if purge_all:
+            # Replace if exists
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
         else:
             c0 = db.execute("SELECT json FROM configs WHERE id=?", ("structure",))
             r0 = c0.fetchone()
             if r0:
-                if sorted(schema_list) != sorted(json.loads(r0['json'])["nvhSchema"].split('\n')):
-                    log_warning('Old structure is not compatible with new data. Use "Purge All" option')
-
+                new_entries_paths = set(nvh.schema_keys(schema_string)) - set(nvh.schema_keys(json.loads(r0['json'])["nvhSchema"]))
+                if new_entries_paths:
+                    log_err(f'STRUCTURE_INTEGRITY_FAIL: {list(new_entries_paths)}')
+                    log_info("IMPORTED (%s): PER:0, COUNT:0/0"  % (dict_id,))
+                    log_end("IMPORT")
+                    db.close()
+                    sys.exit(0)
+            # Skip if exists
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("structure", json.dumps(structure)))
             db.execute("INSERT OR IGNORE INTO configs (id, json) VALUES (?, ?)", ("name_mapping", json.dumps(name_mapping)))
 
@@ -381,7 +387,6 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             if entries_inserted >= max_import:
                 break
 
-            action = "create"
             entry_key = ops.getEntryHeadword(entry, entry_element)
             searchTitle = ops.getEntryTitle(entry, configs["titling"], True)
             title = "<span class='headword'>" + entry_key + "</span>"
@@ -395,7 +400,7 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
             if not r:
                 entryID += 1
                 entries_insert_payload.append((entryID, entry_str, entry_json, needs_refac, needs_resave, 0, title, entry_key))
-                history_payload.append((entryID, action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
+                history_payload.append((entryID, "create", str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_payload.append((entryID, searchTitle, 1))
                 if tl_node_contains_pos:
                     searchTitle_no_pos = cut_pos_re.match(searchTitle).group(1)
@@ -406,9 +411,8 @@ def import_data(dbname, filename, email='IMPORT@LEXONOMY', entry_element='', tit
 
             # Updating existing
             else:
-                action = "update"
                 entries_update_payload.append((entry_str, entry_json, needs_refac, needs_resave, 0, title, entry_key, r["id"]))
-                history_payload.append((r["id"], action, str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
+                history_payload.append((r["id"], "update", str(datetime.datetime.utcnow()), email, entry_str, json.dumps(historiography)))
                 searchables_delete_payload.append((r['id'], 1))
                 searchables_payload.append((r["id"], searchTitle, 1))
                 if tl_node_contains_pos:
