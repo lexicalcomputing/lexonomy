@@ -6,6 +6,7 @@
         "direction": "ltr"
     },
     "structure": {
+        "root": "entry",
         "mode": "custom",
         "tab": "visual",
         "DMLexSettings": {
