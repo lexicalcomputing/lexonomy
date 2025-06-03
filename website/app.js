@@ -56,6 +56,7 @@ import dict_config_formatting from "./riot/nvh-formatting-editor/dict-config-for
 import dict_config_gapi from "./riot/dict-config-gapi.riot"
 import dict_config_ident from "./riot/dict-config-ident.riot"
 import dict_config_limits from "./riot/dict-config-limits.riot"
+import dict_config_progress from "./riot/dict-config-progress.riot"
 import dict_config_publico from "./riot/dict-config-publico.riot"
 import dict_config_searchability from "./riot/dict-config-searchability.riot"
 import dict_config_ske from "./riot/dict-config-ske.riot"
@@ -70,7 +71,10 @@ import dict_download from "./riot/dict-download.riot"
 import dict_edit from "./riot/dict-edit.riot"
 import dict_entry_filter from "./riot/dict-entry-filter.riot"
 import dict_favorite_toggle from "./riot/dict-favorite-toggle.riot"
+import dict_header from "./riot/dict-header.riot"
+import dict_last_edited from "./riot/dict-last-edited.riot"
 import dict_nav from "./riot/dict-nav.riot"
+import dict_progress from "./riot/dict-progress.riot"
 import dict_public from "./riot/dict-public.riot"
 import dict_upload from "./riot/dict-upload.riot"
 import dictionaries from "./riot/dictionaries.riot"
@@ -95,6 +99,7 @@ import example_video_item from "./riot/nvh-formatting-editor/example-section/exa
 import feedback_dialog from "./riot/feedback-dialog.riot"
 import forgot from "./riot/forgot.riot"
 import forgot_password from "./riot/forgot-password.riot"
+import language_select from "./riot/language-select.riot"
 import layout_container from "./riot/nvh-formatting-editor/edit-layout-section/layout-container.riot"
 import lazy_dropdown from "./riot/lazy-dropdown.riot"
 import loading_overlay from "./riot/loading-overlay.riot"
@@ -175,6 +180,7 @@ riot_register("dict-config-formatting", dict_config_formatting)
 riot_register("dict-config-gapi", dict_config_gapi)
 riot_register("dict-config-ident", dict_config_ident)
 riot_register("dict-config-limits", dict_config_limits)
+riot_register("dict-config-progress", dict_config_progress)
 riot_register("dict-config-publico", dict_config_publico)
 riot_register("dict-config-searchability", dict_config_searchability)
 riot_register("dict-config-ske", dict_config_ske)
@@ -189,7 +195,10 @@ riot_register("dict-download", dict_download)
 riot_register("dict-edit", dict_edit)
 riot_register("dict-entry-filter", dict_entry_filter)
 riot_register("dict-favorite-toggle", dict_favorite_toggle)
+riot_register("dict-header", dict_header)
+riot_register("dict-last-edited", dict_last_edited)
 riot_register("dict-nav", dict_nav)
+riot_register("dict-progress", dict_progress)
 riot_register("dict-public", dict_public)
 riot_register("dict-upload", dict_upload)
 riot_register("dictionaries", dictionaries)
@@ -214,6 +223,7 @@ riot_register("example-video-item", example_video_item)
 riot_register("feedback-dialog", feedback_dialog)
 riot_register("forgot", forgot)
 riot_register("forgot-password", forgot_password)
+riot_register("language-select", language_select)
 riot_register("layout-container", layout_container)
 riot_register("lazy-dropdown", lazy_dropdown)
 riot_register("loading-overlay", loading_overlay)
