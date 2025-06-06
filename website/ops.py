@@ -630,9 +630,11 @@ def updateUserApiKey(user, apiKey):
 def sendApiKeyToSke(user, apiKey):
     if user["ske_username"] and user["ske_apiKey"]:
         data = json.dumps({"options": {"settings_lexonomyApiKey": apiKey, "settings_lexonomyEmail": user["email"].lower()}})
-        queryData = urllib.parse.urlencode({ "username": user["ske_username"], "api_key": user["ske_apiKey"], "json": data })
+        queryData = urllib.parse.urlencode({"json": data})
         url = "https://api.sketchengine.eu/bonito/run.cgi/set_user_options?" + queryData
-        res = urllib.request.urlopen(url)
+        req = urllib.request.Request(url)
+        req.add_header('Authorization', 'Bearer ' + user["ske_apiKey"])
+        urllib.request.urlopen(req)
     return True
 
 def prepareApiKeyForSke(email):
