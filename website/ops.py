@@ -1607,7 +1607,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         logfile_f = open(os.path.join(save_path, "import_progress.log"), "w")
 
     config = {'styles': {},
-              'editting': {},
+              'editing': {},
               'structure': {}}
 
     has_config = False
@@ -1616,18 +1616,18 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         config = json.loads(input_files.get('configs.json').read().decode('utf-8'))
         if not config.get('styles'):
             config['styles'] = {}
-        if not config.get('editting'):
-            config['editting'] = {}
+        if not config.get('editing'):
+            config['editing'] = {}
         if not config.get('structure'):
             config['structure'] = {}
         has_config = True
 
     if input_files.get('custom_editor.css'):
-        config['editting']['css'] =  input_files.get('custom_editor.css').read().decode('utf-8')
+        config['editing']['css'] =  input_files.get('custom_editor.css').read().decode('utf-8')
         has_config = True
 
     if input_files.get('custom_editor.js'):
-        config['editting']['js'] =  input_files.get('custom_editor.js').read().decode('utf-8')
+        config['editing']['js'] =  input_files.get('custom_editor.js').read().decode('utf-8')
         has_config = True
 
     if input_files.get('structure.nvh'):
