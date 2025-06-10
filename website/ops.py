@@ -1658,7 +1658,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
         import warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            subprocess.Popen([currdir + "/import2dict.py", dbpath, entries_path, email, hwNode] + params,
+            subprocess.Popen([currdir + "/import2dict.py", dbpath, entries_path, email, hwNode or ''] + params,
                             stdout=logfile_f, stderr=logfile_f, start_new_session=True, close_fds=True)
         logfile_f.close()
     else:
