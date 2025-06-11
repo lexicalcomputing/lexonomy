@@ -18,8 +18,7 @@
    <div class={getLayoutContainerInsideWrapperCssClass(props.schema)}
       style="background-color: {getBackgroundColor()};
          border: 2px solid {getBorderColor()}">
-      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema)
-            && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
+      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema) && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
          onclick={() => nvhFormattingEditor.addElement(0, props.schema, null)}
          onmouseenter={onAdderMouseEnter}
          onmouseleave={onAdderMouseLeave}
@@ -41,8 +40,7 @@
             isBaseLevel={false}
             index={index}
             canHaveAdders={nvhFormattingEditor.canHaveAdders(props.schema.content.areaFullName, child)}/>
-         <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema)
-               && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
+         <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema) && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
             onclick={() => nvhFormattingEditor.addElement(index + 1, props.schema, null)}
             onmouseenter={onAdderMouseEnter}
             onmouseleave={onAdderMouseLeave}

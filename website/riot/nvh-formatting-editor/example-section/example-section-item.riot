@@ -78,8 +78,7 @@
             bulletIndex={props.bulletIndex}
             haveSiblings={props.haveSiblings}
             maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
-         <example-section-item if={props.schema.content.area === childSchema.content.area
-               && childSchema.content.name /*render parent label*/}
+         <example-section-item if={props.schema.content.area === childSchema.content.area && childSchema.content.name /*render parent label*/}
             onclick={() => onExampleItemClick(childSchema, props.schema)}
             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
             onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema, props.schema)}
@@ -91,8 +90,7 @@
             haveSiblings={props.haveSiblings}
             maxPossibleWidth={getDecreaseMaxPossibleWidth()}/>
          <template each={(childEntry, index) in nvhFormattingEditor.getValidEntryChildren(props.entry, [], childSchema.content.fullName)}
-            if={props.schema.content.area !== childSchema.content.area
-               && childSchema.content.name}>
+            if={props.schema.content.area !== childSchema.content.area && childSchema.content.name}>
          <example-section-item onclick={() => onExampleItemClick(childSchema, props.schema)}
             onmouseenter={(event) => onExampleItemMouseEnter(event, childSchema)}
             onmouseleave={(event) => onExampleItemMouseLeave(event, childSchema, props.schema)}
