@@ -135,7 +135,7 @@ def createProject(project_id, project_name, project_description, project_annotat
     all_stages = [s['stage'] for s in project_info['workflow']]
     refresh_selected_stages(project_id, all_stages)
 
-    return {'success': True , "projectID": project_id, 'new_reated_users': json.dumps(new_created_users)}
+    return {'success': True , "projectID": project_id, 'new_created_users': json.dumps(new_created_users)}
 
 
 def editProject(project_id, project_name, project_description, project_annotators, project_managers, user):
@@ -149,7 +149,7 @@ def editProject(project_id, project_name, project_description, project_annotator
     for role, annotator_list in project_annotators.items():
         new_created_users += add_project_staff(conn, project_id, project_name, annotator_list, role, user)
     new_created_users += add_project_staff(conn, project_id, project_name, project_managers, 'manager', user)
-    return {"success": True, "projectID": project_name, 'new_reated_users': json.dumps(new_created_users)}
+    return {"success": True, "projectID": project_name, 'new_created_users': json.dumps(new_created_users)}
 
 
 def update_project_source_dict(project_id, src_dict_id):
