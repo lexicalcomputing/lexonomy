@@ -1176,7 +1176,8 @@ def pushapi():
     data = json.loads(request.body.getvalue().decode('utf-8'))
     user = ops.verifyUserApiKey(data["email"], data["apikey"])
     if not user["valid"]:
-        return {"success": False}
+        response.status = 403
+        return {"success": False, "error": "Invalid user or API key"}
     else:
         if data["command"] == "makeDict":
             dictID = ops.suggestDictId()
@@ -1192,17 +1193,19 @@ def pushapi():
             configs = ops.readDictConfigs(dictDB)
             dictAccess = configs["users"].get(user["email"])
             if dictAccess and dictAccess["canUpload"]:
-                err, import_message, upload_file_path = ops.importfile(data["dictID"], data["email"], hwNode="entry", deduplicate=False,
-                                                               input_files={'entries.nvh': io.BytesIO(data["payload"].encode("utf-8"))}, titling_node="headword")
-                return {'url': data["dictID"], 'success': True if not err else False, 'upload_error': err,
-                    'upload_file_path': upload_file_path, 'upload_message': import_message, 'error': ''}
+                err, import_message, _ = ops.importfile(data["dictID"], data["email"], hwNode="entry", deduplicate=False,
+                                                        input_files={'entries.nvh': io.BytesIO(data["payload"].encode("utf-8"))}, titling_node="headword")
+                if err:
+                    return {'success': False, 'error': err}
+                return {'success': True, 'url': data["dictID"], 'upload_message': import_message}
             else:
                 return {"success": False, 'error': 'User not authorized to perform this operation on the given dictionary'}
         elif data["command"] == "listDicts":
             dicts = ops.getDictsByUser(user["email"])
             return {"entries": dicts, "success": True}
         else:
-            return {"success": False}
+            response.status = 400
+            return {"success": False, "error": "Invalid command"}
 
 @get(siteconfig["rootPath"]+"publicdicts.json")
 def publicdicts():
