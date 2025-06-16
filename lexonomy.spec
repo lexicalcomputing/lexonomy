@@ -30,6 +30,7 @@ Requires:	python3-paste
 Requires:	python3-pyicu
 Requires:	python3-requests
 Requires:	python3-bottle
+Requires:	python3-pdfkit
 Requires:	sqlite >= 3.40
 
 
