@@ -7,7 +7,7 @@
          <input id="userLimit"
                type="number"
                min=1
-               oninput={onUserLimitInput}
+               oninput={onLimitInput.bind(this, "users")}
                value={state.limits.users || ""}/>
          <label class="noWrap">Maximum number of users</label>
          <span if={state.limits.users && state.limits.users < state.userCount}
@@ -18,7 +18,7 @@
          <input id="entryLimit"
                type="number"
                min=1
-               oninput={onEntryLimitInput}
+               oninput={onLimitInput.bind(this, "entries")}
                value={state.limits.entries || ""}/>
          <label class="noWrap">Maximum number of entries</label>
          <span if={state.limits.entries && state.limits.entries < dictData.dictionaryList.length}
@@ -26,7 +26,7 @@
       </div>
 
       <dict-config-buttons save-data={saveData}
-            disabled={!state.limits.entries || state.limits.entries < 1 || (state.limits.users !== "" && state.limits.users < 1)}/>
+            disabled={isSaveDisabled()}/>
    </template>
 
 
@@ -53,6 +53,8 @@
                   .done(response => {
                      if(response.content && response.content.limits){
                         this.state.limits = Object.assign({users: "", entries: 5000}, response.content.limits)
+                        this.state.limits.entries = this.state.limits.entries || ""
+                        this.state.limits.users = this.state.limits.users || ""
                      }
                   })
                   .always(() => {
@@ -62,18 +64,25 @@
 
          saveData(){
             this.update({isSaving: true})
-            this.store.updateDictionarySettings({limits: this.state.limits})
+            let limits = {}
+            if(this.state.limits.entries){
+               limits.entries = this.state.limits.entries * 1
+            }
+            if(this.state.limits.users){
+               limits.users = this.state.limits.users * 1
+            }
+            this.store.updateDictionarySettings({limits: limits})
                   .always(() => this.update({isSaving: false}))
          },
 
-         onUserLimitInput(evt){
-            this.state.limits.users = evt.target.value
+         onLimitInput(key, evt){
+            this.state.limits[key] = evt.target.value || ""
             this.update()
          },
 
-         onEntryLimitInput(evt){
-            this.state.limits.entries = evt.target.value
-            this.update()
+         isSaveDisabled(){
+            return (this.state.limits.entries !== "" && (this.state.limits.entries * 1 < 1))
+                  || (this.state.limits.users !== "" && (this.state.limits.users * 1 < 1))
          }
       }
    </script>
