@@ -3,44 +3,67 @@
 # Author: Marek Medved, marek.medved@sketchengine.eu, Lexical Computing CZ
 import os
 import sys
+import stat
 import json
 import random
 import string
+import shutil
 import sqlite3
 import hashlib
 
 sys.path.insert(0, os.path.split(os.path.dirname(os.path.abspath(sys.argv[0])))[0])
-import ops
-
 main_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-siteconfig_file_path = os.path.join(main_dir, "siteconfig.json")
-siteconfig = json.load(open(siteconfig_file_path, encoding="utf-8"))
-lexonomy_db_file = os.path.join(siteconfig["dataDir"], 'lexonomy.sqlite')
-Xref_db_file = os.path.join(siteconfig["dataDir"], 'crossref.sqlite')
-dicts_path = os.path.join(siteconfig["dataDir"], 'dicts')
+
+
+def to_absolute(path_to_resolve):
+    if os.path.isabs(path_to_resolve):
+        abs_path = os.path.normpath(path_to_resolve)
+    else:
+        abs_path = os.path.normpath(os.path.join(main_dir, path_to_resolve))
+    return abs_path
+
+# copy siteconfig.json/config.js from template if needed
+if not os.path.exists(os.path.join(main_dir, "config.js")):
+    shutil.copy(os.path.join(main_dir, "config.js.template"), os.path.join(main_dir, "config.js"))
+if not os.path.exists(os.path.join(main_dir, "siteconfig.json")):
+    shutil.copy(os.path.join(main_dir, "siteconfig.json.template"), os.path.join(main_dir, "siteconfig.json"))
+siteconfig = json.load(open(os.path.join(main_dir, "siteconfig.json"), encoding="utf-8"))
+
+# paths and files
+data_dir = to_absolute(siteconfig.get("dataDir", ''))
+dicts_path = os.path.join(data_dir, 'dicts')
+lexonomy_db_file = os.path.join(data_dir, 'lexonomy.sqlite')
+Xref_db_file = os.path.join(data_dir, 'crossref.sqlite')
+dbSchemaFile = to_absolute(siteconfig.get("dbSchemaFile", ''))
+dbXrefSchemaFile = to_absolute(siteconfig.get("dbXrefSchemaFile", ''))
+
+os.makedirs(data_dir, exist_ok=True)
+os.chmod(data_dir, stat.S_IRWXU | stat.S_IRWXG)
+os.makedirs(dicts_path, exist_ok=True)
+os.makedirs(os.path.join(data_dir, 'uploads'), exist_ok=True)
+os.makedirs(os.path.join(data_dir, 'sqlite_tmp'), exist_ok=True)
+os.makedirs(os.path.join(data_dir, 'projects'), exist_ok=True)
 
 
 def init_main_db():
+    import ops
     # ============================================
     # MAIN LEXONOMY DATABASE SETUP
     # ============================================
     conn = sqlite3.connect(lexonomy_db_file)
     print("Connected to database: %s" % lexonomy_db_file)
 
-    if siteconfig.get("dbSchemaFile", False):
-        schema = open(siteconfig["dbSchemaFile"], 'r').read()
-        try:
-            conn.executescript(schema)
-            conn.execute('INSERT INTO configs (id, value) VALUES (?,?)', ('version', ops.get_version()))
-            conn.commit()
-            print("Initialized %s with: %s" % (lexonomy_db_file, siteconfig["dbSchemaFile"]))
-        except sqlite3.Error as e:
-            print("Problem importing database schema. Likely the DB has already been created. Database error: %s" % e)
-    else:
-        print("Unknown database schema, please add dbSchemaFile to siteconfig.json")
+    schema = open(dbSchemaFile, 'r').read()
+    try:
+        conn.executescript(schema)
+        conn.execute('INSERT INTO configs (id, value) VALUES (?,?)', ('version', ops.get_version()))
+        conn.commit()
+        print("Initialized %s with: %s" % (lexonomy_db_file, dbSchemaFile))
+    except sqlite3.Error as e:
+        print("Problem importing database schema. Likely the DB has already been created. Database error: %s" % e)
 
     # Add admin users to user database
-    if siteconfig.get('admins', False):
+    if siteconfig.get('admins'):
         for user in siteconfig["admins"]:
             password = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(8))
             passhash = hashlib.sha1(password.encode("utf-8")).hexdigest();
@@ -59,16 +82,13 @@ def init_main_db():
     connXref = sqlite3.connect(Xref_db_file)
     print("Connected to database: %s" % Xref_db_file)
 
-    if siteconfig.get("dbXrefSchemaFile", False):
-        schema = open(siteconfig["dbXrefSchemaFile"], 'r').read()
-        try:
-            connXref.executescript(schema)
-            connXref.commit()
-            print("Initialized %s with: %s" % (Xref_db_file, siteconfig["dbXrefSchemaFile"]))
-        except sqlite3.Error as e:
-            print("Problem importing database schema. Likely the DB has already been created. Database error: %s" % e)
-    else:
-        print("Unknown database schema, please add dbXrefSchemaFile to siteconfig.json")
+    schema = open(dbXrefSchemaFile, 'r').read()
+    try:
+        connXref.executescript(schema)
+        connXref.commit()
+        print("Initialized %s with: %s" % (Xref_db_file, dbXrefSchemaFile))
+    except sqlite3.Error as e:
+        print("Problem importing database schema. Likely the DB has already been created. Database error: %s" % e)
 
     connXref.close()
 
@@ -145,7 +165,7 @@ def update_main_db():
     # main
     # ==========================================
     print("Updating main db ...")
-    conn = get_db(os.path.join(dicts_path, lexonomy_db_file))
+    conn = get_db(lexonomy_db_file)
 
     try:
         r = conn.execute("SELECT value FROM configs WHERE id='version'").fetchone()
@@ -176,6 +196,7 @@ def update_main_db():
 
 
 def update_dict_db():
+    import ops
     #Updates all json entry parts to new format with paths in names -> tag 2.153
     def update_json_2_153(conn):
         update_payload = []
@@ -345,6 +366,14 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='Script for initialization/updating lexonomy databases during install and deploy')
     parser.parse_args()
+
+    print('Init using files:')
+    print(f'\tsiteconfig: {os.path.join(main_dir, "siteconfig.json")}')
+    print(f'\tlexonomy_db_file: "{lexonomy_db_file}"')
+    print(f'\tXref_db_file: "{Xref_db_file}"')
+    print(f'\tdicts_path: "{dicts_path}"')
+    print(f'\tdbSchemaFile: "{dbSchemaFile}"')
+    print(f'\tdbXrefSchemaFile: "{dbXrefSchemaFile}"')
 
     if not os.path.isfile(lexonomy_db_file) and not os.path.isfile(Xref_db_file):
         init_main_db()

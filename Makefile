@@ -10,7 +10,10 @@ SOURCE_WEBSITE=$(SOURCE_JS) $(addprefix website/, $(SOURCE_PY) $(SOURCE_CONF) $(
 INSTALL_WEBSITE=$(addprefix website/, $(INSTALL_JS) $(SOURCE_PY) $(SOURCE_CONF) $(SOURCE_WEBDIRS)) website/site.webmanifest website/index.html
 SOURCE_DOCS=AUTHORS INSTALL.md LICENSE README.md Makefile
 
-build: website/bundle.js website/version.txt
+all: website/bundle.js website/version.txt
+	./website/adminscripts/init_or_update.py
+
+build: website/bundle.js
 
 website/bundle.js: $(SOURCE_RIOT)
 	make -C website
@@ -20,22 +23,11 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 	cp -rp --parents $^ $(DESTDIR)$(INSTALLDIR)/
 
 deploy:
-	mkdir -p $(DEPLOYDIR)/data || :
 	cp -r website $(DEPLOYDIR)/
-
-	# If new instance create siteconfig.json and config.js
-	@if [ ! -f "$(DEPLOYDIR)/website/siteconfig.json" ]; then\
-		cat website/siteconfig.json.template | sed "s#%{path}#$(DEPLOYDIR)/website#g" > $(DEPLOYDIR)/website/siteconfig.json; \
-		cp website/config.js.template $(DEPLOYDIR)/website/config.js; \
-	fi
-
-	# Init or update DB
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
-	chmod -R g+rwX $(DEPLOYDIR)/data || :
-	chmod -R g+w $(DEPLOYDIR)/website || :
 
 website/version.txt:
-	git describe --always > $@
+	git describe --tags --abbrev=0 | sed "s/beta-//g" > $@
 
 dist-gzip: $(SOURCE_WEBSITE) $(SOURCE_DOCS) Makefile website/Makefile website/version.txt
 	tar czvf lexonomy-$(DIST_VERSION).tar.gz --transform 's,^,lexonomy-$(DIST_VERSION)/,' $^

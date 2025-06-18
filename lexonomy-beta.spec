@@ -38,7 +38,7 @@ Lexonomy is a free tool for writing and publishing dictionaries and other dictio
 %setup -n lexonomy-beta-%{version}
 
 %build
-make
+make website/bundle.js
 
 %install
 make DESTDIR=$RPM_BUILD_ROOT INSTALLDIR=/usr/share/lexonomy-beta/ install
