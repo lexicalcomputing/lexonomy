@@ -1853,7 +1853,7 @@ def updateDictConfig(dictDB, dictID, configID, content):
             old_strucure_json = json.loads(dictDB.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
             if old_strucure_json and old_strucure_json.get('nvhSchema', False):
                 value['nvhSchema'] = old_strucure_json['nvhSchema']
-        if value.get('root', False):
+        if not value.get('root', False):
             value['root'] = nvh.schema_get_root_name(content['nvhSchema'])
 
     elif configID == 'progress_tracking':
