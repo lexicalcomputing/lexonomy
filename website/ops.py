@@ -242,8 +242,10 @@ def verifyLoginAndDictAccess(email, sessionkey, dictDB):
 
 def verifyLoginAndProjectAccess(email, sessionkey):
     ret = verifyLogin(email, sessionkey)
-    if ret["loggedin"] == False or not ret["isAdmin"]:
-        return {"loggedin": ret["loggedin"], "email": email, "isAdmin": False}
+    if not ret["loggedin"]:
+        return {"loggedin": ret["loggedin"], "email": email}, {'manager_of': [], 'annotator_of': []}
+    elif not ret["isAdmin"] and not ret['isProjectManager']:
+        return {"loggedin": ret["loggedin"], "email": email, "isAdmin": False, 'isProjectManager': False}, {'manager_of': [], 'annotator_of': []}
 
     configs = {'manager_of': [], 'annotator_of': []}
     conn = getMainDB()
