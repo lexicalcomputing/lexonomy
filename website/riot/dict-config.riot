@@ -307,7 +307,7 @@
             let data = {}
             let toImport = this.state.configsInFile.map(configSection => configSection.configs)
                   .flat()
-                  .filter(config =>  config.name)
+                  .filter(config => this.state.configToImport.includes(config.name))
                   .forEach(config => data[config.name] = config.data)
             this.store.importDictionaryConfiguration(data)
                   .always(() => {
