@@ -24,7 +24,7 @@ def update_4_0(dictDB):
                                 "children": [],
                                 "orientation": "column",
                                 "type": "layout-container"}
-    
+
     def transform_old_styling(old_node_styling):
         def update_styles(old_key, new_key, value_mapping, styles_subpart, new_node_formatting):
             if value_mapping:
@@ -32,7 +32,7 @@ def update_4_0(dictDB):
                     value_mapping[old_node_styling[old_key]]
                 except KeyError:
                     raise Exception(f'ERROR: Value mapping for {old_node_styling[old_key]} not present in {old_node_styling}!')
-                
+
                 if new_node_formatting.get(styles_subpart):
                     if isinstance(value_mapping[old_node_styling[old_key]], dict):
                         for key, value in value_mapping[old_node_styling[old_key]].items():
@@ -46,7 +46,7 @@ def update_4_0(dictDB):
                         new_node_formatting[styles_subpart] = {new_key: value_mapping[old_node_styling[old_key]]}
             else:
                 # if there is no mapping use original value
-                if new_node_formatting.get(styles_subpart):                    
+                if new_node_formatting.get(styles_subpart):
                     new_node_formatting[styles_subpart][new_key] = old_node_styling[old_key]
                 else:
                     new_node_formatting[styles_subpart] = {new_key: old_node_styling[old_key]}
@@ -56,7 +56,7 @@ def update_4_0(dictDB):
         # TEXTSIZE
         # ================
         if old_node_styling.get('textsize'):
-            value_mapping = {1: 12, 2: 16, 3: 19, 
+            value_mapping = {1: 12, 2: 16, 3: 19,
                              4: 24, 5: 32, 6: 40}
             update_styles('textsize', 'font-size', value_mapping, 'element', new_node_formatting)
         # ================
@@ -160,54 +160,65 @@ def update_4_0(dictDB):
         # ================
         if old_node_styling.get('label'):
             update_styles('label', 'label-text-value', None, 'label', new_node_formatting)
-        
+
         return new_node_formatting
-        
-    def get_recur_children(node_name, structure_elements, formatting, hidden_elements):
+
+    def get_recur_children(node_path, structure_elements, formatting, hidden_elements):
+        node_name = node_path.rsplit('.', 1)[-1]
+        children = structure_elements[node_path].get('children', [])
+        styles = transform_old_styling(formatting.get('elements', {}).get(node_path, {}))
+        styles.setdefault('element', {})
         new_node_formatting = copy.deepcopy(new_formatting_structure)
         new_node_formatting['content']['name'] = node_name
-        new_node_formatting['content']['path'] = node_name
-        new_node_formatting['styles'] = transform_old_styling(formatting.get('elements', {}).get(node_name, {}))
-            
-        for child_name in structure_elements[node_name].get('children', []):
-            # ====================
-            # MARKUP FROM CHILDREN
-            if structure_elements[child_name].get('type', 'string') == 'markup':
-                if new_node_formatting['styles'].get('markup'):
-                    new_node_formatting['styles']['markup'][child_name] = transform_old_styling(formatting.get('elements', {}).get(child_name, {})).get('element')
+        new_node_formatting['content']['path'] = node_path
+
+        if not children:
+            new_node_formatting['styles'] = styles
+        else:
+            # element has children so it is an element group. We need to add an actual element value and its children
+            value_node = copy.deepcopy(new_formatting_structure)
+
+            value_node['styles'] = styles
+            new_node_formatting['styles'].setdefault('element', {})
+            # styles which should be applied to the group not the actual element (e.g. sense group, not sense)
+            for key in ["border", "border-color", "border-width", "border-radius", "background-color"]:
+                if key in styles['element']:
+                    new_node_formatting['styles']['element'][key] = styles['element'][key]
+                    del value_node['styles']['element'][key]
+            new_node_formatting['children'].append(value_node)
+            value_node['content']['name'] = node_name
+            value_node['content']['path'] = node_path
+
+            for child_path in children:
+                # ====================
+                # MARKUP FROM CHILDREN
+                if structure_elements[child_path].get('type', 'string') == 'markup':
+                    value_node['styles'].setdefault('markup', {})
+                    value_node['styles']['markup'][child_path] = transform_old_styling(formatting.get('elements', {}).get(child_path, {})).get('element')
+                # ====================
                 else:
-                    new_node_formatting['styles']['markup'] = {child_name: transform_old_styling(formatting.get('elements', {}).get(child_name, {})).get('element')}
-            # ====================
-            else:
-                if child_name not in hidden_elements:
-                    new_node_formatting['children'].append(get_recur_children(child_name, structure_elements, formatting, hidden_elements))
+                    if child_path not in hidden_elements:
+                        new_node_formatting['children'].append(get_recur_children(child_path, structure_elements, formatting, hidden_elements))
         return new_node_formatting
 
     def update_formatting(structure_elements, root, formatting):
         hidden_elements = [key for key, value in formatting.get('elements', {}).items() if value.get("hidden", False) == True]
 
-        new_node_formatting = copy.deepcopy(new_formatting_structure)
-        new_node_formatting['content']['name'] = root
-        new_node_formatting['content']['path'] = root
-        new_node_formatting['styles'] = transform_old_styling(formatting.get('elements', {}).get(root, {}))
+        return get_recur_children(root, structure_elements, formatting, hidden_elements)
 
-        for ch_name in structure_elements[root].get('children', []):
-            if ch_name not in hidden_elements:
-                new_node_formatting['children'].append(get_recur_children(ch_name, structure_elements, formatting, hidden_elements))
 
-        return new_node_formatting
-    
     formatting = {}
     r = dictDB.execute("SELECT json FROM configs WHERE id='formatting'")
     if r:
         formatting = json.loads(r.fetchone()['json'])
 
     structure = json.loads(dictDB.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
-    desktop_layout = update_formatting(nvh.schema_nvh2json(structure['nvhSchema']), structure['root'], formatting)
+    root = nvh.schema_get_root_name(structure['nvhSchema'])
+    desktop_layout = update_formatting(nvh.schema_nvh2json(structure['nvhSchema']), root, formatting)
 
     other_layout = copy.deepcopy(new_formatting_structure)
-    other_layout['content']['name'] = structure['root']
-    other_layout['content']['path'] = structure['root']
+    other_layout['content']['name'] = root
+    other_layout['content']['path'] = root
 
     formatting['layout'] = {'desktop': {'schema': desktop_layout,
                                         "configured": True},
@@ -217,7 +228,7 @@ def update_4_0(dictDB):
                                         "configured": False},
                             'pdf': {'schema': other_layout,
                                         "configured": False}}
-    
+
     # del formatting['elements']        
     # dictDB.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ('formatting', json.dumps(formatting)))
     # dictDB.commit()
@@ -233,6 +244,6 @@ def main():
 
     dictDB = getDB(args.dict)
     update_4_0(dictDB)
-    
+
 if __name__ == '__main__':
     main()
