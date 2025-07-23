@@ -139,17 +139,21 @@ def update_4_0(dictDB):
         # ================
         # gutter
         # ================
-        if old_node_styling.get('gutter'):
-            value_mapping = {'sensenum0': {"bullet-use-numbers": True},
-                             'sensenum1': {"bullet-use-numbers": True},
-                             'sensenum2': {"bullet-use-numbers": True},
-                             'sensenum3': {"bullet-use-numbers": True},
-                             'disk': {"bullet-set-bullet": "•", "bullet-use-bullets": True, "bullet-use-numbers": False},
-                             'square': {"bullet-set-bullet": "■", "bullet-use-bullets": True, "bullet-use-numbers": False},
-                             'diamond': {"bullet-set-bullet": "◆", "bullet-use-bullets": True, "bullet-use-numbers": False},
-                             'arrow': {"bullet-set-bullet": "→", "bullet-use-bullets": True, "bullet-use-numbers": False}
-                             }
-            update_styles('gutter', '', value_mapping, 'bullet', new_node_formatting)
+        gutter = old_node_styling.get('gutter')
+        if gutter:
+            if gutter == "indent":
+                new_node_formatting["element"]["margin-left"] = "20"
+            else:
+                value_mapping = {'sensenum0': {"bullet-use-numbers": True},
+                                 'sensenum1': {"bullet-use-numbers": True},
+                                 'sensenum2': {"bullet-use-numbers": True},
+                                 'sensenum3': {"bullet-use-numbers": True},
+                                 'disk': {"bullet-set-bullet": "•", "bullet-use-bullets": True, "bullet-use-numbers": False},
+                                 'square': {"bullet-set-bullet": "■", "bullet-use-bullets": True, "bullet-use-numbers": False},
+                                 'diamond': {"bullet-set-bullet": "◆", "bullet-use-bullets": True, "bullet-use-numbers": False},
+                                 'arrow': {"bullet-set-bullet": "→", "bullet-use-bullets": True, "bullet-use-numbers": False}
+                                 }
+                update_styles('gutter', '', value_mapping, 'bullet', new_node_formatting)
         # ================
         # indentAll
         # ================
@@ -181,7 +185,7 @@ def update_4_0(dictDB):
             value_node['styles'] = styles
             new_node_formatting['styles'].setdefault('element', {})
             # styles which should be applied to the group not the actual element (e.g. sense group, not sense)
-            for key in ["border", "border-color", "border-width", "border-radius", "background-color"]:
+            for key in ["border", "border-color", "border-width", "border-radius", "background-color", "margin-left"]:
                 if key in styles['element']:
                     new_node_formatting['styles']['element'][key] = styles['element'][key]
                     del value_node['styles']['element'][key]
