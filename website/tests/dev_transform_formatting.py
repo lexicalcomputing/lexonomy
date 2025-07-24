@@ -22,8 +22,7 @@ def update_4_0(dictDB):
                                             "path": None},
                                 "styles": {},
                                 "children": [],
-                                "orientation": "column",
-                                "type": "layout-container"}
+                                "orientation": "column"}
 
     def transform_old_styling(old_node_styling):
         def update_styles(old_key, new_key, value_mapping, styles_subpart, new_node_formatting):
