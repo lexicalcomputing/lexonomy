@@ -35,7 +35,11 @@ def merge_files(files, include_header = True, header_note = '', separator = None
   for fname in files:
     if include_header: data += '/* ' + os.path.basename(fname) + (' ' + header_note if header_note else '') + ' */\n\n'
     with open(fname) as file:
-      data += file.read().strip().rstrip(separator) + (separator or '') + '\n\n'
+      filedata = file.read().strip().rstrip(separator)
+      data += filedata + \
+              ('\n' if separator and '//' in filedata[filedata.rfind('\n'):] else '') + \
+              (separator or '') + \
+              '\n\n'
   return data.rstrip().rstrip(separator)
 
 input_files = {}
