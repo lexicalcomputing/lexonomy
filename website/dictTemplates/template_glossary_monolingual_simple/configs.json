@@ -28,127 +28,190 @@
         }
     },
     "formatting": {
-        "entry": {
-            "weight": "bold",
-            "textsize": 6,
-            "colour": "blue"
-        },
-        "entry.homograph": {
-            "textsize": 3,
-            "weight": "bold",
-            "colour": "blue"
-        },
-        "entry.pos": {
-            "colour": "grey",
-            "weight": "bold",
-            "lineBreak": "after"
-        },
-        "entry.label": {
-            "hidden": true
-        },
-        "entry.pronunciation": {
-            "hideValue": true
-        },
-        "entry.pronunciation.transcription": {
-            "innerPunc": "squareBrackets",
-            "weight": "bold",
-            "textsize": 2
-        },
-        "entry.pronunciation.transcription.scheme": {
-            "colour": "grey",
-            "textsize": 1,
-            "hideValue": true,
-            "hidden": true
-        },
-        "entry.pronunciation.label": {
-            "textsize": 1,
-            "colour": "grey"
-        },
-        "entry.form": {
-            "lineBreak": "before"
-        },
-        "entry.form.tag": {
-            "textsize": 1,
-            "hidden": true
-        },
-        "entry.form.label": {
-            "textsize": 1,
-            "colour": "grey"
-        },
-        "entry.form.pronunciation": {
-            "hideValue": true
-        },
-        "entry.form.pronunciation.transcription": {
-            "innerPunc": "squareBrackets",
-            "weight": "bold"
-        },
-        "entry.form.pronunciation.transcription.scheme": {
-            "textsize": 1,
-            "colour": "grey",
-            "hidden": true
-        },
-        "entry.form.pronunciation.label": {
-            "lineBreak": "after"
-        },
-        "entry.sense": {
-            "weight": "bold",
-            "colour": "blue",
-            "textsize": 3,
-            "label": "\u27bd"
-        },
-        "entry.sense.label": {
-            "border": "thick",
-            "borderRadius": "large",
-            "background": "blue"
-        },
-        "entry.sense.definition": {
-            "textsize": 3
-        },
-        "entry.sense.definition.definitionType": {
-            "textsize": 1,
-            "borderRadius": "large",
-            "border": "solid",
-            "hidden": true
-        },
-        "entry.sense.example": {
-            "textsize": 2,
-            "colour": "blue",
-            "slant": "italic",
-            "label": "\u23f5",
-            "border": "solid"
-        },
-        "entry.sense.example.sourceIdentity": {
-            "hidden": true
-        },
-        "entry.sense.example.sourceElaboration": {
-            "hidden": true
-        },
-        "entry.sense.example.soundFile": {
-            "hidden": true
-        },
-        "entry.sense.example.label": {
-            "hidden": true
-        },
-        "elements": {
-            "entry": {
-                "textsize": 5,
-                "colour": "green"
+        "layout": {
+            "desktop": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {
+                        "element": {
+                            "font-size": "30"
+                        },
+                        "label": {},
+                        "bullet": {}
+                    },
+                    "children": [
+                        {
+                            "orientation": "row",
+                            "content": {
+                                "name": "",
+                                "path": null
+                            },
+                            "styles": {
+                                "element": {},
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": [
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "entry",
+                                        "path": "entry"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "color": "#471197",
+                                            "font-weight": "bold",
+                                            "font-size": "40"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                },
+                                {
+                                    "orientation": "row",
+                                    "content": {
+                                        "name": "domain",
+                                        "path": "entry.domain"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "font-size": "20",
+                                            "padding-right": "5",
+                                            "padding-left": "5",
+                                            "margin-left": "20",
+                                            "background-color": "#dacfea",
+                                            "color": "#471197",
+                                            "border-radius": "5"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                },
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "transcription",
+                                        "path": "entry.transcription"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "font-size": "20",
+                                            "leftPunc": "/",
+                                            "rightPunc": "/",
+                                            "margin-left": "20",
+                                            "color": "#7a7a7a"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "orientation": "column",
+                            "content": {
+                                "name": "definition",
+                                "path": "entry.definition"
+                            },
+                            "styles": {
+                                "element": {
+                                    "font-size": "26",
+                                    "margin-top": "10"
+                                },
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": []
+                        },
+                        {
+                            "orientation": "column",
+                            "content": {
+                                "name": "note",
+                                "path": "entry.note"
+                            },
+                            "styles": {
+                                "element": {
+                                    "margin-top": "10",
+                                    "padding-right": "5",
+                                    "padding-left": "5",
+                                    "font-size": "20",
+                                    "font-family": "",
+                                    "color": "#2b0a5b",
+                                    "border": "dotted",
+                                    "border-color": "#dacfea",
+                                    "border-width": "2",
+                                    "padding-top": "5",
+                                    "padding-bottom": "5"
+                                },
+                                "label": {
+                                    "show-label-before": true,
+                                    "label-text-value": "note",
+                                    "color": "#471197",
+                                    "background-color": "#dacfea",
+                                    "padding-right": "5",
+                                    "padding-left": "5",
+                                    "border-radius": "5",
+                                    "padding-top": "0",
+                                    "padding-bottom": "3",
+                                    "custom-css": "font-variant: small-caps;\n",
+                                    "font-family": ""
+                                },
+                                "bullet": {
+                                    "padding-right": "0",
+                                    "padding-left": "0",
+                                    "padding-top": "0",
+                                    "padding-bottom": "0"
+                                }
+                            },
+                            "children": []
+                        }
+                    ]
+                },
+                "configured": true
             },
-            "entry.domain": {
-                "background": "grey",
-                "colour": "blue",
-                "borderRadius": "large"
+            "tablet": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             },
-            "entry.transcription": {
-                "lineBreak": "both",
-                "outerPunc": "squareBrackets"
+            "mobile": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             },
-            "entry.definition": {
-                "textsize": 3
-            },
-            "entry.note": {
-                "colour": "grey",
-                "slant": "italic"
+            "pdf": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             }
         }
     },

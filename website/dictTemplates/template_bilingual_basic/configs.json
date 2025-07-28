@@ -35,197 +35,277 @@
         }
     },
     "formatting": {
-        "entry": {
-            "weight": "bold",
-            "textsize": 6,
-            "colour": "blue"
-        },
-        "entry.homograph": {
-            "textsize": 3,
-            "weight": "bold",
-            "colour": "blue"
-        },
-        "entry.pos": {
-            "colour": "grey",
-            "weight": "bold",
-            "lineBreak": "after"
-        },
-        "entry.label": {
-            "hidden": true
-        },
-        "entry.pronunciation": {
-            "hideValue": true
-        },
-        "entry.pronunciation.transcription": {
-            "innerPunc": "squareBrackets",
-            "weight": "bold",
-            "textsize": 2
-        },
-        "entry.pronunciation.transcription.scheme": {
-            "colour": "grey",
-            "textsize": 1,
-            "hideValue": true,
-            "hidden": true
-        },
-        "entry.pronunciation.label": {
-            "textsize": 1,
-            "colour": "grey"
-        },
-        "entry.form": {
-            "lineBreak": "before"
-        },
-        "entry.form.tag": {
-            "textsize": 1,
-            "hidden": true
-        },
-        "entry.form.label": {
-            "textsize": 1,
-            "colour": "grey"
-        },
-        "entry.form.pronunciation": {
-            "hideValue": true
-        },
-        "entry.form.pronunciation.transcription": {
-            "innerPunc": "squareBrackets",
-            "weight": "bold"
-        },
-        "entry.form.pronunciation.transcription.scheme": {
-            "textsize": 1,
-            "colour": "grey",
-            "hidden": true
-        },
-        "entry.form.pronunciation.label": {
-            "lineBreak": "after"
-        },
-        "entry.sense": {
-            "weight": "bold",
-            "colour": "blue",
-            "textsize": 3,
-            "label": "\u27bd"
-        },
-        "entry.sense.label": {
-            "border": "thick",
-            "borderRadius": "large",
-            "background": "blue"
-        },
-        "entry.sense.definition": {
-            "textsize": 3
-        },
-        "entry.sense.definition.definitionType": {
-            "textsize": 1,
-            "borderRadius": "large",
-            "border": "solid",
-            "hidden": true
-        },
-        "entry.sense.example": {
-            "textsize": 2,
-            "colour": "blue",
-            "slant": "italic",
-            "label": "\u23f5",
-            "border": "solid"
-        },
-        "entry.sense.example.sourceIdentity": {
-            "hidden": true
-        },
-        "entry.sense.example.sourceElaboration": {
-            "hidden": true
-        },
-        "entry.sense.example.soundFile": {
-            "hidden": true
-        },
-        "entry.sense.example.label": {
-            "hidden": true
-        },
-        "entry.sense.example.fr_exampleTranslation": {
-            "lineBreak": "after"
-        },
-        "entry.sense.example.fr_exampleTranslation.soundFile": {
-            "lineBreak": "after"
-        },
-        "entry.sense.example.fr_exampleTranslation.label": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_explanation": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.pos": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.label": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.pronunciation": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.pronunciation.transcription": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.pronunciation.transcription.scheme": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.pronunciation.label": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form.tag": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form.label": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form.pronunciation": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form.pronunciation.transcription": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form.pronunciation.transcription.scheme": {
-            "lineBreak": "after"
-        },
-        "entry.sense.fr_translation.form.pronunciation.label": {
-            "lineBreak": "after"
-        },
-        "elements": {
-            "entry": {
-                "textsize": 5,
-                "weight": "bold",
-                "colour": "red"
+        "layout": {
+            "desktop": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {
+                        "element": {
+                            "margin-left": 20,
+                            "font-family": "Garamond, serif",
+                            "font-size": "22"
+                        },
+                        "label": {},
+                        "bullet": {}
+                    },
+                    "children": [
+                        {
+                            "orientation": "row",
+                            "content": {
+                                "name": "",
+                                "path": null
+                            },
+                            "styles": {
+                                "element": {},
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": [
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "entry",
+                                        "path": "entry"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "font-family": "Trebuchet MS, sans-serif",
+                                            "font-weight": "bold",
+                                            "color": "#0063cc",
+                                            "font-size": "30"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                },
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "pos",
+                                        "path": "entry.pos"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "margin-left": "20",
+                                            "background-color": "#CCE0F5",
+                                            "padding-top": "0",
+                                            "padding-right": "5",
+                                            "padding-bottom": "0",
+                                            "padding-left": "5",
+                                            "border-radius": "10",
+                                            "font-size": "18",
+                                            "color": "#737373"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                },
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "transcription",
+                                        "path": "entry.transcription"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "margin-left": "20",
+                                            "font-family": "Georgia, serif",
+                                            "font-size": "16",
+                                            "leftPunc": "[",
+                                            "rightPunc": "]",
+                                            "color": "#000000"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "orientation": "column",
+                            "content": {
+                                "name": "sense",
+                                "path": "entry.sense"
+                            },
+                            "styles": {
+                                "element": {
+                                    "margin-left": "20"
+                                },
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": [
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "sense",
+                                        "path": "entry.sense"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "margin-left": "0"
+                                        },
+                                        "label": {},
+                                        "bullet": {
+                                            "bullet-use-bullets": true,
+                                            "bullet-set-bullet": "\ud83d\udd39",
+                                            "bullet-use-with-single-item": false
+                                        }
+                                    },
+                                    "children": []
+                                },
+                                {
+                                    "orientation": "row",
+                                    "content": {
+                                        "name": "translation",
+                                        "path": "entry.sense.translation"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "margin-left": "0"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": [
+                                        {
+                                            "orientation": "row",
+                                            "content": {
+                                                "name": "",
+                                                "path": null
+                                            },
+                                            "styles": {
+                                                "element": {},
+                                                "label": {},
+                                                "bullet": {}
+                                            },
+                                            "children": [
+                                                {
+                                                    "orientation": "column",
+                                                    "content": {
+                                                        "name": "translation",
+                                                        "path": "entry.sense.translation"
+                                                    },
+                                                    "styles": {
+                                                        "element": {
+                                                            "font-weight": "bold"
+                                                        },
+                                                        "label": {},
+                                                        "bullet": {}
+                                                    },
+                                                    "children": []
+                                                },
+                                                {
+                                                    "orientation": "column",
+                                                    "content": {
+                                                        "name": "gender",
+                                                        "path": "entry.sense.translation.gender"
+                                                    },
+                                                    "styles": {
+                                                        "element": {
+                                                            "margin-left": "20",
+                                                            "font-size": "18",
+                                                            "color": "#737373",
+                                                            "background-color": "#CCE0F5",
+                                                            "border-radius": "10",
+                                                            "padding-top": "0",
+                                                            "padding-right": "5",
+                                                            "padding-bottom": "0",
+                                                            "padding-left": "5"
+                                                        },
+                                                        "label": {},
+                                                        "bullet": {}
+                                                    },
+                                                    "children": []
+                                                },
+                                                {
+                                                    "orientation": "column",
+                                                    "content": {
+                                                        "name": "transcription",
+                                                        "path": "entry.sense.translation.transcription"
+                                                    },
+                                                    "styles": {
+                                                        "element": {
+                                                            "margin-left": "20",
+                                                            "font-family": "Georgia, serif",
+                                                            "font-size": "16",
+                                                            "leftPunc": "[",
+                                                            "rightPunc": "]",
+                                                            "color": "#000000"
+                                                        },
+                                                        "label": {},
+                                                        "bullet": {}
+                                                    },
+                                                    "children": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "example",
+                                        "path": "entry.sense.example"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "margin-left": "20",
+                                            "font-style": "italic"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "configured": true
             },
-            "entry.pos": {},
-            "entry.transcription": {
-                "lineBreak": "after",
-                "colour": "grey",
-                "textsize": 2,
-                "outerPunc": "squareBrackets"
+            "tablet": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             },
-            "entry.sense": {
-                "textsize": 1,
-                "lineBreak": "before",
-                "gutter": "sensenum1"
+            "mobile": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             },
-            "entry.sense.translation": {
-                "textsize": 3,
-                "weight": "bold",
-                "gutter": "sensenum1"
-            },
-            "entry.sense.translation.transcription": {
-                "outerPunc": "squareBrackets",
-                "colour": "grey",
-                "textsize": 2
-            },
-            "entry.sense.example": {
-                "lineBreak": "before",
-                "colour": "blue",
-                "slant": "italic"
-            },
-            "entry.sense.translation.gender": {
-                "colour": "grey",
-                "textsize": 1
+            "pdf": {
+                "schema": {
+                    "orientation": "column",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             }
         }
     },

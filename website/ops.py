@@ -43,9 +43,12 @@ prohibitedDictIDs = ["login", "logout", "make", "signup", "forgotpwd", "changepw
 
 phases_re = re.compile('^#\s+phases\s*:\s*(.*?)$')
 
-def get_version():
-    with open(os.path.join(currdir, 'version.txt')) as v_f:
-        return v_f.readline().strip()
+
+def get_mainDB_version():
+    mainDB = getMainDB()
+    r = mainDB.execute("SELECT value FROM configs WHERE id='version'").fetchone()
+    mainDB.close()
+    return r['value']
 
 # db management
 def getDB(dictID):
@@ -730,7 +733,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
 
     #update dictionary info
     dictDB = getDB(dictID)
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": get_version(), "creator": email})))
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": get_mainDB_version(), "creator": email})))
 
     ident = {"title": title, "blurb": blurb, "lang": lang}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))

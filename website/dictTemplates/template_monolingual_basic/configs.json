@@ -1,4 +1,4 @@
-{    
+{
     "ident": {
         "title": "Template: Monolingual basic",
         "blurb": "This is a template for a basic monolingual dictionary suitable for glossaries, terminology lists and small dictionaries. The entry structure is simple and only includes the headword, part of speech, definition and example.\n\nUse the **Dictionary > Configuration > Structure** menu **to** edit the entry structure and add or remove components.\n\nSome entries have been inserted as examples.",
@@ -29,30 +29,279 @@
         }
     },
     "formatting": {
-        "elements": {
-            "entry": {
-                "textsize": 5,
-                "colour": "blue",
-                "weight": "bold"
+        "layout": {
+            "desktop": {
+                "schema": {
+                    "orientation": "column",
+                    "type": "layout-container",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {
+                        "element": {
+                            "font-family": "Verdana, sans-serif",
+                            "font-size": "20"
+                        },
+                        "label": {},
+                        "bullet": {}
+                    },
+                    "children": [
+                        {
+                            "orientation": "row",
+                            "type": "layout-container",
+                            "content": {
+                                "name": "entry",
+                                "path": "entry"
+                            },
+                            "styles": {
+                                "element": {
+                                    "font-weight": "bold",
+                                    "font-size": "30",
+                                    "color": "#004b69"
+                                },
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": [],
+                            "markupStyles": [],
+                            "labelStyles": {},
+                            "bulletStyles": {}
+                        },
+                        {
+                            "orientation": "row",
+                            "type": "layout-container",
+                            "content": {
+                                "name": "",
+                                "path": ""
+                            },
+                            "styles": {
+                                "element": {},
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": [
+                                {
+                                    "orientation": "row",
+                                    "type": "layout-container",
+                                    "content": {
+                                        "name": "pos",
+                                        "path": "entry.pos"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "color": "",
+                                            "background-color": "#d3e9f3",
+                                            "margin-top": "0",
+                                            "margin-right": "0",
+                                            "margin-bottom": "0",
+                                            "margin-left": "0",
+                                            "padding-top": "5",
+                                            "padding-right": "10",
+                                            "padding-bottom": "5",
+                                            "padding-left": "10",
+                                            "border-radius": "10"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": [],
+                                    "markupStyles": [],
+                                    "labelStyles": {},
+                                    "bulletStyles": {}
+                                },
+                                {
+                                    "orientation": "column",
+                                    "content": {
+                                        "name": "",
+                                        "path": null
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "font-size": "",
+                                            "container-width-unit": "px",
+                                            "container-width": "20"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": []
+                                },
+                                {
+                                    "orientation": "row",
+                                    "type": "layout-container",
+                                    "content": {
+                                        "name": "transcription",
+                                        "path": "entry.transcription"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "leftPunc": "[",
+                                            "rightPunc": "]",
+                                            "color": "#000000",
+                                            "font-size": "16",
+                                            "background-color": "",
+                                            "padding-top": "5",
+                                            "padding-right": "10",
+                                            "padding-bottom": "5",
+                                            "padding-left": "10",
+                                            "border-radius": "10"
+                                        },
+                                        "label": {
+                                            "label-text-value": "pronunciation",
+                                            "color": "#558ea5",
+                                            "background-color": "#dbe6eb",
+                                            "font-size": "8",
+                                            "margin-top": "0",
+                                            "margin-right": "0",
+                                            "margin-bottom": "0",
+                                            "margin-left": "0",
+                                            "padding-top": "3",
+                                            "padding-right": "3",
+                                            "padding-bottom": "3",
+                                            "padding-left": "3",
+                                            "border-radius": "10",
+                                            "show-label-before": true
+                                        },
+                                        "bullet": {}
+                                    },
+                                    "children": [],
+                                    "markupStyles": [],
+                                    "labelStyles": {},
+                                    "bulletStyles": {}
+                                }
+                            ]
+                        },
+                        {
+                            "orientation": "column",
+                            "type": "layout-container",
+                            "content": {
+                                "name": "sense",
+                                "path": "entry.sense"
+                            },
+                            "styles": {
+                                "element": {},
+                                "label": {},
+                                "bullet": {}
+                            },
+                            "children": [
+                                {
+                                    "orientation": "row",
+                                    "type": "layout-container",
+                                    "content": {
+                                        "name": "sense",
+                                        "path": "entry.sense"
+                                    },
+                                    "styles": {
+                                        "element": {},
+                                        "label": {},
+                                        "bullet": {
+                                            "bullet-use-numbers": true,
+                                            "color": "#2aa0d1",
+                                            "font-weight": "bold",
+                                            "font-size": "18",
+                                            "margin-top": "20"
+                                        }
+                                    },
+                                    "children": [],
+                                    "markupStyles": [],
+                                    "labelStyles": {},
+                                    "bulletStyles": {}
+                                },
+                                {
+                                    "orientation": "row",
+                                    "type": "layout-container",
+                                    "content": {
+                                        "name": "definition",
+                                        "path": "entry.sense.definition"
+                                    },
+                                    "styles": {
+                                        "element": {},
+                                        "label": {},
+                                        "bullet": {
+                                            "bullet-use-numbers": false,
+                                            "bullet-use-with-single-item": false
+                                        }
+                                    },
+                                    "children": [],
+                                    "markupStyles": [],
+                                    "labelStyles": {},
+                                    "bulletStyles": {}
+                                },
+                                {
+                                    "orientation": "row",
+                                    "type": "layout-container",
+                                    "content": {
+                                        "name": "example",
+                                        "path": "entry.sense.example"
+                                    },
+                                    "styles": {
+                                        "element": {
+                                            "font-style": "italic",
+                                            "font-family": "Georgia, serif",
+                                            "margin-top": "10",
+                                            "color": "#004b69"
+                                        },
+                                        "label": {},
+                                        "bullet": {}
+                                    },
+                                    "children": [],
+                                    "markupStyles": [],
+                                    "labelStyles": {},
+                                    "bulletStyles": {}
+                                }
+                            ],
+                            "markupStyles": [],
+                            "labelStyles": {},
+                            "bulletStyles": {}
+                        }
+                    ],
+                    "markupStyles": [],
+                    "labelStyles": {},
+                    "bulletStyles": {}
+                },
+                "configured": true
             },
-            "entry.pos": {},
-            "entry.transcription": {
-                "lineBreak": "both",
-                "outerPunc": "squareBrackets"
+            "tablet": {
+                "schema": {
+                    "orientation": "column",
+                    "type": "layout-container",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             },
-            "entry.sense": {
-                "gutter": "sensenum1",
-                "textsize": 2
+            "mobile": {
+                "schema": {
+                    "orientation": "column",
+                    "type": "layout-container",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             },
-            "entry.sense.definition": {
-                "textsize": 3
-            },
-            "entry.sense.example": {
-                "slant": "italic",
-                "colour": "grey"
+            "pdf": {
+                "schema": {
+                    "orientation": "column",
+                    "type": "layout-container",
+                    "content": {
+                        "name": "entry",
+                        "path": "entry"
+                    },
+                    "styles": {},
+                    "children": []
+                },
+                "configured": false
             }
-        },
-        "customCss": ""
+        }
     },
     "searchability": {
         "searchableElements": [
