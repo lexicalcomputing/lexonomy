@@ -24,6 +24,10 @@ install: $(INSTALL_WEBSITE) $(SOURCE_DOCS)
 
 deploy:
 	cp -r website $(DEPLOYDIR)/
+	$(DEPLOYDIR)/website/adminscripts/init_or_update.py --no-backup
+
+deploy_and_backup:
+	cp -r website $(DEPLOYDIR)/
 	$(DEPLOYDIR)/website/adminscripts/init_or_update.py
 
 website/version.txt:

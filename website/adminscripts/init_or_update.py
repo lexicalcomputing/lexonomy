@@ -603,11 +603,11 @@ def make_updates(args):
     for update_number in DBupdates:
         for dict_file in get_dict_list():
             new_version = None
-            mainDB_version = get_mainDB_verion(mainDB)
-            dictDB = get_db(os.path.join(dicts_path, dict_file))
-            dict_version, dict_metadata = get_dict_version(dictDB)
-
             try:
+                mainDB_version = get_mainDB_verion(mainDB)
+                dictDB = get_db(os.path.join(dicts_path, dict_file))
+                dict_version, dict_metadata = get_dict_version(dictDB)
+
                 if update_number in dictDB_updates: 
                     if versiontuple(dict_version) < versiontuple(update_number):
                         new_version = update_number
@@ -644,10 +644,10 @@ def make_updates(args):
                         mainDB.commit()
             except Exception as e:
                 if update_number in mainDB_updates:
-                    print(f'\033[31mFAIL main DB ({mainDB_version}->{new_version}) {type(e).__name__}: {e}|{dict_file}\033[0m')
+                    print(f'\033[31mFAIL main DB ({mainDB_version}->{update_number}) {type(e).__name__}: {e}|{dict_file}\033[0m')
                     update_summary['mainDB_failed'] += 1
                 elif update_number in dictDB_updates:
-                    print(f'\033[31mFAIL dict ({dict_version}->{new_version}) {type(e).__name__}: {e}|{dict_file}\033[0m')
+                    print(f'\033[31mFAIL dict ({dict_version}->{update_number}) {type(e).__name__}: {e}|{dict_file}\033[0m')
                     update_summary['dicts_failed'] += 1
 
                 if args.debug:
