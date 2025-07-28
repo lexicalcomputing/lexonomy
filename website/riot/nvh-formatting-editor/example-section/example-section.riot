@@ -1,27 +1,18 @@
-<example-section>
-   <div class="example-section-container">
-      <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
-         <div if={nvhStore.data.entry === undefined}>Preview is loading ...</div>
-         <div if={nvhStore.data.entry === null}>Preview can not be loaded, you do not have any entries in your dictionary, or the browser logged you out.</div>
-         <example-section-item if={nvhStore.data.entry}
-            each={child in nvhFormattingEditor.currentLayout.schema.children}
-            onclick={() => onExampleSectionItemClick(child)}
-            onmouseenter={(event) => onExampleItemMouseEnter(event, child)}
-            onmouseleave={(event) => onExampleItemMouseLeave(event, child)}
-            schema={child}
-            entry={nvhStore.data.entry}
-            class="example-section-item"
-            isFormatting={true}
-            bulletIndex={1}
-            maxPossibleWidth={nvhFormattingEditor.getMaxPossibleWidth()}/>
-      <div>
+<example-section class="example-section">
+   <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
+      <div if={!nvhStore.data.entry}>Preview is loading ...</div>
+      <entry-styled-element if={nvhStore.data.entry}
+            schema={nvhFormattingEditor.currentLayout.schema}
+            element={nvhStore.data.entry}/>
    </div>
 
    <script>
       export default {
-         bindings: [["store", "entryChanged", "update"]],
+         bindings: [["store", "entryChanged", "update"],
+                    ["nvhFormattingEditor", "selectedLayoutContainerChange", "update"]],
 
          async getEntry() {
+            // TOOD use entires loaded by default
             let entriesList = await this.store.loadEntryList();
             if (!entriesList || entriesList.entries.length === 0) {
                return null;
@@ -34,38 +25,18 @@
             this.nvhFormattingEditor = window.nvhFormattingEditor;
             this.store = window.store;
             this.nvhStore = window.nvhStore;
-            this.getEntry().then(res => {
-               this.update();
-            });
-         },
-
-         onExampleSectionItemClick(state) {
-            this.nvhFormattingEditor.selectLayoutContainer(state, null);
-            this.nvhFormattingEditor.updateEditor();
-         },
-
-         onExampleItemMouseEnter(event, state) {
-            if (!nvhFormattingEditor.data.mouseData) {
-               event.currentTarget.classList.add("layout-container-mouse-hover");
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = state;
-               this.nvhFormattingEditor.updateEditor();
-            }
-         },
-
-         onExampleItemMouseLeave(event, state) {
-            if (!nvhFormattingEditor.data.mouseData) {
-               event.currentTarget.classList.remove("layout-container-mouse-hover");
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-               this.nvhFormattingEditor.updateEditor();
-            }
-         },
+            // TODO move to the formatting editor
+            this.getEntry()
+                  .then(this.update.bind(this))
+         }
       }
    </script>
 
-   <style>
-      .example-section-container {
+   <style type="scss">
+      :host{
          width: fit-content;
          height: 100%;
+         overflow-y: auto;
       }
       .scrollable-div-layout {
          display: flex;
@@ -73,7 +44,7 @@
          flex-direction: column;
          width: 80vw !important;
          height: 100%;
-         padding: 5px;
+         padding: 15px; //for pulsing shadow of active element to be visible
          overflow-y: auto;
       }
       .scrollable-div-layout-tablet {
@@ -86,7 +57,7 @@
       .scrollable-div-layout-mobile {
          width: 440px !important;
       }
-      .example-section-item {
+      .entry-styled-element {
          cursor: pointer;
       }
    </style>

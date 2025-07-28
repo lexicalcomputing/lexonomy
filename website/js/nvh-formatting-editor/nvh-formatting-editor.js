@@ -1,21 +1,13 @@
-import example_audio_item from '../../riot/nvh-formatting-editor/example-section/example-audio-item.riot';
-import example_basic_item from '../../riot/nvh-formatting-editor/example-section/example-basic-item.riot';
-import example_bool_item from '../../riot/nvh-formatting-editor/example-section/example-bool-item.riot';
-import example_image_item from '../../riot/nvh-formatting-editor/example-section/example-image-item.riot';
-import example_markup_item from '../../riot/nvh-formatting-editor/example-section/example-markup-item.riot';
-import example_section_item from '../../riot/nvh-formatting-editor/example-section/example-section-item.riot';
-import example_url_item from '../../riot/nvh-formatting-editor/example-section/example-url-item.riot';
-import example_video_item from '../../riot/nvh-formatting-editor/example-section/example-video-item.riot';
-
 class NVHFormattingEditorClass {
    constructor() {
-      this.timeout = null,
-      this.dropdownTimeout = null,
-      this.elementsSchema = null,
-      this.data = this.getInitializedDataAttributes(),
+      this.reset()
+      this.initilaizeVisibleSections()
+      observable(this);
+   }
+
+   reset() {
       this.currentLayout = {
          schema: null,
-         elements: null,
          history: null,
       }
       this.layout = {
@@ -24,47 +16,62 @@ class NVHFormattingEditorClass {
          mobile: null,
          pdf: null,
       }
-      observable(this);
-      riot.register('example-basic-item', example_basic_item);
-      riot.register('example-audio-item', example_audio_item);
-      riot.register('example-bool-item', example_bool_item);
-      riot.register('example-image-item', example_image_item);
-      riot.register('example-markup-item', example_markup_item);
-      riot.register('example-section-item', example_section_item);
-      riot.register('example-url-item', example_url_item);
-      riot.register('example-video-item', example_video_item);
+      this.isSaving = false
+      this.data = {
+         draggedLayoutContainer: null,
+         hoveredLayoutContainer: null,
+         selectedLayoutContainer: null,
+         activeLayout: "desktop" /*desktop, tablet, mobile, pdf*/
+      }
    }
 
    updateEditor() {
       this.trigger("updateEditor");
    }
 
-   getInitializedDataAttributes() {
-      return {
-         canBeDropped: true,
-         canBeDragged: true,
-         canSelectLayoutContainer: true,
-         dropInfo: {
-            wasSuccessful: false,
-            index: null,
-         },
-         mouseData: null,
-         draggedLayoutContainer: null,
-         hoveredLayoutContainer: null,
-         selectedLayoutContainer: null,
-         selectedLayoutContainerParentAreaFullName: "",
-         activeLayout: "desktop", /*desktop, tablet, mobile, pdf*/
-      }
+   toggleSection(sectionName){
+      this.visibleSections[sectionName] = !this.visibleSections[sectionName]
+      window.setCookie("formattingEditorVisibleSections", Object.entries(this.visibleSections)
+           .filter(([key, value]) => value)
+           .map(([key]) => key)
+           .join(","))
+      this.trigger("updateEditor")
    }
 
-   resetDataAttributes() {
-      this.data.canBeDropped = true;
-      this.data.canBeDragged = true;
-      this.data.canSelectLayoutContainer = true;
-      this.data.dropInfo = {
-         wasSuccessful: false,
-         index: null,
-      };
+   saveSchemas(){
+      this.isSaving = true
+      this.trigger("isSavingChanged")
+      let layoutConfig = {}
+      for (let device of ["desktop", "tablet", "mobile", "pdf"]) {
+         let schema = structuredClone(this.layout[device].schema)
+         this.removeParentReferenceFromSchema(schema)
+         layoutConfig[device] = {
+            schema: schema,
+            configured: this.layout[device].configured
+         }
+      }
+      layoutConfig.desktop.configured = true;
+      window.store.updateDictionaryConfig("formatting", {layout: layoutConfig})
+         .always(() => {
+            this.isSaving = false
+            this.trigger("isSavingChanged")
+         })
+   }
+
+   generateSchemaFromStructure(){
+      let addElementAndChildren = (element, parent=null, level) => {
+         let schemaElement = this.createSchemaElement(element.path, parent)
+         if(element.children?.length){  // element is just group, add element with its value (e.g. sense group with first child sense)
+            this.createSchemaElement(element.path, schemaElement)
+         }
+         element.children.forEach(child => {
+            if(!this.isMarkupType(child.path)){
+               addElementAndChildren(child, schemaElement, level + 1)
+            }
+         })
+         return schemaElement
+      }
+      return addElementAndChildren(window.store.schema.schema, null, 0)
    }
 
    changeLayoutSchema() {
@@ -173,108 +180,123 @@ class NVHFormattingEditorClass {
       return entryHTML;
    }
 
-   getEntryHTML(schema, entry) {
-      const item = document.createElement('example-section-item');
-      riot.mount(item, { schema: schema, entry: entry, maxPossibleWidth: "980px" });
+   getEntryHTML(schema, element) {
+      const item = document.createElement('entry-styled-element');
+      riot.mount(item, { schema: schema, element: element, maxPossibleWidth: "980px" });
       return item.innerHTML;
    }
 
-   getValidEntryChildren(entry, resultChildren, validPath) {
-      for (let child of entry.children) {
-         this.getValidEntryChildren(child, resultChildren, validPath);
-         if (child.path === validPath) {
-            resultChildren.push(child);
-         }
+   getChildIndex(schema){
+      if(schema.parent){
+         return schema.parent.children.findIndex(child => child == schema)
       }
-      return resultChildren;
-   }
-
-   clearLayoutContainer(layoutContainer) {
-      layoutContainer.content.name = "";
-      layoutContainer.content.fullName = "";
-      layoutContainer.content.area = "";
-      layoutContainer.content.areaFullName = "";
-      layoutContainer.content.canHaveChildren = true;
-      layoutContainer.styles = {};
-      layoutContainer.markupStyles = [];
-      layoutContainer.labelStyles = {};
-      layoutContainer.bulletStyles = {};
-   }
-
-   fillLayoutContainerWithData(layoutContainer, data) {
-      layoutContainer.content.name = data.name;
-      layoutContainer.content.fullName = data.fullName;
-      layoutContainer.content.area = data.name;
-      layoutContainer.content.areaFullName = data.fullName;
-      layoutContainer.content.canHaveChildren = data.children.length !== 0;
-      layoutContainer.styles = {};
-      layoutContainer.labelStyles = {};
-      layoutContainer.bulletStyles = {};
-
-      let markupChildren = this.getDirectMarkupChildren(data.fullName);
-      if (markupChildren.length !== 0) {
-         layoutContainer.markupStyles = this.createMarkupStyles(data.fullName);
-      }
+      return -1
    }
 
    resetSchema() {
-      this.initializeSchema();
-      this.updateEditor()
+      this.initializeSchema()
+      this.trigger("updateEditor")
    }
 
    initializeSchema() {
-      this.currentLayout.schema = this.createSchema();
-      this.data.selectedLayoutContainer = null;
-      this.data.selectedLayoutContainerParentAreaFullName = "";
+      this.currentLayout.schema = this.createSchema()
+      this.data.selectedLayoutContainer = null
    }
 
-   initializeSchemas() {
-      let initialSchema = this.createSchema();
-      /* NOTE: window.store.data.config.formatting.elements was used before
-      the implementation of nvh-formatting-editor; but it is not used anymore;
-      should it be removed?*/
-      let defaultElements = window.store.data.config.formatting.elements;
-
-      for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
-         this.layout[layout] = {
-            configured: false,
-            schema: structuredClone(initialSchema),
-            elements: structuredClone(defaultElements),
-            history: {
-               index: 0,
-               schema: [structuredClone(initialSchema)],
-               elements: [structuredClone(defaultElements)],
-            }
+   initilaizeVisibleSections(){
+      let cookie = window.getCookie("formattingEditorVisibleSections")
+      if(cookie){
+         let sections  = cookie.split(",")
+         this.visibleSections = {
+            elements: sections.includes("elements"),
+            style: sections.includes("style"),
+            editing: sections.includes("editing"),
+            example: sections.includes("example")
+         }
+      } else {
+         this.visibleSections = {
+            elements: true,
+            style: false,
+            editing: true,
+            example: true
          }
       }
-      this.layout.desktop.configured = true;
-      this.data.selectedLayoutContainer = null;
-      this.data.selectedLayoutContainerParentAreaFullName = "";
+   }
+
+   initLayout(){
+      let layout = window.store.data.config.formatting.layout ? structuredClone(window.store.data.config.formatting.layout) : {}
+      layout.desktop ||= {}
+      layout.desktop.schema ||= this.generateSchemaFromStructure()
+      ;["desktop", "tablet", "mobile", "pdf"].forEach(device => {
+         let deviceLayout = layout[device] || {schema: this.createSchema()}
+         this.addParentReferenceToSchema(deviceLayout.schema)
+         this.addStylesToSchema(deviceLayout.schema)
+         this.layout[device] = {
+            configured: deviceLayout.configured ?? false,
+            schema: deviceLayout.schema,
+            history: {
+               index: 0,
+               schema: [structuredClone(deviceLayout.schema)]
+            }
+         }
+      })
+      this.layout.desktop.configured = true
+      this.currentLayout = this.layout.desktop
+   }
+
+   addParentReferenceToSchema(schema, parent=null){
+      schema.parent = parent
+      schema.children.forEach(child => {
+         this.addParentReferenceToSchema(child, schema)
+      })
+   }
+
+   removeParentReferenceFromSchema(schema){
+      delete schema.parent
+      schema.children.forEach(this.removeParentReferenceFromSchema.bind(this))
+   }
+
+   addStylesToSchema(schema){
+      if(!schema.styles){
+         schema.styles = {}
+      }
+      schema.children.forEach(child => {
+         this.addStylesToSchema(child)
+      })
    }
 
    createSchema() {
-      let root = window.store.schema.getRoot();
-      return {
+      return this.createSchemaElement(window.store.schema.getRoot().path)
+   }
+
+   createSchemaElement(elementPath, parent=null, index=null){
+      let elementName = elementPath ? elementPath.split(".").pop() : ""
+      let newElement = {
          orientation: "column",
-         children: [
-            {
-               orientation: "column",
-               type: "layout-container",
-               content: {
-                  name: root.path,
-                  fullName: root.path,
-                  area: root.path,
-                  areaFullName: root.path,
-                  canHaveChildren: true,
-               },
-               styles: {},
-               markupStyles: this.createMarkupStyles(root.path),
-               labelStyles: {},
-               bulletStyles: {},
-               children: [],
-            }
-         ]
+         parent: null,
+         content: {
+            name: elementName,
+            path: elementPath
+         },
+         styles: {},
+         children: []
       }
+      if(parent){
+         newElement.parent = parent
+         if(index != null){
+            parent.children.splice(index, 0, newElement);
+         } else {
+            parent.children.push(newElement)
+         }
+      }
+      return newElement
+   }
+
+   changeActiveLayout(layoutName){
+      this.data.activeLayout = layoutName
+      this.data.selectedLayoutContainer = null
+      this.currentLayout = this.layout[layoutName]
+      this.trigger("updateEditor")
    }
 
    undoSchema() {
@@ -289,69 +311,32 @@ class NVHFormattingEditorClass {
       }
    }
 
+   resetSchemaStyles(schema, type, path){
+      let styles = this.getStyles(schema, type, path)
+      for (const key in styles) {
+         delete styles[key]
+      }
+      this.trigger("updateEditor")
+   }
+
    goToHistory(index) {
       let history = this.currentLayout.history
       history.index += index;
       this.currentLayout.schema = structuredClone(history.schema.at(history.index));
-      this.currentLayout.elements = structuredClone(history.elements.at(history.index));
       this.data.selectedLayoutContainer = null;
-      this.data.selectedLayoutContainerParentAreaFullName = "";
-      this.updateEditor();
+      this.trigger("updateEditor")
    }
 
-   createElementsSchema() {
-      return this.createElementsSchemaRec(window.store.schema.getRoot());
-   }
-
-   createElementsSchemaRec(element) {
-      let objectStructure = {
-         data: {
-            type: "choice-item",
-            name: element.name,
-            fullName: element.path,
-            children: [],
-         },
-      };
-      for (let child of element.children) {
-         let newElement = this.createElementsSchemaRec(child);
-         objectStructure.data.children.push(newElement)
+   selectLayoutContainer(selectedLayoutContainer) {
+      if(this.data.selectedLayoutContainer != selectedLayoutContainer){
+         this.data.selectedLayoutContainer = selectedLayoutContainer
+         this.trigger("selectedLayoutContainerChange")
       }
-      return objectStructure;
-   }
-
-   selectLayoutContainer(child, parent) {
-      if (this.data.canSelectLayoutContainer) {
-         if (!this.isLayoutContainerActive(child)) {
-            if (parent) {
-               this.data.selectedLayoutContainerParentAreaFullName = parent.content.areaFullName;
-            }
-            this.data.selectedLayoutContainer = child;
-         } else {
-            this.data.selectedLayoutContainerParentAreaFullName = "";
-            this.data.selectedLayoutContainer = null;
-         }
-      }
-      this.data.canSelectLayoutContainer = false;
-   }
-
-   isChildChoiceItemOfLayoutContainer(child) {
-      return child.includes(this.data.selectedLayoutContainerParentAreaFullName);
-   }
-
-   isChildOfParent(parent) {
-      let data = this.data.mouseData;
-      if (data?.type === "layout-container") {
-         return this.isChildObjectOfParent(data, parent);
-      }
-      if (data?.type === "choice-item") {
-         return data?.fullName.includes(parent)
-      }
-      return true;
    }
 
    isChildObjectOfParent(childObject, parent) {
-      if (childObject.content.fullName === parent && childObject.children.length
-         || !childObject.content.fullName.includes(parent) && childObject.content.fullName) {
+      if (childObject.content.path === parent && childObject.children.length
+         || !childObject.content.path.includes(parent) && childObject.content.path) {
          return false;
       }
 
@@ -363,147 +348,227 @@ class NVHFormattingEditorClass {
       return true;
    }
 
-   addElement(index, state, label) {
-      let newElement = {
-         orientation: "row",
-         type: "layout-container",
-         content: {
-            name: label?.name || "",
-            fullName: label?.fullName || "",
-            area: label?.area || state.content.area,
-            areaFullName: label?.areaFullName || state.content.areaFullName,
-            canHaveChildren: !label ? true : window.store.schema.getElementByPath(label.fullName).children.length
-         },
-         styles: {},
-         markupStyles: [],
-         labelStyles: {},
-         bulletStyles: {},
-         children: []
-      };
+   addElement(parent, elementPath, index) {
+      let newElement = this.createSchemaElement(elementPath, parent, index)
       this.data.selectedLayoutContainer = newElement;
-      this.data.selectedLayoutContainerParentAreaFullName = state.content.areaFullName;
-      state.children.splice(index, 0, newElement);
-      this.data.canSelectLayoutContainer = false;
+      this.trigger("updateEditor")
+      return newElement
    }
 
-   deleteElement(indexToDelete, parentState) {
-      parentState.children = Array.from(parentState.children).filter((_child, index) => index != indexToDelete);
-      this.data.canSelectLayoutContainer = false;
-      this.data.selectedLayoutContainerParentAreaFullName = "";
-      this.data.selectedLayoutContainer = null;
+   deleteElement(element) {
+      if(element.parent){
+         element.parent.children = element.parent.children.filter(child => child != element)
+         if(this.data.draggedElement == element){
+            this.stopElementDragging()
+         }
+         this.trigger("updateEditor")
+      }
    }
 
-   isMarkupType(fullName) {
-      if (!fullName) {
+   moveChildToAnotherParent(element, newParent, position=0){
+      if(element.parent){ // if element was dragged from element list on the left, it has no parent
+         let idx = element.parent.children.indexOf(element)
+         element.parent.children.splice(idx, 1)
+      }
+      element.parent = newParent
+      if(position === null){
+         newParent.children.push(element)
+      } else {
+         newParent.children.splice(position, 0, element)
+      }
+      this.trigger("updateEditor")
+      //this.addStateToHistory()
+   }
+
+   toggleSchemaOrientation(schema){
+      schema.orientation === "column" ? schema.orientation = "row" : schema.orientation = "column"
+      this.trigger("updateEditor")
+   }
+
+   duplicateSchema(schema){
+      let copiedElement = structuredClone(schema);
+      copiedElement.parent = schema.parent
+      schema.parent.children.splice(this.getChildIndex(schema) + 1, 0, copiedElement);
+      this.data.hoveredLayoutContainer = null;
+      this.trigger("updateEditor")
+   }
+
+   startElementDragging(element){
+      this.data.draggedElement = element
+      this.trigger("onDndStart")
+   }
+
+   stopElementDragging(){
+      this.data.draggedElement = null
+      this.trigger("onDndStop")
+   }
+
+   setHoveredLayoutContainer(schema){
+      if (this.data.hoveredLayoutContainer != schema) {
+         this.data.hoveredLayoutContainer = schema
+         this.trigger("updateEditor")
+      }
+   }
+
+   forEachElement(callback, element){
+      element = element || this.currentLayout?.schema
+      if(element){
+         callback(element)
+         element.children.forEach(this.forEachElement.bind(this, callback))
+      }
+   }
+
+   isMarkupType(path) {
+      if (!path) {
          return false;
       }
-      let config = window.nvhStore.getElementConfig(fullName);
+      let config = window.nvhStore.getElementConfig(path);
       return config?.type === "markup";
    }
 
-   childWithInheritedArea(child, state) {
-      if (!state) {
-         return child;
+   isEveryChildDescendantOf(element, parent){
+      let list = []
+      this.forEachElement(element => {
+         element.content.path && list.push(element.content.path)
+      }, element)
+      return !list.length || list.every(path => path.startsWith(parent.content.path))
+   }
+
+   isDescendantOf(child, parent){
+      //return !childPath || (childPath != parentPath && childPath.startsWith(parentPath))
+      let childPath = child.content.path
+      let parentPath = parent.content.path
+      return !childPath
+            || (childPath != parentPath && childPath.startsWith(parentPath))
+            || (childPath == parentPath && !child.children.length && parent.children.length)
+   }
+
+   findFirstNonContainerAncestor(schema){
+      let currentSchema = schema
+      while(!currentSchema.content.path && currentSchema.parent){
+         currentSchema = currentSchema.parent
       }
-      child.content.area = !child.content.name ? state.content.area : child.content.name;
-      child.content.areaFullName = !child.content.name ? state.content.areaFullName : child.content.fullName;
-      return child;
+      return currentSchema
    }
 
-   canHaveAdders(parentFullName, layoutContainer) {
-      return parentFullName !== layoutContainer.content.fullName && layoutContainer.content.canHaveChildren;
-   }
-
-   isElementWithoutChildrenToWrapper(element, layoutContainer) {
-      return layoutContainer.children.length && !element.children.length;
-   }
-
-   isElementToRedundantNestedWrapper(element, layoutContainerWrapperAreaFullName, layoutContainer) {
-      return layoutContainerWrapperAreaFullName.includes(element.fullName) && layoutContainer.children.length;
-   }
-
-   isLayoutContainerAsSameWrapper(elementName, layoutContainer) {
-      if (layoutContainer.content.fullName && elementName !== layoutContainer.content.fullName && elementName.includes(layoutContainer.content.fullName)) {
-         return false;
-      }
-      if (elementName === layoutContainer.content.fullName && layoutContainer.children.length) {
-         return true;
-      }
-
-      for (let child of layoutContainer.children) {
-         if (this.isLayoutContainerAsSameWrapper(elementName, child)) {
-            return true;
+   canHaveChildren(schema, childPath){
+      //return !schema.content.path || window.store.schema.getElementByPath(schema.content.path).children.length
+            //TODO and maybe limit each child only one time?
+      //      empty container
+      if(schema.content.path){
+         let children = window.store.schema.getElementByPath(schema.content.path)?.children
+         if(!children?.length){
+            return false
+         }
+         if(childPath){
+            // can have specific child?
+            return !!children.find(child => child.path == childPath)
          }
       }
-      return false;
+      return true
    }
 
-   isParentLabelOfDropObject(parentLabel, dropObject) {
-      let result = dropObject.content.fullName.includes(parentLabel);
-      let alternative = !dropObject.content.fullName;
-      if (!result && !alternative) {
-         return false;
-      }
-
-      for (let child of dropObject.children) {
-         if (!this.isParentLabelOfDropObject(parentLabel, child)) {
-            return false;
-         }
-      }
-      return true;
+   areSchemasEquals(schema1, schema2){
+      return (schema1 === schema2)
+         || (schema1 instanceof Object
+               && schema2 instanceof Object // if they are not strictly equal, they both need to be Objects
+               && Object.keys(schema1).every(key => {
+                  return key == "parent"
+                        || (key == "children"
+                                 && schema1.length == schema2.length
+                                 && schema1.children.every((child, idx) => this.areSchemasEquals(schema1.children[idx], schema2.children[idx])))
+                        || (key != "children"
+                                 && window.objectEquals(schema1[key], schema2[key]))
+                  })
+            )
    }
 
-   isChoiceElementValidToLayoutContainer(choiceElement) {
-      for (let child of this.data.selectedLayoutContainer.children) {
-         if (!this.isParentLabelOfDropObject(choiceElement.fullName, child)
-            || this.isLayoutContainerAsSameWrapper(choiceElement.fullName, child)) {
-            return false;
-         }
-      }
-      if (!this.isChildChoiceItemOfLayoutContainer(choiceElement.fullName)
-         || this.isElementToRedundantNestedWrapper(choiceElement, this.data.selectedLayoutContainerParentAreaFullName, this.data.selectedLayoutContainer)
-         || this.isElementWithoutChildrenToWrapper(choiceElement, this.data.selectedLayoutContainer)) {
-         return false;
-      }
-      return true;
+   hasElementUrlChild(path) {
+      return window.store.schema.getElementByPath(path)?.children.some(child => {
+         return window.nvhStore.getElementConfig(child.path)?.type == "url"
+      })
    }
 
-   getDirectMarkupChildren(fullName) {
+   getElementMarkupUrl(markupElement){
+      return markupElement?.children.find(child => window.nvhStore.getElementConfig(child.path)?.type === "url")?.value || null
+   }
+
+   getElementMarkupChildren(schema){
+      let config = window.nvhStore.getElementConfig(schema.content.path)
+      if(!config){
+         return []
+      }
+      return config.children.filter(child => {
+         return child.type == "markup"
+      })
+   }
+
+   getDirectMarkupChildren(path) {
       let result = [];
-      if (!fullName || !window.store.schema.getElementByPath(fullName)) {
+      if (!path || !window.store.schema.getElementByPath(path)) {
          return result;
       }
-      for (let child of window.store.schema.getElementByPath(fullName).children) {
+      for (let child of window.store.schema.getElementByPath(path).children) {
          let config = window.nvhStore.getElementConfig(child.path);
          if (config?.type === "markup") {
-            result.push({ name: child.name, fullName: child.path, color: window.nvhStore.getElementColor(child.path) });
+            result.push({ name: child.name, path: child.path, color: window.nvhStore.getElementColor(child.path) });
          }
       }
       return result;
    }
 
-   createMarkupStyles(fullName) {
-      let markupChildren = this.getDirectMarkupChildren(fullName);
+   getStyles(schema, type="element", path=""){
+      if(!schema.styles){
+         schema.styles = {}
+      }
+      if(!schema.styles[type]){
+         schema.styles[type] = {}
+      }
+      if(path && type == "markup"){
+         if(!schema.styles[type][path]){
+            schema.styles[type][path] = {}
+         }
+         return schema.styles[type][path]
+      }
+      return schema.styles[type]
+   }
+
+   createMarkupStyles(path) {
+      let markupChildren = this.getDirectMarkupChildren(path);
       let result = [];
       for (let child of markupChildren) {
-         result.push({ name: child.name, fullName: child.fullName, styles: {} });
+         result.push({ name: child.name, path: child.path, styles: {} });
       }
       return result;
    }
-   
-   getColorLightVersion(colorHex) {
-      if (!colorHex) {
+
+   getColorLightVersion(colorHex, coef=0.85) {
+      if (!colorHex || ![4, 7, 9,].includes(colorHex.length)) { // #bbb, #bbbbbb, #bbbbbb10
          return "transparent";
       }
-      let tmp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorHex);
-      let red = parseInt(tmp[1], 16);
-      let green = parseInt(tmp[2], 16);
-      let blue = parseInt(tmp[3], 16);
+      colorHex = colorHex.replace(/^#/, "")
+      let hasAlpha = colorHex.length == 8
+      if(colorHex.length == 3) { //  3 digits hex to 6 digits
+         colorHex = colorHex.split("")
+               .map(c => c + c)
+               .join("")
+      }
 
-      let newRed = Math.round(red + (255 - red) * 0.7).toString(16);
-      let newGreen = Math.round(green + (255 - green) * 0.7).toString(16);
-      let newBlue = Math.round(blue + (255 - blue) * 0.7).toString(16);
-      return "#" + newRed + newGreen + newBlue;
+      let red = parseInt(colorHex.slice(0, 2), 16)
+      let green = parseInt(colorHex.slice(2, 4), 16)
+      let blue = parseInt(colorHex.slice(4, 6), 16)
+      let alpha = hasAlpha ? parseInt(colorHex.slice(6, 8), 16) : 255
+
+      let lighten = c => Math.max(0,Math.min(255, Math.round(c + (255 - c) * coef)))
+            .toString(16)
+            .padStart(2, "0")
+
+      let newRed = lighten(red)
+      let newGreen = lighten(green)
+      let newBlue = lighten(blue)
+      let newAlpha = hasAlpha ? alpha.toString(16).padStart(2, "0") : "";
+
+      return `#${newRed}${newGreen}${newBlue}${newAlpha}`;
    }
 
    getIcon(iconItem) {
@@ -518,25 +583,26 @@ class NVHFormattingEditorClass {
       return unicodeIcon ? unicodeIcon : "";
    }
 
-   isElementNonExisting(fullName) {
-      return fullName && !window.nvhStore.getElementConfig(fullName);
+   isElementNonExisting(path) {
+      return path && !window.nvhStore.getElementConfig(path);
    }
 
    getMaxPossibleWidth() {
       switch (this.data.activeLayout) {
          case "tablet":
-            return "1020px";
+            return 1020;
          case "pdf":
-            return "980px";
+            return 980;
          case "mobile":
-            return "440px";
+            return 440;
          default:
             // 2 * 5px padding + 2 * 3 px of margin = 16 px
-            return (window.innerWidth * 0.8 - 16).toString() + "px";
+            return window.innerWidth * 0.8 - 16
       }
    }
 
-   getCssStyles(state, styles) {
+   getCssRules(schema, type, path) {
+      let styles = this.getStyles(schema, type, path)
       if (!styles) {
          return;
       }
@@ -549,23 +615,20 @@ class NVHFormattingEditorClass {
          }
          if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
             "border-color", "border-width", "container-width", "label-text-value",
-            "show-label-before", "custom-css", "text-value"].includes(option)) {
+            "show-label-before", "custom-css", "text-value", "applyURL"].includes(option)) {
             continue;
          }
-         if (["border-radius", "padding", "margin", "max-height", "font-size"].includes(option)) {
+         if (["border-radius", "padding-left", "padding-right", "padding-bottom",
+              "padding-top", "margin-left", "margin-top", "margin-right",
+              "margin-bottom", "max-height", "font-size"].includes(option)) {
             value = value + "px";
          } else if (option === "box-shadow") {
             value = value + "px " + value + "px " + value + "px " + "grey";
          } else if (option === "text-decoration") {
-            let array = styles["text-decoration"];
-            if (!array) {
-               continue;
+            if(!styles["text-decoration"]){
+               continue
             }
-            let values = "";
-            for (let feature of array) {
-               values = values + " " + feature;
-            }
-            value = values;
+            value = styles["text-decoration"].join(" ");
          } else if (option === "border") {
             let borderColor = styles?.["border-color"] || "black";
             let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
@@ -574,19 +637,13 @@ class NVHFormattingEditorClass {
             if (styles["container-width"]) {
                if (styles[option] === "px") {
                   option = "width";
-                  if (parseInt(styles["container-width"]) < parseInt(state.maxPossibleWidth)) {
-                     value = styles["container-width"] + "px";
-                  } else {
-                     value = state.maxPossibleWidth + "px";
-                  }
-                  state.maxPossibleWidth = value;
+                  value = Math.min(this.getElementMaxWidth(schema), parseInt(styles["container-width"])) + "px"
                } else if (styles[option] === "%") {
                   if (parseInt(styles["container-width"]) >= 100) {
                      styles["container-width"] = "100";
                   }
                   option = "width";
-                  value = `${(parseInt(styles["container-width"]) / 100) * parseInt(state.maxPossibleWidth)}` + "px";
-                  state.maxPossibleWidth = value;
+                  value = `${(parseInt(styles["container-width"]) / 100) * this.getElementMaxWidth(schema)}` + "px";
                } else {
                   continue;
                }
@@ -604,6 +661,20 @@ class NVHFormattingEditorClass {
       }
 
       return result_css;
+   }
+
+   getElementMaxWidth(schema){
+      let maxWidth = this.getMaxPossibleWidth()
+      let tmp = schema
+      while (tmp){
+         maxWidth -= 6  // Width needs to be reduced by 2 * 3px of margin at each nested level
+         if(tmp.orientation == "row"){
+            maxWidth -= 6 * tmp.children.length
+         }
+         tmp = tmp.parent
+      }
+
+      return maxWidth
    }
 
    isStringCssValid(styles) {
@@ -638,9 +709,20 @@ class NVHFormattingEditorClass {
    isLayoutContainerActive(layoutContainer) {
       return this.data.selectedLayoutContainer === layoutContainer;
    }
-   
+
    isLayoutContainerDragged(layoutContainer) {
       return this.data.draggedLayoutContainer === layoutContainer;
+   }
+
+   hasElementInAncestors(schema, path){
+      let actualElement = schema.parent
+      while (actualElement){
+         if(actualElement.content.path == path){
+            return true
+         }
+         actualElement = actualElement.parent
+      }
+      return false
    }
 }
 

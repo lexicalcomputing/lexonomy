@@ -1,108 +1,155 @@
 <styles-section>
    <div class="styles-section-container">
-      <div if={!nvhFormattingEditor.data.selectedLayoutContainer}>No container selected. Select container in layout panel to style it.</div>
-      <div if={nvhFormattingEditor.data.selectedLayoutContainer} class="style-section-option-wrapper">
-         <div each={(child, index) in getStyleOptions()}
-            class="style-section-option-item {currentStyleOption.fullName === child.fullName ? "style-section-option-item-current" : ""}"
-            style="color: {nvhStore.getElementColor(child.fullName)};"
-            onclick={() => changeStyleOption(child.fullName)}>
-            {!child.name ? "container": child.name}
+      <div if={!nvhFormattingEditor.data.selectedLayoutContainer}
+            class="center-align grey-text p-8">
+         <h3>No container selected.</h3>
+         Select container in "layout" or "preview" panel to style it.
+      </div>
+      <div  if={nvhFormattingEditor.data.selectedLayoutContainer}
+            class="style-section-top-bar-wrapper displayFlex">
+         <div class="style-section-tabs-wrapper">
+            <ul class="tabs small mb-0">
+               <li each={tab in state.activeTabOptions}
+                     class="tab {tab.id == state.activeTab.id ? "active" : ""}"
+                     onclick={onTabClick.bind(this, tab)}>
+                  <a style="--active-color: {nvhStore.getElementColor(tab.path)};">{tab.label}</a>
+               </li>
+            </ul>
          </div>
+         <span class="ml-auto">
+            <i id="styleMoreDropdonwTrigger"
+                  class="material-icons clickable dropdown-trigger"
+                  data-target="stylesActionDropdown">
+               more_horiz
+            </i>
+            <ul id="stylesActionDropdown"
+                  class="dropdown-content">
+               <li>
+                  <a onclick={onResetClick}>
+                     <i class="material-icons">settings_backup_restore</i>
+                     Reset styles
+                  </a>
+               </li>
+            </ul>
+         </span>
       </div>
       <styles-section-item if={nvhFormattingEditor.data.selectedLayoutContainer}
-         class="styles-section-container-divider"
-         styleOption={currentStyleOption}
-         isLabelOptionStyle={currentStyleOption.type === "label"}
-         isBulletOptionStyle={currentStyleOption.type === "bullet"}/>
+            type={state.activeTab.type}
+            path={state.activeTab.path}/>
    </div>
 
    <script>
       export default {
-         currentStyleOption: null,
+         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"]],
+
+         state: {
+            activeTab: null,
+            tabOptions: []
+         },
 
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
             this.nvhStore = window.nvhStore;
-            if (this.nvhFormattingEditor.data.selectedLayoutContainer) {
-               let styleOptions = this.getStyleOptions();
-               this.currentStyleOption = styleOptions[0];
-            }
+            this.refreshTabOptions()
          },
 
          onBeforeUpdate(props) {
-            if (this.nvhFormattingEditor.data.selectedLayoutContainer) {
-               let styleOptions = this.getStyleOptions();
-               let styleOptionsStyles = styleOptions.map(styleOption => styleOption.styles);
-               if (!this.currentStyleOption || !styleOptionsStyles.includes(this.currentStyleOption.styles)) {
-                  this.currentStyleOption = styleOptions[0];
-               }
+            this.refreshTabOptions()
+         },
+
+         onUpdated(){
+            $("#styleMoreDropdonwTrigger", this.root).dropdown({coverTrigger: false, constrainWidth: false})
+         },
+
+         onSelectedLayoutContainerChange(){
+            this.state.activeTab = null
+            this.update()
+         },
+
+         onTabClick(tab) {
+            if(tab != this.state.activeTab){
+               this.update({activeTab: tab})
             }
          },
 
-         getStyleOptions() {
-            let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
-            let result;
-            if (!selectedLayoutContainer.markupStyles || selectedLayoutContainer.children.length) {
-               result = [];
-            } else {
-               result = [...selectedLayoutContainer.markupStyles];
-            }
-            let name = selectedLayoutContainer.content.name;
-            let fullName = selectedLayoutContainer.content.fullName;
-            let styles = selectedLayoutContainer.styles;
-            let labelStyles = selectedLayoutContainer.labelStyles;
-            let bulletStyles = selectedLayoutContainer.bulletStyles;
-            result.splice(0, 0, {name: name, fullName: fullName, styles: styles});
-            result.splice(result.length, 0, {name: "label", fullName: "label", styles: labelStyles, type: "label"});
-            result.splice(result.length, 0, {name: "bullet", fullName: "bullet", styles: bulletStyles, type: "bullet"});
-            return result;
+         onResetClick(){
+            this.nvhFormattingEditor.resetSchemaStyles(this.nvhFormattingEditor.data.selectedLayoutContainer, this.state.activeTab.type, this.state.activeTab.type == "markup" ? this.state.activeTab.path : null)
          },
 
-         changeStyleOption(fullName) {
-            for (let styleOption of this.getStyleOptions()) {
-               if (styleOption.fullName === fullName) {
-                  this.currentStyleOption = styleOption;
-                  this.update();
-                  return;
-               }
+         refreshTabOptions(){
+            let tabOptions = []
+            let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer
+            if(selectedLayoutContainer){
+               let name = selectedLayoutContainer.content.name
+               let label = name ? name + (selectedLayoutContainer.children.length ? " group" : "") : "container"
+               tabOptions = [{
+                     label: label,
+                     path: selectedLayoutContainer.content.path,
+                     type: "element",
+                     id: `element_${selectedLayoutContainer.content.path}`
+                  },
+                  ...this.nvhFormattingEditor.getElementMarkupChildren(selectedLayoutContainer)
+                        .map(markupChild => {
+                              return {
+                                 label: markupChild.name,
+                                 path: markupChild.path,
+                                 type: "markup",
+                                 id: `markup_${markupChild.path}`
+                              }
+                        }),
+                  {label: "label", id: "label_label", path: null, type: "label"},
+                  {label: "bullet", id: "bullet_bullet", path: null, type: "bullet"}
+               ]
+            }
+            this.state.activeTabOptions = tabOptions
+            if(!this.state.activeTab){
+               this.state.activeTab = this.state.activeTabOptions[0]
             }
          }
       }
    </script>
-   
-   <style>
-      .styles-section-container {
-         padding: 2px;
-         height: 100%;
+
+   <style type="scss">
+      :host{
          min-width: 100%;
+         height: 100%;
          overflow-y: auto;
       }
-      .styles-section-container-divider {
+      .styles-section-container {
+         background-color: #f5f5f5;
+      }
+      styles-section-item{
          display: flex;
          flex-direction: column;
          gap: 2px;
-         padding-top: 10px;
       }
-      .style-section-option-item {
-         padding: 0 5px;
-         width: fit-content;
-         cursor: pointer;
-         background-color: var(--color-grey-light);
-         text-wrap: nowrap;
-         border-bottom: 2px solid black;
-      }
-      .style-section-option-item:hover {
-         background-color: var(--color-grey-very-light);
-      }
-      .style-section-option-item-current {
-         background-color: white;
-         border: 2px solid black;
-         border-bottom: none;
+      .style-section-top-bar-wrapper{
+         background-color: #ebebeb;
       }
       .style-section-option-wrapper {
          display: flex;
          width: 100%;
-         overflow-x: scroll;
+      }
+      .style-section-tabs-wrapper{
+         width: calc(100% - 40px);
+         overflow-x: auto;
+      }
+      .tabs{
+         overflow: unset;
+         width: auto;
+         background-color: #ebebeb;
+         margin: 0;
+         .tab:not(.active){
+            background-color: #ebebeb
+         }
+      }
+      .tab.active a{
+         color: var(--active-color);
+      }
+      .dropdown-trigger{
+         width: 34px;
+         height: 34px;
+         line-height: 34px;
       }
    </style>
 </styles-section>

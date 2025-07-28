@@ -341,13 +341,7 @@ class StoreClass {
                   }
                   this.schema.update(response.configs.structure?.nvhSchema || "")
                   response.configs.formatting ??= {}
-                  response.configs.formatting.elements ??= {}
                   response.configs.searchability.templates ??= []
-                  if(!this.schema.isEmpty()){
-                     this.schema.forEach(element => {
-                        response.configs.formatting.elements[element.path] ??= {}
-                     })
-                  }
                   Object.assign(this.data, {
                         config: response.configs,
                         userAccess: response.userAccess,

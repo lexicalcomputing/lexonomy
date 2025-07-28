@@ -72,6 +72,24 @@
             this.initializeDropdown()
          },
 
+         onClone(){
+            this.store.cloneDictionary(this.dictData.dictId)
+         },
+
+         onDelete(){
+            window.openConfirmDialog({
+               title: "Delete dictionary?",
+               content: `Are you sure you want to delete dictionary "${this.dictData.title}"? You will not be able to undo this.`,
+               confirmLabel: "Delete",
+               onConfirm: () => {
+                  this.update({isLoading: true})
+                  this.store.deleteDictionary(this.dictData.dictId)
+                        .done(() => {route("/")})
+                        .fail(() => {this.update({isLoading: false})})
+               }
+            })
+         },
+
          initializeDropdown(){
             $(".dropdown-trigger", this.root).dropdown({
                coverTrigger: false,

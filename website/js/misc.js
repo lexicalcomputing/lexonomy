@@ -465,3 +465,10 @@ window.openConfirmDialog = (params) => {
       }]
    })
 }
+
+window.getClasses = (classSettings) => {
+   // classSettings = [["class1": bool], ["class2", bool]]
+   return classSettings.filter(setting => setting[1])
+         .map(setting => setting[0])
+         .join(" ")
+}

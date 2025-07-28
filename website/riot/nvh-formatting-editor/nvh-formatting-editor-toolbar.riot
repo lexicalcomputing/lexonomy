@@ -2,65 +2,53 @@
    <div class="formatting-page-containers">
       <div class="formatting-page-action-container">
          <div id="save-button-wrapper"
-            onclick={props.saveSchemas}
+            onclick={nvhFormattingEditor.saveSchemas.bind(nvhFormattingEditor)}
             data-tooltip="Save formatting (including layout and styles)"
             class="tooltipped formatting-page-action-item">
             <i class="material-icons">save</i>
          </div>
-         <div id="undo-icon-wrapper" 
+         <div id="undo-icon-wrapper"
             onclick={nvhFormattingEditor.undoSchema.bind(nvhFormattingEditor)}
             data-tooltip="Step back"
-            class="tooltipped formatting-page-action-item">
+            class="tooltipped formatting-page-action-item {nvhFormattingEditor.currentLayout.history.index == 0 ? 'disabled' : ''}">
             <i class="material-icons">undo</i>
          </div>
-         <div id="redo-icon-wrapper" 
+         <div id="redo-icon-wrapper"
             onclick={nvhFormattingEditor.redoSchema.bind(nvhFormattingEditor)}
             data-tooltip="Step forward"
-            class="tooltipped formatting-page-action-item">
+            class="tooltipped formatting-page-action-item {nvhFormattingEditor.currentLayout.history.index == nvhFormattingEditor.currentLayout.history.schema.length - 1 ? 'disabled' : ''}">
             <i class="material-icons">redo</i>
          </div>
-         <div id="reset-icon-wrapper" 
+         <div id="reset-icon-wrapper"
             onclick={nvhFormattingEditor.resetSchema.bind(nvhFormattingEditor)}
             data-tooltip="Reset current layout"
             class="tooltipped formatting-page-action-item">
             <i class="material-icons">refresh</i>
-         </div>
-         <div id="export-pdf"
-            onclick={onExportPDF}
-            data-tooltip="Export all entries of dictionary to PDF"
-            class="tooltipped formatting-page-action-item">
-            Export to PDF
-         </div>
-         <div class="progress-label" if={state.exportedEntries.inProgress}>
-            {state.exportedEntries.exported} / {state.exportedEntries.total}
-         </div>
-         <div class="progress-label" if={state.exportedEntries.isLoading}>
-            Wait please
          </div>
       </div>
       <div class="formatting-page-visibility-container">
          <div onclick={onSectionClick.bind(this, "elements")}
             data-tooltip="Element list panel"
             class="tooltipped formatting-page-visibility-item
-               {!props.state.isSectionVisible.elements ? "item-inactive" : "item-active"}">
+               {!nvhFormattingEditor.visibleSections.elements ? "item-inactive" : "item-active"}">
             <i class="material-icons">sort</i>
          </div>
          <div onclick={onSectionClick.bind(this, "editing")}
             data-tooltip="Layout panel"
             class="tooltipped formatting-page-visibility-item
-               {!props.state.isSectionVisible.editing ? "item-inactive" : "item-active"}">
+               {!nvhFormattingEditor.visibleSections.editing ? "item-inactive" : "item-active"}">
             <i class="material-icons">view_compact</i>
          </div>
          <div onclick={onSectionClick.bind(this, "style")}
             data-tooltip="Style panel"
             class="tooltipped formatting-page-visibility-item
-               {!props.state.isSectionVisible.style ? "item-inactive" : "item-active"}">
+               {!nvhFormattingEditor.visibleSections.style ? "item-inactive" : "item-active"}">
             <i class="material-icons">palette</i>
          </div>
          <div onclick={onSectionClick.bind(this, "example")}
             data-tooltip="Preview panel"
             class="tooltipped formatting-page-visibility-item
-               {!props.state.isSectionVisible.example ? "item-inactive" : "item-active"}">
+               {!nvhFormattingEditor.visibleSections.example ? "item-inactive" : "item-active"}">
             <i class="material-icons">visibility</i>
          </div>
       </div>
@@ -83,22 +71,42 @@
                {nvhFormattingEditor.data.activeLayout !== "mobile" ? "item-inactive" : "item-active"}">
             <i class="material-icons">phone_android</i>
          </div>
-         <div onclick={onLayoutClick.bind(this, "pdf")}
+         <!--div onclick={onLayoutClick.bind(this, "pdf")}
             data-tooltip="Export to PDF layout"
             class="tooltipped formatting-page-layout-item
                {nvhFormattingEditor.data.activeLayout !== "pdf" ? "item-inactive" : "item-active"}">
             <i class="material-icons">picture_as_pdf</i>
-         </div>
+         </div-->
       </div>
       <div class="formatting-page-tutorial-container">
-         <a id="link-tutorial" href="https://guide.lexonomy.eu/configuration/formatting/" target="_blank">See tutorial</a>
-         <div id="link-fullscreen" class={state.isFullscreen ? "item-active": ""} onclick={toggleFullscreen}>{state.isFullscreen ? "Exit" : "Enter"} fullscreen</div>
+         <!--div id="export-pdf"
+            onclick={onExportPDF}
+            data-tooltip="Export all entries of dictionary to PDF"
+            class="tooltipped formatting-page-action-item">
+            Export to PDF
+         </div>
+         <div class="progress-label" if={state.exportedEntries.inProgress}>
+            {state.exportedEntries.exported} / {state.exportedEntries.total}
+         </div>
+         <div class="progress-label" if={state.exportedEntries.isLoading}>
+            Wait please
+         </div-->
+         <a id="link-tutorial"
+               class="borderLeft"
+               href="https://guide.lexonomy.eu/configuration/formatting/"
+               target="_blank">See tutorial</a>
+         <div if={window.document.fullscreenEnabled}
+               id="link-fullscreen"
+               class="borderLeft {window.document.fullscreenElement ? 'item-active': ''}"
+               onclick={toggleFullscreen}>
+            {window.document.fullscreenElement ? "Exit" : "Enter"} fullscreen
+         </div>
       </div>
    </div>
 
    <script>
       export default {
-         bindings: [["nvhFormattingEditor", "updateToolbar", "update"]],
+         //bindings: [["nvhFormattingEditor", "updateToolbar", "update"]],
 
          state: {
             exportedEntries: {
@@ -106,8 +114,7 @@
                inProgress: false,
                exported: 0,
                total: 0,
-            },
-            isFullscreen: false,
+            }
          },
 
          onBeforeMount(props) {
@@ -115,34 +122,19 @@
          },
 
          onLayoutClick(layoutName) {
-            this.nvhFormattingEditor.data.activeLayout = layoutName;
-            this.nvhFormattingEditor.data.selectedLayoutContainer = null;
-            this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout[layoutName];
-            this.nvhFormattingEditor.updateEditor();
+            this.nvhFormattingEditor.changeActiveLayout(layoutName)
          },
 
          onSectionClick(sectionName) {
-            this.props.state.isSectionVisible[sectionName] = !this.props.state.isSectionVisible[sectionName];
-            this.nvhFormattingEditor.updateEditor();
+            this.nvhFormattingEditor.toggleSection(sectionName)
          },
 
          toggleFullscreen() {
-            let components = [
-               document.getElementById("formatting-page-title"),
-               document.getElementsByClassName("wideContainer")[0],
-               document.getElementById("formatting-page-wrapper-container"),
-               document.getElementsByTagName("app-header")[0],
-               document.getElementsByTagName("app-footer")[0],
-            ];
-            for (let component of components) {
-               if (!this.state.isFullscreen) {
-                  component.classList.add("fullscreen");
-               } else {
-                  component.classList.remove("fullscreen");
-               }
+            if(document.fullscreenElement){
+               document.exitFullscreen()
+            } else {
+               document.getElementById("formatting-fullscreen-wrapper").requestFullscreen()
             }
-            this.state.isFullscreen = !this.state.isFullscreen;
-            this.update();
          },
 
          async onExportPDF() {
@@ -165,7 +157,7 @@
             const bytesArrayPDF = Uint8Array.from(atob(encodedPDFString), c => c.charCodeAt(0));
             const blob = new Blob([bytesArrayPDF], { type: 'application/pdf' });
             const blobUrl = URL.createObjectURL(blob);
-            
+
             /*
                Because of asynchronous creating of a PDF file,
                I need to create a temporary <a> element a simulate clicking on it.
@@ -184,7 +176,10 @@
       }
    </script>
 
-   <style>
+   <style type="scss">
+      :host{
+         display: block;
+      }
       .formatting-page-layout-item, .formatting-page-visibility-item, .formatting-page-action-item {
          padding: 5px;
          display: flex;
@@ -192,6 +187,12 @@
          justify-content: center;
          background-color: white;
          cursor: pointer;
+         &.disabled{
+            background-color: var(--color-grey-toolbar)!important;
+            i{
+               color: #9F9F9F !important;
+            }
+         }
       }
       .formatting-page-layout-item:hover, .formatting-page-visibility-item:hover, .formatting-page-action-item {
          background-color: var(--color-grey-normal);
@@ -212,7 +213,6 @@
          width: 100%;
          align-items: center;
          justify-content: end;
-         margin-right: 10px;
       }
       .item-inactive {
          background-color: transparent;

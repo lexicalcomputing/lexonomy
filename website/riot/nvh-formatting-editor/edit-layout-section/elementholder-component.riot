@@ -1,120 +1,168 @@
 <elementholder-component>
-   <div class="tooltipped content-box-wrapper {props.isBaseLevel ? "content-box-wrapper-base" : ""}"
-      style="color: {getColor()};
-            background-color: {getBackgroundColor()};
-            border: 1px solid {props.isBaseLevel ? this.nvhStore.getElementColor(props.schema.content.fullName) : "transparent"};"
-      data-tooltip={props.schema.content.fullName}
-      onmousedown={!props.isBaseLevel && props.schema.content.fullName ? () => onMouseDown() : () => {}}>
+   <div class="content-box-wrapper {!props.schema.parent ? "content-box-wrapper-base" : ""} {props.schema.children.length && !state.elementDoesNotExist ? 'light-background' : 'dark-background'}"
+         style="color: {getColor()}; background-color: {getBackgroundColor()};">
       <div class="content-box-wrapper-2">
-         <div class="layout-container-content-box {props.schema.children.length === 0 ? "" : "layout-container-content-box-parent"}">
-         {getElementHolderLabel()}
+         <div class="layout-container-content-box displayFlex alignCenter {props.schema.children.length === 0 ? "" : "layout-container-content-box-parent"}">
+            <span if={state.elementDoesNotExist}
+                  class="tooltipped mr-2"
+                  data-tooltip="Entry structure changed, and element '{props.schema.content.path}' does not exist anymore. Remove it to fix the formatting structure.">
+               <i class="material-icons white-text">warning</i>
+            </span>
+            <i if={props.schema.parent && !state.elementDoesNotExist}
+                  class="material-icons tooltipped action"
+                  data-tooltip={props.schema.orientation === "column"
+                  ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
+                  : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
+                  style="font-size: 18px;width: 24px;height: 24px;line-height: 24px;"
+                  onclick={onChangeOrientationClick}>
+               {props.schema.orientation == "column" ? 'swap_vert' : 'swap_horiz'}
+            </i>
+            <span class="layout-container-drag-handle label-wrapper mr-2 tooltipped"
+                  data-tooltip={props.schema.content.path}>
+               {getElementHolderLabel()}
+            </span>
+            <!--i class="material-icons tiny">
+               more_horiz
+            </i>
+            <ul>
+               <li>
+                  <a>
+                     <i class="material-icons left">delete</i> delete
+                  </a>
+               </li>
+            </ul>
+             <ul class="dropdown-content">
+               <li>
+                  <a onclick={onDeleteClick}>
+                     <i class="material-icons">delete</i>
+                     Delete
+                  </a>
+               </li>
+               <li>
+                  <a data-onclick={onCloneClick}>
+                     <i class="material-icons">content_copy</i>
+                     Copy
+                  </a>
+               </li>
+            </ul-->
+            <div if={props.schema.parent && !nvhFormattingEditor.data.draggedLayoutContainer}
+                  class="action-panel displayFlex">
+               <div if={props.schema.parent && !state.elementDoesNotExist}
+                     class="tooltipped action btn-flat"
+                     id="action-duplicate"
+                     data-tooltip="Duplicate"
+                     onclick={duplicateElement}>
+                  <i class="material-icons">content_copy</i>
+               </div>
+               <div if={props.schema.parent}
+                     class="tooltipped action btn-flat"
+                     id="action-delete"
+                     data-tooltip="Delete"
+                     onclick={nvhFormattingEditor.deleteElement.bind(nvhFormattingEditor, props.schema)}>
+                  <i class="material-icons">delete</i>
+               </div>
+            </div>
          </div>
       </div>
    </div>
 
    <script>
-   export default {
-      onBeforeMount(props) {
-         this.nvhFormattingEditor = window.nvhFormattingEditor;
-         this.nvhStore = window.nvhStore;
-      },
+      export default {
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.nvhStore = window.nvhStore
+            this.state.elementDoesNotExist = this.nvhFormattingEditor.isElementNonExisting(props.schema.content.path)
+         },
 
-      onMouseDown() {
-         transferObject = {
-            type: "elementholder-label"
-         };
-         let releaseFunction = {
-            parameters: [],
-            run: this.onRelease,
-         };
-         transferObject.releaseFunction = releaseFunction;
-         this.nvhFormattingEditor.data.mouseData = transferObject;
-         this.nvhFormattingEditor.timeout = setTimeout(() => {
-         let trash = document.getElementById("trash-icon");
-            if (trash) {
-               trash.classList.add("trash-enabled");
-               trash.classList.remove("trash-disabled");
-            }
-         }, 200);
-         this.nvhFormattingEditor.data.dropInfo.wasSuccessful = false;
-      },
-      onRelease() {
-         if (this.nvhFormattingEditor.data.dropInfo.wasSuccessful) {
-            this.nvhFormattingEditor.clearLayoutContainer(this.props.schema)
-            this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-         }
-      },
-      onMouseEnter(event) {
-         const data = this.nvhFormattingEditor.data.mouseData;
-         if (data && data.type === "choice-item") {
-            event.currentTarget.classList.add("inside-adder-highligth-dragged-icon");
-         }
-      },
-      onMouseLeave(event) {
-         event.currentTarget.classList.remove("inside-adder-highligth-dragged-icon");
-      },
+         onChangeOrientationClick(evt) {
+            evt.stopPropagation()
+            this.nvhFormattingEditor.toggleSchemaOrientation(this.props.schema)
+         },
 
-      getElementHolderLabel() {
-         let childrenCount = this.props.schema.children.length;
-         let name = this.props.schema.content.name;
-         if (!name) {
-            return "container";
-         }
-         if (childrenCount === 0) {
-            return name;
-         } else {
-            return name + " group";
-         }
-      },
-      getColor() {
-         let childrenCount = this.props.schema.children.length;
-         let name = this.props.schema.content.name;
-         let color = this.nvhStore.getElementColor(this.props.schema.content.fullName);
-         if (this.props.isBaseLevel) {
-            if (childrenCount === 0) {
-               return "#ffffff";
+         duplicateElement(evt) {
+            evt.stopPropagation()
+            this.nvhFormattingEditor.duplicateSchema(this.props.schema)
+         },
+
+         getElementHolderLabel() {
+            let childrenCount = this.props.schema.children.length;
+            let name = this.props.schema.content.name;
+            if (!name) {
+               return "container";
             }
-            return color;
-         }
-         if (!name) {
-            return "black";
-         } else {
             if (childrenCount === 0) {
-               return "white";
+               return name;
+            } else {
+               return name + " group";
             }
-            return color;
-         }
-      },
-      getBackgroundColor() {
-         let childrenCount = this.props.schema.children.length;
-         let name = this.props.schema.content.name;
-         let color = this.nvhStore.getElementColor(this.props.schema.content.fullName);
-         if (this.props.isBaseLevel) {
-            if (childrenCount === 0) {
+         },
+
+         getColor() {
+            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.schema.content.path), -0.4);
+            return this.nvhStore.getElementColor(this.props.schema.content.path);
+
+
+
+            if(this.state.elementDoesNotExist){
+               return "#fff"
+            }
+            let childrenCount = this.props.schema.children.length;
+            let name = this.props.schema.content.name;
+            let color = this.nvhStore.getElementColor(this.props.schema.content.path);
+            if (!this.props.schema.parent) {
+               if (childrenCount === 0) {
+                  return "#fff";
+               }
                return color;
             }
-            return "#ffffff";
-         }
-         if (!name) {
-            return "#c7ced1";
-         } else {
-            if (childrenCount === 0) {
+            if (!name) {
+               return "#000";
+            } else {
+               if (childrenCount === 0) {
+                  return "#fff";
+               }
                return color;
             }
-            return this.nvhFormattingEditor.getColorLightVersion(color);
-         }
-      },
-   }
+         },
+
+         getBackgroundColor() {
+            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.schema.content.path), this.props.schema.children.length ? 0.85 : 0.75);
+
+
+            let childrenCount = this.props.schema.children.length;
+            let name = this.props.schema.content.name;
+            let color = this.nvhStore.getElementColor(this.props.schema.content.path);
+            if (!this.props.schema.parent) {
+               if (childrenCount === 0) {
+                  return color;
+               }
+               return "unset";
+            }
+            if (!name) {
+               return "#c7ced1";
+            } else {
+               if (childrenCount === 0) {
+                  return color;
+               }
+               return "unset"//this.nvhFormattingEditor.getColorLightVersion(color);
+            }
+         },
+      }
    </script>
 
-   <style>
+   <style type="scss">
+      :host{
+         &:hover{
+            .action-panel{
+               opacity: 1;
+            }
+         }
+      }
       .layout-container-content-box {
          padding: 0 5px;
          margin: 2px;
          width: 100%;
-         text-align: center;
          text-wrap: nowrap;
-
       }
       .layout-container-content-box-parent {
          text-align: left;
@@ -122,12 +170,9 @@
          font-size: 14px;
       }
       .content-box-wrapper {
-         background-color: green;
-         padding-right: 20px;
          display: flex;
          flex-direction: column;
          align-items: center;
-         cursor: grab;
          user-select: none;
       }
       .content-box-wrapper-base {
@@ -138,11 +183,47 @@
          flex-direction: row;
          width: 100%;
       }
-      .inside-adder-icon {
-         color: var(--color-can-be-dropped) !important;
+      .label-wrapper{
+         cursor: grab;
       }
-      .inside-adder-highligth-dragged-icon {
-         color: var(--color-is-dragged-over) !important;
+      .layout-container-drag-handle{
+         flex: 1
+      }
+      .action-panel{
+         opacity: 0;
+         margin-left: auto;
+      }
+      .action {
+         cursor: pointer;
+         user-select: none;
+         font-size: 1.3rem;
+         width: 24px;
+         height: 24px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         opacity: 0.6;
+         padding: 0;
+         transition: all 0.1s ease-in-out;
+         &:hover{
+            transform: scale(1.3);
+         }
+         i{
+            font-size: 16px;
+         }
+      }
+      .action:hover {
+         opacity: 1;
+      }
+      .light-background{
+         .action-panel i{
+            color: rgb(33 33 33);
+         }
+      }
+      .dark-background{
+         .action-panel i{
+            color: #fff;
+         }
       }
    </style>
 </elementholder-component>

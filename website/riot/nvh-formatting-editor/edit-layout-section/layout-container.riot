@@ -1,247 +1,183 @@
-<layout-container>
-   <action-panel if={!nvhFormattingEditor.data.mouseData}
-      class="action-panel
-            {this.nvhFormattingEditor.isLayoutContainerHovered(props.schema) ? "action-panel-hovered" : ""}"
-      index={props.index}
-      parentSchema={props.parentSchema}
-      schema={props.schema}
-      isBaseLevel={props.isBaseLevel}/>
+<layout-container class={getLayoutContainerCssClass()}
+      style="background-color: {getBackgroundColor()};"
+      draggable="true"
+      ondragstart={onDragStart}
+      ondragend={onDragEnd}
+      onmousedown={onMouseDown}
+      onmouseover={onMouseOver}
+      onmouseleave={onMouseLeave}
+      onclick={onRootClick}>
    <elementholder-component class="elementholder"
-      schema={props.schema}
-      canHaveAdders={props.canHaveAdders}
-      isBaseLevel={props.isBaseLevel}/>
-   <add-children-component getBackgroundColor={getBackgroundColor}
-      class="add-children-component"
-      schema={props.schema}
-      canHaveAdders={props.canHaveAdders}>
-   </add-children-component>
-   <div class={getLayoutContainerInsideWrapperCssClass(props.schema)}
-      style="background-color: {getBackgroundColor()};
-         border: 2px solid {getBorderColor()}">
-      <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema) && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
-         onclick={() => nvhFormattingEditor.addElement(0, props.schema, null)}
-         onmouseenter={onAdderMouseEnter}
-         onmouseleave={onAdderMouseLeave}
-         onmouseup={(event) => onAdderMouseUp(event, props.schema, 0)}
-         class={getAdderCssClass(props.schema, "first")}
-         orientation={props.schema.children.length === 0 ? "column": props.schema.orientation}
-         index={0}
          schema={props.schema}/>
+   <add-children-component schema={props.schema}/>
+   <div if={state.canHaveChildren && state.hasNotSameElementInAncestors}
+         class={getLayoutContainerInsideWrapperCssClass(props.schema)}>
+      <adder-component if={state.canHaveChildren && state.hasNotSameElementInAncestors}
+            schema={props.schema}
+            position=0/>
       <template each={(child, index) in props.schema.children}>
-         <layout-container onclick={() => nvhFormattingEditor.selectLayoutContainer(child, props.schema)}
-            title={nvhFormattingEditor.isElementNonExisting(child.content.fullName)
-               ? "Entry structure changed, and element with path '" + child.content.fullName + "'' does not exist anymore. Remove it to fix the formatting structure." : ""}
-            onmouseup={(event) => onMouseUp(event, child)}
-            onmouseenter={(event) => onLayoutContainerMouseEnter(event, child)}
-            onmouseleave={(event) => onLayoutContainerMouseLeave(event, child, props.schema)}
-            class={getLayoutContainerCssClass(child)}
-            schema={nvhFormattingEditor.childWithInheritedArea(child, props.schema)}
-            parentSchema={props.schema}
-            isBaseLevel={false}
-            index={index}
-            canHaveAdders={nvhFormattingEditor.canHaveAdders(props.schema.content.areaFullName, child)}/>
-         <adder-component if={props.canHaveAdders && !this.nvhFormattingEditor.isLayoutContainerDragged(props.schema) && nvhFormattingEditor.isChildOfParent(props.schema.content.areaFullName)}
-            onclick={() => nvhFormattingEditor.addElement(index + 1, props.schema, null)}
-            onmouseenter={onAdderMouseEnter}
-            onmouseleave={onAdderMouseLeave}
-            onmouseup={(event) => onAdderMouseUp(event, props.schema, index + 1)}
-            class={getAdderCssClass(props.schema, "other")}
-            orientation={props.schema.orientation}
-            index={index + 1}
-            schema={props.schema}/>
+         <layout-container schema={child}/>
+         <adder-component if={state.canHaveChildren && state.hasNotSameElementInAncestors}
+               schema={props.schema}
+               position={index + 1}/>
       </template>
    </div>
 
    <script>
       export default {
+         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"]],
+
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
             this.nvhStore = window.nvhStore;
-            /* 
-            Initialize labelStyles and markupStyles in case any of them is undefined
-            */
-            if (!props.schema.markupStyles?.length) {
-               let markupChildren = this.nvhFormattingEditor.getDirectMarkupChildren(props.schema.content.fullName);
-               if (markupChildren.length !== 0 ) {
-                  props.schema.markupStyles = this.nvhFormattingEditor.createMarkupStyles(props.schema.content.fullName);
-               } else {
-                  props.schema.markupStyles = [];
-               }
-            }
-            props.schema.labelStyles = props?.schema?.labelStyles || {}
-            props.schema.bulletStyles = props?.schema?.bulletStyles || {}
-            props.schema.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
+            this.refreshState()
          },
 
          onBeforeUpdate(props) {
-            props.schema.type = "layout-container" // because of renaming from placeholder to layout container for backward compatibility
+            this.refreshState()
          },
 
-         onMouseUp(event, schema) {
-            if (this.nvhFormattingEditor.data.canBeDropped) {
-               const data = this.nvhFormattingEditor.data.mouseData;
-               if (!data) {
-                  return;
-               }
-               if (data.type === "choice-item") {
-                  this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
-                  if (this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, schema)
-                        || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.schema.content.areaFullName, schema)
-                        || !this.nvhFormattingEditor.isChildOfParent(this.props.schema.content.areaFullName)) {
-                     this.nvhFormattingEditor.data.canBeDropped = false;
-                     return;
-                  }
-                  for (let child of schema.children) {
-                     if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
-                           || this.nvhFormattingEditor.isLayoutContainerAsSameWrapper(data.fullName, child)) {
-                        this.nvhFormattingEditor.data.canBeDropped = false;
-                        return;
-                     }
-                  }
-                  this.nvhFormattingEditor.fillLayoutContainerWithData(schema, data);
-               }
-               if (data.releaseFunction) {
-                  data.releaseFunction.run(...data.releaseFunction.parameters);
-                  data.releaseFunction = null;
-               }
-               this.nvhFormattingEditor.data.canBeDropped = false;
+         onSelectedLayoutContainerChange(){
+            let shouldBeSelected = this.nvhFormattingEditor.data.selectedLayoutContainer == this.props.schema
+            if(shouldBeSelected != this.isSelected){
+               this.isSelected = shouldBeSelected
+               this.update()
             }
          },
 
-         onAdderMouseEnter(event) {
-            const data = this.nvhFormattingEditor.data.mouseData;
-            if (data && data.type === "layout-container") {
-               event.currentTarget.classList.add("adder-highligth-dragged");
+         onRootClick(evt){
+            if(evt.target.closest("layout-container") == this.root){
+               this.nvhFormattingEditor.selectLayoutContainer(this.props.schema)
             }
          },
 
-         onAdderMouseLeave(event) {
-            const data = this.nvhFormattingEditor.data.mouseData;
-            if (data && data.type === "layout-container") {
-               event.currentTarget.classList.remove("adder-highligth-dragged");
+         onMouseDown(evt){
+            this.state.target = evt.target
+         },
+
+         onDragStart(evt){
+            if ($(".layout-container-drag-handle", this.root).first()[0]?.contains(this.state.target)) {
+               setTimeout(() => {
+                  // prevent DOM manipulation to fire ondragend event immediately after ondragstart
+                  $(this.root).addClass("layout-container-is-dragging")
+                  this.nvhFormattingEditor.startElementDragging(this.props.schema)
+
+               }, 0)
+            } else {
+               evt.preventDefault()
+            }
+            evt.stopPropagation()
+         },
+
+         onDragEnd(){
+            $(this.root).removeClass("layout-container-is-dragging")
+            this.nvhFormattingEditor.stopElementDragging()
+         },
+
+         onMouseOver(evt) {
+            if(evt.target.closest("layout-container") == this.root){
+               this.nvhFormattingEditor.setHoveredLayoutContainer(this.props.schema)
             }
          },
 
-         onAdderMouseUp(event, schema, index) {
-            if (this.nvhFormattingEditor.data.canBeDropped) {
-               const data = this.nvhFormattingEditor.data.mouseData;
-               if (!data) {
-                  return;
-               }
-               if (data.type === "layout-container") {
-                  schema.children.splice(index, 0, data);
-                  this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
-                  this.nvhFormattingEditor.data.dropInfo.index = index;
-                  this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
-                  this.nvhFormattingEditor.data.canBeDropped = false;
-               }
-               if (data.releaseFunction) {
-                  data.releaseFunction.run(...data.releaseFunction.parameters);
-                  data.releaseFunction = null;
-               }
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-               this.nvhFormattingEditor.data.draggedLayoutContainer = null;
-               this.update();
-            }
+         onMouseLeave(event, schema, parentSchema) {
+            this.nvhFormattingEditor.setHoveredLayoutContainer(null)
          },
 
-         onLayoutContainerMouseEnter(event, schema) {
-            if (!this.nvhFormattingEditor.data.mouseData) {
-               event.currentTarget.classList.add("layout-container-mouse-hover");
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = schema;
-               this.nvhFormattingEditor.updateEditor();
-            }
-         },
-
-         onLayoutContainerMouseLeave(event, schema, parentSchema) {
-            if (!this.nvhFormattingEditor.data.mouseData) {
-               event.currentTarget.classList.remove("layout-container-mouse-hover");
-               this.nvhFormattingEditor.data.hoveredLayoutContainer = null;
-               /*
-                  This is a work-around.
-                  I need to assure that after leaving child layoutContainer,
-                  the parent will be hovered which is expected behaviour.
-               */
-               const classList = Array.from(event.currentTarget.parentElement.parentElement.classList);
-               if (classList.includes("layout-container")) {
-                  event.currentTarget.parentElement.parentElement.classList.add("layout-container-mouse-hover");
-                  this.nvhFormattingEditor.data.hoveredLayoutContainer = parentSchema;
-               }
-               this.nvhFormattingEditor.updateEditor();
-            }
-         },
-
-         getBorderColor() {
-            return !this.props.schema.content.name ? "#c7ced1" : "transparent";
+         refreshState(){
+            this.state.canHaveChildren = this.nvhFormattingEditor.canHaveChildren(this.props.schema)
+            this.state.hasNotSameElementInAncestors = !this.props.schema.content.path  // empty container
+                  || !this.nvhFormattingEditor.hasElementInAncestors(this.props.schema, this.props.schema.content.path)
          },
 
          getBackgroundColor() {
-            if (!this.props.schema.content.name || this.props.isBaseLevel) {
-               return "#ffffff";
+            if (!this.props.schema.content.name || !this.props.schema.parent) {
+               return "#0000000a";
             }
-            if (this.props.schema.children.length === 0) {
-               return "transparent";
-            }
-            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.schema.content.fullName));
+            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.schema.content.path), this.props.schema.children.length ? 0.85 : 0.95);
          },
 
-         canBeDropped(schema) {
-            const data = this.nvhFormattingEditor.data.mouseData;
-            if (!data || data.type !== "choice-item"
-                  || this.nvhFormattingEditor.isElementWithoutChildrenToWrapper(data, schema)
-                  || this.nvhFormattingEditor.isElementToRedundantNestedWrapper(data, this.props.schema.content.areaFullName, schema)
-                  || !this.nvhFormattingEditor.isChildOfParent(this.props.schema.content.areaFullName)) {
-               return false;
+         /*getOutlineColor(){
+            let color = window.nvhStore.getElementColor(this.props.schema.content.path)
+            if(!this.props.schema.children.length) {
+               return this.nvhFormattingEditor.getColorLightVersion(color)
             }
-            for (let child of schema.children) {
-               if (!this.nvhFormattingEditor.isParentLabelOfDropObject(data.fullName, child)
-                  || this.nvhFormattingEditor.isLayoutContainerAsSameWrapper(data.fullName, child)) {
-                  return false;
-               }
-            }
-            return true;
-         },
+            return color
+         },*/
 
-         getLayoutContainerCssClass(layoutContainer) {
-            let cssClass = "layout-container";
-            cssClass += this.nvhFormattingEditor.isLayoutContainerActive(layoutContainer) ? " layout-container-selected" : "";
-            cssClass += this.nvhFormattingEditor.isLayoutContainerHovered(layoutContainer) && !this.nvhFormattingEditor.data.mouseData ? " layout-container-mouse-hover" : "";
-            cssClass += layoutContainer.content.name && layoutContainer.children.length !== 0 ? " layout-container-wrapping-content" : "";
-            cssClass += layoutContainer.children.length === 0 ? " layout-container-no-children" : "";
-            cssClass += this.nvhFormattingEditor.isLayoutContainerDragged(layoutContainer) ? " layout-container-dragged" : "";
-            cssClass += this.canBeDropped(layoutContainer) ? " layout-container-can-be-dropped" : "";
-            cssClass += this.nvhFormattingEditor.isElementNonExisting(layoutContainer.content.fullName) ? " layout-container-non-existing" : "";
-            return cssClass;
+         getLayoutContainerCssClass() {
+            return window.getClasses([
+               ["layout-container",              true],
+               ["layout-container-selected",     this.nvhFormattingEditor.isLayoutContainerActive(this.props.schema)],
+               ["layout-container-dragged",      this.nvhFormattingEditor.isLayoutContainerDragged(this.props.schema)],
+               ["layout-container-non-existing", this.nvhFormattingEditor.isElementNonExisting(this.props.schema.content.path)],
+               ["layout-container-mouse-hover",  this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema]
+            ])
          },
 
          getLayoutContainerInsideWrapperCssClass(layoutContainer) {
             let cssClass = `layout-container-inside-wrapper layout-container-inside-wrapper-${layoutContainer.orientation}`;
-            cssClass += !layoutContainer.content.fullName ? " layout-container-inside-wrapper-no-content" : "";
-            cssClass += !layoutContainer.content.fullName && layoutContainer.children.length !== 0 ? " layout-container-inside-wrapper-group" : "";
+            cssClass += !layoutContainer.content.path ? " layout-container-inside-wrapper-no-content" : "";
+            cssClass += !layoutContainer.content.path && layoutContainer.children.length !== 0 ? " layout-container-inside-wrapper-group" : "";
             return cssClass;
-         },
-
-         getAdderCssClass(layoutContainer, adderType) {
-            let cssClass = "adder"
-            cssClass += !this.nvhFormattingEditor.data.mouseData || this.nvhFormattingEditor.data.mouseData.type === "layout-container" ? "" : " adder-invisible";
-            if (adderType === "first") {
-               cssClass += ` adder-${layoutContainer.children.length === 0 ? "column": layoutContainer.orientation}`;
-               cssClass += layoutContainer.children.length === 0 ? " adder-alone" : "";
-            } else {
-               cssClass += ` adder-${layoutContainer.orientation}`;
-            }
-            return cssClass;
-         } 
+         }
       }
    </script>
 
-   <style>
+   <style type="scss">
+      :host{
+         position: relative;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: flex-start;
+         flex-grow: 1;
+         width: 100%;
+         cursor: pointer;
+         transition: box-shadow 0.1s ease-in-out;
+         box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.2);
+         border-radius: 10px;
+         &.layout-container-selected{
+            //animation: pulse 1.7s infinite;
+            transform: scale(1);
+            outline: 3px solid #F44336;
+         }
+         & > .elementholder{
+            overflow: hidden;
+            border-radius: 10px;
+         }
+         &.layout-container-is-dragging{
+            opacity: 0.3;
+            filter: grayscale(50%);
+         }
+         &.layout-container-mouse-hover{
+            &:not(.layout-container-selected){
+               box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3), 0 0 5000px rgba(255, 255, 255, 0.5) inset!important;
+               & > .layout-container-inside-wrapper > adder-component{
+                  // highlight all adders directly placed in this container
+                  .adder-dnd-zone-inner-wrapper{
+                     opacity: 0.2;
+                  }
+               }
+            }
+         }
+         &.layout-container-non-existing {
+            background-color: black !important;
+            .adder {
+               display: none;
+            }
+         }
+         & > .layout-container-inside-wrapper > .layout-container {
+            height: 100%;
+            width: 100%;
+         }
+      }
       .layout-container-inside-wrapper {
          display: flex;
-         align-items: center;
+         align-items: stretch;
          justify-content: center;
          width: 100%;
-         height: 100%;
+         padding: 4px 4px 4px 8px;
       }
       .layout-container-inside-wrapper-column {
          flex-direction: column;
@@ -249,82 +185,28 @@
       .layout-container-inside-wrapper-row {
          flex-direction: row;
       }
-      .layout-container-wrapping-content {
-         border: 4px solid transparent;
-      }
-      .layout-container-wrapping-content:has(.layout-container:hover) {
-         border: 4px solid transparent;
-      }
       .layout-container-no-content {
          padding: 10px;
       }
-      .layout-container-dragged {
-         opacity: 0.8;
-      }
-      .layout-container-dragged * {
-         opacity: 0.8;
-      }
-      .layout-container-dragged .adder {
-         display: none;
-      }
-      .adder-highligth {
-         background-color: var(--color-can-be-dropped);
-         padding: 5px !important;
-         transition: all 500ms ease;
-      }
-      .adder-highligth .adder-line * {
-         display: none;
-      }
-      .adder-highligth-dragged {
-         background-color: var(--color-is-dragged-over) !important;
-      }
-      .adder-highligth-dragged .adder-line * {
-         display: none;
-      }
-      .action-panel {
-         display: none;
-         position: absolute;
-         top: -40px;
-         left: -4px;
-         z-index: 100;
-      }
-      .layout-container:has(.layout-container-mouse-hover) .action-panel-hovered {
-         display: none;
-      }
-      .layout-container:not(:has(.layout-container-mouse-hover)) .action-panel-hovered {
-         display: block;
-      }
       .elementholder {
-         width: fit-content;
+         width: 100%;
          align-self: flex-start;
+         min-width: 100px;
       }
       .add-children-component {
          width: 100%;
+         margin-right: auto;
       }
-      .adder-alone {
-         padding: 0;
-         margin: 15px;
-      }
-      .adder-invisible {
-         visibility: hidden;
-      }
-      .layout-container-can-be-dropped {
-         background-color: var(--color-is-dragged-over-light);
-      }
-      .layout-container-can-be-dropped > .layout-container-inside-wrapper {
-         background-color: var(--color-is-dragged-over-light) !important;
-      }
-      .layout-container-can-be-dropped:hover {
-         background-color:var(--color-yellow-light);
-      }
-      .layout-container-can-be-dropped:hover > .layout-container-inside-wrapper{
-         background-color:var(--color-yellow-light) !important;
-      }
-      .layout-container-can-be-dropped:hover:has(.layout-container-can-be-dropped:hover) {
-         background-color: var(--color-is-dragged-over-light);
-      }
-      .layout-container-can-be-dropped:hover:has(.layout-container-can-be-dropped:hover) > .layout-container-inside-wrapper {
-         background-color: var(--color-is-dragged-over-light) !important;
-      }
+      /*@keyframes pulse {
+         0% {
+            box-shadow: 0 0 0px 3px white,0 0 0 0 rgba(222, 84, 72, 1);
+         }
+         80% {
+            box-shadow: 0 0 0px 3px white,0 0 0 16px rgba(222, 84, 72, 0);
+         }
+         100% {
+            box-shadow: 0 0 0px 3px white,0 0 0 0 rgba(222, 84, 72, 0);
+         }
+      }*/
    </style>
 </layout-container>

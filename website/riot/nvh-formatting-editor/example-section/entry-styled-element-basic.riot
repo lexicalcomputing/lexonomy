@@ -1,0 +1,23 @@
+<entry-styled-element-basic class="entry-styled-element-basic">
+   <slot name="left-label"/>
+   <div>
+      <raw-html content={props.value}/>
+   </div>
+   <slot name="right-label"/>
+
+   <script>
+      export default {
+         onBeforeMount(props) {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: flex;
+         flex-wrap: wrap;
+         align-items: center;
+      }
+   </style>
+</entry-styled-element-basic>

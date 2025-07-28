@@ -134,17 +134,6 @@ class NVHStoreClass {
             })
    }
 
-   saveStyle(){
-      return window.connection.post({
-         url: `${window.API_URL}${window.store.data.dictId}/dictconfigupdate.json`,
-         data: {
-            id: "formatting",
-            content: JSON.stringify(this.data.formatting)
-         },
-         failMessage: "Could not update element style."
-      })
-   }
-
    onDictionaryChanged(){
       this.data.structure = window.store.data.config.structure
       this.data.formatting = window.store.data.config.formatting
@@ -700,10 +689,6 @@ class NVHStoreClass {
       return this.schema.getElementByPath(elementPath)
    }
 
-   getElementStyle(elementPath){
-      return this.data.formatting.elements[elementPath]
-   }
-
    getAvailableChildElementPaths(element){
       let config = this.getElementConfig(element.path)
       if(config){
@@ -751,28 +736,6 @@ class NVHStoreClass {
       return $(`#nvh-item-${element.id}`)
    }
 
-   changeElementStyleOption(elementPath, option, value){
-      if(this.getElementStyle(elementPath)[option] != value){
-         // TODO temporary fix
-         if(!this.data.formatting.elements[elementPath]){
-            this.data.formatting.elements[elementPath] = {}
-         }
-         if(!value){
-            delete this.data.formatting.elements[elementPath][option]
-         } else {
-            this.data.formatting.elements[elementPath][option] = value
-         }
-         let elements = this.findElements(e => e.path == elementPath)
-         let config = this.getElementConfig(elementPath)
-         if(config && config.type == "markup"){
-            // markup element style changed - parent element must be updated
-            config.parent && elements.push(config.parent.path)
-         }
-
-         this.trigger("updateElements", elements)
-      }
-   }
-
    isEntryCompleted(){
       if(window.store.data.config.progress_tracking?.tracked){
          let completedValue = this.findElement(el => el.name == "__lexonomy__complete")?.value
@@ -810,7 +773,7 @@ class NVHStoreClass {
    }
 
    isServiceElement(elementPath){
-      return elementPath.split(".").pop().startsWith(this.const.serviceElementPrefix)
+      return elementPath?.split(".").pop().startsWith(this.const.serviceElementPrefix)
    }
 
    copyElementAndItsChildren(element, parent=null){

@@ -1,0 +1,32 @@
+<entry-styled-element-bool class="entry-styled-element-bool">
+   <slot name="left-label"/>
+   <div>
+      {props.value === "1" ? (state.elementStyles["yes-value-text"] || "yes") : (state.elementStyles["no-value-text"] || "no")}
+   </div>
+   <slot name="right-label"/>
+
+   <script>
+      export default {
+         onBeforeMount() {
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.refreshState()
+         },
+
+         onBeforeUpdate() {
+            this.refreshState()
+         },
+
+         refreshState() {
+            this.state.elementStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "element")
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host{
+         display: flex;
+         flex-wrap: wrap;
+         align-items: center;
+      }
+   </style>
+</entry-styled-element-bool>

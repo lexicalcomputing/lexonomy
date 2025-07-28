@@ -29,13 +29,13 @@
                   values[attribute.name.substring(6)] = attribute.value
                }
             })
-            this.form = config.children.map(childPath => {
+            this.form = config.children.map(child => {
                let field = {
-                  label: childPath.split(".").pop(),
-                  path: childPath
+                  label: child.name,
+                  path: child.path
                }
-               if(values && values[childPath]){
-                  field.value = values[childPath]
+               if(values && values[child.path]){
+                  field.value = values[child.path]
                }
                return field
             })

@@ -1,24 +1,160 @@
-<elements-choice-section>
+<elements-choice-section class="elements-choice-section">
    <div class="elements-choice-section-container">
-      <elements-choice-item if={nvhStore.getElementConfig(props.elementsSchema.data.fullName) && nvhStore.getElementConfig(props.elementsSchema.data.fullName).type !== "markup"}
-         state={props.elementsSchema}
-         indentationLevel={5}/>
+      <div each={element in elementList}
+            class="elements-choice-item-wrapper {getWrapperClasses(element)}"
+            draggable="true"
+            ondragstart={onDragStart.bind(this, element)}
+            ondragend={onDragEnd}
+            style="padding-left: {(element.indent * 15) + 5}px; color: {element.color}">
+         <div class="elements-choice-item-box"
+            style="background-color: {element.color}">
+         </div>
+         {element.name}
+         <i if={state.elementsInSchema[element.path]}
+               class="material-icons grey-text" style="font-size: 15px;">check</i>
+      </div>
+      <div if={nvhFormattingEditor.data.draggedElement && nvhFormattingEditor.data.draggedElement.parent}
+            id="elements-choice-section-delete-zone"
+            class="elements-choice-section-delete-zone"
+            ondragover={onDragOver}
+            ondragenter={onDragEnter}
+            ondragleave={onDragLeave}
+            ondrop={onDeleteZoneDrop}>
+         <i class="material-icons grey-text text-lighten-1">delete</i>
+         <span class="grey-text">
+            drag here to delete
+         </span>
+      </div>
    </div>
+
 
    <script>
       export default {
-         onBeforeMount(props) {
-         this.nvhStore = window.nvhStore;
+         bindings: [["nvhFormattingEditor", "onDndStart", "update"],
+                    ["nvhFormattingEditor", "onDndEnd", "update"],
+                    ["nvhFormattingEditor", "selectedLayoutContainerChange", "update"]],
+
+         state: {
+            elementList: [],
+            elementsInSchema: {}
          },
+
+         onBeforeMount() {
+            this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.nvhStore = window.nvhStore
+            this.elementList = this.nvhStore.schema.getElementList()
+                  .map((element, idx) => {
+                     element.color = this.nvhStore.schema.getColorByIndex(idx)
+                     return element
+                  })
+                  .filter(element => element.type != "markup" && !element.parent || element.parent.type != "markup")
+            this.refreshElementsInSchema()
+         },
+
+         onBeforeUpdate(){
+            this.refreshElementsInSchema()
+         },
+
+         onDragStart(element, evt){
+            evt.target.classList.add("element-choice-is-dragging")
+            let newElement = this.nvhFormattingEditor.createSchemaElement(element.path)
+            this.nvhFormattingEditor.startElementDragging(newElement)
+            evt.stopPropagation()
+         },
+
+         onDragEnd(){
+            this.root.querySelector(".element-choice-is-dragging")?.classList.remove("element-choice-is-dragging")
+            this.nvhFormattingEditor.stopElementDragging()
+         },
+
+         onDragEnter(){
+            document.getElementById("elements-choice-section-delete-zone")?.classList.add("is-drag-over")
+         },
+
+         onDragOver(evt){
+            evt.preventDefault()
+         },
+
+         onDragLeave(){
+            document.getElementById("elements-choice-section-delete-zone")?.classList.remove("is-drag-over")
+         },
+
+         onDeleteZoneDrop(){
+            this.nvhFormattingEditor.deleteElement(this.nvhFormattingEditor.data.draggedElement)
+         },
+
+         getWrapperClasses(element){
+            let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer
+            if(selectedLayoutContainer){
+               let schema = this.nvhFormattingEditor.findFirstNonContainerAncestor(selectedLayoutContainer)
+               return this.nvhFormattingEditor.isDescendantOf(this.nvhFormattingEditor.createSchemaElement(element.path), schema)
+                     ? "elements-choice-item-wrapper-valid" : ""
+            }
+         },
+
+         refreshElementsInSchema(){
+            this.state.elementsInSchema = {}
+            this.nvhFormattingEditor.forEachElement(element => {
+               if(element.content.path && !element.children.length){  // count only value elements, not groups
+                  this.state.elementsInSchema[element.content.path] = true
+               }
+            })
+         }
       }
    </script>
 
-   <style>
+   <style type="scss">
+      :host{
+         position: relative;
+      }
       .elements-choice-section-container {
          width: fit-content;
          height: 100%;
          min-width: 100%;
          overflow-y: auto;
       }
+
+      .elements-choice-item-wrapper {
+         display: flex;
+         align-items: center;
+         gap: 4px;
+         cursor: grab;
+         user-select: none;
+      }
+      .elements-choice-item-box {
+         width: 8px;
+         height: 8px;
+         border-radius: 2px;
+      }
+      .elements-choice-item-wrapper:hover {
+         background-color: #d7e4f7;
+      }
+      .elements-choice-item-wrapper-valid {
+         background-color: #E8F5E9;
+      }
+      .elements-choice-item-wrapper-valid:hover {
+         background-color: #C8E6C9 ;
+      }
+      .element-choice-is-dragging{
+         opacity: 0.2;
+      }
+      .elements-choice-section-delete-zone{
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         position: absolute;
+         inset: 0;
+         background-color: rgba(234, 234, 234, 95%);;
+         border: 2px dashed #c9c9c9;;
+         i{
+            font-size: 60px;
+         }
+         font-size: 22px;
+         &.is-drag-over{
+            background-color: rgba(243, 243, 243, 95%);;
+         }
+      }
+
    </style>
 </elements-choice-section>

@@ -1,68 +1,314 @@
-<adder-component>
-   <div class="plus-icon-wrapper">
-      <div class="adder-line adder-line-{props.orientation}">
+<adder-component class="adder adder-{getOrientation()} {state.isElementDragged ? 'is-dragging' : ''} {state.canAcceptDraggedElement ? 'can-accept-dragged-element' : ''} {props.schema.children.length == 0 ? 'only-child' : ''}"
+      onclick={props.schema.children.length ? onClick : null}>
+   <div class="hoverWrapper"
+         onmouseenter={onMouseEnter}
+         onmouseleave={onMouseLeave}
+         ondragenter={onDragEnter}
+         ondragleave={onDragLeave}
+         ondragover={onDragOver}
+         ondrop={onDrop}></div>
+   <div class="adder-content-wrapper">
+      <div class="adder-dnd-zone-inner-wrapper">
+         <div class="adder-dnd-zone"></div>
          <div class="tooltipped adder-icon-wrapper"
-            data-tooltip={!nvhFormattingEditor.data.mouseData ? "Insert empty container" : ""}
-            onmouseenter={onMouseEnter}
-            onmouseleave={onMouseLeave}>
-            <i class="small material-icons adder-icon">add_box</i>
-         <div>
+               data-tooltip={!nvhFormattingEditor.data.draggedLayoutContainer ? "Insert empty container" : ""}>
+            <i class="material-icons adder-icon"
+                  onclick={!props.schema.children.length ? onClick : null}>add</i>
+         </div>
       </div>
-   <div>
+   </div>
 
    <script>
       export default {
+         bindings: [["nvhFormattingEditor", "onDndStart", "onDndStart"],
+                    ["nvhFormattingEditor", "onDndStop", "onDndStop"]],
+
+         state: {
+            isElementDragged: false,
+            canAcceptDraggedElement: false
+         },
+
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
          },
 
-         onMouseEnter(event) {
-            const data = this.nvhFormattingEditor.data.mouseData;
-            if (data && data.type === "choice-item") {
-               event.currentTarget.classList.add("adder-icon-wrapper-highligth-dragged");
+         onClick(evt){
+            this.nvhFormattingEditor.addElement(this.props.schema, null, this.props.position) // add container
+            this.root.classList.remove("adder-component-is-hover")
+            evt.stopPropagation()
+         },
+
+         onDndStart(){
+            if(!this.state.isElementDragged){
+               this.update({
+                  isElementDragged: true,
+                  canAcceptDraggedElement: this.canAcceptDraggedElement()
+               })
             }
          },
-         
-         onMouseLeave(event) {
-            event.currentTarget.classList.remove("adder-icon-wrapper-highligth-dragged");
+
+         canAcceptDraggedElement(){
+            let dragged = this.nvhFormattingEditor.data.draggedElement
+            if(this.nvhFormattingEditor.data.draggedElement == this.props.schema){
+               return false
+            }
+            if(this.props.schema == this.nvhFormattingEditor.data.draggedElement.parent){
+               let draggedChildIndex = dragged.parent?.children.indexOf(dragged)
+               // do not activate adder right before and after dragged element, it does not make sense
+               return (this.props.position - 1 != draggedChildIndex)
+                     && (this.props.position != draggedChildIndex)
+            }
+            let schema = this.nvhFormattingEditor.findFirstNonContainerAncestor(this.props.schema)
+            if(!dragged.content.name){
+               if(!dragged.children.length){  // empty container
+                  return true
+               } else {  // container with children
+                  return this.nvhFormattingEditor.isEveryChildDescendantOf(dragged, schema)
+               }
+            }
+            // adding element to the group of the same type
+            return  this.nvhFormattingEditor.isDescendantOf(dragged, schema) // todo mabye remove second argument
          },
+
+         onDndStop(){
+            if(this.state.isElementDragged){
+               this.update({
+                  isElementDragged: false,
+                  canAcceptDraggedElement: false
+               })
+            }
+         },
+
+         onDragEnter(){
+            if(this.state.canAcceptDraggedElement){
+               $(this.root).addClass("is-drag-over")
+            }
+         },
+
+         onDragOver(evt){
+            evt.preventDefault()
+         },
+
+         onDragLeave(){
+            $(this.root).removeClass("is-drag-over")
+         },
+
+         onDrop(evt){
+            this.nvhFormattingEditor.moveChildToAnotherParent(this.nvhFormattingEditor.data.draggedElement, this.props.schema, this.props.position)
+            this.nvhFormattingEditor.stopElementDragging()
+            this.nvhFormattingEditor.trigger("updateEditor")
+            $(this.root).removeClass("is-drag-over")
+         },
+
+         onMouseEnter(event) {
+            this.root.classList.add("adder-component-is-hover")
+         },
+
+         onMouseLeave(event) {
+            this.root.classList.remove("adder-component-is-hover")
+         },
+
+         getOrientation(){
+            return this.props.schema.children.length === 0 ? "column" : this.props.schema.orientation
+         }
       }
    </script>
 
-   <style>
-      .plus-icon-wrapper {
-         display: none;
-         user-select: none;
-      }
-      .adder-icon-wrapper-highligth-dragged {
-         color: var(--color-is-dragged-over);
-         transform: scale(1.1);
-      }
-      .adder-icon-wrapper {
-         background-color: white;
+   <style type="scss">
+      :host{
          display: flex;
          align-items: center;
          justify-content: center;
-         height: 20px;
-         width: 20px;
+         cursor: pointer;
+         position: relative;
+         .hoverWrapper{
+            //outline: 2px dotted black;
+            inset: 0px;
+         }
+         &.is-dragging{
+            &:not(.can-accept-dragged-element){
+               visibility: hidden!important;
+            }
+            &.can-accept-dragged-element{
+               .adder-dnd-zone-inner-wrapper.adder-dnd-zone-inner-wrapper{
+                  opacity: 0.3;
+               }
+            }
+         }
+         &.adder-component-is-hover,
+         &.is-drag-over{
+            /* expand wrapper on hover - once user hits the base element, hover-capturing zone is made bigger, so it is easier keep curros in it */
+            /*.hoverWrapper{
+               left: -3px;
+               right: -3px;
+               top: -3px;
+               bottom: -3px;;
+            }*/
+           .adder-content-wrapper{
+               transition-delay: 300ms;
+            }
+            .adder-dnd-zone-inner-wrapper.adder-dnd-zone-inner-wrapper{
+               opacity: 0.3;
+            }
+            &.adder-column {
+              .adder-content-wrapper{
+                  min-height: 40px!important;
+                  height: 40px;
+               }
+            }
+            &.adder-row {
+               .adder-content-wrapper{
+                  min-width: 30px!important;
+                  width: 40px;
+               }
+            }
+            .adder-dnd-zone-inner-wrapper {
+               opacity: 1!important;
+            }
+            .adder-icon{
+               transform: scale(1);
+            }
+         }
+
+
+         &.only-child{
+            padding: 20px;
+            .adder-content-wrapper{
+               min-height: 40px!important;
+               height: 40px;
+               width: 100%;
+            }
+            .adder-icon-wrapper{
+               display: flex;
+               justify-content: center;
+               align-items: center;
+               height: 40px;
+            }
+            .adder-dnd-zone-inner-wrapper{
+               opacity: 0.7;
+            }
+            .adder-dnd-zone-inner-wrapper{
+               opacity: 0.8!important;
+            }
+            &.adder-component-is-hover{
+               .adder-icon{
+                  scale: (1.3);
+               }
+            }
+            .adder-dnd-zone{
+               opacity: 0;
+            }
+            &:not(.is-dragging){
+               .hoverWrapper{
+                  display: none;
+               }
+            }
+            &.is-dragging.can-accept-dragged-element{
+               .adder-dnd-zone{
+                  opacity: 0.3;
+               }
+            }
+            &.is-drag-over.can-accept-dragged-element{
+               .adder-dnd-zone{
+                  opacity: 1;
+               }
+            }
+         }
+
+         &:not(.only-child){
+            &.adder-column {
+               padding: 8px 0;
+               .adder-content-wrapper{
+                  height: 100%;
+                  width: 100%;
+                  min-height: 1px;
+               }
+               .adder-dnd-zone-inner-wrapper{
+                  top: 0px;
+                  bottom: 0px;
+               }
+            }
+            &.adder-row {
+               padding: 0 8px;
+               .adder-content-wrapper{
+                  height: 100%;
+                  width: 1px;
+                  min-width: 1px;
+               }
+               .adder-dnd-zone-inner-wrapper{
+                  left: 0px;
+                  right: 0px;
+               }
+            }
+
+            .adder-dnd-zone-inner-wrapper{
+               width: 100%;
+               height: 100%;
+               opacity: 0;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               position: absolute;
+               user-select: none;
+               z-index: 200;
+            }
+            .adder-content-wrapper{
+               position: relative;
+               // split so earlier transition-delay is not overriden
+               transition-property: all;
+               transition-timing-function: ease-in-out;
+               transition-duration: .2s
+            }
+            .adder-icon-wrapper {
+               position: absolute;
+               top: 0;
+               left: 0;
+               right: 0;
+               bottom: 0;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               z-index: 1100;
+            }
+             .adder-icon {
+               transform: scale(0.6);
+            }
+         }
+      }
+      .adder-dnd-zone{
+         position: absolute;
+         inset: 0;
+         z-index: 500;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border: 2px dashed #a0a0a0;
+         background-color: rgb(235 235 235 / 70%);
+         border-radius: 10px;
+      }
+
+      .hoverWrapper{
+         position: absolute;
+         z-index: 999;
       }
       .adder-icon {
-         color: var(--color-is-dragged-over);
-         z-index: 1000;
+         color: #ffffff;
+         display: inline-block;
+         text-align: center;
+         z-index: 901;
+         height: 24px;
+         width: 24px;
+         line-height: 24px;
+         border-radius: 50%;
+         font-size: 24px;
+         transition: all 0.1s ease-in-out;
+         background-color: #a0a0a0;
+         position: relative;
+         z-index: 1200;
+         &:hover{
+            opacity: 1;
+         }
       }
-      .adder-line {
-         background-color: var(--color-is-dragged-over);
-         display: flex;
-         align-items: center;
-         justify-content: center;
-      }
-      .adder-line-column {
-         width: 100%;
-         height: 2px;
-      }
-      .adder-line-row {
-         height: 100%;
-         width: 2px;
-      }
+
    </style>
 </adder-component>

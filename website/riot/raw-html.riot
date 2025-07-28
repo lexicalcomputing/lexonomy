@@ -2,7 +2,9 @@
    <script>
       export default {
          upd () {
-            this.root.innerHTML = this.props.content
+            this.root.innerHTML = typeof this.props.content == "string"
+                  ? DOMPurify.sanitize(this.props.content.replaceAll("{", "\\{"))
+                  : this.props.content
          },
 
          onMounted(){

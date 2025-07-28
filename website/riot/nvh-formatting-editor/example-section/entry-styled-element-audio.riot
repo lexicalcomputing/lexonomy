@@ -1,0 +1,62 @@
+<entry-styled-element-audio>
+   <div class="entry-styled-element-audio-wrapper">
+      <div class="entry-styled-element-label-vertical">
+         <slot name="left-label"/>
+      </div>
+      <audio if={state.elementStyles['show-player']}
+            controls
+            src={props.value}></audio>
+      <div class="entry-styled-element-audio-url">
+         <a if={state.elementStyles["show-icon"]}
+               href={props.value}
+               class="link-no-decoration"
+               target="_blank">
+            <pre>{nvhFormattingEditor.getIcon(state.elementStyles["icon-item"])}</pre>
+         </a>
+         <a if={state.elementStyles["show-icon"]}
+               href={props.value}
+               class="link-no-decoration"
+               target="_blank">
+            <pre>{nvhFormattingEditor.getUnicodeIcon(state.elementStyles["unicode-icon"])}</pre>
+         </a>
+         <a if={(state.elementStyles['show-url'] ?? true) && !state.elementStyles["show-url-as-icon"]}
+               class="tooltipped"
+               data-tooltip={state.elementStyles["text-as-url-tooltip"] ? state.elementStyles["text-replacement-for-url"] : ""}
+               href={props.value}
+               target="_blank">
+            {state.elementStyles["replace-url-with-text"] && !state.elementStyles["text-as-url-tooltip"] ? state.textReplacementForUrl : props.value}
+         </a>
+      </div>
+      <div class="entry-styled-element-label-vertical">
+         <slot name="right-label"/>
+      </div>
+   </div>
+
+   <script>
+      export default {
+         onBeforeMount() {
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.refreshState()
+         },
+
+         onBeforeUpdate() {
+            this.refreshState()
+         },
+
+         refreshState() {
+            this.state.elementStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "element")
+         }
+      }
+   </script>
+
+   <style>
+      .entry-styled-element-audio-wrapper {
+         display: flex;
+         flex-direction: column;
+      }
+      .entry-styled-element-audio-url {
+         display: flex;
+         align-items: center;
+      }
+   </style>
+</entry-styled-element-audio>

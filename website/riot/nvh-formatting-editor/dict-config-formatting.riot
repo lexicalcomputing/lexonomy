@@ -1,99 +1,94 @@
 <dict-config-formatting>
-   <loading-overlay if={state.isSaving}/>
+   <loading-overlay if={nvhFormattingEditor.isSaving}/>
    <h1 id="formatting-page-title">Entry Formatting</h1>
-   <nvh-formatting-editor-toolbar state={state.toolbar} save-schemas={saveSchemas}/>
-   <div id="formatting-page-wrapper-container">
-      <div if={state.toolbar.isSectionVisible.elements}
-         id="elements-container"
-         class="formatting-page-container">
-         <div class="header-box">
-         <i class="small material-icons">sort</i>
-         <h2>Elements</h2>
-         <div id="trash-icon-wrapper"
-            onmouseenter={onMouseEnter}
-            onmouseleave={onMouseLeave}
-            onmouseup={onMouseUp}>
-            <i class="small material-icons trash-disabled" id="trash-icon">delete</i>
-         </div>
-         </div>
-         <div class="elements-choice-section-wrapper">
-         <elements-choice-section class="elements-choice-section"
-            elementsSchema={nvhFormattingEditor.elementsSchema}/>
-         </div>
-      </div>
-      <div if={state.toolbar.isSectionVisible.elements} class="resizeHandle"
-         onmousedown={(event) => onResizeHandleMouseDown(event, ".elements-choice-section-wrapper", 200, 300)}></div>
-      <div if={state.toolbar.isSectionVisible.editing}
-         id="editing-container"
-         class="formatting-page-container">
-         <div class="editing-header">
+   <dict-configuration-issues config-id="formatting"/>
+   <div id="formatting-fullscreen-wrapper"
+         class="white">
+      <nvh-formatting-editor-toolbar/>
+      <div id="formatting-page-wrapper-container">
+         <div if={nvhFormattingEditor.visibleSections.elements}
+               id="elements-container"
+               class="formatting-page-container">
             <div class="header-box">
-               <i class="small material-icons">view_compact</i>
-               <h2>Layout</h2>
-               <label if={nvhFormattingEditor.data.activeLayout !== "desktop" && nvhStore.data.formatting.layout}
-                  class="checkbox"
-                  style="margin-left: 20px;">
-                  <input type="checkbox" checked={nvhFormattingEditor.currentLayout.configured}/>
-                  <span class="tooltipped"
-                     style="padding-left: 25px;"
-                     onclick={saveAndToggleLayoutUsage}
-                     data-tooltip={nvhFormattingEditor.currentLayout.configured
-                        ? "Layout for this device is used.\nWhen viewing the dictionary on this device, current layout will be seen."
-                        : "Layout for this device is not used.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}>
-                     Use {nvhFormattingEditor.data.activeLayout} layout
-                  </span>
-               </label>
+               <i class="small material-icons">sort</i>
+               <h2>Elements</h2>
+            </div>
+            <div class="elements-choice-section-wrapper">
+               <elements-choice-section/>
             </div>
          </div>
-         <div class="editing-layout-wrapper">
-            <edit-layout class="edit-layout"/>
-         </div>
-      </div>
-      <div if={state.toolbar.isSectionVisible.style}
-         id="style-container"
-         class="formatting-page-container">
-         <div class="header-box">
-            <i class="small material-icons">palette</i>
-            <h2>Style</h2>
-         </div>
-         <div class="style-section-wrapper">
-            <styles-section class="style-section"/>
-         </div>
-      </div>
-      <div if={state.toolbar.isSectionVisible.style} class="resizeHandle"
-         onmousedown={(event) => onResizeHandleMouseDown(event, ".style-section-wrapper", 200, 600)}></div>
-      <div if={state.toolbar.isSectionVisible.example} 
-         id="example-container"
-         class="formatting-page-container">
-         <div class="header-box">
-            <i class="small material-icons">visibility</i>
-            <h2>Preview</h2>
-            <div if={!dictData.isEntryListLoaded || dictData.entryList.length}
-               class="entry-dropdown-wrapper">
-               <entry-dropdown on-change={onExampleEntryChanged}/>
-               <i class="small material-icons grey-text">search</i>
+
+         <div if={nvhFormattingEditor.visibleSections.elements}
+               class="resizeHandle"
+               onmousedown={onResizeHandleMouseDown.bind(this, ".elements-choice-section-wrapper", 200, 300)}></div>
+         <div if={nvhFormattingEditor.visibleSections.editing}
+               id="editing-container"
+               class="formatting-page-container">
+            <div class="editing-header">
+               <div class="header-box">
+                  <i class="small material-icons">view_compact</i>
+                  <h2>Layout</h2>
+                  <label if={nvhFormattingEditor.data.activeLayout !== "desktop" && nvhStore.data.formatting.layout}
+                        class="checkbox"
+                        style="margin-left: 20px;">
+                     <input type="checkbox"
+                           checked={nvhFormattingEditor.currentLayout.configured}/>
+                     <span class="tooltipped"
+                           style="padding-left: 25px;"
+                           onclick={saveAndToggleLayoutUsage}
+                           data-tooltip={nvhFormattingEditor.currentLayout.configured
+                              ? "Layout for this device is used.\nWhen viewing the dictionary on this device, current layout will be seen."
+                              : "Layout for this device is not used.\nWhen viewing the dictionary on this device,\nthe layout will be inherited from bigger device."}>
+                        Use {nvhFormattingEditor.data.activeLayout} layout
+                     </span>
+                  </label>
+               </div>
+            </div>
+            <div class="editing-layout-wrapper">
+               <edit-layout class="edit-layout"/>
             </div>
          </div>
-         <div class="example-section-wrapper">
-            <example-section class="example-section"/>
+
+         <div if={nvhFormattingEditor.visibleSections.style}
+               id="style-container"
+               class="formatting-page-container">
+            <div class="header-box">
+               <i class="small material-icons">palette</i>
+               <h2>Style</h2>
+            </div>
+            <div class="style-section-wrapper">
+               <styles-section class="style-section"/>
+            </div>
+         </div>
+
+         <div if={nvhFormattingEditor.visibleSections.style} class="resizeHandle"
+               onmousedown={onResizeHandleMouseDown.bind(this, ".style-section-wrapper", 200, 600)}></div>
+
+         <div if={nvhFormattingEditor.visibleSections.example}
+               id="example-container"
+               class="formatting-page-container">
+            <div class="header-box">
+               <i class="small material-icons">visibility</i>
+               <h2 class="mr-2">Preview</h2>
+               <div if={!dictData.isEntryListLoaded || dictData.entryList.length}
+                     class="entry-dropdown-wrapper">
+                  <entry-dropdown on-change={onExampleEntryChanged}/>
+                  <i class="small material-icons grey-text">search</i>
+               </div>
+            </div>
+            <div class="example-section-wrapper">
+               <example-section class="example-section"/>
+            </div>
          </div>
       </div>
    </div>
-   
+
    <script>
       export default {
-         bindings: [["nvhFormattingEditor", "updateEditor", "update"]],
+         bindings: [["nvhFormattingEditor", "updateEditor", "update"],
+                    ["nvhFormattingEditor", "isSavingChanged", "update"]],
 
          state: {
-            toolbar: {
-               isSaving: false,
-               isSectionVisible: {
-                  elements: true,
-                  style: false,
-                  editing: true,
-                  example: true,
-               },
-            },
             mousePos: null,
             leftContainer: {
                className: null,
@@ -103,141 +98,65 @@
          },
 
          onBeforeMount(props) {
-            this.nvhFormattingEditor = window.nvhFormattingEditor,
-            this.nvhStore = window.nvhStore,
-            this.store = window.store,
-            this.nvhFormattingEditor.elementsSchema = this.nvhFormattingEditor.createElementsSchema();
-            this.nvhFormattingEditor.data = this.nvhFormattingEditor.getInitializedDataAttributes();
-            document.addEventListener("mouseup", this.globalOnMouseUp);
-            document.addEventListener("mousedown", this.globalOnMouseDown);
-            this.resetFullscreen();
-
-            let formatting = this.store.data.config.formatting;
-
-            if (formatting.layout) {
-               for (let layout of ["desktop", "tablet", "mobile", "pdf"]) {
-                  let layoutElements = formatting.layout[layout].elements ? formatting.layout[layout].elements : formatting.elements;
-                  this.nvhFormattingEditor.layout[layout] = {
-                  configured: !formatting.layout[layout].configured ? false : formatting.layout[layout].configured,
-                  schema: formatting.layout[layout].schema,
-                  elements: structuredClone(layoutElements),
-                  history: {
-                     index: 0,
-                     schema: [structuredClone(formatting.layout[layout].schema)],
-                     elements: [structuredClone(layoutElements)],
-                  }
-                  }
-               }
-               this.nvhFormattingEditor.layout.desktop.configured = true;
-            } else {
-               this.nvhFormattingEditor.initializeSchemas();
-            }
-            this.nvhFormattingEditor.currentLayout = this.nvhFormattingEditor.layout.desktop;
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.nvhStore = window.nvhStore
+            this.nvhFormattingEditor.reset()
+            this.nvhFormattingEditor.initLayout()
          },
 
-         onBeforeUnmount() {
-            document.removeEventListener("mouseup", this.globalOnMouseUp);
-            document.removeEventListener("mousedown", this.globalOnMouseDown);
+         onMounted(){
+            document.addEventListener("fullscreenchange", this.onFullscreenChanged)
+            window.addEventListener('resize', this.onResizeDebounced)
+            this.resize()
+         },
+
+         onBeforeUnmount(){
+            document.removeEventListener("fullscreenchange", this.onFullscreenChanged)
+            window.removeEventListener('resize', this.onResizeDebounced)
+         },
+
+         onResizeDebounced(){
+            this.state.timer && clearTimeout(this.state.timer)
+            this.state.timer = setTimeout(() => {
+                clearTimeout(this.state.timer)
+                this.resize()
+            }, 200)
+         },
+
+         onFullscreenChanged(evt){
+            this.resize()
+         },
+
+         resize(){
+            let container = document.getElementById("formatting-page-wrapper-container")
+            if(container){
+               let height
+               if(window.document.fullscreenElement){
+                  let toolbarHeight = document.querySelector("nvh-formatting-editor-toolbar").clientHeight
+                  height = `calc(100vh - ${toolbarHeight}px)`
+               } else {
+                  let topOffset = container.getBoundingClientRect().top + window.scrollY
+                  height = `calc(100vh - ${topOffset}px)`
+               }
+               container.style.height = height
+            }
          },
 
          onBeforeUpdate(props) {
-            this.nvhFormattingEditor.resetDataAttributes();
             let currentLayout = this.nvhFormattingEditor.currentLayout;
             let history = currentLayout.history;
-            if (!this.nvhFormattingEditor.data.mouseData
-                  && this.isSchemaChanged(history.schema.at(history.index), currentLayout.schema)) {
+            // TODO track history on user actions
+            if (!this.nvhFormattingEditor.draggedElement
+                  && !this.nvhFormattingEditor.areSchemasEquals(history.schema.at(history.index), currentLayout.schema)) {
                history.schema.length = history.index + 1;
                history.schema.push(structuredClone(currentLayout.schema));
                history.index += 1;
+               //this.nvhFormattingEditor.trigger("updateToolbar");
             }
-         },
-
-         onMouseEnter() {
-            const data = this.nvhFormattingEditor.data.mouseData;
-            if (data && data.type === "elementholder-label") {
-               let trashIcon = document.getElementById("trash-icon");
-               if (Array.from(trashIcon.classList).includes("trash-enabled")) {
-                  trashIcon.classList.add("trash-dragged-over");
-               }
-            }
-         },
-
-         onMouseLeave() {
-            let trashIcon = document.getElementById("trash-icon");
-            trashIcon.classList.remove("trash-dragged-over");
-         },
-
-         onMouseUp() {
-            const data = this.nvhFormattingEditor.data.mouseData;
-            if (!data) {
-               return;
-            }
-            if (data.type === "choice-item" || data.type === "elementholder-label") {
-               this.nvhFormattingEditor.data.dropInfo.wasSuccessful = true;
-               this.nvhFormattingEditor.data.selectedLayoutContainerParentAreaFullName = "";
-               let trashIcon = document.getElementById("trash-icon");
-               trashIcon.classList.remove("trash-dragged-over");
-            }
-            if (data.releaseFunction) {
-               data.releaseFunction.run(...data.releaseFunction.parameters);
-               data.releaseFunction = null;
-            }
-            this.update();
          },
 
          onExampleEntryChanged(entry) {
             this.store.changeEntryId(entry.id);
-         },
-
-         resetFullscreen() {
-            this.prepareFullscreenCss();
-            let components = [
-               document.getElementsByClassName("wideContainer")[0],
-               document.getElementsByTagName("app-header")[0],
-               document.getElementsByTagName("app-footer")[0],
-            ]
-            for (let component of components) {
-               component.classList.remove("fullscreen");
-            }
-         },
-
-         prepareFullscreenCss() {
-            let style = document.createElement('style');
-            style.textContent = `
-               app-header[page="dict-config-formatting"].fullscreen {
-                  display: none;
-               }
-               main.main:has(app-header[page="dict-config-formatting"]) app-footer.fullscreen {
-                  display: none;
-               }
-            `;
-            document.head.appendChild(style);
-         },
-
-         isSchemaChanged(oldSchema, newSchema) {
-            return !window.objectEquals(oldSchema, newSchema);
-         },
-
-         saveSchemas() {
-            this.update({isSaving: true});
-            this.nvhFormattingEditor.data.selectedLayoutContainer = null;
-            let elementsConfig = this.nvhStore.data.formatting.elements;
-            let layoutConfig = {};
-            for (let device of ["desktop", "tablet", "mobile", "pdf"]) {
-               layoutConfig[device] = {
-                  schema: this.nvhFormattingEditor.layout[device].schema,
-                  configured: this.nvhFormattingEditor.layout[device].configured,
-               }
-            }
-            layoutConfig.desktop.configured = true;
-            this.store.updateDictionaryConfig("formatting", {
-               elements: elementsConfig,
-               layout: layoutConfig,
-            })
-               .always(() => {
-                  this.state.isSaving = false;
-                  this.update();
-               });
          },
 
          saveAndToggleLayoutUsage() {
@@ -246,52 +165,14 @@
             let layoutConfig = formatting.layout;
             layoutConfig[this.nvhFormattingEditor.data.activeLayout].configured = !this.nvhFormattingEditor.currentLayout.configured;
             this.store.updateDictionaryConfig("formatting", formatting)
-               .always(() => {
-                  this.state.isSaving = false;
-                  this.nvhFormattingEditor.currentLayout.configured = layoutConfig[this.nvhFormattingEditor.data.activeLayout].configured;
-                  this.update();
-               });
+                  .always(() => {
+                     this.nvhFormattingEditor.isSaving = false;
+                     this.nvhFormattingEditor.currentLayout.configured = layoutConfig[this.nvhFormattingEditor.data.activeLayout].configured;
+                     this.update();
+                  });
          },
 
-         globalOnMouseUp() {
-            clearTimeout(this.nvhFormattingEditor.timeout);
-            if (this.nvhFormattingEditor.data.mouseData) {
-               let adders = document.getElementsByClassName("adder");
-               for (let adder of adders) {
-                  adder.classList.remove("adder-highligth");
-                  adder.classList.remove("adder-highligth-dragged");
-                  adder.style.display = "";
-               }
-               this.nvhFormattingEditor.data.mouseData.releaseFunction = null;
-               this.nvhFormattingEditor.data.mouseData = null;
-
-               let trash = document.getElementById("trash-icon");
-               if (trash != null) {
-                  trash.classList.add("trash-disabled");
-                  trash.classList.remove("trash-enabled");
-                  trash.classList.remove("trash-dragged-over");
-               }
-
-               let allElements = document.querySelectorAll("*");
-               for (element of allElements) {
-                  element.classList.remove("cursor-grabbing");
-               }
-               this.nvhFormattingEditor.data.draggedLayoutContainer = null;
-               this.update();
-            }
-         },
-
-         globalOnMouseDown() {
-            if (this.nvhFormattingEditor.data.mouseData) {
-               let allElements = document.querySelectorAll("*");
-               for (element of allElements) {
-                  element.classList.add("cursor-grabbing");
-               }
-               this.update();
-            }
-         },
-
-         onResizeHandleMouseDown(evt, leftContainerClassName, minWidth, maxWidth) {
+         onResizeHandleMouseDown(leftContainerClassName, minWidth, maxWidth, evt) {
             this.state.leftContainer.className = leftContainerClassName;
             this.state.leftContainer.minWidth = minWidth;
             this.state.leftContainer.maxWidth = maxWidth;
@@ -323,32 +204,15 @@
       }
    </script>
 
-   <style>
+   <style type="scss">
       * {
-         --color-can-be-dropped: rgb(237, 205, 116);
-         --color-is-dragged-over: rgb(162, 127, 31);
-         --color-is-dragged-over-light: rgb(255, 245, 217);
-         --color-yellow-light: rgb(240, 224, 180);;
-         --color-is-active: rgb(11, 78, 202);
-         --color-is-hovered: rgb(90, 141, 236);
          --color-grey-light: #ebebeb;
          --color-grey-toolbar: #eeeeee;
-         --color-grey-very-light: #f5f5f5;
          --color-grey-normal: #d3d3d3;
          --color-red-normal: #c62132;
          --color-red-dark: #a61423;
       }
 
-      :host.wideContainer.fullscreen {
-         margin: 0;
-         max-width: 100vw;
-      }
-      #formatting-page-title.fullscreen {
-         display: none
-      }
-      #formatting-page-wrapper-container.fullscreen {
-         height: 95vh;
-      }
       .scrollable-div {
          position: relative;
          display: flex;
@@ -358,35 +222,19 @@
          height: 100%;
          overflow: auto;
          min-width: 100%;
-         padding: 5px;
+         padding: 14px;
+         margin: -9px; // make space for pulse effect if entry is selected
       }
       .header-box {
          display: flex;
          align-items: center;
          gap: 5px;
       }
-      #trash-icon-wrapper {
-         display: flex;
-         align-items: center;
-         justify-content: center;
-      }
-      .trash-disabled {
-         color: rgb(176, 192, 205);
-         cursor: not-allowed;
-      }
-      .trash-enabled {
-         color: black;
-      }
-      .trash-dragged-over {
-         transform: scale(1.1);
-         color: red;
-      }
       #formatting-page-title {
          text-wrap: nowrap;
       }
       #formatting-page-wrapper-container {
          display: flex;
-         height: 700px;
          overflow-x: auto;
       }
       .elements-choice-section {
@@ -418,9 +266,13 @@
          height: 90%;
       }
       .formatting-page-container {
-         padding-right: 1.5em;
-         padding-left: 1.5em;
          height: 100%;
+         &:not(:first-child){
+            padding-left: 1em;
+         }
+         &:not(:last-child){
+            padding-right: 1em;
+         }
       }
       #editing-container, #example-container {
          border-right: 1px solid #dcdee3;

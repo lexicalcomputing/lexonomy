@@ -1,0 +1,78 @@
+<entry-styled-element-video class="entry-styled-element-video">
+   <div class="entry-styled-element-label-vertical">
+      <slot name="left-label"/>
+   </div>
+   <video if={state.elementStyles["show-player"] && !isYouTube()}
+         controls
+         src={props.value}>
+   </video>
+   <iframe if={state.elementStyles["show-player"] && isYouTube()}
+         width="560"
+         height="315"
+         src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
+         frameborder="0"
+         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+         allowfullscreen>
+   </iframe>
+   <div class="entry-styled-element-video-url">
+      <a if={state.elementStyles["show-icon"]}
+            href={props.value}
+            class="link-no-decoration"
+            target="_blank">
+         <pre>{window.nvhFormattingEditor.getIcon(state.elementStyles["icon-item"])}</pre>
+      </a>
+      <a if={state.elementStyles["show-icon"]}
+            href={props.value}
+            class="link-no-decoration"
+            target="_blank">
+         <pre>{window.nvhFormattingEditor.getUnicodeIcon(state.elementStyles["unicode-icon"])}</pre>
+      </a>
+      <a if={(state.elementStyles["show-url"] ?? true) && !state.elementStyles["show-url-as-icon"]}
+            class="tooltipped"
+            data-tooltip={state.elementStyles["text-as-url-tooltip"] ? state.textReplacementForUrl : ""}
+            href={props.value}
+            target="_blank">
+         {state.elementStyles["replace-url-with-text"] && !state.elementStyles["text-as-url-tooltip"] ? state.elementStyles["text-replacement-for-url"] : props.value}
+      </a>
+   </div>
+   <div class="entry-styled-element-label-vertical">
+      <slot name="right-label"/>
+   </div>
+
+   <script>
+      export default {
+         onBeforeMount() {
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.refreshState()
+         },
+
+         onBeforeUpdate() {
+            this.refreshState()
+         },
+
+         refreshState() {
+            this.state.elementStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "element")
+         },
+
+         isYouTube(){
+            return !!this.getYouTubeVideoId()
+         },
+
+         getYouTubeVideoId(){
+            let match = this.props.value.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/)
+            return match ? match[1] : null
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host {
+         display: flex;
+         flex-direction: column;
+      }
+      .entry-styled-element-video-url {
+         display: flex;
+         align-items: center;
+      }
+   </style>
+</entry-styled-element-video>

@@ -328,6 +328,13 @@ textarea.materialize-textarea:focus:not([readonly])+label{
    &.btn-floating{
       width: 2.5rem;
       height: 2.5rem;
+      &.btn-small{
+         width: 1.8rem;
+         height: 1.8rem;
+         i{
+            line-height: 1.8rem;
+         }
+      }
       &.btn-flat i{
          color: #000;
       }
@@ -509,7 +516,22 @@ textarea.materialize-textarea:focus:not([readonly])+label{
          }
       }
    }
+   &.small{
+      height: 34px;
+      .tab{
+         height: 34px;
+         line-height: 34px;
+         a{
+            padding: 0 20px;
+         }
+      }
+   }
 }
 .tabContent{
    background-color: #f5f5f5;
+}
+
+
+input[type=range]::-webkit-slider-thumb {
+   background: #000;
 }

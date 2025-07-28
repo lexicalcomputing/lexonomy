@@ -1,0 +1,59 @@
+<entry-styled-element-image class="entry-styled-element-image">
+   <slot name="left-label"/>
+   <img if={(state.elementStyles["show-image"] ?? true) && !state.elementStyles["make-image-clickable"]}
+         id="entry-styled-element-image-image"
+         src={props.value}/>
+   <a if={(state.elementStyles ?? true) && state.elementStyles["make-image-clickable"]}
+         class="link-no-decoration"
+         href={props.value}
+         target="_blank">
+      <img src={props.value}/>
+   </a>
+   <div class="entry-styled-element-image-icons">
+      <a if={(state.elementStyles["show-url"] ?? true) && !state.elementStyles["show-url-as-icon"]}
+            href={props.value}
+            target="_blank">{props.value}</a>
+      <a if={(state.elementStyles["show-url"] ?? true) && state.elementStyles["show-url-as-icon"]}
+            href={props.value}
+            class="link-no-decoration"
+            target="_blank">
+         <pre>{nvhFormattingEditor.getIcon(state.elementStyles["icon-item"])}</pre>
+      </a>
+      <a if={(state.elementStyles["show-url"] ?? true) && state.elementStyles["show-url-as-icon"]}
+            href={props.value}
+            class="link-no-decoration"
+            target="_blank">
+         <pre>{nvhFormattingEditor.getUnicodeIcon(state.elementStyles["unicode-icon"])}</pre>
+      </a>
+   </div>
+   <slot name="right-label"/>
+
+   <script>
+      export default {
+         onBeforeMount() {
+            // TODO: max width
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.refreshState()
+         },
+
+         onBeforeUpdate() {
+            this.refreshState()
+         },
+
+         refreshState(props) {
+            this.state.elementStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "element")
+         }
+      }
+   </script>
+
+   <style type="scss">
+      :host {
+         display: flex;
+         flex-direction: column;
+      }
+      .entry-styled-element-image-icons {
+         display: flex;
+         align-items: center;
+      }
+   </style>
+</entry-styled-element-image>

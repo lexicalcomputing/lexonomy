@@ -261,6 +261,17 @@ class ConfigurationCheckerClass {
       return result
    }
 
+   check_formatting(){
+      let formatting = this.store.data.config.formatting
+      let result = []
+      if(!formatting?.layout?.desktop?.schema){
+         result.push(["formatting", "warning", `You have not defined your entry layout. A simple layout has been automatically created and applied.`])
+      } else {
+         // TODO check layout, structure, usage only elements from structure
+      }
+      return result
+   }
+
    check_flagging(){
       let flagging = this.store.data.config.flagging
       let result = []

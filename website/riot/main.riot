@@ -7,7 +7,7 @@
       <loading-overlay if={!state.isLoading && dictData.isDictionaryLoading}/>
       <div if={!state.isLoading }
             is={ state.page }
-            class="container content wideContainer row"
+            class="container content {state.fullWidth ? 'fullWidthContainer' : 'wideContainer'} row"
             {...state.pageProps}
             step={state.pageProps.step}></div>
    </div>
@@ -24,19 +24,16 @@
          state: {
             isLoading: true,
             page: '',
-            pageProps: {}
+            pageProps: {},
+            fullWidth: false
          },
 
          onBeforeMount() {
             route.parser(undefined, this.routeParser)
             let authPromise = this.auth.checkAuthCookie()
-            let siteConfigPromise = this.store.loadSiteconfig().always(this.onSiteConfigLoaded)
-            Promise.all([authPromise, siteConfigPromise]).then(() => {
-               // session is loaded -> router is initialized
-               if(["", "/"].includes(route._.getPathFromBase()) && this.dictData.siteconfig.homepage){
-                  window.location.href = this.dictData.siteconfig.homepage
-               }
-            })
+            let siteConfigPromise = this.store.loadSiteconfig()
+            Promise.all([authPromise, siteConfigPromise])
+                  .then(this.onSessionAndSiteconfigLoaded.bind(this))
             this.connection = window.connection
             let appUpdater = new window.AppUpdaterClass({
                url: window.window.API_URL + 'version.txt',
@@ -167,18 +164,22 @@
             if(this.state.page == "unauthorized"){
                this.store.resetDictionary()
             }
+            this.state.fullWidth = this.state.page == "dict-config-formatting"
             this.state.isLoading = (this.authData.isCheckingAuth && this.state.page != "login")
                   || this.dictData.isSiteconfigLoading
             this.dictData.actualPage = this.state.page
          },
 
-         onSiteConfigLoaded() {
-            this.update()
-            this.checkConsentAndShowConsentDialog()
+         onSessionAndSiteconfigLoaded(){
             if(this.dictData.siteconfig.customStyle){
                $("head").append(`<link rel="stylesheet" type="text/css" href="${this.dictData.siteconfig.customStyle}">`)
             }
             $("#appOverlay").fadeOut().find(".appSpinner").hide()
+            if(["", "/"].includes(route._.getPathFromBase()) && this.dictData.siteconfig.homepage){
+               window.location.href = this.dictData.siteconfig.homepage
+            }
+            route.start()
+            route.exec()
          },
 
          onAuthChanged(){
@@ -200,8 +201,6 @@
                this.store.loadDictionaryList()
                this.checkConsentAndShowConsentDialog()
             }
-            route.start()
-            route.exec()
          },
 
          onUnauthorizedRequest(){
@@ -329,6 +328,9 @@
       }
       .wideContainer{
          max-width: min(1600px, 96vw);
+      }
+      .fullWidthContainer{
+         max-width: calc(100vw - 50px);
       }
    </style>
 </main>
