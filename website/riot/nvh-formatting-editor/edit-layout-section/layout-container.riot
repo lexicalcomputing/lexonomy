@@ -111,7 +111,9 @@
                ["layout-container-selected",     this.nvhFormattingEditor.isLayoutContainerActive(this.props.schema)],
                ["layout-container-dragged",      this.nvhFormattingEditor.isLayoutContainerDragged(this.props.schema)],
                ["layout-container-non-existing", this.nvhFormattingEditor.isElementNonExisting(this.props.schema.content.path)],
-               ["layout-container-mouse-hover",  this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema]
+               ["layout-container-mouse-hover",  this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema],
+               ["layout-container-horizontal",   this.props.schema.orientation == "row"],
+               ["layout-container-vertical",     this.props.schema.orientation == "column"]
             ])
          },
 
@@ -171,13 +173,22 @@
             height: 100%;
             width: 100%;
          }
+         &.layout-container-horizontal{
+            .layout-container-inside-wrapper {
+               padding: 6px;
+            }
+         }
+         &.layout-container-vertical{
+            .layout-container-inside-wrapper {
+               padding: 0 6px 0 6px;
+            }
+         }
       }
       .layout-container-inside-wrapper {
          display: flex;
          align-items: stretch;
          justify-content: center;
          width: 100%;
-         padding: 4px 4px 4px 8px;
       }
       .layout-container-inside-wrapper-column {
          flex-direction: column;
