@@ -75,9 +75,9 @@ class NVHFormattingEditorClass {
    }
 
    changeLayoutSchema() {
-      if (window.innerWidth < 440) {
+      if (window.innerWidth < 768) {
          this.setClosestConfiguredLayout("mobile");
-      } else if (window.innerWidth < 1020) {
+      } else if (window.innerWidth < 1024) {
          this.setClosestConfiguredLayout("tablet");
       } else {
          this.setClosestConfiguredLayout("desktop");
@@ -590,11 +590,11 @@ class NVHFormattingEditorClass {
    getMaxPossibleWidth() {
       switch (this.data.activeLayout) {
          case "tablet":
-            return 1020;
+            return 1024;
          case "pdf":
             return 980;
          case "mobile":
-            return 440;
+            return 768;
          default:
             // 2 * 5px padding + 2 * 3 px of margin = 16 px
             return window.innerWidth * 0.8 - 16
