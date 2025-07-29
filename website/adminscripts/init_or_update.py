@@ -568,6 +568,10 @@ class Updates:
             # keep the formatting empty if not present in old dict
             return
 
+        if not formatting.get('elements') and formatting.get('layout'):
+            # already has new formatting
+            return
+
         structure = json.loads(dictDB.execute("SELECT json FROM configs WHERE id='structure'").fetchone()['json'])
         root = nvh.schema_get_root_name(structure['nvhSchema'])
         hidden_elements = [key for key, value in formatting.get('elements', {}).items() if value.get("hidden", False) == True]
