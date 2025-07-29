@@ -8,11 +8,11 @@
                   data-tooltip="Entry structure changed, and element '{props.schema.content.path}' does not exist anymore. Remove it to fix the formatting structure.">
                <i class="material-icons white-text">warning</i>
             </span>
-            <i if={props.schema.parent && !state.elementDoesNotExist}
+            <i if={!state.elementDoesNotExist}
                   class="material-icons tooltipped action"
                   data-tooltip={props.schema.orientation === "column"
-                  ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
-                  : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
+                     ? "Content of this area is VERTICALLY aligned.\nClick to align the content HORIZONTALLY."
+                     : "Content of this area is HORIZONTALLY aligned.\nClick to align the content VERTICALLY."}
                   style="font-size: 18px;width: 24px;height: 24px;line-height: 24px;"
                   onclick={onChangeOrientationClick}>
                {props.schema.orientation == "column" ? 'swap_vert' : 'swap_horiz'}
@@ -215,7 +215,10 @@
       .action:hover {
          opacity: 1;
       }
-      .light-background{
+      .action-panel i{
+         color: rgb(33 33 33);
+      }
+      /*.light-background{
          .action-panel i{
             color: rgb(33 33 33);
          }
@@ -224,6 +227,6 @@
          .action-panel i{
             color: #fff;
          }
-      }
+      }*/
    </style>
 </elementholder-component>
