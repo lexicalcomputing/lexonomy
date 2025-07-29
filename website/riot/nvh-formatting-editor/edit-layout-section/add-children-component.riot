@@ -2,38 +2,41 @@
    <div if={isDisplayed()}
          class="add-children-component-wrapper">
       <div class="add-children-component-label grey-text text-darken-2">Add:</div>
-      <template each={child in state.childrenList.splice(0, 2)}>
+      <template each={child in state.childrenList.slice(0, 2)}>
          <div class="add-children-component-child"
                style="background-color: {window.nvhStore.getElementColor(child.path)};"
                onclick={onAddElementClick.bind(this, child)}>
             {child.name}
          </div>
       </template>
-      <button id="trigger_{ddId}"
-            class="btn btn-small btn-flat btn-floating"
-            data-target="dropdown_{ddId}">
-         <i class="material-icons">
-            more_horiz
-         </i>
-      </button>
-      <ul id="dropdown_{ddId}"
-            class="dropdown-content">
-         <li each={child in state.childrenList}
-               class="add-children-component-dropdown-child"
-               onclick={onAddElementClick.bind(this, child)}
-               style="min-height: 30px;">
-            <a style="color: {window.nvhStore.getElementColor(child.path)};padding: 0rem 1rem;line-height: 30px;">
-               {child.name}
-            </a>
-         </li>
-      </ul>
+      <template if={state.childrenList.length > 2}>
+         <button id="trigger_{ddId}"
+               class="btn btn-small btn-flat btn-floating"
+               data-target="dropdown_{ddId}"
+               onclick={window.stopEvtPropagation}>
+            <i class="material-icons">
+               more_horiz
+            </i>
+         </button>
+         <ul id="dropdown_{ddId}"
+               class="dropdown-content">
+            <li each={child in state.childrenList}
+                  class="add-children-component-dropdown-child"
+                  onclick={onAddElementClick.bind(this, child)}
+                  style="min-height: 30px;">
+               <a style="color: {window.nvhStore.getElementColor(child.path)};padding: 0rem 1rem;line-height: 30px;">
+                  {child.name}
+               </a>
+            </li>
+         </ul>
+      </template>
    </div>
 
    <script>
       export default {
          onBeforeMount(props) {
-            this.nvhFormattingEditor = window.nvhFormattingEditor;
-            this.nvhStore = window.nvhStore;
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.nvhStore = window.nvhStore
             this.ddId = Math.random().toString(36).substr(2)
             this.refreshChildrenList()
          },
@@ -46,14 +49,13 @@
             $(`#trigger_${this.ddId}`, this.root)
                   .dropdown({
                      coverTrigger: false,
-                     constrainWidth: false,
-                     container: document.body
+                     constrainWidth: false
                   })
          },
 
          refreshChildrenList() {
             this.state.childrenList = []
-            let config = window.nvhStore.getElementConfig(this.props.schema.content.path);
+            let config = window.nvhStore.getElementConfig(this.props.schema.content.path)
             if (!config) {
                return []
             }
@@ -78,7 +80,7 @@
 
          isDisplayed(){
             return this.props.schema.content.path
-                  && this.state.childrenList.length > 1
+                  && this.state.childrenList.length
                   && !this.nvhFormattingEditor.hasElementInAncestors(this.props.schema, this.props.schema.content.path)
          },
 
@@ -86,7 +88,7 @@
             let parent = this.props.schema
             if (parent.children.length === 0 && parent.content.path !== newElement.path) {
                // adding element other than parent element -> add also parent element as child (because parent element now became group)
-               this.nvhFormattingEditor.addElement(parent, this.props.schema.content.path);
+               this.nvhFormattingEditor.addElement(parent, this.props.schema.content.path)
             }
             this.nvhFormattingEditor.addElement(parent, newElement.path)
          }
@@ -97,6 +99,7 @@
       .add-children-component-wrapper {
          display: flex;
          width: 100%;
+         min-height: 29px;
          gap: 5px;
          align-items: center;
          border-bottom: 1px solid rgba(0, 0, 0, 0.2);
