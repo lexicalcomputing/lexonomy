@@ -135,7 +135,7 @@
                   let toolbarHeight = document.querySelector("nvh-formatting-editor-toolbar").clientHeight
                   height = `calc(100vh - ${toolbarHeight}px)`
                } else {
-                  let topOffset = container.getBoundingClientRect().top + window.scrollY
+                  let topOffset = container.getBoundingClientRect().top + window.scrollY - document.querySelector("app-header").clientHeight
                   height = `calc(100vh - ${topOffset}px)`
                }
                container.style.height = height
@@ -288,7 +288,7 @@
       }
       .editing-layout-wrapper {
          width: 100%;
-         height: 90%;
+         height: calc(100% - 55px);
       }
       .edit-layout {
          width: fit-content;
