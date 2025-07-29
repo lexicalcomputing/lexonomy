@@ -1,5 +1,5 @@
 <add-children-component class="add-children-component">
-   <div if={isDisplayed()}
+   <div if={state.childrenList.length}
          class="add-children-component-wrapper">
       <div class="add-children-component-label grey-text text-darken-2">Add:</div>
       <template each={child in state.childrenList.slice(0, 2)}>
@@ -55,19 +55,23 @@
 
          refreshChildrenList() {
             this.state.childrenList = []
-            let config = window.nvhStore.getElementConfig(this.props.schema.content.path)
+            let schema = this.props.schema
+            if(!schema.content.path){
+               schema = this.nvhFormattingEditor.findFirstNonContainerAncestor(this.props.schema)
+            }
+            let config = window.nvhStore.getElementConfig(schema.content.path)
             if (!config) {
                return []
             }
             let children = []
-            if(this.props.schema.children.length){
+            if(schema.children.length){
                children.push(config)
             }
             children.push(...config.children)
             let originalOrder = config.children.map(child => child.path)
             children = children.filter(child => !this.nvhFormattingEditor.isMarkupType(child.path)
-                  && !this.nvhFormattingEditor.hasElementInAncestors(this.props.schema, this.props.schema.content.path))
-            let actualChildren = this.props.schema.children.map(child => child.content.path)
+                  && !this.nvhFormattingEditor.hasElementInAncestors(schema, schema.content.path))
+            let actualChildren = schema.children.map(child => child.content.path)
             children.sort((a, b) => {
                if(actualChildren.includes(a.path) == actualChildren.includes(b.path)){
                   return originalOrder.indexOf(a) - originalOrder.indexOf(b)
@@ -78,15 +82,9 @@
             this.state.childrenList = children
          },
 
-         isDisplayed(){
-            return this.props.schema.content.path
-                  && this.state.childrenList.length
-                  && !this.nvhFormattingEditor.hasElementInAncestors(this.props.schema, this.props.schema.content.path)
-         },
-
          onAddElementClick(newElement) {
             let parent = this.props.schema
-            if (parent.children.length === 0 && parent.content.path !== newElement.path) {
+            if (parent.children.length === 0 && parent.content.path && parent.content.path !== newElement.path) {
                // adding element other than parent element -> add also parent element as child (because parent element now became group)
                this.nvhFormattingEditor.addElement(parent, this.props.schema.content.path)
             }
