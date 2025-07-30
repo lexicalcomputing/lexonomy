@@ -3,7 +3,7 @@
       export default {
          upd () {
             this.root.innerHTML = typeof this.props.content == "string"
-                  ? DOMPurify.sanitize(this.props.content.replaceAll("{", "\\{"))
+                  ? DOMPurify.sanitize(this.props.content.replaceAll("{", "\\{"), {ADD_ATTR: ['target']})
                   : this.props.content
          },
 
