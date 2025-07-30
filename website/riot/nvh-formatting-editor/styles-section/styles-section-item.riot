@@ -6,7 +6,8 @@
             <i class="material-icons">chevron_right</i>
          </div>
          <div class="collapsible-body">
-            <div if={state.elementType === "url"} class="styles-section-item-wrapper">
+            <div if={state.elementType === "url"}
+                  class="styles-section-item-wrapper">
                <div class="label">Open url in new tab</div>
                <div class="value-wrapper">
                   <label>
@@ -29,7 +30,8 @@
                   </label>
                </div>
             </div>
-            <div if={["image", "video", "audio"].includes(state.elementType) && getStyleOptionValue("show-url", true)} class="styles-section-item-wrapper">
+            <div if={["image", "video", "audio"].includes(state.elementType) && getStyleOptionValue("show-url", true)}
+                  class="styles-section-item-wrapper">
                <div class="label">Show url as icon</div>
                <div class="value-wrapper">
                   <label>
@@ -40,7 +42,8 @@
                   </label>
                </div>
             </div>
-            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("show-url", true)} class="styles-section-item-wrapper">
+            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("show-url", true)}
+                  class="styles-section-item-wrapper">
                <div class="label">Replace url with text</div>
                <div class="value-wrapper">
                   <label>
@@ -51,13 +54,18 @@
                   </label>
                </div>
             </div>
-            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-url", true)} class="styles-section-item-wrapper">
+            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-url", true)}
+                  class="styles-section-item-wrapper">
                <div class="label">Text replacement for url</div>
                <div class="value-wrapper">
-                  <input type="text" value={getStyleOptionValue("text-replacement-for-url", "")} name="text-replacement-for-url" onchange={onChangeStyle}>
+                  <input type="text"
+                        value={getStyleOptionValue("text-replacement-for-url", "")}
+                        name="text-replacement-for-url"
+                        onchange={onChangeStyle}>
                </div>
             </div>
-            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-url", true)} class="styles-section-item-wrapper">
+            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("replace-url-with-text") && getStyleOptionValue("show-url", true)}
+                  class="styles-section-item-wrapper">
                <div class="label">Set text as tooltip</div>
                <div class="value-wrapper">
                   <label>
@@ -68,7 +76,8 @@
                   </label>
                </div>
             </div>
-            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("show-url", true)} class="styles-section-item-wrapper">
+            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("show-url", true)}
+                  class="styles-section-item-wrapper">
                <div class="label">Show icon options</div>
                <div class="value-wrapper">
                   <label>
@@ -79,9 +88,11 @@
                   </label>
                </div>
             </div>
-            <div if={["video", "audio", "url"].includes(state.elementType) && (getStyleOptionValue("show-url", true)) && getStyleOptionValue("show-icon") || (state.elementType === "image" && getStyleOptionValue("show-url", true) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+            <div if={["video", "audio", "url"].includes(state.elementType) && (getStyleOptionValue("show-url", true)) && getStyleOptionValue("show-icon") || (state.elementType === "image" && getStyleOptionValue("show-url", true) && getStyleOptionValue("show-url-as-icon"))}
+                  class="styles-section-item-wrapper">
                <div class="label">Choose icon</div>
-               <div class="value-wrapper" style="width: 200px; flex-wrap: wrap;">
+               <div class="value-wrapper"
+                     style="width: 200px; flex-wrap: wrap;">
                   <template each={obj in Object.entries(state.iconList)}>
                      <input class="value-item value-item-icon input-button"
                            id="icon-item-{obj[0]}"
@@ -96,13 +107,18 @@
                   </template>
                </div>
             </div>
-            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("show-url", true) && getStyleOptionValue("show-icon") || (state.elementType === "image" && getStyleOptionValue("show-url", true) && getStyleOptionValue("show-url-as-icon"))} class="styles-section-item-wrapper">
+            <div if={["video", "audio", "url"].includes(state.elementType) && getStyleOptionValue("show-url", true) && getStyleOptionValue("show-icon") || (state.elementType === "image" && getStyleOptionValue("show-url", true) && getStyleOptionValue("show-url-as-icon"))}
+                  class="styles-section-item-wrapper">
                <div class="label">Use unicode character as an icon</div>
                <div class="value-wrapper">
-                  <input type="text" value={getStyleOptionValue("unicode-icon", "")} name="unicode-icon onchange={onChangeStyle} style="max-width: 150px;">
+                  <input type="text"
+                        value={getStyleOptionValue("unicode-icon", "")}
+                        name="unicode-icon onchange={onChangeStyle}"
+                        style="max-width: 150px;">
                </div>
             </div>
-            <div if={state.elementType === "audio"} class="styles-section-item-wrapper">
+            <div if={state.elementType === "audio"}
+                  class="styles-section-item-wrapper">
                <div class="label">Show audio player</div>
                <div class="value-wrapper">
                   <label>
@@ -113,7 +129,8 @@
                   </label>
                </div>
             </div>
-            <div if={state.elementType === "video"} class="styles-section-item-wrapper">
+            <div if={state.elementType === "video"}
+                  class="styles-section-item-wrapper">
                <div class="label">Show video player</div>
                <div class="value-wrapper">
                   <label>
@@ -124,7 +141,8 @@
                   </label>
                </div>
             </div>
-            <div if={state.elementType === "image"} class="styles-section-item-wrapper">
+            <div if={state.elementType === "image"}
+                  class="styles-section-item-wrapper">
                <div class="label">Show image</div>
                <div class="value-wrapper">
                   <label>
@@ -135,7 +153,8 @@
                   </label>
                </div>
             </div>
-            <div if={state.elementType === "image" && (getStyleOptionValue("show-image", true))} class="styles-section-item-wrapper">
+            <div if={state.elementType === "image" && (getStyleOptionValue("show-image", true))}
+                  class="styles-section-item-wrapper">
                <div class="label">Make image clickable</div>
                <div class="value-wrapper">
                   <label>
@@ -146,24 +165,36 @@
                   </label>
                </div>
             </div>
-            <div if={state.elementType === "image" || (state.elementType === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+            <div if={state.elementType === "image" || (state.elementType === "video" && getStyleOptionValue("show-player"))}
+                  class="styles-section-item-wrapper">
                <div class="label">
                   Max width (px)
                   <i data-tooltip="The image will be reduced to the specified size. Smaller images will not be enlarged. If the other dimension is empty, it will be calculated automatically, preserving the aspect ratio. If both dimensions are set and the image has different aspect ratio, the smaller dimension is given preference."
                      class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper">
-                  <input type="number" class="input-number" value={getStyleOptionValue("max-width")} name="max-width" onchange={onChangeStyle}>
+                  <input type="number"
+                        class="input-number"
+                        value={getStyleOptionValue("max-width")}
+                        name="max-width"
+                        onchange={onChangeStyle}>
                </div>
             </div>
-            <div if={state.elementType === "image" || (state.elementType === "video" && getStyleOptionValue("show-player"))} class="styles-section-item-wrapper">
+            <div if={state.elementType === "image" || (state.elementType === "video" && getStyleOptionValue("show-player"))}
+                  class="styles-section-item-wrapper">
                <div class="label">Max height (px)</div>
                <div class="value-wrapper">
-                  <input type="number" class="input-number" value={getStyleOptionValue("max-height")} name="max-height" onchange={onChangeStyle}>
+                  <input type="number"
+                        class="input-number"
+                        value={getStyleOptionValue("max-height")}
+                        name="max-height"
+                        onchange={onChangeStyle}>
                </div>
             </div>
-            <div if={(state.elementType === "bool")} class="label">Set text (value = YES)</div>
-            <div if={(state.elementType === "bool")} class="styles-section-item-wrapper">
+            <div if={(state.elementType === "bool")}
+                  class="label">Set text (value = YES)</div>
+            <div if={(state.elementType === "bool")}
+                  class="styles-section-item-wrapper">
                <div class="value-wrapper">
                   <input type="texT"
                         value={getStyleOptionValue("yes-value-text", "")}
@@ -171,8 +202,10 @@
                         onchange={onChangeStyle}/>
                </div>
             </div>
-            <div if={(state.elementType === "bool")} class="label">Set text (value = NO)</div>
-            <div if={(state.elementType === "bool")} class="styles-section-item-wrapper">
+            <div if={(state.elementType === "bool")}
+                  class="label">Set text (value = NO)</div>
+            <div if={(state.elementType === "bool")}
+                  class="styles-section-item-wrapper">
                <div class="value-wrapper">
                   <input type="texT"
                         value={getStyleOptionValue("no-value-text", "")}
@@ -196,8 +229,13 @@
          <div class="collapsible-body">
             <div class="styles-section-item-wrapper">
                <div class="label">Label text</div>
-               <div class="value-wrapper" style="gap: 10px;">
-                  <input type="text" class="input-text" value={getStyleOptionValue("label-text-value", "")} name="label-text-value" onchange={onChangeStyle}>
+               <div class="value-wrapper"
+                     style="gap: 10px;">
+                  <input type="text"
+                        class="input-text"
+                        value={getStyleOptionValue("label-text-value", "")}
+                        name="label-text-value"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -243,10 +281,15 @@
                   </label>
                </div>
             </div>
-            <div if={getStyleOptionValue("bullet-use-bullets")} class="styles-section-item-wrapper">
+            <div if={getStyleOptionValue("bullet-use-bullets")}
+                  class="styles-section-item-wrapper">
                <div class="label">Set bullet</div>
                <div class="value-wrapper" style="gap: 10px;">
-                  <input type="text" class="input-text" value={getStyleOptionValue("bullet-set-bullet", "")} name="bullet-set-bullet" onchange={onChangeStyle}>
+                  <input type="text"
+                        class="input-text"
+                        value={getStyleOptionValue("bullet-set-bullet", "")}
+                        name="bullet-set-bullet"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -282,34 +325,43 @@
                <div class="label">
                   Color
                   <i data-tooltip="Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
-                  class="material-icons tooltipped help tiny">help_outline</i>
+                        class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper">
-                  <input type="text" value={getStyleOptionValue("color")} style="width: 100px; margin: 0;" name="color" onchange={onChangeStyle}/>
-                  <input type="color" class="input-color" value={getStyleOptionValue("color")} name="color" onchange={onChangeStyle}>
+                  <input type="text"
+                        value={getStyleOptionValue("color")}
+                        style="width: 100px; margin: 0;"
+                        name="color"
+                        onchange={onChangeStyle}/>
+                  <input type="color"
+                        class="input-color"
+                        value={getStyleOptionValue("color")}
+                        name="color"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
                <div class="label">
                   Size (px)
                   <i data-tooltip="The font size is inherited from the parent element. Use the slider or type a value to change this. Leave empty to use the parent font."
-                     class="material-icons tooltipped help tiny">help_outline</i>
+                        class="material-icons tooltipped help tiny">help_outline</i>
                </div>
-               <div class="value-wrapper" style="gap: 10px;">
+               <div class="value-wrapper"
+                     style="gap: 10px;">
                   <input type="range"
-                     class="input-range"
-                     value={!getStyleOptionValue("font-size") ? 8 : getStyleOptionValue("font-size")}
-                     min="8"
-                     max="50"
-                     step="1"
-                     name="font-size"
-                     onchange={onChangeStyle}>
+                        class="input-range"
+                        value={!getStyleOptionValue("font-size") ? 8 : getStyleOptionValue("font-size")}
+                        min="8"
+                        max="50"
+                        step="1"
+                        name="font-size"
+                        onchange={onChangeStyle}>
                   <input type="number"
-                     class="input-number"
-                     value={getStyleOptionValue("font-size")}
-                     min="1"
-                     name="font-size"
-                     onchange={onChangeStyle}>
+                        class="input-number"
+                        value={getStyleOptionValue("font-size")}
+                        min="1"
+                        name="font-size"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -361,7 +413,7 @@
                <div class="label">
                   Font
                   <i data-tooltip="By default, the element is displayed in its parent font. To set the font for the whole entry, change the font of the ENTRY element. Changing the parent elment font will not affect the children, if children's fonts were modified previously. Set children to --inherit-- to adopt the parent font."
-                  class="material-icons tooltipped help tiny">help_outline</i>
+                        class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper">
                   <select name="font-family"
@@ -392,11 +444,19 @@
                   <i data-tooltip={state.elementType === "string"
                         ? "Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."
                         : "The background colour will only show if the inner margin (padding) is set to 1 or higher. Type a HEX code in the box or use the colour picker. Leave the box empty for transparent colour."}
-                     class="material-icons tooltipped help tiny">help_outline</i>
+                        class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper">
-                  <input type="text" value={getStyleOptionValue("background-color")} style="width: 100px; margin: 0;" name="background-color" onchange={onChangeStyle}/>
-                  <input type="color" class="input-color" value={getStyleOptionValue("background-color", "#ffffff")} name="background-color" onchange={onChangeStyle}>
+                  <input type="text"
+                        value={getStyleOptionValue("background-color")}
+                        style="width: 100px; margin: 0;"
+                        name="background-color"
+                        onchange={onChangeStyle}/>
+                  <input type="color"
+                        class="input-color"
+                        value={getStyleOptionValue("background-color", "#ffffff")}
+                        name="background-color"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -429,66 +489,77 @@
                <div class="styles-section-item-wrapper">
                   <div class="label">Border color</div>
                   <div class="value-wrapper">
-                     <input type="text" value={getStyleOptionValue("border-color")} style="width: 100px; margin: 0;" name="border-color" onchange={onChangeStyle}/>
-                     <input type="color" class="input-color" value={getStyleOptionValue("border-color")} name="border-color" onchange={onChangeStyle}>
+                     <input type="text"
+                           value={getStyleOptionValue("border-color")}
+                           style="width: 100px; margin: 0;"
+                           name="border-color"
+                           onchange={onChangeStyle}/>
+                     <input type="color"
+                           class="input-color"
+                           value={getStyleOptionValue("border-color")}
+                           name="border-color"
+                           onchange={onChangeStyle}>
                   </div>
                </div>
                <div class="styles-section-item-wrapper">
                   <div class="label">Border width (px)</div>
-                  <div class="value-wrapper" style="gap: 10px;">
+                  <div class="value-wrapper"
+                        style="gap: 10px;">
                      <input type="range"
-                        class="input-range"
-                        value={!getStyleOptionValue("border-width") ? 0 : getStyleOptionValue("border-width")}
-                        min="0"
-                        max="10"
-                        step="1"
-                        name="border-width"
-                        onchange={onChangeStyle}>
+                           class="input-range"
+                           value={!getStyleOptionValue("border-width") ? 0 : getStyleOptionValue("border-width")}
+                           min="0"
+                           max="10"
+                           step="1"
+                           name="border-width"
+                           onchange={onChangeStyle}>
                      <input type="number"
-                        class="input-number"
-                        value={!getStyleOptionValue("border-width") ? 0 : getStyleOptionValue("border-width")}
-                        min="0"
-                        name="border-width"
-                        onchange={onChangeStyle}>
+                           class="input-number"
+                           value={!getStyleOptionValue("border-width") ? 0 : getStyleOptionValue("border-width")}
+                           min="0"
+                           name="border-width"
+                           onchange={onChangeStyle}>
                   </div>
                </div>
             </template>
             <div class="styles-section-item-wrapper">
                <div class="label">Box shadow (px)</div>
-               <div class="value-wrapper" style="gap: 10px;">
+               <div class="value-wrapper"
+                     style="gap: 10px;">
                   <input type="range"
-                     class="input-range"
-                     value={!getStyleOptionValue("box-shadow") ? 0 : getStyleOptionValue("box-shadow")}
-                     min="0"
-                     max="50"
-                     step="1"
-                     name="box-shadow"
-                     onchange={onChangeStyle}>
+                        class="input-range"
+                        value={!getStyleOptionValue("box-shadow") ? 0 : getStyleOptionValue("box-shadow")}
+                        min="0"
+                        max="50"
+                        step="1"
+                        name="box-shadow"
+                        onchange={onChangeStyle}>
                   <input type="number"
-                     class="input-number"
-                     value={!getStyleOptionValue("box-shadow") ? 0 : getStyleOptionValue("box-shadow")}
-                     min="0"
-                     name="box-shadow"
-                     onchange={onChangeStyle}>
+                        class="input-number"
+                        value={!getStyleOptionValue("box-shadow") ? 0 : getStyleOptionValue("box-shadow")}
+                        min="0"
+                        name="box-shadow"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
                <div class="label">Rounded corners (px)</div>
-               <div class="value-wrapper" style="gap: 10px;">
+               <div class="value-wrapper"
+                     style="gap: 10px;">
                   <input type="range"
-                     class="input-range"
-                     value={!getStyleOptionValue("border-radius") ? 0 : getStyleOptionValue("border-radius")}
-                     min="0"
-                     max="50"
-                     step="1"
-                     name="border-radius"
-                     onchange={onChangeStyle}>
+                        class="input-range"
+                        value={!getStyleOptionValue("border-radius") ? 0 : getStyleOptionValue("border-radius")}
+                        min="0"
+                        max="50"
+                        step="1"
+                        name="border-radius"
+                        onchange={onChangeStyle}>
                   <input type="number"
-                     class="input-number"
-                     value={!getStyleOptionValue("border-radius") ? 0 : getStyleOptionValue("border-radius")}
-                     min="0"
-                     name="border-radius"
-                     onchange={onChangeStyle}>
+                        class="input-number"
+                        value={!getStyleOptionValue("border-radius") ? 0 : getStyleOptionValue("border-radius")}
+                        min="0"
+                        name="border-radius"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             Margin (px)
@@ -501,7 +572,8 @@
                   <i data-tooltip="Inserts empty space between elements."
                         class="material-icons tooltipped help tiny">help_outline</i>
                </div>
-               <div class="value-wrapper" style="gap: 10px;">
+               <div class="value-wrapper"
+                     style="gap: 10px;">
                   <input type="range"
                         class="input-range"
                         value={!getStyleOptionValue("margin-" + side) ? 0 : getStyleOptionValue("margin-" + side)}
@@ -526,7 +598,8 @@
                <div class="label grey-text text-darken-2">
                   {window.capitalize(side)}
                </div>
-               <div class="value-wrapper" style="gap: 10px;">
+               <div class="value-wrapper"
+                     style="gap: 10px;">
                   <input type="range"
                         class="input-range"
                         value={!getStyleOptionValue("padding-" + side) ? 0 : getStyleOptionValue("padding-" + side)}
@@ -589,8 +662,13 @@
                <div class="label">
                   Left (custom)
                </div>
-               <div class="value-wrapper" style="gap: 10px;">
-                  <input type="text" class="input-text" value={getStyleOptionValue("leftPunc", "")} name="leftPunc" onchange={onChangeStyle}>
+               <div class="value-wrapper"
+                     style="gap: 10px;">
+                  <input type="text"
+                        class="input-text"
+                        value={getStyleOptionValue("leftPunc", "")}
+                        name="leftPunc"
+                        onchange={onChangeStyle}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -622,8 +700,13 @@
             </div>
             <div class="styles-section-item-wrapper">
                <div class="label">Right (custom)</div>
-               <div class="value-wrapper" style="gap: 10px;">
-                  <input type="text" class="input-text" value={getStyleOptionValue("rightPunc" ,"")} name="rightPunc" onchange={onChangeStyle}>
+               <div class="value-wrapper"
+                     style="gap: 10px;">
+                  <input type="text"
+                        class="input-text"
+                        value={getStyleOptionValue("rightPunc" ,"")}
+                        name="rightPunc"
+                        onchange={onChangeStyle}>
                </div>
             </div>
          </div>
@@ -658,14 +741,14 @@
                   <div class="label">
                      Container width
                      <i data-tooltip="If left empty (recommended), the element automatically sets width depending on the content. Set a percentage of the parent container. To set a fixed width, use pixels."
-                     class="material-icons tooltipped help tiny">help_outline</i>
+                           class="material-icons tooltipped help tiny">help_outline</i>
                   </div>
                   <div class="value-wrapper">
                      <input type="number"
-                        value={getStyleOptionValue("container-width")}
-                        name="container-width"
-                        onchange={onChangeStyle}
-                        style="width: 100px">
+                           value={getStyleOptionValue("container-width")}
+                           name="container-width"
+                           onchange={onChangeStyle}
+                           style="width: 100px">
                      <input class="input-button value-item"
                            id="container-width-unit"
                            type="radio"
@@ -699,7 +782,8 @@
                   </div>
                </div>
             </template>
-            <div if={state.isGroup} class="styles-section-item-wrapper">
+            <div if={state.isGroup}
+                  class="styles-section-item-wrapper">
                <div class="label">Container alignment</div>
                <div class="value-wrapper">
                   <select name="align-items"
@@ -716,12 +800,17 @@
                   <i data-tooltip="You can insert plain text or use HTML."
                         class="material-icons tooltipped help tiny">help_outline</i>
             </div>
-            <div if={(state.elementType === "empty") || state.isEmpty} class="styles-section-item-wrapper">
+            <div if={(state.elementType === "empty") || state.isEmpty}
+                  class="styles-section-item-wrapper">
                <div class="value-wrapper">
-                  <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("text-value", "")} name="text-value" onchange={onChangeStyle}></textarea>
+                  <textarea style="resize: none; height: 100px; width: 300px;"
+                        value={getStyleOptionValue("text-value", "")}
+                        name="text-value"
+                        onchange={onChangeStyle}></textarea>
                </div>
             </div>
-            <div if={state.hasUrlChildOfMarkupType} class="styles-section-item-wrapper">
+            <div if={state.hasUrlChildOfMarkupType}
+                  class="styles-section-item-wrapper">
                <div class="label">Apply URL:</div>
                <div class="value-wrapper">
                   <div class="value-wrapper">
@@ -737,12 +826,15 @@
             <div class="label">
                Set custom CSS
                <i data-tooltip="Allows inserting CSS for advanced styling. CSS syntax rules apply. For example, for a grey line to appear above the element, insert this CSS: border-top: 1px solid silver;"
-                  class="material-icons tooltipped help tiny">help_outline</i>
+                     class="material-icons tooltipped help tiny">help_outline</i>
             </div>
             <div style="color: red;">{!nvhFormattingEditor.isStringCssValid(this.state.styles) ? "The CSS contains invalid syntax." : ""}</div>
             <div class="styles-section-item-wrapper">
                <div class="value-wrapper">
-                  <textarea style="resize: none; height: 100px; width: 300px;" value={getStyleOptionValue("custom-css", "")} name="custom-css" onchange={onChangeStyle}></textarea>
+                  <textarea style="resize: none; height: 100px; width: 300px;"
+                        value={getStyleOptionValue("custom-css", "")}
+                        name="custom-css"
+                        onchange={onChangeStyle}></textarea>
                </div>
             </div>
          </div>
@@ -815,8 +907,8 @@
          },
 
          onBeforeMount() {
-            this.nvhFormattingEditor = window.nvhFormattingEditor;
-            this.nvhStore = window.nvhStore;
+            this.nvhFormattingEditor = window.nvhFormattingEditor
+            this.nvhStore = window.nvhStore
             this.refreshStateData()
          },
 
@@ -853,8 +945,6 @@
             this.state.isBulletOptionStyle = this.props.type == "bullet"
             this.state.isMarkupType = this.props.type == "markup"
             this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.path).length
-            //let schema = this.props.type == "markup" ? this.state.selectedLayoutContainer.parent : this.state.selectedLayoutContainer
-            //this.state.styles = this.nvhFormattingEditor.getStyles(schema, this.props.type, this.props.type == "markup" ? this.props.path : null)
             this.state.styles = this.nvhFormattingEditor.getStyles(this.state.selectedLayoutContainer, this.props.type, this.props.type == "markup" ? this.props.path : null)
             this.state.isGroup = this.state.selectedLayoutContainer.children.length
             this.state.isEmpty = !this.state.selectedLayoutContainer.content.path
@@ -885,7 +975,7 @@
                   || this.state.styles[option] === undefined) {
                return defaultValue
             }
-            return this.state.styles[option];
+            return this.state.styles[option]
          },
 
          onChangeBoolStyle(option, defaultValue, evt){
@@ -898,82 +988,78 @@
          },
 
          setStyleValue(option, value){
-            let selectedLayoutContainer = this.nvhFormattingEditor.data.selectedLayoutContainer;
-            if (selectedLayoutContainer === null) {
-               return;
-            }
-            if (this.state.styles === undefined) {
-               this.state.styles = {};
+            if (!this.nvhFormattingEditor.data.selectedLayoutContainer) {
+               return
             }
             if (option === "text-decoration") {
                if (this.state.styles[option] === undefined) {
                   this.state.styles[option] = [value]
                } else {
                   if (this.state.styles[option].includes(value)) {
-                  this.state.styles[option] = this.state.styles[option].filter(v => v !== value);
+                     this.state.styles[option] = this.state.styles[option].filter(v => v !== value)|
                   } else {
-                  this.state.styles[option].push(value);
+                     this.state.styles[option].push(value)
                   }
                }
             } else if (option === "font-weight" || option === "font-style") {
                if (this.state.styles[option] === undefined) {
-                  this.state.styles[option] = value;
+                  this.state.styles[option] = value
                } else {
-                  delete this.state.styles[option];
+                  delete this.state.styles[option]
                }
             } else if (option === "icon-item") {
                if (this.state.styles[option] === undefined || this.state.styles[option] !== value) {
-                  this.state.styles[option] = value;
+                  this.state.styles[option] = value
                } else {
-                  delete this.state.styles[option];
+                  delete this.state.styles[option]
                }
             } else if (option === "container-width-unit") {
                if (value === "") {
-                  this.state.styles["container-width"] = "";
+                  this.state.styles["container-width"] = ""
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option === "container-width") {
                if (value && !this.state.styles["container-width-unit"]) {
-                  this.state.styles["container-width-unit"] = "px";
+                  this.state.styles["container-width-unit"] = "px"
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option === "show-player") {
                if (!value && !this.state.styles["show-url"]) {
-                  this.state.styles["show-url"] = true;
+                  this.state.styles["show-url"] = true
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option === "show-image") {
                if (!value && !this.state.styles["show-url"]) {
-                  this.state.styles["show-url"] = true;
+                  this.state.styles["show-url"] = true
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option === "show-url") {
                if (!value && !this.state.styles["show-player"]) {
-                  this.state.styles["show-player"] = true;
+                  this.state.styles["show-player"] = true
                }
                if (!value && !this.state.styles["show-image"]) {
-                  this.state.styles["show-image"] = true;
+                  this.state.styles["show-image"] = true
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option === "bullet-use-numbers") {
                if (value && this.state.styles["bullet-use-bullets"]) {
-                  this.state.styles["bullet-use-bullets"] = false;
+                  this.state.styles["bullet-use-bullets"] = false
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option === "bullet-use-bullets") {
                if (value && this.state.styles["bullet-use-numbers"]) {
-                  this.state.styles["bullet-use-numbers"] = false;
+                  this.state.styles["bullet-use-numbers"] = false
                }
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             } else if (option == "label-text-value"){
                if(value && typeof this.state.styles["show-label-before"] == "undefined"){
                   this.state.styles["show-label-before"] = true
                }
                this.state.styles[option] = value
             } else {
-               this.state.styles[option] = value;
+               this.state.styles[option] = value
             }
-            this.nvhFormattingEditor.updateEditor();
+            this.nvhFormattingEditor.updateEditor()
          },
 
          getElementSpecificSectionName(){
@@ -1057,9 +1143,6 @@
             & + label{
                background-color: #cdcdcd;
                color: #000000;
-               /*background-color: #c62132;
-               color: #fff;*/
-               //background-color:var(--color-grey-normal);
             }
          }
       }
