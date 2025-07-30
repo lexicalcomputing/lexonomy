@@ -23,7 +23,6 @@ def main():
     parser.add_argument('-a', '--access_rights', type=str, nargs='*', default=[],
                         help='Access rights.\n'
                         'OPTIONS: canView, canEdit, canAdd, canDelete, canEditSource, canConfig, canDownload, canUpload')
-    
     args = parser.parse_args()
 
     can_view = 1 if 'canView' in args.access_rights else 0
@@ -37,12 +36,11 @@ def main():
 
     conn = ops.getMainDB()
     r1 = conn.execute("SELECT dict_id, user_email FROM user_dict WHERE dict_id=? AND user_email=?", (args.dict_id, args.email.lower()))
-    if r1.fetchone():
-        if can_view + can_edit + can_add + can_delete + can_edit_source + can_config + can_download + can_upload == 0:
-            conn.execute("DELETE FROM user_dict WHERE dict_id=? AND user_email=?", (args.dict_id, args.email.lower()))
-        else:
-            conn.execute("UPDATE user_dict SET canView=?, canEdit=?, canAdd=?, canDelete=?, canEditSource=?, canConfig=?, canDownload=?, canUpload=? WHERE dict_id=? AND user_email=?", 
-                        (can_view, can_edit, can_add, can_delete, can_edit_source, can_config, can_download, can_upload, args.dict_id, args.email.lower()))
+    if can_view + can_edit + can_add + can_delete + can_edit_source + can_config + can_download + can_upload == 0:
+        conn.execute("DELETE FROM user_dict WHERE dict_id=? AND user_email=?", (args.dict_id, args.email.lower()))
+    elif r1.fetchone():
+        conn.execute("UPDATE user_dict SET canView=?, canEdit=?, canAdd=?, canDelete=?, canEditSource=?, canConfig=?, canDownload=?, canUpload=? WHERE dict_id=? AND user_email=?",
+                    (can_view, can_edit, can_add, can_delete, can_edit_source, can_config, can_download, can_upload, args.dict_id, args.email.lower()))
     else:
         conn.execute("INSERT INTO user_dict (dict_id, user_email, canView, canEdit, canAdd, canDelete, canEditSource, canConfig, canDownload, canUpload) values (?,?,?,?,?,?,?,?,?,?)",
                      (args.dict_id, args.email.lower(), can_view, can_edit, can_add, can_delete, can_edit_source, can_config, can_download, can_upload))
