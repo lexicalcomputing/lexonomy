@@ -46,11 +46,11 @@
          },
 
          onMounted(){
-            $(`#trigger_${this.ddId}`, this.root)
-                  .dropdown({
-                     coverTrigger: false,
-                     constrainWidth: false
-                  })
+            this.initDropdown()
+         },
+
+         onUpdated(){
+            this.initDropdown()
          },
 
          refreshChildrenList() {
@@ -89,6 +89,14 @@
                this.nvhFormattingEditor.addElement(parent, this.props.schema.content.path)
             }
             this.nvhFormattingEditor.addElement(parent, newElement.path)
+         },
+
+         initDropdown(){
+            $(`#trigger_${this.ddId}`, this.root)
+               .dropdown({
+                  coverTrigger: false,
+                  constrainWidth: false
+               })
          }
       }
    </script>
