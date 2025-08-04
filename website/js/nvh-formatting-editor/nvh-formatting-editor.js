@@ -615,7 +615,7 @@ class NVHFormattingEditorClass {
          }
          if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
             "border-color", "border-width", "container-width", "label-text-value",
-            "show-label-before", "custom-css", "text-value", "applyURL"].includes(option)) {
+            "show-label-before", "custom-css", "text-value", "applyURL", "allow-html"].includes(option)) {
             continue;
          }
          if (["border-radius", "padding-left", "padding-right", "padding-bottom",

@@ -24,7 +24,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-url", false)}
+                           onclick={onChangeBoolStyle.bind(this, "show-url")}
                            checked={getStyleOptionValue("show-url", true)}/>
                      <span></span>
                   </label>
@@ -36,7 +36,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-url-as-icon", true)}
+                           onclick={onChangeBoolStyle.bind(this, "show-url-as-icon")}
                            checked={getStyleOptionValue("show-url-as-icon")}/>
                      <span></span>
                   </label>
@@ -48,7 +48,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "replace-url-with-text", true)}
+                           onclick={onChangeBoolStyle.bind(this, "replace-url-with-text")}
                            checked={getStyleOptionValue("replace-url-with-text")}/>
                      <span></span>
                   </label>
@@ -70,7 +70,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "text-as-url-tooltip", true)}
+                           onclick={onChangeBoolStyle.bind(this, "text-as-url-tooltip")}
                            checked={getStyleOptionValue("text-as-url-tooltip")}/>
                      <span></span>
                   </label>
@@ -82,7 +82,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-icon", true)}
+                           onclick={onChangeBoolStyle.bind(this, "show-icon")}
                            checked={getStyleOptionValue("show-icon")}/>
                      <span></span>
                   </label>
@@ -123,7 +123,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-player", true)}
+                           onclick={onChangeBoolStyle.bind(this, "show-player")}
                            checked={getStyleOptionValue("show-player")}/>
                      <span></span>
                   </label>
@@ -135,7 +135,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-player", true)}
+                           onclick={onChangeBoolStyle.bind(this, "show-player")}
                            checked={getStyleOptionValue("show-player")}/>
                      <span></span>
                   </label>
@@ -147,7 +147,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-image", false)}
+                           onclick={onChangeBoolStyle.bind(this, "show-image")}
                            checked={getStyleOptionValue("show-image", true)}/>
                      <span></span>
                   </label>
@@ -159,7 +159,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "make-image-clickable", true)}
+                           onclick={onChangeBoolStyle.bind(this, "make-image-clickable")}
                            checked={getStyleOptionValue("make-image-clickable")}/>
                      <span></span>
                   </label>
@@ -243,7 +243,7 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "show-label-before", false)}
+                           onclick={onChangeBoolStyle.bind(this, "show-label-before")}
                            checked={getStyleOptionValue("show-label-before", "")}/>
                      <span></span>
                   </label>
@@ -264,8 +264,8 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "bullet-use-numbers", true)}
-                           checked={getStyleOptionValue("bullet-use-numbers")}/>
+                           onclick={onChangeBoolStyle.bind(this, "bullet-use-numbers")}
+                           checked={getStyleOptionValue("bullet-use-numbers", false)}/>
                      <span></span>
                   </label>
                </div>
@@ -275,8 +275,8 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "bullet-use-bullets", true)}
-                           checked={getStyleOptionValue("bullet-use-bullets")}/>
+                           onclick={onChangeBoolStyle.bind(this, "bullet-use-bullets")}
+                           checked={getStyleOptionValue("bullet-use-bullets", false)}/>
                      <span></span>
                   </label>
                </div>
@@ -297,8 +297,8 @@
                <div class="value-wrapper">
                   <label>
                      <input type="checkbox"
-                           onclick={onChangeBoolStyle.bind(this, "bullet-use-with-single-item", true)}
-                           checked={getStyleOptionValue("bullet-use-with-single-item")}/>
+                           onclick={onChangeBoolStyle.bind(this, "bullet-use-with-single-item")}
+                           checked={getStyleOptionValue("bullet-use-with-single-item", false)}/>
                      <span></span>
                   </label>
                </div>
@@ -794,7 +794,18 @@
                   </select>
                </div>
             </div>
-
+            <div if={["string", "list"].includes(state.elementType)}
+                  class="styles-section-item-wrapper">
+               <div class="label">Allow HTML Formatting</div>
+               <div class="value-wrapper">
+                  <label>
+                     <input type="checkbox"
+                           onclick={onChangeBoolStyle.bind(this, "allow-html")}
+                           checked={getStyleOptionValue("allow-html", false)}/>
+                     <span></span>
+                  </label>
+               </div>
+            </div>
             <div if={((state.elementType === "empty") || state.isEmpty) && !state.isLabelOptionStyle && !state.isBulletOptionStyle} class="label">
                Set custom text
                   <i data-tooltip="You can insert plain text or use HTML."
@@ -816,7 +827,7 @@
                   <div class="value-wrapper">
                      <label>
                         <input type="checkbox"
-                              onclick={onChangeBoolStyle.bind(this, "applyURL", true)}
+                              onclick={onChangeBoolStyle.bind(this, "applyURL")}
                               checked={getStyleOptionValue("applyURL")}/>
                         <span></span>
                      </label>
@@ -978,9 +989,8 @@
             return this.state.styles[option]
          },
 
-         onChangeBoolStyle(option, defaultValue, evt){
-            let value = this.getStyleOptionValue(option)
-            this.setStyleValue(option, value === null ? defaultValue : !value)
+         onChangeBoolStyle(option, evt){
+            this.setStyleValue(option, evt.target.checked)
          },
 
          onChangeStyle(evt) {

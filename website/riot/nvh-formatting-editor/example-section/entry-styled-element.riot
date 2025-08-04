@@ -124,7 +124,7 @@
             if (this.state.elementType === "empty") {
                this.state.value = this.state.elementStyles["text-value"]
             } else {
-               let value = this.props.element.value
+               let value = this.state.elementStyles["allow-html"] ? this.props.element.value : window.escapeHTML(this.props.element.value)
                if(this.state.directMarkupChildren.length){
                   let createReplaceString = (childPath, find, child) => {
                      let style = this.nvhFormattingEditor.getCssRules(this.props.schema, "markup", childPath)
