@@ -1,4 +1,4 @@
-<trim-text class={props.text.length > props.max ? "tooltipped" : ""}
-         data-tooltip={props.text.length > props.max ? props.text : null}>
+<trim-text class={props.text?.length > props.max ? "tooltipped" : ""}
+         data-tooltip={props.text?.length > props.max ? props.text : null}>
    {window.trim(props.text, props.max)}
 </trim-text>
