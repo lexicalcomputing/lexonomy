@@ -342,6 +342,8 @@ class StoreClass {
                   this.schema.update(response.configs.structure?.nvhSchema || "")
                   response.configs.formatting ??= {}
                   response.configs.searchability.templates ??= []
+                  response.configs.flagging ??= {}
+                  response.configs.flagging.flags ??= []
                   Object.assign(this.data, {
                         config: response.configs,
                         userAccess: response.userAccess,
