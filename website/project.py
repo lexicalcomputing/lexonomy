@@ -439,7 +439,7 @@ def deleteProject(project_id):
     conn = ops.getMainDB()
     conn.execute("DELETE FROM projects WHERE id=?", (project_id,))
     conn.execute("DELETE FROM user_projects WHERE project_id=?", (project_id, ))
-    c = conn.execute("SELECT dict_id FROM project_dicts WHERE project_id=?", (project_id,))
+    c = conn.execute("SELECT dict_id FROM project_dicts WHERE project_id=? AND stage!=?", (project_id,'__nvh_source__'))
     destroy_dicts = []
     for r in c.fetchall():
         destroy_dicts.append(r['dict_id'])
