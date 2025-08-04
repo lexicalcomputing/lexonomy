@@ -232,6 +232,7 @@
                      .done(response => {
                         if(!response.error){
                            this.state.data.users.forEach(u => u.isEditable = false)
+                           this.store.loadDictionaryList()
                         }
                      })
                      .always(() => this.update({isSaving: false}))
