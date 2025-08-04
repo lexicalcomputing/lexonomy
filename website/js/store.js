@@ -1714,9 +1714,7 @@ class StoreClass {
       this.data.dictionaryList = dictionaryList || []
       this.data.dictionaryList.sort((a, b) => a.title.localeCompare(b.title, undefined, {numeric: true}))
       this.data.dictionaryList.forEach(d => {
-         if(!d.owners.includes(window.auth.data.email)){
-            d.shared = true
-         } else {
+         if(d.owners.includes(window.auth.data.email)){
             Object.assign(d, {
                currentUserCanEdit: true,
                currentUserCanConfig: true,
