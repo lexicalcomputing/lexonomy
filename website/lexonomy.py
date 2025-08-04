@@ -1078,9 +1078,11 @@ def dict_access_update(dictID, user, dictDB, configs):
     if user_limit > 0 and len(new_user_rights.keys()) > user_limit:
         return {"success": False, "error": "User limit exceeded."}
 
-    if configs['creator'] not in new_user_rights.keys():
-        if request.forms.new_creator:
-            ops.updateDictCreator(dictID, request.forms.new_creator)
+    if not request.forms.new_creator and configs['creator'] not in new_user_rights.keys():
+        return {"success": False, "error": "Deleting the current dictionary creator without selecting a new one is not allowed. Choose new crator first."}
+
+    if request.forms.new_creator:
+        ops.updateDictCreator(dictID, request.forms.new_creator)
 
     old_users = ops.updateDictAccess(dictID, json.loads(request.forms.users))
 
