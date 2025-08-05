@@ -1014,6 +1014,7 @@
          },
 
          setStyleValue(option, value){
+            // TODO move at least part of method to the nvhFormattingEditor
             if (!this.nvhFormattingEditor.data.selectedLayoutContainer) {
                return
             }
@@ -1085,7 +1086,7 @@
             } else {
                this.state.styles[option] = value
             }
-            this.nvhFormattingEditor.updateEditor()
+            this.nvhFormattingEditor.trigger("updateSchemas", [this.nvhFormattingEditor.data.selectedLayoutContainer])
          },
 
          getElementSpecificSectionName(){

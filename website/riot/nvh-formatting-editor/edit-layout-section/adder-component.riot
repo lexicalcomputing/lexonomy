@@ -95,8 +95,8 @@
 
          onDrop(evt){
             this.nvhFormattingEditor.moveChildToAnotherParent(this.nvhFormattingEditor.data.draggedElement, this.props.schema, this.props.position)
+            this.nvhFormattingEditor.trigger("updateSchemas", [this.nvhFormattingEditor.data.draggedElement.parent])
             this.nvhFormattingEditor.stopElementDragging()
-            this.nvhFormattingEditor.trigger("updateEditor")
             $(this.root).removeClass("is-drag-over")
          },
 

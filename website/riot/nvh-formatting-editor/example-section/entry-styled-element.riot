@@ -1,9 +1,9 @@
 <entry-styled-element class="entry-styled-element {nvhFormattingEditor.data.hoveredLayoutContainer == props.schema ? 'layout-container-mouse-hover' : ''}"
       attr-path={props.schema.content.path}
-      onclick={onClick}
-      onmouseover={onMouseOver}
-      onmouseleave={onMouseLeave}>
-   <div class={getElementHolderClasses()}
+      onclick={!props.readOnly && onClick}
+      onmouseover={!props.readOnly && onMouseOver}
+      onmouseleave={!props.readOnly && onMouseLeave}>
+   <div class="element-holder element-holder-{props.schema.orientation}"
          style="{state.cssRules.element}">
       <div class="entry-styled-element-value-wrapper">
          <pre if={state.bulletValue}
@@ -60,6 +60,10 @@
 
    <script>
       export default {
+         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"],
+                    ["nvhFormattingEditor", "hoveredLayoutContainerChange", "onHoveredLayoutContainerChange"],
+                    ["nvhFormattingEditor", "updateSchemas", "onUpdateSchemas"]],
+
          state: {
             elementType: null,
             value: null,
@@ -76,13 +80,25 @@
             this.refreshState(props)
          },
 
+         onSelectedLayoutContainerChange(){
+            let addClass = !this.props.readOnly && (this.nvhFormattingEditor.data.selectedLayoutContainer == this.props.schema)
+            this.root.querySelector("& > .element-holder").classList.toggle("element-holder-active", addClass)
+         },
+
+         onHoveredLayoutContainerChange(){
+            let addClass = !this.props.readOnly && (this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema)
+            this.root.querySelector("& > .element-holder").classList.toggle("element-holder-hovered", addClass)
+         },
+
+         onUpdateSchemas(schemas){
+            schemas.includes(this.props.schema) && this.update()
+         },
+
          onClick(evt) {
-            if (!this.props.readOnly) {
-               if(evt.target.closest("entry-styled-element") == this.root){
-                  this.nvhFormattingEditor.selectLayoutContainer(this.props.schema)
-                  evt.stopPropagation()
-                  window.scrollIntoViewVerticallyIfNeeded(document.querySelector(".layout-container.layout-container-selected"))
-               }
+            if(evt.target.closest("entry-styled-element") == this.root){
+               this.nvhFormattingEditor.selectLayoutContainer(this.props.schema)
+               evt.stopPropagation()
+               window.scrollIntoViewVerticallyIfNeeded(document.querySelector(".layout-container.layout-container-selected"))
             }
          },
 
@@ -93,9 +109,6 @@
          },
 
          onMouseLeave(event, state, parentState) {
-            if (this.props.readOnly) {
-               return
-            }
             if (!this.nvhFormattingEditor.data.draggedLayoutContainer) {
                this.nvhFormattingEditor.setHoveredLayoutContainer(null)
             }
@@ -114,6 +127,7 @@
                bullet: this.nvhFormattingEditor.getCssRules(props.schema, "bullet")
             }
             this.state.directMarkupChildren = window.nvhFormattingEditor.getDirectMarkupChildren(this.props.schema.content.path)
+
             this.refreshBulletValue()
             this.refreshValue()
             // not a container or group
@@ -170,16 +184,6 @@
             return window.nvhStore.findElements(el => el.path == schema.content.path, this.props.element)
          },
 
-         getElementHolderClasses(){
-            let hasChildWithContent = this.hasChildWithContent(this.props.schema)
-            return window.getClasses([
-               ["element-holder",                                  true],
-               [`element-holder-${this.props.schema.orientation}`, true],
-               ["element-holder-active",                           !this.props.readOnly && this.nvhFormattingEditor.isLayoutContainerActive(this.props.schema) && (hasChildWithContent || this.state.isShowingElementValue)],
-               ["element-holder-hovered",                          !this.props.readOnly && this.nvhFormattingEditor.isLayoutContainerHovered(this.props.schema) && (hasChildWithContent || this.state.isShowingElementValue)]
-            ])
-         },
-
          getPunc(styles, side) {
             return styles?.[`${side}Punc`] || ""
          },
@@ -190,16 +194,6 @@
             }
             let idx = this.props.element.parent.children.filter(child => child.path == this.props.element.path).indexOf(this.props.element)
             return idx != -1 ? idx + 1 : null
-         },
-
-         hasChildWithContent(state) {
-            for (let child of state.children) {
-               if ((child.content.name && !child.children.length)
-                     || this.hasChildWithContent(child)) {
-                  return true
-               }
-            }
-            return false
          },
 
          hasLabelBeforeValue() {

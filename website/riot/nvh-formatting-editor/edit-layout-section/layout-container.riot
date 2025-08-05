@@ -25,7 +25,9 @@
 
    <script>
       export default {
-         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"]],
+         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"],
+                    ["nvhFormattingEditor", "hoveredLayoutContainerChange", "onHoveredLayoutContainerChange"],
+                    ["nvhFormattingEditor", "updateSchemas", "onUpdateSchemas"]],
 
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
@@ -41,7 +43,19 @@
             let shouldBeSelected = this.nvhFormattingEditor.data.selectedLayoutContainer == this.props.schema
             if(shouldBeSelected != this.isSelected){
                this.isSelected = shouldBeSelected
-               this.update()
+               this.root.classList.toggle("layout-container-selected", this.isSelected)
+            }
+         },
+
+         onUpdateSchemas(schemas){
+            schemas.includes(this.props.schema) && this.update()
+         },
+
+         onHoveredLayoutContainerChange(){
+            let willBeHovered = this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema
+            if(willBeHovered != this.isHovered){
+               this.isHovered = willBeHovered
+               this.root.classList.toggle("layout-container-mouse-hover", this.isHovered)
             }
          },
 
@@ -109,10 +123,7 @@
          getLayoutContainerCssClass() {
             return window.getClasses([
                ["layout-container",              true],
-               ["layout-container-selected",     this.nvhFormattingEditor.isLayoutContainerActive(this.props.schema)],
-               ["layout-container-dragged",      this.nvhFormattingEditor.isLayoutContainerDragged(this.props.schema)],
                ["layout-container-non-existing", this.nvhFormattingEditor.isElementNonExisting(this.props.schema.content.path)],
-               ["layout-container-mouse-hover",  this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema],
                ["layout-container-horizontal",   this.props.schema.orientation == "row"],
                ["layout-container-vertical",     this.props.schema.orientation == "column"]
             ])

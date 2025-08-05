@@ -40,7 +40,8 @@
 
    <script>
       export default {
-         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"]],
+         bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"],
+                    ["nvhFormattingEditor", "updateSchemas", "onUpdateSchemas"]],
 
          state: {
             activeTab: null,
@@ -64,6 +65,10 @@
          onSelectedLayoutContainerChange(){
             this.state.activeTab = null
             this.update()
+         },
+
+         onUpdateSchemas(schemas){
+            schemas.includes(this.nvhFormattingEditor.data.selectedLayoutContainer) && this.update()
          },
 
          onTabClick(tab) {

@@ -316,7 +316,7 @@ class NVHFormattingEditorClass {
       for (const key in styles) {
          delete styles[key]
       }
-      this.trigger("updateEditor")
+      this.trigger("updateSchemas", [schema])
    }
 
    goToHistory(index) {
@@ -350,8 +350,8 @@ class NVHFormattingEditorClass {
 
    addElement(parent, elementPath, index) {
       let newElement = this.createSchemaElement(elementPath, parent, index)
-      this.data.selectedLayoutContainer = newElement;
-      this.trigger("updateEditor")
+      this.data.selectedLayoutContainer = newElement
+      this.trigger("updateSchemas", [parent])
       return newElement
    }
 
@@ -361,7 +361,7 @@ class NVHFormattingEditorClass {
          if(this.data.draggedElement == element){
             this.stopElementDragging()
          }
-         this.trigger("updateEditor")
+         this.trigger("updateSchemas", [element.parent])
       }
    }
 
@@ -376,13 +376,13 @@ class NVHFormattingEditorClass {
       } else {
          newParent.children.splice(position, 0, element)
       }
-      this.trigger("updateEditor")
+      this.trigger("updateSchemas", [newParent])
       //this.addStateToHistory()
    }
 
    toggleSchemaOrientation(schema){
       schema.orientation === "column" ? schema.orientation = "row" : schema.orientation = "column"
-      this.trigger("updateEditor")
+      this.trigger("updateSchemas", [schema])
    }
 
    duplicateSchema(schema){
@@ -390,7 +390,7 @@ class NVHFormattingEditorClass {
       copiedElement.parent = schema.parent
       schema.parent.children.splice(this.getChildIndex(schema) + 1, 0, copiedElement);
       this.data.hoveredLayoutContainer = null;
-      this.trigger("updateEditor")
+      this.trigger("updateSchemas", [schema.parent])
    }
 
    startElementDragging(element){
@@ -399,14 +399,16 @@ class NVHFormattingEditorClass {
    }
 
    stopElementDragging(){
-      this.data.draggedElement = null
-      this.trigger("onDndStop")
+      if(this.data.draggedElement){
+         this.data.draggedElement = null
+         this.trigger("onDndStop")
+      }
    }
 
    setHoveredLayoutContainer(schema){
       if (this.data.hoveredLayoutContainer != schema) {
          this.data.hoveredLayoutContainer = schema
-         this.trigger("updateEditor")
+         this.trigger("hoveredLayoutContainerChange")
       }
    }
 
