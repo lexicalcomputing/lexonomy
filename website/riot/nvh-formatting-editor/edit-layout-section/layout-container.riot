@@ -48,7 +48,7 @@
          onRootClick(evt){
             if(evt.target.closest("layout-container") == this.root){
                this.nvhFormattingEditor.selectLayoutContainer(this.props.schema)
-               window.scrollIntoViewIfNeeded(document.querySelector(".element-holder.element-holder-active"))
+               window.scrollIntoViewVerticallyIfNeeded(document.querySelector(".element-holder.element-holder-active"))
             }
          },
 

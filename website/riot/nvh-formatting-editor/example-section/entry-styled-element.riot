@@ -81,7 +81,7 @@
                if(evt.target.closest("entry-styled-element") == this.root){
                   this.nvhFormattingEditor.selectLayoutContainer(this.props.schema)
                   evt.stopPropagation()
-                  window.scrollIntoViewIfNeeded(document.querySelector(".layout-container.layout-container-selected"))
+                  window.scrollIntoViewVerticallyIfNeeded(document.querySelector(".layout-container.layout-container-selected"))
                }
             }
          },
