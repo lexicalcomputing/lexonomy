@@ -603,17 +603,12 @@ class NVHFormattingEditorClass {
 
    getCssRules(schema, type, path) {
       let styles = this.getStyles(schema, type, path)
-      if (!styles) {
-         return;
-      }
-      let result_css = "";
-      for (let i = 0; i < Object.keys(styles).length; i++) {
-         let option = Object.keys(styles)[i];
-         let value = styles[option];
+      let result_css = ""
+      for (let [option, value] of Object.entries(styles)) {
          if (!value) {
             continue;
          }
-         if (["thousandsDivider", "decimalPlaceDivider", "leftPunc", "rightPunc",
+         if (["leftPunc", "rightPunc",
             "border-color", "border-width", "container-width", "label-text-value",
             "show-label-before", "custom-css", "text-value", "applyURL", "allow-html"].includes(option)) {
             continue;
@@ -652,10 +647,15 @@ class NVHFormattingEditorClass {
             }
          } else if (option === "max-width") {
             value = "min(" + styles["max-width"] + "px" + "," + "100%)";
+         } else if (option == "direction" && value == "default"){
+            continue
          }
          result_css += option + ":" + value + ";";
       }
-
+      if(!schema.parent && type == "element" && (!styles.direction || styles.direction == "default")){
+         // add dictionary direction to the root element
+         result_css += "direction:" + (window.store.data.config.ident.direction || "ltr") + ";"
+      }
       if (this.isStringCssValid(styles) && styles["custom-css"]) {
          result_css += styles["custom-css"] + ";";
       }

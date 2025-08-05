@@ -420,7 +420,7 @@
                         onchange={onChangeStyle}>
                      <option each={option in Object.entries(state.fontFamilyList)}
                            value={option[0]}
-                           selected={getStyleOptionValue(("font-family") ?? "") == option[0]}>
+                           selected={getStyleOptionValue("font-family", "") == option[0]}>
                         <span style="font-family: {option[0]}">{option[1]}</span>
                      </option>
                   </select>
@@ -790,7 +790,18 @@
                         onchange={onChangeStyle}>
                      <option each={option in Object.entries(state.alignItemsList)}
                            value={option[0]}
-                           selected={getStyleOptionValue("align-items") ?? "baseline" == option[0]}>{option[1]}</option>
+                           selected={getStyleOptionValue("align-items", "baseline") == option[0]}>{option[1]}</option>
+                  </select>
+               </div>
+            </div>
+            <div class="styles-section-item-wrapper">
+               <div class="label">Text direction</div>
+               <div class="value-wrapper">
+                  <select name="direction"
+                        onchange={onChangeStyle}>
+                     <option each={option in Object.entries(state.directionList)}
+                           value={option[0]}
+                           selected={getStyleOptionValue("direction", "default") == option[0]}>{option[1]}</option>
                   </select>
                </div>
             </div>
@@ -913,6 +924,11 @@
                "baseline" : "baseline",
                "start" : "start",
                "end" : "end"
+            },
+            directionList: {
+               "default": "default",
+               "ltr": "left to right",
+               "rtl": "right to left"
             },
             borderList: ["solid", "dashed", "dotted"]
          },
