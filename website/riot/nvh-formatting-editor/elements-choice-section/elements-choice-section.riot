@@ -47,7 +47,8 @@
                      element.color = this.nvhStore.schema.getColorByIndex(idx)
                      return element
                   })
-                  .filter(element => element.type != "markup" && !element.parent || element.parent.type != "markup")
+                  .filter(element => element.type != "markup"
+                           && (!element.parent || element.parent.type != "markup"))
             this.refreshElementsInSchema()
          },
 
