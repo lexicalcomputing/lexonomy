@@ -231,7 +231,6 @@
          flex-wrap: wrap;
          width: fit-content;
          align-items: baseline;
-         line-height: 1;
          margin: 2px 0;
       }
       .entry-styled-element-value-wrapper{
@@ -245,7 +244,6 @@
          flex-wrap: wrap;
          width: fit-content;
          align-items: baseline;
-         line-height: 1;
       }
       .element-holder-list-column {
          flex-direction: column;
@@ -253,7 +251,9 @@
       .element-holder-content-block {
          display: flex;
          align-items: baseline;
-         line-height: 1;
+         raw-html{
+            display: inline-block;
+         }
       }
       .element-holder-column {
          flex-direction: column;
