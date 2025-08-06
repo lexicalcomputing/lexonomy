@@ -56,7 +56,8 @@ def main():
 
     dictDB = ops.initDict(args.dict_id, args.title, args.lang, "", args.email)
     dict_config = {"limits": {"entries": 10000000000}}
-    ops.attachDict(dictDB, args.dict_id, {}, dict_config)
+    ops.registerDict(dictDB, args.dict_id, args.email, dict_config)
+    ops.attachDict(args.dict_id, {})
     dictDB.close()
     import2dict.import_data(f'{siteconfig["dataDir"]}/dicts/{args.dict_id}.sqlite', args.filename, args.email, args.main_node_name, 
                             args.purge, args.purge_all, args.deduplicate, args.clean, config_data=config_json)

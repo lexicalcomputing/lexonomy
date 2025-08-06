@@ -31,7 +31,8 @@ def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_n
 
     dictDB = ops.initDict(dict_id, project_id + '.' + batch_name, language, "", user)
     dict_config = {"limits": {"entries": int(batch_size)}}
-    ops.attachDict(dictDB, dict_id, {}, dict_config)
+    ops.registerDict(dictDB, dict_id, user, dict_config)
+    ops.attachDict(dict_id, {})
 
     dbpath = os.path.join(siteconfig["dataDir"], "dicts/"+dict_id+".sqlite")
 

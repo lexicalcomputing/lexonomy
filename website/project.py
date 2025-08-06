@@ -508,7 +508,9 @@ def makeStage(project_id, stage, user_email):
     # ==================
     dictDB = ops.initDict(dict_id, f'{project_id}.{stage}', project_info['language'], "", user_email)
     dict_config = {"limits": {"entries": 1000000000}} # TODO suggest size
-    ops.attachDict(dictDB, dict_id, {}, dict_config)
+
+    ops.registerDict(dictDB, dict_id, user_email, dict_config)
+    ops.attachDict(dict_id, {})
     dictDB.close()
 
     # ==================

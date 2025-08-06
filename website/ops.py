@@ -733,7 +733,7 @@ def initDict(dictID, title, lang, blurb, email, dmlex=False):
 
     #update dictionary info
     dictDB = getDB(dictID)
-    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": get_mainDB_version(), "creator": email})))
+    dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("metadata", json.dumps({"version": get_mainDB_version()})))
 
     ident = {"title": title, "blurb": blurb, "lang": lang}
     dictDB.execute("UPDATE configs SET json=? WHERE id=?", (json.dumps(ident), "ident"))
@@ -805,7 +805,8 @@ def makeDict(dictID, structure_json, title, lang, blurb, email, dmlex=False, add
                      "canDownload": 1,
                      "canUpload": 1}}
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT}}
-    attachDict(dictDB, dictID, users, dict_config)
+    registerDict(dictDB, dictID, email, dict_config)
+    attachDict(dictID, users)
 
     if input_files:
         err, import_message, upload_file_path = importfile(dictID, email, hwNode, deduplicate=deduplicate,
@@ -842,19 +843,9 @@ def filter_nodes(examples_json, structure_nodes):
     return result
 
 
-def attachDict(dictDB, dictID, users, dict_config):
-    configs = readDictConfigs(dictDB)
-
+def attachDict(dictID, users):
     conn = getMainDB()
-    conn.execute("delete from dicts where id=?", (dictID,))
     conn.execute("delete from user_dict where dict_id=?", (dictID,))
-
-    lang = ''
-    title = configs["ident"]["title"]
-
-    if configs["ident"].get("lang"):
-        lang = configs["ident"]["lang"]
-    conn.execute("insert into dicts (id, title, language, creator, configs) values (?, ?, ?, ?, ?)", (dictID, title, lang, configs["metadata"]["creator"], json.dumps(dict_config)))
 
     for email, access_rights in users.items():
         conn.execute("insert into user_dict (dict_id, user_email, canView, canEdit, canAdd, canDelete, canEditSource, canConfig, canDownload, canUpload) values (?,?,?,?,?,?,?,?,?,?)",
@@ -862,6 +853,20 @@ def attachDict(dictDB, dictID, users, dict_config):
                       get_sqlite_key(access_rights, 'canDelete', 0), get_sqlite_key(access_rights, 'canEditSource', 0), get_sqlite_key(access_rights, 'canConfig', 0),
                       get_sqlite_key(access_rights, 'canDownload', 0), get_sqlite_key(access_rights, 'canUpload', 0)))
     conn.commit()
+
+
+def registerDict(dictDB, dictID, email, dict_config):
+    configs = readDictConfigs(dictDB)
+    lang = ''
+    if configs["ident"].get("lang"):
+        lang = configs["ident"]["lang"]
+    title = configs["ident"]["title"]
+
+    conn = getMainDB()
+    conn.execute("delete from dicts where id=?", (dictID,))
+    conn.execute("insert into dicts (id, title, language, creator, configs) values (?, ?, ?, ?, ?)", (dictID, title, lang, email, json.dumps(dict_config)))
+    conn.commit()
+
 
 def listDictUsers(dictID):
     users = {}
@@ -923,7 +928,8 @@ def cloneDict(dictID, email):
                      "canDownload": 1,
                      "canUpload": 1}}
     dict_config = {"limits": {"entries": DEFAULT_ENTRY_LIMIT if size < DEFAULT_ENTRY_LIMIT else size}}
-    attachDict(newDB, newID,users, dict_config)
+    registerDict(newDB, newID, email, dict_config)
+    attachDict(newID, users)
 
     return {"success": True, "dictID": newID, "title": ident["title"]}
 
@@ -949,8 +955,10 @@ def moveDict(oldID, newID):
         os.remove(os.path.join(siteconfig["dataDir"], "dicts/" + oldID + ".sqlite-shm"))
 
     conn = getMainDB()
-    c = conn.execute("SELECT configs FROM dicts WHERE id=?", (oldID,))
-    dict_config = json.loads(c.fetchone()['configs'])
+    c = conn.execute("SELECT creator, configs FROM dicts WHERE id=?", (oldID,))
+    r = c.fetchone()
+    dict_config = json.loads(r['configs'])
+    creator = r['creator']
 
     conn.execute("DELETE FROM dicts WHERE id=?", (oldID,))
     c2 = conn.execute("SELECT * FROM user_dict WHERE dict_id=?", (oldID,))
@@ -970,7 +978,8 @@ def moveDict(oldID, newID):
     conn.commit()
 
     dictDB = getDB(newID)
-    attachDict(dictDB, newID, users, dict_config)
+    registerDict(dictDB, newID, creator, dict_config)
+    attachDict(newID, users)
 
     return True
 
