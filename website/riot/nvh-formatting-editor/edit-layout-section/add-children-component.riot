@@ -86,7 +86,7 @@
             let parent = this.props.schema
             if (parent.children.length === 0 && parent.content.path && parent.content.path !== newElement.path) {
                // adding element other than parent element -> add also parent element as child (because parent element now became group)
-               this.nvhFormattingEditor.addElement(parent, this.props.schema.content.path)
+               this.nvhFormattingEditor.createSchemaElement(this.props.schema.content.path, parent)
             }
             this.nvhFormattingEditor.addElement(parent, newElement.path)
          },

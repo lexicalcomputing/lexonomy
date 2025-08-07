@@ -142,19 +142,6 @@
             }
          },
 
-         onBeforeUpdate(props) {
-            let currentLayout = this.nvhFormattingEditor.currentLayout;
-            let history = currentLayout.history;
-            // TODO track history on user actions
-            if (!this.nvhFormattingEditor.draggedElement
-                  && !this.nvhFormattingEditor.areSchemasEquals(history.schema.at(history.index), currentLayout.schema)) {
-               history.schema.length = history.index + 1;
-               history.schema.push(structuredClone(currentLayout.schema));
-               history.index += 1;
-               //this.nvhFormattingEditor.trigger("updateToolbar");
-            }
-         },
-
          onExampleEntryChanged(entry) {
             this.store.changeEntryId(entry.id);
          },

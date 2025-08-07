@@ -8,15 +8,15 @@
             <i class="material-icons">save</i>
          </div>
          <div id="undo-icon-wrapper"
-            onclick={nvhFormattingEditor.undoSchema.bind(nvhFormattingEditor)}
+            onclick={onUndoClick}
             data-tooltip="Step back"
-            class="tooltipped formatting-page-action-item {nvhFormattingEditor.currentLayout.history.index == 0 ? 'disabled' : ''}">
+            class="tooltipped formatting-page-action-item {nvhFormattingEditor.currentLayout.history.actualIdx == 0 ? 'disabled' : ''}">
             <i class="material-icons">undo</i>
          </div>
          <div id="redo-icon-wrapper"
-            onclick={nvhFormattingEditor.redoSchema.bind(nvhFormattingEditor)}
+            onclick={onRedoClick}
             data-tooltip="Step forward"
-            class="tooltipped formatting-page-action-item {nvhFormattingEditor.currentLayout.history.index == nvhFormattingEditor.currentLayout.history.schema.length - 1 ? 'disabled' : ''}">
+            class="tooltipped formatting-page-action-item {nvhFormattingEditor.currentLayout.history.actualIdx == (nvhFormattingEditor.currentLayout.history.states.length - 1) ? 'disabled' : ''}">
             <i class="material-icons">redo</i>
          </div>
          <div id="reset-icon-wrapper"
@@ -106,7 +106,7 @@
 
    <script>
       export default {
-         //bindings: [["nvhFormattingEditor", "updateToolbar", "update"]],
+         bindings: [["nvhFormattingEditor", "historyChange", "update"]],
 
          state: {
             exportedEntries: {
@@ -119,6 +119,14 @@
 
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
+         },
+
+         onUndoClick(){
+            this.nvhFormattingEditor.currentLayout.history.undo()
+         },
+
+         onRedoClick(){
+            this.nvhFormattingEditor.currentLayout.history.redo()
          },
 
          onLayoutClick(layoutName) {
@@ -179,6 +187,7 @@
    <style type="scss">
       :host{
          display: block;
+         user-select: none;
       }
       .formatting-page-layout-item, .formatting-page-visibility-item, .formatting-page-action-item {
          padding: 5px;

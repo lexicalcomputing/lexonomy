@@ -195,6 +195,7 @@ class NVHFormattingEditorClass {
 
    resetSchema() {
       this.initializeSchema()
+      this.addStateToHistory()
       this.trigger("updateEditor")
    }
 
@@ -234,14 +235,20 @@ class NVHFormattingEditorClass {
          this.layout[device] = {
             configured: deviceLayout.configured ?? false,
             schema: deviceLayout.schema,
-            history: {
-               index: 0,
-               schema: [structuredClone(deviceLayout.schema)]
-            }
+            history: new window.HistoryClass()
          }
+         this.layout[device].history.on("stateChange", this.onHistoryStateChange.bind(this))
+         this.layout[device].history.on("change", () => {this.trigger("historyChange")})
+         this.layout[device].history.addState(structuredClone(this.layout[device].schema))
       })
       this.layout.desktop.configured = true
       this.currentLayout = this.layout.desktop
+   }
+
+   onHistoryStateChange(idx, schema){
+      this.currentLayout.schema = structuredClone(schema)
+      this.selectLayoutContainer(null)
+      this.trigger("updateEditor")
    }
 
    addParentReferenceToSchema(schema, parent=null){
@@ -299,32 +306,13 @@ class NVHFormattingEditorClass {
       this.trigger("updateEditor")
    }
 
-   undoSchema() {
-      if (this.currentLayout.history.index > 0) {
-         this.goToHistory(-1)
-      }
-   }
-
-   redoSchema() {
-      if (this.currentLayout.history.index < this.currentLayout.history.schema.length - 1) {
-         this.goToHistory(1)
-      }
-   }
-
    resetSchemaStyles(schema, type, path){
       let styles = this.getStyles(schema, type, path)
       for (const key in styles) {
          delete styles[key]
       }
       this.trigger("updateSchemas", [schema])
-   }
-
-   goToHistory(index) {
-      let history = this.currentLayout.history
-      history.index += index;
-      this.currentLayout.schema = structuredClone(history.schema.at(history.index));
-      this.data.selectedLayoutContainer = null;
-      this.trigger("updateEditor")
+      this.addStateToHistory()
    }
 
    selectLayoutContainer(selectedLayoutContainer) {
@@ -352,6 +340,7 @@ class NVHFormattingEditorClass {
       let newElement = this.createSchemaElement(elementPath, parent, index)
       this.data.selectedLayoutContainer = newElement
       this.trigger("updateSchemas", [parent])
+      this.addStateToHistory()
       return newElement
    }
 
@@ -362,6 +351,7 @@ class NVHFormattingEditorClass {
             this.stopElementDragging()
          }
          this.trigger("updateSchemas", [element.parent])
+         this.addStateToHistory()
       }
    }
 
@@ -377,12 +367,13 @@ class NVHFormattingEditorClass {
          newParent.children.splice(position, 0, element)
       }
       this.trigger("updateSchemas", [newParent])
-      //this.addStateToHistory()
+      this.addStateToHistory()
    }
 
    toggleSchemaOrientation(schema){
       schema.orientation === "column" ? schema.orientation = "row" : schema.orientation = "column"
       this.trigger("updateSchemas", [schema])
+      this.addStateToHistory()
    }
 
    duplicateSchema(schema){
@@ -391,6 +382,7 @@ class NVHFormattingEditorClass {
       schema.parent.children.splice(this.getChildIndex(schema) + 1, 0, copiedElement);
       this.data.hoveredLayoutContainer = null;
       this.trigger("updateSchemas", [schema.parent])
+      this.addStateToHistory()
    }
 
    startElementDragging(element){
@@ -418,6 +410,10 @@ class NVHFormattingEditorClass {
          callback(element)
          element.children.forEach(this.forEachElement.bind(this, callback))
       }
+   }
+
+   addStateToHistory(){
+      this.currentLayout.history.addState(structuredClone(this.currentLayout.schema))
    }
 
    isMarkupType(path) {
@@ -603,6 +599,25 @@ class NVHFormattingEditorClass {
       }
    }
 
+   changeElementStyleOption(schema, type, path, changes){
+      let styles = this.getStyles(schema, type, path)
+      let changed = false
+      Object.entries(changes).forEach(([option, value]) => {
+         if(styles[option] != value){
+            if(!value){
+               delete styles[option]
+            } else {
+               styles[option] = value
+            }
+            changed = true
+         }
+      })
+      if(changed){
+         this.addStateToHistory()
+         this.trigger("updateSchemas", [schema])
+      }
+   }
+
    getCssRules(schema, type, path) {
       let styles = this.getStyles(schema, type, path)
       let result_css = ""
@@ -622,7 +637,7 @@ class NVHFormattingEditorClass {
          } else if (option === "box-shadow") {
             value = value + "px " + value + "px " + value + "px " + "grey";
          } else if (option === "text-decoration") {
-            if(!styles["text-decoration"]){
+            if(!styles["text-decoration"]?.length){
                continue
             }
             value = styles["text-decoration"].join(" ");

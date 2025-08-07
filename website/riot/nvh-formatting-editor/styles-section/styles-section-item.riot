@@ -25,7 +25,7 @@
                   <label>
                      <input type="checkbox"
                            onclick={onChangeBoolStyle.bind(this, "show-url")}
-                           checked={getStyleOptionValue("show-url", true)}/>
+                           checked={getStyleOptionValue("show-url") || !getStyleOptionValue("show-image")}/>
                      <span></span>
                   </label>
                </div>
@@ -148,7 +148,7 @@
                   <label>
                      <input type="checkbox"
                            onclick={onChangeBoolStyle.bind(this, "show-image")}
-                           checked={getStyleOptionValue("show-image", true)}/>
+                           checked={getStyleOptionValue("show-image")}/>
                      <span></span>
                   </label>
                </div>
@@ -1030,79 +1030,66 @@
          },
 
          setStyleValue(option, value){
-            // TODO move at least part of method to the nvhFormattingEditor
             if(!this.nvhFormattingEditor.data.selectedLayoutContainer) {
                return
             }
-            if (option === "text-decoration") {
-               if (this.state.styles[option] === undefined) {
-                  this.state.styles[option] = [value]
+            let styles = this.state.styles
+            let changes = {}
+            if(option === "text-decoration") {
+               styles[option] ??= []
+               if (styles[option].includes(value)) {
+                  value = styles[option].filter(v => v !== value)
                } else {
-                  if (this.state.styles[option].includes(value)) {
-                     this.state.styles[option] = this.state.styles[option].filter(v => v !== value)
-                  } else {
-                     this.state.styles[option].push(value)
-                  }
+                  value = [...styles[option], value]
                }
             } else if (option === "font-weight" || option === "font-style") {
-               if (this.state.styles[option] === undefined) {
-                  this.state.styles[option] = value
-               } else {
-                  delete this.state.styles[option]
+               if(styles[option] == value){
+                  value = ""
                }
-            } else if (option === "icon-item") {
-               if (this.state.styles[option] === undefined || this.state.styles[option] !== value) {
-                  this.state.styles[option] = value
+            }/* else if (option === "icon-item") {
+               if (styles[option] === undefined || styles[option] !== value) {
+                  styles[option] = value
                } else {
-                  delete this.state.styles[option]
+                  delete styles[option]
                }
-            } else if (option === "container-width-unit") {
+            } */else if (option === "container-width-unit") {
                if (value === "") {
-                  this.state.styles["container-width"] = ""
+                  changes["container-width"] = ""
                }
-               this.state.styles[option] = value
             } else if (option === "container-width") {
-               if (value && !this.state.styles["container-width-unit"]) {
-                  this.state.styles["container-width-unit"] = "px"
+               if (value && !styles["container-width-unit"]) {
+                  changes["container-width-unit"] = "px"
                }
-               this.state.styles[option] = value
             } else if (option === "show-player") {
-               if (!value && !this.state.styles["show-url"]) {
-                  this.state.styles["show-url"] = true
+               if (!value) {
+                  changes["show-url"] = true
                }
-               this.state.styles[option] = value
             } else if (option === "show-image") {
-               if (!value && !this.state.styles["show-url"]) {
-                  this.state.styles["show-url"] = true
+               if (!value) {
+                  changes["show-url"] = true
                }
-               this.state.styles[option] = value
             } else if (option === "show-url") {
-               if (!value && !this.state.styles["show-player"]) {
-                  this.state.styles["show-player"] = true
+               if (!value) {
+                  changes["show-player"] = true
                }
-               if (!value && !this.state.styles["show-image"]) {
-                  this.state.styles["show-image"] = true
+               if (!value) {
+                  changes["show-image"] = true
                }
-               this.state.styles[option] = value
             } else if (option === "bullet-use-numbers") {
-               if (value && this.state.styles["bullet-use-bullets"]) {
-                  this.state.styles["bullet-use-bullets"] = false
+               if (value && styles["bullet-use-bullets"]) {
+                  changes["bullet-use-bullets"] = false
                }
-               this.state.styles[option] = value
             } else if (option === "bullet-use-bullets") {
-               if (value && this.state.styles["bullet-use-numbers"]) {
-                  this.state.styles["bullet-use-numbers"] = false
+               if (value && styles["bullet-use-numbers"]) {
+                  changes["bullet-use-numbers"] = false
                }
-               this.state.styles[option] = value
             } else if (option == "label-text-value"){
-               if(value && typeof this.state.styles["show-label-before"] == "undefined"){
-                  this.state.styles["show-label-before"] = true
+               if(value && typeof styles["show-label-before"] == "undefined"){
+                  changes["show-label-before"] = true
                }
-               this.state.styles[option] = value
-            } else {
-               this.state.styles[option] = value
             }
-            this.nvhFormattingEditor.trigger("updateSchemas", [this.nvhFormattingEditor.data.selectedLayoutContainer])
+            changes[option] = value
+            this.nvhFormattingEditor.changeElementStyleOption(this.nvhFormattingEditor.data.selectedLayoutContainer, this.props.type, this.props.path, changes)
          },
 
          getElementSpecificSectionName(){
