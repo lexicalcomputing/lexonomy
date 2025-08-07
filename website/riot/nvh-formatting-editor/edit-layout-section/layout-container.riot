@@ -9,25 +9,30 @@
       onclick={onRootClick}>
    <elementholder-component class="elementholder"
          schema={props.schema}/>
-   <add-children-component schema={props.schema}/>
-   <div if={state.canHaveChildren && state.hasNotSameElementInAncestors}
-         class={getLayoutContainerInsideWrapperCssClass(props.schema)}>
-      <adder-component if={state.canHaveChildren && state.hasNotSameElementInAncestors}
-            schema={props.schema}
-            position=0/>
-      <template each={(child, index) in props.schema.children}>
-         <layout-container schema={child}/>
+   <div class="layout-container-content"
+         style="{props.schema.collapsed ? 'display: none;' : ''}">
+      <add-children-component schema={props.schema}/>
+      <div if={state.canHaveChildren && state.hasNotSameElementInAncestors}
+            class={getLayoutContainerInsideWrapperCssClass(props.schema)}>
          <adder-component if={state.canHaveChildren && state.hasNotSameElementInAncestors}
                schema={props.schema}
-               position={index + 1}/>
-      </template>
+               position=0/>
+         <template each={(child, index) in props.schema.children}>
+            <layout-container schema={child}/>
+            <adder-component if={state.canHaveChildren && state.hasNotSameElementInAncestors}
+                  schema={props.schema}
+                  position={index + 1}/>
+         </template>
+      </div>
    </div>
 
    <script>
       export default {
          bindings: [["nvhFormattingEditor", "selectedLayoutContainerChange", "onSelectedLayoutContainerChange"],
                     ["nvhFormattingEditor", "hoveredLayoutContainerChange", "onHoveredLayoutContainerChange"],
-                    ["nvhFormattingEditor", "updateSchemas", "onUpdateSchemas"]],
+                    ["nvhFormattingEditor", "updateSchemas", "onUpdateSchemas"],
+                    ["nvhFormattingEditor", "toggleSchemaCollapsed", "onSchemaToggleCollapsed"]],
+
 
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
@@ -57,6 +62,12 @@
                this.isHovered = willBeHovered
                this.root.classList.toggle("layout-container-mouse-hover", this.isHovered)
             }
+         },
+
+         onSchemaToggleCollapsed(schema){
+            (schema == this.props.schema) && $(".layout-container-content", this.root)
+                  .first()
+                  .slideToggle(this.props.schema.collapsed)
          },
 
          onRootClick(evt){
@@ -109,16 +120,8 @@
             if (!this.props.schema.content.name || !this.props.schema.parent) {
                return "#0000000a";
             }
-            return this.nvhFormattingEditor.getColorLightVersion(this.nvhStore.getElementColor(this.props.schema.content.path), this.props.schema.children.length ? 0.85 : 0.95);
+            return window.changeColorLightness(this.nvhStore.getElementColor(this.props.schema.content.path), this.props.schema.children.length ? 0.85 : 0.95);
          },
-
-         /*getOutlineColor(){
-            let color = window.nvhStore.getElementColor(this.props.schema.content.path)
-            if(!this.props.schema.children.length) {
-               return this.nvhFormattingEditor.getColorLightVersion(color)
-            }
-            return color
-         },*/
 
          getLayoutContainerCssClass() {
             return window.getClasses([
@@ -167,7 +170,10 @@
          &.layout-container-mouse-hover{
             &:not(.layout-container-selected){
                box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3), 0 0 5000px rgba(255, 255, 255, 0.5) inset!important;
-               & > .layout-container-inside-wrapper > adder-component{
+               & > .elementholder{
+                  box-shadow: 0 0 5000px rgba(255, 255, 255, 0.5) inset !important;
+               }
+               & > .layout-container-content > .layout-container-inside-wrapper > adder-component{
                   // highlight all adders directly placed in this container
                   .adder-dnd-zone-inner-wrapper{
                      opacity: 0.2;
@@ -181,20 +187,23 @@
                display: none;
             }
          }
-         & > .layout-container-inside-wrapper > .layout-container {
+         & > .layout-container-content > .layout-container-inside-wrapper > .layout-container {
             height: 100%;
             width: 100%;
          }
          &.layout-container-horizontal{
-            & >.layout-container-inside-wrapper {
+            & > .layout-container-content > .layout-container-inside-wrapper {
                padding: 6px;
             }
          }
          &.layout-container-vertical{
-            & >.layout-container-inside-wrapper {
+            & > .layout-container-content >.layout-container-inside-wrapper {
                padding: 0 6px 0 6px;
             }
          }
+      }
+      .layout-container-content{
+         width: 100%;
       }
       .layout-container-inside-wrapper {
          display: flex;

@@ -44,7 +44,7 @@ class NVHFormattingEditorClass {
       let layoutConfig = {}
       for (let device of ["desktop", "tablet", "mobile", "pdf"]) {
          let schema = structuredClone(this.layout[device].schema)
-         this.removeParentReferenceFromSchema(schema)
+         this.removeTempDataFromSchema(schema)
          layoutConfig[device] = {
             schema: schema,
             configured: this.layout[device].configured
@@ -258,9 +258,10 @@ class NVHFormattingEditorClass {
       })
    }
 
-   removeParentReferenceFromSchema(schema){
+   removeTempDataFromSchema(schema){
       delete schema.parent
-      schema.children.forEach(this.removeParentReferenceFromSchema.bind(this))
+      delete schema.collapsed
+      schema.children.forEach(this.removeTempDataFromSchema.bind(this))
    }
 
    addStylesToSchema(schema){
@@ -374,6 +375,11 @@ class NVHFormattingEditorClass {
       schema.orientation === "column" ? schema.orientation = "row" : schema.orientation = "column"
       this.trigger("updateSchemas", [schema])
       this.addStateToHistory()
+   }
+
+   toggleSchemaCollapsed(schema){
+      schema.collapsed = !schema.collapsed
+      this.trigger("toggleSchemaCollapsed", schema)
    }
 
    duplicateSchema(schema){
@@ -538,35 +544,6 @@ class NVHFormattingEditorClass {
          result.push({ name: child.name, path: child.path, styles: {} });
       }
       return result;
-   }
-
-   getColorLightVersion(colorHex, coef=0.85) {
-      if (!colorHex || ![4, 7, 9,].includes(colorHex.length)) { // #bbb, #bbbbbb, #bbbbbb10
-         return "transparent";
-      }
-      colorHex = colorHex.replace(/^#/, "")
-      let hasAlpha = colorHex.length == 8
-      if(colorHex.length == 3) { //  3 digits hex to 6 digits
-         colorHex = colorHex.split("")
-               .map(c => c + c)
-               .join("")
-      }
-
-      let red = parseInt(colorHex.slice(0, 2), 16)
-      let green = parseInt(colorHex.slice(2, 4), 16)
-      let blue = parseInt(colorHex.slice(4, 6), 16)
-      let alpha = hasAlpha ? parseInt(colorHex.slice(6, 8), 16) : 255
-
-      let lighten = c => Math.max(0,Math.min(255, Math.round(c + (255 - c) * coef)))
-            .toString(16)
-            .padStart(2, "0")
-
-      let newRed = lighten(red)
-      let newGreen = lighten(green)
-      let newBlue = lighten(blue)
-      let newAlpha = hasAlpha ? alpha.toString(16).padStart(2, "0") : "";
-
-      return `#${newRed}${newGreen}${newBlue}${newAlpha}`;
    }
 
    getIcon(iconItem) {

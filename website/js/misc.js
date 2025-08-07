@@ -210,6 +210,37 @@ window.dateToTimeAgo = (date) => {
    return Math.floor(seconds) + " seconds ago"
 }
 
+
+
+window.changeColorLightness = (colorHex, coef=0.85) =>{
+   if (!colorHex || ![4, 7, 9].includes(colorHex.length)) { // #bbb, #bbbbbb, #bbbbbb10
+      return colorHex
+   }
+   colorHex = colorHex.replace(/^#/, "")
+   let hasAlpha = colorHex.length == 8
+   if(colorHex.length == 3) { //  3 digits hex to 6 digits
+      colorHex = colorHex.split("")
+            .map(c => c + c)
+            .join("")
+   }
+
+   let red = parseInt(colorHex.slice(0, 2), 16)
+   let green = parseInt(colorHex.slice(2, 4), 16)
+   let blue = parseInt(colorHex.slice(4, 6), 16)
+   let alpha = hasAlpha ? parseInt(colorHex.slice(6, 8), 16) : 255
+
+   let lighten = c => Math.max(0, Math.min(255, Math.round(c + (255 - c) * coef)))
+         .toString(16)
+         .padStart(2, "0")
+
+   let newRed = lighten(red)
+   let newGreen = lighten(green)
+   let newBlue = lighten(blue)
+   let newAlpha = hasAlpha ? alpha.toString(16).padStart(2, "0") : "";
+
+   return `#${newRed}${newGreen}${newBlue}${newAlpha}`;
+}
+
 window.stopEvtPropagation = (evt) => {
    evt.stopPropagation()
 }
