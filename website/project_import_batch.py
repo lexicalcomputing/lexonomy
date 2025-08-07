@@ -4,10 +4,10 @@
 import os
 import ops
 import sys
-import nvh
 import json
 from import2dict import import_data
-from log_subprocess import log_err, log_info
+from log_subprocess import log_err
+from combine_dict_config import merge2json
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -39,31 +39,13 @@ def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_n
     # =======================================
     # Create config from project config files
     # =======================================
-    config = {}
     project_path = os.path.join(siteconfig["dataDir"], "projects", project_id)
 
-    if os.path.isfile(os.path.join(project_path, stage+'_batch.json')):
-        with open(os.path.join(project_path, stage+'_batch.json'), 'r') as f:
-            config = json.load(f)
-
-    js_data = ''
-    if os.path.isfile(os.path.join(project_path, stage+'_batch.js')):
-        with open(os.path.join(project_path, stage+'_batch.js'), 'r') as fj:
-            js_data = fj.read()
-
-    css_data = ''
-    if os.path.isfile(os.path.join(project_path, stage+'_batch.css')):
-        with open(os.path.join(project_path, stage+'_batch.css'), 'r') as fc:
-            css_data = fc.read()
-
-    if js_data or css_data:
-        config['editing'] = {'useOwnEditor': True,
-                             'js': js_data,
-                             'css': css_data}
-
-    if os.path.isfile(os.path.join(project_path, stage+'_batch.nvh')):
-        with open(os.path.join(project_path, stage+'_batch.nvh'), 'r') as f:
-            config['structure'] = {"root": tl_node, "nvhSchema": f.read()}
+    config = merge2json(os.path.join(project_path, stage+'_batch.json'),
+                        os.path.join(project_path, stage+'_batch.js'),
+                        os.path.join(project_path, stage+'_batch.css'),
+                        os.path.join(project_path, stage+'_batch.nvh'),
+                        tl_node)
     # =======================================
 
     import_data(dbpath, nvh_file_path, project_id, tl_node, config_data=config)
