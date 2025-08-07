@@ -93,16 +93,16 @@
                <div class="label">Choose icon</div>
                <div class="value-wrapper"
                      style="width: 200px; flex-wrap: wrap;">
-                  <template each={obj in Object.entries(state.iconList)}>
+                  <template each={(icon, idx) in state.iconList}>
                      <input class="value-item value-item-icon input-button"
-                           id="icon-item-{obj[0]}"
+                           id="icon-item-{idx}"
                            type="radio"
-                           value={obj[0]}
-                           checked={getStyleOptionValue("icon-item") === obj[0]}
-                           name="icon-item"
+                           value={icon}
+                           checked={getStyleOptionValue("unicode-icon") === icon}
+                           name="unicode-icon"
                            onclick={onChangeStyle}>
-                     <label for="icon-item-{obj[0]}">
-                        {obj[1]}
+                     <label for="icon-item-{idx}">
+                        {icon}
                      </label>
                   </template>
                </div>
@@ -337,7 +337,8 @@
                         class="input-color"
                         value={getStyleOptionValue("color")}
                         name="color"
-                        oninput={onChangeStyle}>
+                        oninput={onColorInput}
+                        onchange={onChangeColorPicker}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -471,7 +472,8 @@
                         class="input-color"
                         value={getStyleOptionValue("background-color", "#ffffff")}
                         name="background-color"
-                        oninput={onChangeStyle}>
+                        oninput={onColorInput}
+                        onchange={onChangeColorPicker}>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -513,7 +515,8 @@
                            class="input-color"
                            value={getStyleOptionValue("border-color")}
                            name="border-color"
-                           oninput={onChangeStyle}>
+                           oninput={onColorInput}
+                           onchange={onChangeColorPicker}>
                   </div>
                </div>
                <div class="styles-section-item-wrapper">
@@ -892,17 +895,7 @@
             hasUrlChildOfMarkupType: false,
             isGroup: false,
             isEmpty: false,
-            iconList: {
-               "link": "🔗",
-               "speaker": "🔊",
-               "load-speaker": "📢",
-               "music-note": "♫",
-               "camera": "📹",
-               "film-frames": "🎞",
-               "film-projector": "📽",
-               "movie-camera": "🎥",
-               "framed-picture": "🖼"
-            },
+            iconList: ["🔗", "🔊", "📢", "♫", "📹", "🎞", "📽", "🎥", "🖼"],
             punctuationList: [
                ["(", ")"],
                ["[", "]"],
@@ -969,6 +962,12 @@
          onUpdated(){
             this.openFirstCollapsible()
             window.initFormSelects(this.root, null, {container: $(document.body)})
+            if(this.root.querySelector("input[name='show-url']")){
+               this.root.querySelector("input[name='show-url']").checked = this.getStyleOptionValue("show-url", true) && !this.getStyleOptionValue("show-image")
+            }
+            if(this.root.querySelector("input[name='show-image']")){
+               this.root.querySelector("input[name='show-image']").checked = this.getStyleOptionValue("show-image")
+            }
          },
 
          openFirstCollapsible(){
@@ -1025,8 +1024,19 @@
             this.setStyleValue(option, evt.target.checked)
          },
 
+         onChangeColorPicker(evt){
+            // color is changed on color input "oninput" event, but not added to the history
+            this.nvhFormattingEditor.addStateToHistory()
+         },
+
          onChangeStyle(evt) {
             this.setStyleValue(evt.target.name, evt.target.value)
+         },
+
+         onColorInput(evt){
+            let styles = this.nvhFormattingEditor.getStyles(this.nvhFormattingEditor.data.selectedLayoutContainer, this.props.type, this.props.path)
+            styles[evt.target.name] = evt.target.value
+            this.nvhFormattingEditor.trigger("updateSchemas", [this.nvhFormattingEditor.data.selectedLayoutContainer])
          },
 
          setStyleValue(option, value){
