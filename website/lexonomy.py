@@ -1412,7 +1412,7 @@ def error404(error):
     if request.path.startswith("/about/") or request.path.startswith("/list/") or request.path.startswith("/lemma/") or request.path.startswith("/tei/") or request.path.startswith("/json/"):
         return error.body
     else:
-        return redirect("/#/e404")
+        return '<!DOCTYPE html><head><title>lexonomy</title><meta http-equiv="refresh" content="0; url=/#/e404" ></head>'
 
 # deployment
 debug=True
