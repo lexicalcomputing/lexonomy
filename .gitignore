@@ -15,3 +15,8 @@ website/bundle.css
 .vscode/
 website/data/
 website/tmp/
+website/backup
+website/version.txt
+website/app.js
+website/workflows
+website/sunset_scripts
