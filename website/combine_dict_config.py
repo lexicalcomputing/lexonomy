@@ -8,17 +8,17 @@ import json
 def merge2json(json_file, js_file, css_file, structure_file, tl_node):
     config = {}
 
-    if os.path.isfile(json_file):
+    if json_file and os.path.isfile(json_file):
         with open(json_file, 'r') as f:
             config = json.load(f)
 
     js_data = ''
-    if os.path.isfile(js_file):
+    if js_file and os.path.isfile(js_file):
         with open(js_file, 'r') as fj:
             js_data = fj.read()
 
     css_data = ''
-    if os.path.isfile(css_file):
+    if css_file and os.path.isfile(css_file):
         with open(css_file, 'r') as fc:
             css_data = fc.read()
 
@@ -27,7 +27,7 @@ def merge2json(json_file, js_file, css_file, structure_file, tl_node):
                              'js': js_data,
                              'css': css_data}
 
-    if os.path.isfile(structure_file):
+    if structure_file and os.path.isfile(structure_file):
         with open(structure_file, 'r') as f:
             config['structure'] = {"root": tl_node, "nvhSchema": f.read()}
     
@@ -54,8 +54,8 @@ def main():
             if file.endswith(ext) and ext not in files:
                 files[ext] = file
                 break
-    config = merge2json(files['.json'], files['.js'], files['.css'], files['.nvh'], args.tl_node)
-    args.output(json.dumps(config))
+    config = merge2json(files.get('.json'), files.get('.js'), files.get('.css'), files.get('.nvh'), args.tl_node)
+    args.output.write(json.dumps(config, indent=4))
 
 
 if __name__ == '__main__':
