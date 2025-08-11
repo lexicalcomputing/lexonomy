@@ -106,12 +106,14 @@
 
          onMounted(){
             document.addEventListener("fullscreenchange", this.onFullscreenChanged)
+            document.addEventListener('keydown', this.onKeyDown)
             window.addEventListener('resize', this.onResizeDebounced)
             this.resize()
          },
 
          onBeforeUnmount(){
             document.removeEventListener("fullscreenchange", this.onFullscreenChanged)
+            document.removeEventListener('keydown', this.onKeyDown)
             window.removeEventListener('resize', this.onResizeDebounced)
          },
 
@@ -125,6 +127,13 @@
 
          onFullscreenChanged(evt){
             this.resize()
+         },
+
+         onKeyDown(evt){
+            if(evt.keyCode == 83 /*s*/ &&(evt.ctrlKey || evt.metaKey) && !evt.altKey && !evt.shiftKey){
+               evt.preventDefault()
+               this.nvhFormattingEditor.saveSchemas()
+            }
          },
 
          resize(){
