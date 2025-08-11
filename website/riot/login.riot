@@ -27,14 +27,15 @@
             <div class="input-field">
                <input id="email"
                      type="email"
-                     class="validate"/>
+                     class="validate"
+                     onkeyup={onKeyUp}/>
                <label for="email">Email</label>
             </div>
             <div class="input-field">
                <input id="password"
                      type="password"
                      autocomplete="current-password"
-                     onkeyup={ onKeyUp }/>
+                     onkeyup={onKeyUp}/>
                <label for="password">Password</label>
                <small>
                   <a href="#forgot" tabindex="-1">Forgot password?</a>
@@ -44,7 +45,7 @@
                <button class="btn btn-primary waves-effect waves-light"
                      name="login"
                      id="loginButton"
-                     onclick={ doLogin }>
+                     onclick={doLogin}>
                   Log in
                   <i class="material-icons right">send</i>
                </button>
@@ -60,10 +61,10 @@
                   </a>
                </template>
             </div>
-            <div if={ dictData.siteconfig && dictData.siteconfig.sketchengineLoginPage }
+            <div if={dictData.siteconfig && dictData.siteconfig.sketchengineLoginPage}
                   class="section">
                <a class="btnSkeLogin btn waves-effect waves-light"
-                     href={ state.skeLoginUrl }>Sign up or log in with &nbsp;
+                     href={state.skeLoginUrl}>Sign up or log in with &nbsp;
                   <img class="skelogin"
                         alt="Sketch Engine"
                         title="Sketch Engine"
