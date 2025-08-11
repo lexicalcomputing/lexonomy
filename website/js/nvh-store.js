@@ -965,13 +965,12 @@ class NVHStoreClass {
    moveChildToAnotherParent(element, newParent, position=0){
       let oldParentReference = element.parent
       let idx = element.parent.children.indexOf(element)
+      if(element.parent == newParent && idx < position){
+         position--
+      }
       element.parent.children.splice(idx, 1)
       element.parent = newParent
-      if(position === null){
-         newParent.children.push(element)
-      } else {
-         newParent.children.splice(position, 0, element)
-      }
+      newParent.children.splice(position, 0, element)
       this.trigger("updateElements", [oldParentReference, newParent])
       this.addStateToHistory()
    }

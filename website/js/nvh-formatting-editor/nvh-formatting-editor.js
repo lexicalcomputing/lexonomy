@@ -357,17 +357,17 @@ class NVHFormattingEditorClass {
    }
 
    moveChildToAnotherParent(element, newParent, position=0){
+      let oldParent = element.parent
+      let idx = element.parent.children.indexOf(element)
+      if(element.parent == newParent && idx < position){
+         position--
+      }
       if(element.parent){ // if element was dragged from element list on the left, it has no parent
-         let idx = element.parent.children.indexOf(element)
          element.parent.children.splice(idx, 1)
       }
       element.parent = newParent
-      if(position === null){
-         newParent.children.push(element)
-      } else {
-         newParent.children.splice(position, 0, element)
-      }
-      this.trigger("updateSchemas", [newParent])
+      newParent.children.splice(position, 0, element)
+      this.trigger("updateSchemas", [oldParent, newParent])
       this.addStateToHistory()
    }
 

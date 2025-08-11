@@ -150,15 +150,14 @@ class NvhSchemaClass{
 
    moveElementToAnotherParent(element, newParent, position=0){
       let idx = element.parent.children.indexOf(element)
+      if(element.parent == newParent && idx < position){
+         position--
+      }
       element.parent.children.splice(idx, 1)
       element.parent = newParent
       element.path = `${newParent.path}.${element.name}`
       element.indent = newParent.indent + 1
-      if(position === null){
-         newParent.children.push(element)
-      } else {
-         newParent.children.splice(position, 0, element)
-      }
+      newParent.children.splice(position, 0, element)
       this.forEachChildren(element, child => {
          child.path = `${child.parent.path}.${child.name}`
          child.indent = child.parent.indent + 1
