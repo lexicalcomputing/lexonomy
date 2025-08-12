@@ -62,7 +62,7 @@
          </div>
 
          <div if={nvhFormattingEditor.visibleSections.style} class="resizeHandle"
-               onmousedown={onResizeHandleMouseDown.bind(this, ".style-section-wrapper", 200, 600)}></div>
+               onmousedown={onResizeHandleMouseDown.bind(this, ".style-section-wrapper", 250, 600)}></div>
 
          <div if={nvhFormattingEditor.visibleSections.example}
                id="example-container"
@@ -217,7 +217,7 @@
          width: fit-content;
          height: 100%;
          overflow: auto;
-         min-width: 100%;
+         min-width: calc(100% + 12px);  // because of the negative margin
          padding: 14px;
          margin: -9px; // make space for pulse effect if entry is selected
       }
@@ -302,7 +302,6 @@
          min-width: 5px;
          min-height: 100%;
          background-color: whitesmoke;
-         margin: 0 10px;
       }
       .resizeHandle:hover {
          background-color: #cfcfcf;
