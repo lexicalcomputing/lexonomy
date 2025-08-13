@@ -250,17 +250,36 @@
                   </label>
                </div>
             </div>
-            <div if={getStyleOptionValue("show-bullets") == "custom"}
-                  class="styles-section-item-wrapper styles-section-subitem">
-               <div class="label">Set bullet</div>
-               <div class="value-wrapper">
-                  <input type="text"
-                        class="input-text"
-                        name="custom-bullet"
-                        value={getStyleOptionValue("custom-bullet")}
-                        onchange={onChangeStyle}>
+            <template if={getStyleOptionValue("show-bullets") == "custom"}>
+               <div class="styles-section-item-wrapper styles-section-subitem">
+                  <div class="label">Set bullet</div>
+                  <div class="value-wrapper">
+                     <input type="text"
+                           class="input-text"
+                           name="custom-bullet"
+                           value={getStyleOptionValue("custom-bullet")}
+                           onchange={onChangeStyle}>
+                  </div>
                </div>
-            </div>
+               <div class="styles-section-item-wrapper styles-section-subitem">
+                     <div class="label">Suggestions</div>
+                     <div class="value-wrapper"
+                           style="flex-wrap: wrap; gap: 0;">
+                        <template each={(bullet, idx) in state.customBulletList}>
+                           <input class="value-item value-item-icon input-button"
+                                 id="custom-bullet-item-{idx}"
+                                 type="radio"
+                                 value={bullet}
+                                 checked={getStyleOptionValue("custom-bullet") === bullet}
+                                 name="custom-bullet"
+                                 onclick={onChangeStyle}>
+                           <label for="custom-bullet-item-{idx}">
+                              {bullet}
+                           </label>
+                        </template>
+                     </div>
+                  </div>
+            </template>
          </div>
       </li>
 
@@ -907,7 +926,8 @@
                "roman": "i, ii, iii,...",
                "romanCap": "I, II, III,...",
                "custom": "Custom",
-            }
+            },
+            customBulletList: ["●", "⬤", "▪", "⯀", "◆", "➤", "➼", "⏵"]
          },
 
          onBeforeMount() {
