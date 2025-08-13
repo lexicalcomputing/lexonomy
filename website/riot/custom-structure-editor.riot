@@ -160,6 +160,7 @@
          onBeforeMount(){
             this.structureStore = window.structureEditorStore
             this.schema = this.structureStore.data.schema
+            this.state.values = this.structureStore.data.editedElement ? [...this.structureStore.data.editedElement.values || []] : []
             this.bindings = [["structureStore", "elementChanged", "onElementChange"],
                     ["structureStore", "onDndStart", "onDndStart"],
                     ["structureStore", "onDndStop", "onDndStop"],
@@ -180,6 +181,7 @@
 
          onUpdated(){
             $("select", this.root).formSelect()
+            this.structureStore.data.editedElement && M.textareaAutoResize($('textarea'), this.root)
             this.initStructureForm()
          },
 
