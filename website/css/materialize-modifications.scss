@@ -543,3 +543,11 @@ span.badge{
 input[type=range]::-webkit-slider-thumb {
    background: #000;
 }
+
+#toast-container{
+   @media only screen and (min-width: 993px){
+      top: unset;
+      right: min(5%, 100px);
+      bottom: 5%;
+   }
+}
