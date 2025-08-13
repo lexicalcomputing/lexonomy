@@ -26,7 +26,7 @@ from datetime import datetime
 # WARNING the mainDB_updates versions and dictDB_updates updates cannot have same numbers
 # The new update need to have verion number greater than sorted(mainDB_updates + dictDB_updates)
 mainDB_updates = ['3.24']
-dictDB_updates = ['2.153', '3.0', '3.1', '3.2', '3.31', '4.0']
+dictDB_updates = ['2.153', '3.0', '3.1', '3.2', '3.31', '4.0', '4.1']
 DBupdates = sorted(mainDB_updates + dictDB_updates)
 if set(mainDB_updates) & set(dictDB_updates):
     sys.stderr.write('ERROR: Main DB and Dict DB updates bare same version number. Please make sure they differ.\n')
@@ -594,6 +594,49 @@ class Updates:
             del formatting['elements']
         dictDB.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ('formatting', json.dumps(formatting)))
         dictDB.commit()
+
+    def update_4_1(self, dictDB):
+        def migrate_schema(schema):
+            styles = schema.get("styles", {})
+            element_styles = styles.get("element", {})
+            bullet_styles = styles.get("bullet", {})
+
+            if element_styles.get("unicode-icon"):
+                element_styles["set-url-label"] = True
+                element_styles["show-url"] = True
+                element_styles["url-label"] = element_styles.get("unicode-icon")
+                del element_styles["unicode-icon"]
+            if element_styles.get("text-replacement-for-url"):
+                element_styles["set-url-label"] = True
+                element_styles["show-url"] = True
+                element_styles["url-label"] = element_styles.get("text-replacement-for-url")
+                del element_styles["text-replacement-for-url"]
+            if element_styles.get("show-url-as-icon"):
+                del element_styles["show-url-as-icon"]
+            if bullet_styles.get("bullet-use-bullets") and bullet_styles.get("bullet-set-bullets"):
+                bullet_styles["show-bullets"] = "custom"
+                bullet_styles["custom-bullet"] = bullet_styles.get("bullet-set-bullets")
+                del bullet_styles["bullet-use-bullets"]
+            elif bullet_styles.get("bullet-use-numbers"):
+                bullet_styles["show-bullets"] = "number"
+                del bullet_styles["bullet-use-numbers"]
+
+            for child_schema in schema.get("children", []):
+                migrate_schema(child_schema)
+
+        r = dictDB.execute("SELECT json FROM configs WHERE id='formatting'").fetchone()
+        if r:
+            formatting = json.loads(r['json'])
+            if formatting:
+                layout = formatting.get('layout')
+                if layout:
+                    for device in ["desktop", "tablet", "mobile", "pdf"]:
+                        schema = layout.get(device, {}).get("schema")
+                        if schema:
+                            migrate_schema(schema)
+
+                    dictDB.execute("INSERT OR REPLACE INTO configs (id, json) VALUES (?, ?)", ('formatting', json.dumps(formatting)))
+                    dictDB.commit()
 
 
 def make_updates(args):
