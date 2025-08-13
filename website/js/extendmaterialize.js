@@ -133,10 +133,18 @@ let tooltipExtension = {
    },
 
    _animateIn: function(){
-      this.old_animateIn()
-      this.tooltipEl.addEventListener("mouseenter", this._handleElMouseEnterBound)
-      this.tooltipEl.addEventListener("mouseleave", this._handleElMouseLeaveBound)
-      this.tooltipEl.style.pointerEvents = "initial"
+      if(this.el?.isConnected){
+         this.old_animateIn()
+         this.tooltipEl.addEventListener("mouseenter", this._handleElMouseEnterBound)
+         this.tooltipEl.addEventListener("mouseleave", this._handleElMouseLeaveBound)
+         this.tooltipEl.style.pointerEvents = "initial"
+         setTimeout(() => {
+            // fix bug in firefox - if element changes after toolitp was displayed (e.g via riot update) it was never closed
+            if(!this.el?.isConnected){
+               this._animateOut()
+            }
+         }, 1000)
+      }
     },
 
    _animateOut: function(){
