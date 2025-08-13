@@ -1,29 +1,27 @@
 <entry-styled-element-image class="entry-styled-element-image">
    <slot name="left-label"/>
-   <img if={(state.elementStyles["show-image"] ?? true) && !state.elementStyles["make-image-clickable"]}
-         id="entry-styled-element-image-image"
-         src={props.value}/>
-   <a if={(state.elementStyles ?? true) && state.elementStyles["make-image-clickable"]}
-         class="link-no-decoration"
-         href={props.value}
-         target="_blank">
-      <img src={props.value}/>
-   </a>
-   <div class="entry-styled-element-image-icons">
-      <a if={(state.elementStyles["show-url"] ?? true) && !state.elementStyles["show-url-as-icon"]}
-            href={props.value}
-            target="_blank">{props.value}</a>
-      <a if={(state.elementStyles["show-url"] ?? true) && state.elementStyles["show-url-as-icon"]}
-            href={props.value}
+   <template if={state.elementStyles["show-image"]}>
+      <img if={!state.elementStyles["make-image-clickable"]}
+            src={props.value}
+            style={nvhFormattingEditor.getMediaMaxSizesRules(state.elementStyles)}/>
+      <a if={state.elementStyles["make-image-clickable"]}
             class="link-no-decoration"
-            target="_blank">
-         <pre>{nvhFormattingEditor.getIcon(state.elementStyles["icon-item"])}</pre>
+            href={props.value}
+            target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
+         <img src={props.value}
+               style={nvhFormattingEditor.getMediaMaxSizesRules(state.elementStyles)}/>
       </a>
-      <a if={(state.elementStyles["show-url"] ?? true) && state.elementStyles["show-url-as-icon"]}
-            href={props.value}
-            class="link-no-decoration"
-            target="_blank">
-         <pre>{nvhFormattingEditor.getUnicodeIcon(state.elementStyles["unicode-icon"])}</pre>
+   </template>
+   <div if={state.elementStyles['show-url']}
+         class="displayFlex alignCenter">
+      <a href={props.value}
+            target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
+         <pre if={state.elementStyles["set-url-label"]}>
+            {state.elementStyles["url-label"]}
+         </pre>
+         <template if={!state.elementStyles["set-url-label"]}>
+            {props.value}
+         </template>
       </a>
    </div>
    <slot name="right-label"/>
@@ -31,7 +29,6 @@
    <script>
       export default {
          onBeforeMount() {
-            // TODO: max width
             this.nvhFormattingEditor = window.nvhFormattingEditor
             this.refreshState()
          },
@@ -50,10 +47,6 @@
       :host {
          display: flex;
          flex-direction: column;
-      }
-      .entry-styled-element-image-icons {
-         display: flex;
-         align-items: center;
       }
    </style>
 </entry-styled-element-image>

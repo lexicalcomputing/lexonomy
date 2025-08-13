@@ -167,10 +167,8 @@
             this.state.bulletValue = ""
             if(this.hasBullet()){
                let bullet = ""
-               if (this.state.bulletStyles["bullet-use-numbers"]) {
-                  bullet = this.getBulletIndex()
-               } else if (this.state.bulletStyles["bullet-use-bullets"] && this.state.bulletStyles["bullet-set-bullet"]) {
-                  bullet = this.state.bulletStyles["bullet-set-bullet"]
+               if (this.state.bulletStyles["show-bullets"]) {
+                  bullet = this.state.bulletStyles["show-bullets"] == "custom" ? this.state.bulletStyles["custom-bullet"] : this.getBullet()
                }
                if(bullet){
                   this.state.bulletValue = this.getPunc(this.state.bulletStyles, "left")
@@ -188,12 +186,23 @@
             return styles?.[`${side}Punc`] || ""
          },
 
-         getBulletIndex(){
+         getBullet(){
             if(!this.props.element.parent){
                return null
             }
-            let idx = this.props.element.parent.children.filter(child => child.path == this.props.element.path).indexOf(this.props.element)
-            return idx != -1 ? idx + 1 : null
+            let idx = this.props.element.parent.children.filter(child => child.path == this.props.element.path)
+                  .indexOf(this.props.element)
+            idx = idx != -1 ? idx + 1 : null
+            if(idx){
+               return {
+                  number: num => num,
+                  letter: window.numToAlphabet,
+                  letterCap: num => window.numToAlphabet(num).toUpperCase(),
+                  roman:  num => window.numToRomanNum(num).toLowerCase(),
+                  romanCap: window.numToRomanNum
+               }[this.state.bulletStyles["show-bullets"]]?.(idx)
+            }
+            return null
          },
 
          hasLabelBeforeValue() {
@@ -211,8 +220,8 @@
          },
 
          hasBullet() {
-            return (this.state.bulletStyles["bullet-use-numbers"] || this.state.bulletStyles["bullet-use-bullets"])
-               && (this.hasSiblings() || this.state.bulletStyles["bullet-use-with-single-item"])
+            return this.state.bulletStyles["show-bullets"]
+               && (this.state.bulletStyles["bullet-use-with-single-item"] || this.hasSiblings())
          }
       }
    </script>

@@ -2,37 +2,32 @@
    <div class="entry-styled-element-label-vertical">
       <slot name="left-label"/>
    </div>
-   <video if={state.elementStyles["show-player"] && !isYouTube()}
-         controls
-         src={props.value}>
-   </video>
-   <iframe if={state.elementStyles["show-player"] && isYouTube()}
-         width="560"
-         height="315"
-         src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
-         frameborder="0"
-         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         allowfullscreen>
-   </iframe>
-   <div class="entry-styled-element-video-url">
-      <a if={state.elementStyles["show-icon"]}
-            href={props.value}
-            class="link-no-decoration"
-            target="_blank">
-         <pre>{window.nvhFormattingEditor.getIcon(state.elementStyles["icon-item"])}</pre>
-      </a>
-      <a if={state.elementStyles["show-icon"]}
-            href={props.value}
-            class="link-no-decoration"
-            target="_blank">
-         <pre>{window.nvhFormattingEditor.getUnicodeIcon(state.elementStyles["unicode-icon"])}</pre>
-      </a>
-      <a if={(state.elementStyles["show-url"] ?? true) && !state.elementStyles["show-url-as-icon"]}
-            class="tooltipped"
-            data-tooltip={state.elementStyles["text-as-url-tooltip"] ? state.textReplacementForUrl : ""}
-            href={props.value}
-            target="_blank">
-         {state.elementStyles["replace-url-with-text"] && !state.elementStyles["text-as-url-tooltip"] ? state.elementStyles["text-replacement-for-url"] : props.value}
+   <template if={state.elementStyles["show-player"]}>
+      <video if={!isYouTube()}
+            controls
+            src={props.value}
+            style={nvhFormattingEditor.getMediaMaxSizesRules(state.elementStyles)}>
+      </video>
+      <iframe if={isYouTube()}
+            width="560"
+            height="315"
+            src="https://www.youtube-nocookie.com/embed/{getYouTubeVideoId()}?wmode=transparent&enablejsapi=1&rel=0&controls=0"
+            frameborder="0"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            style={nvhFormattingEditor.getMediaMaxSizesRules(state.elementStyles)}>
+      </iframe>
+   </template>
+   <div if={state.elementStyles['show-url']}
+         class="displayFlex alignCenter">
+      <a href={props.value}
+            target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
+         <pre if={state.elementStyles["set-url-label"]}>
+            {state.elementStyles["url-label"]}
+         </pre>
+         <template if={!state.elementStyles["set-url-label"]}>
+            {props.value}
+         </template>
       </a>
    </div>
    <div class="entry-styled-element-label-vertical">
@@ -69,10 +64,6 @@
       :host {
          display: flex;
          flex-direction: column;
-      }
-      .entry-styled-element-video-url {
-         display: flex;
-         align-items: center;
       }
    </style>
 </entry-styled-element-video>

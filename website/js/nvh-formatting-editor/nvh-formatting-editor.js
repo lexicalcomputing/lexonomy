@@ -231,7 +231,7 @@ class NVHFormattingEditorClass {
       ;["desktop", "tablet", "mobile", "pdf"].forEach(device => {
          let deviceLayout = layout[device] || {schema: this.createSchema()}
          this.addParentReferenceToSchema(deviceLayout.schema)
-         this.addStylesToSchema(deviceLayout.schema)
+         this.addDefaultValuesToSchema(deviceLayout.schema)
          this.layout[device] = {
             configured: deviceLayout.configured ?? false,
             schema: deviceLayout.schema,
@@ -264,13 +264,39 @@ class NVHFormattingEditorClass {
       schema.children.forEach(this.removeTempDataFromSchema.bind(this))
    }
 
-   addStylesToSchema(schema){
-      if(!schema.styles){
-         schema.styles = {}
-      }
-      schema.children.forEach(child => {
-         this.addStylesToSchema(child)
-      })
+   addDefaultValuesToSchema(schema){
+      this.forEachElement(element => {
+         let type = window.nvhStore.getElementConfig(element.content.path)?.type
+         let elementStyles = this.getStyles(element)
+         if(type == "url"){
+            elementStyles["open-url-new-tab"] ??= true
+         } else if(type == "image" && !elementStyles["show-url"] && !elementStyles["show-image"]){
+            elementStyles["show-image"] = true
+            elementStyles["open-url-new-tab"] ??= true
+         } else if(["video", "audio"].includes(type) && !elementStyles["show-url"] && !elementStyles["show-player"]){
+            elementStyles["show-player"] = true
+            elementStyles["open-url-new-tab"] ??= true
+         }
+      }, schema)
+   }
+
+   migrateSchema(schema){
+      this.forEachElement(element => {
+         let elementStyles = this.getStyles(element)
+         let bulletStyles = this.getStyles(element, "bullet")
+         if(bulletStyles["bullet-use-numbers"]){
+            bulletStyles["show-bullets"] = "number"
+            delete bulletStyles["bullet-use-numbers"]
+         } else if(bulletStyles["bullet-use-bullets"]){
+            bulletStyles["show-bullets"] = "custom"
+            bulletStyles["custom-bullet"] = bulletStyles["bullet-use-bullets"]
+            delete bulletStyles["bullet-use-bullets"]
+         }
+         if(elementStyles["text-replacement-for-url"]){
+            elementStyles["set-url-label"] = true
+            elementStyles["url-label"] = elementStyles["text-replacement-for-url"]
+         }
+      }, schema)
    }
 
    createSchema() {
@@ -297,6 +323,7 @@ class NVHFormattingEditorClass {
             parent.children.push(newElement)
          }
       }
+      this.addDefaultValuesToSchema(newElement)
       return newElement
    }
 
@@ -358,7 +385,7 @@ class NVHFormattingEditorClass {
 
    moveChildToAnotherParent(element, newParent, position=0){
       let oldParent = element.parent
-      let idx = element.parent.children.indexOf(element)
+      let idx = element.parent?.children.indexOf(element)
       if(element.parent == newParent && idx < position){
          position--
       }
@@ -531,7 +558,7 @@ class NVHFormattingEditorClass {
       if(path && type == "markup"){
          if(!schema.styles[type][path]){
             schema.styles[type][path] = {}
-         }
+          }
          return schema.styles[type][path]
       }
       return schema.styles[type]
@@ -552,10 +579,6 @@ class NVHFormattingEditorClass {
          , "music-note": "♫", "camera": "📹", "film-frames": "🎞"
          , "film-projector": "📽", "movie-camera": "🎥", "framed-picture": "🖼"
       }[iconItem];
-   }
-
-   getUnicodeIcon(unicodeIcon) {
-      return unicodeIcon ? unicodeIcon : "";
    }
 
    isElementNonExisting(path) {
@@ -581,11 +604,7 @@ class NVHFormattingEditorClass {
       let changed = false
       Object.entries(changes).forEach(([option, value]) => {
          if(styles[option] != value){
-            if(!value){
-               delete styles[option]
-            } else {
-               styles[option] = value
-            }
+            styles[option] = value
             changed = true
          }
       })
@@ -655,6 +674,13 @@ class NVHFormattingEditorClass {
       }
 
       return result_css;
+   }
+
+   getMediaMaxSizesRules(styles){
+      return ["max-width", "max-height"]
+           .filter(prop => styles[prop])
+           .map(prop => `${prop}: ${styles[prop]}px;`)
+           .join("")
    }
 
    getElementMaxWidth(schema){

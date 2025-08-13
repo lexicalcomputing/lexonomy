@@ -1,14 +1,9 @@
-<entry-styled-element-audio class="entry-styled-element-audio">
-   <div class="entry-styled-element-label-vertical">
-      <slot name="left-label"/>
-   </div>
-   <audio if={state.elementStyles['show-player']}
-         controls
-         src={props.value}></audio>
-   <div if={state.elementStyles['show-url']}
-         class="displayFlex alignCenter">
+<entry-styled-element-url class="entry-styled-element-url">
+   <slot name="left-label"/>
+   <div class="entry-styled-element-url-url">
       <a href={props.value}
-            target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
+            class="link-no-decoration"
+            target={state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}>
          <pre if={state.elementStyles["set-url-label"]}>
             {state.elementStyles["url-label"]}
          </pre>
@@ -17,9 +12,7 @@
          </template>
       </a>
    </div>
-   <div class="entry-styled-element-label-vertical">
-      <slot name="right-label"/>
-   </div>
+   <slot name="right-label"/>
 
    <script>
       export default {
@@ -38,10 +31,15 @@
       }
    </script>
 
-   <style>
-      :host{
+   <style type="scss">
+      :host {
          display: flex;
          flex-direction: column;
       }
+      .entry-styled-element-url-url {
+         display: flex;
+         flex-wrap: wrap;
+         align-items: center;
+      }
    </style>
-</entry-styled-element-audio>
+</entry-styled-element-url>
