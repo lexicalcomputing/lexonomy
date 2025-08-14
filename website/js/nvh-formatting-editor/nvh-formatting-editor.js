@@ -378,6 +378,9 @@ class NVHFormattingEditorClass {
          if(this.data.draggedElement == element){
             this.stopElementDragging()
          }
+         if(this.data.selectedLayoutContainer == element){
+            this.selectLayoutContainer(null)
+         }
          this.trigger("updateSchemas", [element.parent])
          this.addStateToHistory()
       }
