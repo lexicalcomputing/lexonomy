@@ -266,11 +266,7 @@ class NvhSchemaClass{
             min: min,
             max: max,
             type: parsed.groups.type || "string",
-            values: parsed.groups.values.length
-                        ? parsed.groups.values.slice(1, -1) // remove [ and  ]
-                              .split(",")
-                              .map(v => v.slice(1, -1))  // remove quotes
-                        : [],
+            values: parsed.groups.values ? JSON.parse(parsed.groups.values) : [],
             re: parsed.groups.re ? parsed.groups.re.slice(1) : ""  // remove ~
          }
       }
