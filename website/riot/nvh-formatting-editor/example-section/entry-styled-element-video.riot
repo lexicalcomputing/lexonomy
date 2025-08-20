@@ -5,7 +5,7 @@
    <template if={state.elementStyles["show-player"]}>
       <video if={!isYouTube()}
             controls
-            src={props.value}
+            src={props.rawValue}
             style={nvhFormattingEditor.getMediaMaxSizesRules(state.elementStyles)}>
       </video>
       <iframe if={isYouTube()}
@@ -20,7 +20,7 @@
    </template>
    <div if={state.elementStyles['show-url']}
          class="displayFlex alignCenter">
-      <a href={props.value}
+      <a href={props.rawValue}
             target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
          <pre if={state.elementStyles["set-url-label"]}>
             {state.elementStyles["url-label"]}
@@ -54,7 +54,7 @@
          },
 
          getYouTubeVideoId(){
-            let match = this.props.value.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/)
+            let match = this.props.rawValue.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/)
             return match ? match[1] : null
          }
       }

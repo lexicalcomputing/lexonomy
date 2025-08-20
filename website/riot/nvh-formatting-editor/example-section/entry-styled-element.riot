@@ -23,6 +23,7 @@
                   class="element-holder-content-block">
                <div is="{state.valueComponentName}"
                      value={state.value}
+                     raw-value={props.element.value}
                      schema={props.schema}>
                   <!--pre if={hasLabelBeforeValue() && !props.schema.children.length}
                         slot="left-label"

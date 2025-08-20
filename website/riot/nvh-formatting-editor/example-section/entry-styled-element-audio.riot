@@ -4,10 +4,10 @@
    </div>
    <audio if={state.elementStyles['show-player']}
          controls
-         src={props.value}></audio>
+         src={props.rawValue}></audio>
    <div if={state.elementStyles['show-url']}
          class="displayFlex alignCenter">
-      <a href={props.value}
+      <a href={props.rawValue}
             target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
          <pre if={state.elementStyles["set-url-label"]}>
             {state.elementStyles["url-label"]}
