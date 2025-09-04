@@ -1051,7 +1051,10 @@ def getPublicDicts():
         if configs["publico"]["public"]:
             cc = dictDB.execute("select count(*) as total from entries")
             size = cc.fetchone()["total"]
-            configs = loadHandleMeta(configs)
+            try:
+                configs = loadHandleMeta(configs)
+            except:
+                pass
             dictinfo = {"id": r["id"], "title": r["title"], "author": "", "lang": configs["ident"].get("lang"), "licence": configs["publico"]["licence"], "size": size}
             if len(list(configs["users"].keys())) > 0:
                 dictinfo["author"] = re.sub(r"@.*","@...", list(configs["users"].keys())[0])
@@ -2633,16 +2636,16 @@ def loadHandleMeta(configs):
     if configs["ident"].get("handle") and "hdl.handle.net" in configs["ident"].get("handle"):
 
         handle = configs["ident"].get("handle").replace("hdl.handle.net", "hdl.handle.net/api/handles")
-        res = requests.get(handle)
+        res = requests.get(handle, timeout=2)
         data = res.json()
         if data.get('values') and data["values"][0] and data["values"][0]["type"] == "URL":
             repourl = data["values"][0]["data"]["value"].replace("xmlui", "rest")
-            res2 = requests.get(repourl)
+            res2 = requests.get(repourl, timeout=2)
             data2 = res2.json()
             if data2.get("id") != "":
                 urlparsed = urllib.parse.urlparse(repourl)
                 repourl2 = urlparsed.scheme + "://" + urlparsed.hostname + "/repository/rest/items/" + str(data2["id"]) + "/metadata"
-                res3 = requests.get(repourl2)
+                res3 = requests.get(repourl2, timeout=2)
                 data3 = res3.json()
                 for item in data3:
                     if item["key"] == "dc.contributor.author" or item["key"] == "dc.subject" or item["key"] == "dc.language.iso":
