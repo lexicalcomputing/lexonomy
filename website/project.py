@@ -327,7 +327,7 @@ def getProject(projectID):
                                         'total': int(r_q['value'])})
 
             else:
-                input_dicts.append({'dictID': None, 'title': f'{projectID}.{stage}'})
+                input_dicts.append({'dictID': None, 'title': f'{stage} stage'})
         # ======================
         # OUTPUT DICTS
         # ======================
@@ -347,7 +347,7 @@ def getProject(projectID):
                            'title': dict_info['title'], 
                            'created': dict_info['created']}
         else:
-            output_dict = {'dictID': None, 'total': 0, 'title': f'{projectID}.{stage}', 'created': ''}
+            output_dict = {'dictID': None, 'total': 0, 'title': f'{stage} stage', 'created': ''}
 
         # ======================
         # BATCH DICTS
@@ -506,7 +506,7 @@ def makeStage(project_id, stage, user_email):
     # ==================
     # Init new stage dict
     # ==================
-    dictDB = ops.initDict(dict_id, f'{project_id}.{stage}', project_info['language'], "", user_email)
+    dictDB = ops.initDict(dict_id, f'{stage} stage', project_info['language'], "", user_email)
     dict_config = {"limits": {"entries": 1000000000}} # TODO suggest size
 
     ops.registerDict(dictDB, dict_id, user_email, dict_config)

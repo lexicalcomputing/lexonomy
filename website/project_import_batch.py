@@ -23,13 +23,13 @@ def update_project_info(batch_size, user, nvh_file_path, project_id, stage, tl_n
     main_db.commit()
 
     file_name = nvh_file_path.rsplit('/', 1)[1]
-    batch_name = file_name.rstrip('.in')
+    batch_name = ' '.join(file_name.rstrip('.in').split('.'))
 
     c = main_db.execute('SELECT * FROM projects WHERE id=?', (project_id,))
     r = c.fetchone()
     language = r['language']
 
-    dictDB = ops.initDict(dict_id, project_id + '.' + batch_name, language, "", user)
+    dictDB = ops.initDict(dict_id, batch_name, language, "", user)
     dict_config = {"limits": {"entries": int(batch_size)}}
     ops.registerDict(dictDB, dict_id, user, dict_config)
     ops.attachDict(dict_id, {})
