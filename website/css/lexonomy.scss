@@ -58,11 +58,11 @@ span.badge{
 
 ul{
    padding-inline-start: 20px;
+   li {
+      list-style: square;
+   }
 }
 
-li {
-   list-style: square;
-}
 
 table.striped thead tr{
    border-bottom: 2px solid #000;

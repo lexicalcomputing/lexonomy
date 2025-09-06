@@ -344,6 +344,9 @@ class StoreClass {
                   response.configs.searchability.templates ??= []
                   response.configs.flagging ??= {}
                   response.configs.flagging.flags ??= []
+                  response.publicInfo.blurb ??= ""
+                  response.publicInfo.blurb = response.publicInfo.blurb.replaceAll("<ul>", "<ul class=\"browser-default\">")
+                        .replaceAll("<ol>", "<ol class=\"browser-default\">")
                   Object.assign(this.data, {
                         config: response.configs,
                         userAccess: response.userAccess,
