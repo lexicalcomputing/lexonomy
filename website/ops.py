@@ -1646,6 +1646,7 @@ def importfile(dictID, email, hwNode, deduplicate=False, purge=False, purge_all=
 
     if input_files.get('structure.nvh'):
         config['structure']['nvhSchema'] = input_files.get('structure.nvh').read().decode('utf-8')
+        config['structure']['mode'] = 'custom'
         has_config = True
 
     if input_files.get('styles.css'):

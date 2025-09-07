@@ -1208,7 +1208,9 @@ def pushapi():
             dictAccess = configs["users"].get(user["email"])
             if dictAccess and dictAccess["canUpload"]:
                 err, import_message, _ = ops.importfile(data["dictID"], data["email"], hwNode="entry", deduplicate=False,
-                                                        input_files={'entries.nvh': io.BytesIO(data["payload"].encode("utf-8"))}, titling_node="headword")
+                                                        input_files={'entries.nvh': io.BytesIO(data["payload"].encode("utf-8")),
+                                                                     'structure.nvh': io.BytesIO(data["structure"].encode("utf-8"))},
+                                                        titling_node="headword")
                 if err:
                     return {'success': False, 'error': err}
                 return {'success': True, 'url': data["dictID"], 'upload_message': import_message}
