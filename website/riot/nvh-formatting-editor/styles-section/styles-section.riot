@@ -8,7 +8,7 @@
       <div if={nvhFormattingEditor.data.selectedLayoutContainer}
             class="style-section-top-bar-wrapper displayFlex">
          <div class="style-section-tabs-wrapper">
-            <ul class="tabs small mb-0">
+            <ul class="tabs small">
                <li each={tab in state.activeTabOptions}
                      class="tab {tab.id == state.activeTab.id ? "active" : ""}"
                      onclick={onTabClick.bind(this, tab)}>

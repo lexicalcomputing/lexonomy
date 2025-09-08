@@ -98,7 +98,7 @@
                               style="width: {batch.completed_per}%"></div>
                      </div>
                      <span class="batchProgressPercentage">
-                        {batch.completed_per} %
+                        {Math.floor(batch.completed_per)} %
                      </span>
                      <span if={batch.status == "rejected"}
                            class="progressIcon grey tooltipped"
@@ -514,6 +514,9 @@
          }
          tbody{
             tr{
+               &:last-child{
+                  border-bottom: none;
+               }
                .checkbox{
                   opacity: 0.3;
                   span{

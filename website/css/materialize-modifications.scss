@@ -5,13 +5,27 @@ nav ul a,
 .dropdown-content li>span{
    color: #000;/*#c62132;*/
 }
-.dropdown-content li{
-   min-height: 38px;
+.dropdown-content{
+   li{
+      min-height: 38px;
+   }
 }
-body .dropdown-content li>a,
-body .dropdown-content li>span{
-   padding: 0.7rem 1rem;
-   line-height: 1rem;
+body .dropdown-content{
+   li{
+      & > a,
+      & > span{
+         padding: 0.7rem 1rem;
+         line-height: 1rem;
+      }
+   }
+   &.compact{
+      li{
+         min-height: 30px;
+         a, span{
+            padding: 0.4rem 1rem;
+         }
+      }
+   }
 }
 .dropdown-content a{
    text-decoration: none;
@@ -501,7 +515,6 @@ span.badge{
 
 .tabs{
    display: flex;
-   margin-bottom: 15px;
    border-bottom: none;
    background-color: #ebebeb;
    .tab {

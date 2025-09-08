@@ -16,6 +16,9 @@
 .alignBaseline{
     align-items: baseline;
 }
+.alignStart{
+    align-items: flex-start;
+}
 .justifyCenter{
     justify-content: center;
 }
@@ -48,6 +51,9 @@
 }
 .cursorDefault{
     cursor: default;
+}
+.cursorMove{
+    cursor: move;
 }
 .pointerEventsNone{
     pointer-events: none;

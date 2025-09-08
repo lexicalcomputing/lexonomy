@@ -51,6 +51,7 @@
                            <li each={ entry in dictData.dictionaryExamples }
                                  class={entry.id == state.displayedEntryId ? "activeEntryLink" : ""}>
                               <a href="javascript:void(0);"
+                                    class="chip"
                                     onclick={onRandomEntryClick.bind(this, entry)}>
                                     <raw-html content={entry.title}/>
                               </a>

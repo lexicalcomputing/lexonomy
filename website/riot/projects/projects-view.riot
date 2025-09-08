@@ -76,9 +76,11 @@
 
       <table class="workflowTable">
          <tbody each={(workflow, workflowIdx) in state.project.workflow}>
-            <tr if={workflow.type != "merge"}>
+            <tr if={workflow.type != "merge"}
+                  style="{getWorkflowRowStyle(workflow)}">
                <td>
-                  <div class="card-panel grey lighten-4 positionRelative">
+                  <div class="card-panel positionRelative"
+                        style="{getDictNameStyle(workflow.inputDicts[0])}">
                      <loading-overlay if={state.isReloadingCentralDictionary}
                            message="Reloading..."/>
                      <span if={workflow.inputDicts[0].dictID == state.project.source_dict}
@@ -105,13 +107,15 @@
                            </li>
                         </ul>
                      </span>
-                     <project-dict-name dict={workflow.inputDicts[0]}/>
-                     <div class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
-                           data-tooltip={!workflow.inputDicts[0].total ? 'No entries to export, dictionary is empty.' :''}>
-                        <project-export-to-batches-form class={getDictionaryStatus(workflow.inputDicts[0]).isBusy ? 'hide' : ''}
-                              workflow={workflow}
-                              export-to-batches={exportToBatches}/>
-                        <project-dictionary-status {...getDictionaryStatus(workflow.inputDicts[0])}/>
+                     <div class="dictNameWrapper">
+                        <project-dict-name dict={workflow.inputDicts[0]}/>
+                        <div class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
+                              data-tooltip={!workflow.inputDicts[0].total ? 'No entries to export, dictionary is empty.' :''}>
+                           <project-export-to-batches-form class={getDictionaryStatus(workflow.inputDicts[0]).isBusy ? 'hide' : ''}
+                                 workflow={workflow}
+                                 export-to-batches={exportToBatches}/>
+                           <project-dictionary-status {...getDictionaryStatus(workflow.inputDicts[0])}/>
+                        </div>
                      </div>
                   </div>
                </td>
@@ -125,8 +129,11 @@
                      <loading-overlay if={workflow.is_locked}/>
                      <div class="workflowBar borderBottom mb-2 displayFlex">
                         <h3 class="workflowName mt-0">
-                           {workflow.stage}
+                           {workflow.title}
                         </h3>
+                        <i if={workflow.description}
+                              class="material-icons tooltipped help tiny grey-text"
+                              data-tooltip={workflow.description}>help_outline</i>
                         <div class="workflowStatus displayFlex alignCenter grey-text ml-auto">
                            <div class="workflowProgress progress">
                               <div class="determinate {window.getProgressColorClass(workflow.completed_per)}"
@@ -165,7 +172,8 @@
                   </div>
                </td>
                <td>
-                  <div class="card-panel importPanel grey lighten-4">
+                  <div class="card-panel importPanel"
+                        style="{getDictNameStyle(workflow.outputDict)}">
                      <project-dict-name dict={workflow.outputDict}
                            hide-assigned={true}/>
                      <span if={!getDictionaryStatus(workflow.outputDict).isBusy}
@@ -182,14 +190,17 @@
             </tr>
 
 
-            <tr if={workflow.type == "merge"}>
+            <tr if={workflow.type == "merge"}
+                  style="{getWorkflowRowStyle(workflow)}">
                <td>
-                  <div class="card-panel grey lighten-4">
-                     <template each={dict in workflow.inputDicts}>
+                  <div class="card-panel mergeDictPanel">
+                     <div each={dict in workflow.inputDicts}
+                           class="dictNameWrapper"
+                           style="{getDictNameStyle(dict)}">
                         <project-dict-name dict={dict}
                               hide-assigned={true}/>
                         <project-dictionary-status {...getDictionaryStatus(dict)}/>
-                     </template>
+                     </div>
                   </div>
                </td>
                <td>
@@ -221,7 +232,8 @@
                   </div>
                </td>
                <td>
-                  <div class="card-panel grey lighten-4">
+                  <div class="card-panel"
+                        style="{getDictNameStyle(workflow.outputDict)}">
                      <project-dict-name dict={workflow.outputDict}
                            hide-assigned={true}/>
                      <project-dictionary-status {...getDictionaryStatus(workflow.outputDict)}/>
@@ -264,7 +276,9 @@
                   if(workflow.batches){
                      this.store.projectSortBatches(workflow.batches, "status")
                      workflow.completed_per = 0
-                     workflow.isImportAvailable = workflow.batches.some(batch => batch.status == "accepted")
+                     workflow.isImportAvailable = !workflow.isExportingBatches
+                           && !workflow.is_locked
+                           && workflow.batches.some(batch => batch.status == "accepted")
                      if(workflow.batches.length){
                         let tmp = workflow.batches.filter(batch => batch.status != "rejected")
                               .reduce((arr, batch) => {
@@ -424,6 +438,7 @@
                .always(response => {
                   if(response.workflow){
                      this.state.project = response
+                     let dictTitleList = []
                      this.state.project.workflow.forEach(workflow => {
                         //workflow.batch_size = 100
                         //workflow.batch_count = 1
@@ -445,9 +460,11 @@
                         }
                         workflow.inputDicts.forEach(dict => {
                            dict.remaining = dict.remaining ?? dict.total
+                           dict.dictIdx = dictTitleList.includes(dict.title) ? dictTitleList.indexOf(dict.title) : dictTitleList.push(dict.title) - 1
                         })
 
                         workflow.outputDict.remaining = workflow.outputDict.remaining ?? workflow.outputDict.total
+                        workflow.outputDict.dictIdx = dictTitleList.includes(workflow.outputDict.title) ? dictTitleList.indexOf(workflow.outputDict.title) : dictTitleList.push(workflow.outputDict.title) - 1
                      })
                   } else {
                      this.state.error = response.error || "unknown error"
@@ -458,7 +475,7 @@
                   } else {
                      this.stopProjectChecking()
                   }
-                  if(!Object.keys(this.state.showBatches).length && this.state.project.workflow){
+                  if(!Object.keys(this.state.showBatches).length && this.state.project?.workflow){
                      // after the first load initialize showBatches
                      this.state.project.workflow.forEach((workflow, workflowIdx) => {
                         this.state.showBatches[workflowIdx] = true
@@ -491,6 +508,19 @@
                      }))
          },
 
+         getDictNameStyle(dict){
+            let bgColor = "#f5f5f5"
+            bgColor = window.changeColorLightness(window.getColorByIndex(dict.dictIdx), 0.9)
+            return `background-color: ${bgColor}`
+         },
+
+         getWorkflowRowStyle(workflow){
+            if(workflow.inputDicts.every(dict => !dict.total)){
+               return "opacity: 0.5;"
+            }
+            return ""
+         },
+
          getDictionaryStatus(dictionary){
             let isImporting = this.state.runningImports.has(dictionary.title)
             let isExporting = this.state.runningExports.has(dictionary.title)
@@ -506,10 +536,12 @@
 
    <style type="scss">
       .sourceDictMenuDropdownBtn{
-         float: right;
-         position: relative;
-         top: -8px;
-         right: -8px;
+         position: absolute;
+         top: 12px;
+         right: 12px;
+      }
+      .sourceDictMenuDropdownBtn + .dictNameWrapper .projectDictName{
+         padding-right: 26px;
       }
       .projectDetails{
          display: grid;
@@ -525,6 +557,10 @@
             &>td{
                padding: 0 0 30px 0;
                vertical-align: top;
+               &:first-child,
+               &:last-child{
+                  max-width: 450px;
+               }
             }
          }
          .card-panel{
@@ -568,14 +604,25 @@
             }
          }
       }
-      .highlightDictPanel{
-         background-color: #fff9c4 !important;
-      }
-      .highlightDictName{
-         color: #ff9100 !important;
-      }
       i.right{
          margin-left: 5px;
+      }
+      .mergeDictPanel{
+         .dictNameWrapper{
+            margin: 0 -24px;
+            padding: 10px 24px;
+            &:first-child{
+               margin-top: -24px;
+               padding-top: 24px;
+            }
+            &:last-child{
+               margin-bottom: -24px;
+               padding-bottom: 24px;
+            }
+            .projectDictSize{
+               margin-bottom: 0;
+            }
+         }
       }
    </style>
 </projects-view>

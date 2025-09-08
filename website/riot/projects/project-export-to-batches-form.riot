@@ -5,21 +5,21 @@
                class="batchSize"
                min=1
                value={100}
-               disabled={props.workflow.inputDicts[0].total <= 0 || props.workflow.isExportingBatches}
+               disabled={isDisabled()}
                oninput={onBatchSizeInput}>
-         <label>Batch size</label>
+         <label class="noWrap">Batch size</label>
       </div>
       <div class="input-field mb-0">
          <input type="number"
                class="batchCount"
                value={1}
                min=1
-               disabled={props.workflow.inputDicts[0].total <= 0 || props.workflow.isExportingBatches}
+               disabled={isDisabled()}
                oninput={onBatchCountInput}>
-         <label>No. of batches</label>
+         <label class="noWrap">No. of batches</label>
       </div>
    </div>
-   <button class="exportBtn btn {!props.workflow.inputDicts[0].total || !props.workflow.inputDicts[0].remaining || props.workflow.is_locked ? 'disabled' : ''}"
+   <button class="exportBtn btn {isDisabled() ? 'disabled' : ''}"
          onclick={onExportToBatchesClick}>
       export batches
    </button>
@@ -31,6 +31,14 @@
             batch_count: 1
          },
 
+         isDisabled(){
+            let workflow = this.props.workflow
+            return workflow.inputDicts[0].total <= 0
+                  || workflow.isExportingBatches
+                  || !workflow.inputDicts[0].total
+                  || !workflow.inputDicts[0].remaining
+                  || workflow.is_locked
+         },
 
          onExportToBatchesClick(){
             this.props.exportToBatches(this.props.workflow, this.state.batch_size, this.state.batch_count)
@@ -63,10 +71,10 @@
       input{
          height: 30px;
          line-height: 30px;
-         max-width: 110px;
+         flex: 1;
       }
       .btn{
-         min-width: 230px;
+         width: 100%;
       }
    </style>
 </project-export-to-batches-form>
