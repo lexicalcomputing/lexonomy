@@ -1,0 +1,51 @@
+entry: card-n
+    lemma: card
+    pos: N
+    example: A card is a small piece of paper or plastic with information on it.
+        flag: ok
+    example: Cards can be used to play games, send messages, or make payments.
+    example: People often give greeting cards for birthdays and holidays.
+    example: He paid for the meal with a credit card.
+entry: crown-n
+    lemma: crown
+    pos: N
+    example: A crown is a decorative headpiece worn by kings or queens.
+        flag: ok
+    example: It is usually made of gold and decorated with jewels.
+    example: A crown is a symbol of power and royalty.
+    example: The queen wore a golden crown at the ceremony.
+entry: apartment-n
+    lemma: apartment
+    pos: N
+    example: An apartment is a private home inside a larger building.
+    example: It usually has rooms like a kitchen, a bathroom, and one or more bedrooms.
+    example: Many people rent an apartment from a landlord, but some own one.
+    example: We moved into a small apartment near the city center.
+entry: holiday-n
+    lemma: holiday
+    pos: N
+    example: A holiday is a special day of celebration or rest.
+    example: People often do not work or go to school on a holiday.
+    example: Holidays can be national, religious, or personal.
+    example: We spent the holiday with our family.
+entry: truck-n
+    lemma: truck
+    pos: N
+    example: A truck is a large vehicle used for carrying goods.
+    example: It has a powerful engine and a big cargo space.
+    example: Trucks are often used in construction or delivery work.
+    example: The truck delivered fresh food to the store.
+entry: vacation-n
+    lemma: vacation
+    pos: N
+    example: A vacation is time away from work or school for rest or travel.
+    example: People take vacations to relax, visit family, or explore new places.
+    example: A vacation can last a few days or several weeks.
+    example: We went to the beach for our summer vacation.
+entry: flat-n
+    lemma: holiday
+    pos: N
+    example: A flat is another word for an apartment, mainly used in British English.
+    example: It is a private living space inside a larger building.
+    example: Flats usually have bedrooms, a kitchen, and a bathroom.
+    example: They live in a flat on the top floor.

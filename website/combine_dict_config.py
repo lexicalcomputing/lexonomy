@@ -23,14 +23,23 @@ def merge2json(json_file, js_file, css_file, structure_file, tl_node):
             css_data = fc.read()
 
     if js_data or css_data:
-        config['editing'] = {'useOwnEditor': True,
-                             'js': js_data,
-                             'css': css_data}
+        if config.get('editing'):
+            config['editing']['useOwnEditor'] = True
+            config['editing']['js'] = js_data,
+            config['editing']['css'] = css_data
+        else:
+            config['editing'] = {'useOwnEditor': True,
+                                'js': js_data,
+                                'css': css_data}
 
     if structure_file and os.path.isfile(structure_file):
         with open(structure_file, 'r') as f:
-            config['structure'] = {"root": tl_node, "nvhSchema": f.read()}
-    
+            if config.get('structure'):
+                config['structure']["root"] = tl_node
+                config['structure']["nvhSchema"] = f.read()
+            else:
+                config['structure'] = {"root": tl_node,
+                                       "nvhSchema": f.read()}
     return config
 
 

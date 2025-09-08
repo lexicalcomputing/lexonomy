@@ -327,7 +327,7 @@ def getProject(projectID):
                                         'total': int(r_q['value'])})
 
             else:
-                input_dicts.append({'dictID': None, 'title': f'{stage} stage'})
+                input_dicts.append({'dictID': None, 'title': re.sub('_stage', ' output', dict_stage)})
         # ======================
         # OUTPUT DICTS
         # ======================
@@ -347,7 +347,7 @@ def getProject(projectID):
                            'title': dict_info['title'], 
                            'created': dict_info['created']}
         else:
-            output_dict = {'dictID': None, 'total': 0, 'title': f'{stage} stage', 'created': ''}
+            output_dict = {'dictID': None, 'total': 0, 'title': f'{stage} output', 'created': ''}
 
         # ======================
         # BATCH DICTS
@@ -473,7 +473,7 @@ def createBatch(projectID, stage, batch_size, max_batches, user_email):
     logfile_f = open(logfile, "a")
 
     cmds = ';'.join(['echo "_LOCK_BATCH_CREATE"',
-                     'make %s_new_batches  SOURCE_DICT=%s.nvh BATCH_SIZE=%s MAX_BATCHES=%s USER="\\"%s\\"" GENERATED_BATCHES_FILEMASK="\\"%s\\""' % (shlex.quote(stage), src_dict, shlex.quote(batch_size),
+                     'make %s_new_batches --silent SOURCE_DICT=%s.nvh BATCH_SIZE=%s MAX_BATCHES=%s USER="\\"%s\\"" GENERATED_BATCHES_FILEMASK="\\"%s\\""' % (shlex.quote(stage), src_dict, shlex.quote(batch_size),
                                                                                                                                                              shlex.quote(max_batches), user_email, filemask),
                      'git add -A %s' % stage,
                      'git commit -m "New batches %s"' % stage,
@@ -506,7 +506,7 @@ def makeStage(project_id, stage, user_email):
     # ==================
     # Init new stage dict
     # ==================
-    dictDB = ops.initDict(dict_id, f'{stage} stage', project_info['language'], "", user_email)
+    dictDB = ops.initDict(dict_id, f'{stage} output', project_info['language'], "", user_email)
     dict_config = {"limits": {"entries": 1000000000}} # TODO suggest size
 
     ops.registerDict(dictDB, dict_id, user_email, dict_config)
@@ -530,8 +530,12 @@ def makeStage(project_id, stage, user_email):
         if p['stage'] == stage:
             stage_type = p['type']
 
-    if stage_type == 'merge': # The ACCEPTED_BATCHES variable is not used and couse problem in dependecies
+    if os.path.exists(workflow_dir + '/' + shlex.quote(stage) + '.nvh'):
+        os.remove(workflow_dir + '/' + shlex.quote(stage) + '.nvh')
+
+    if stage_type == 'merge': # The ACCEPTED_BATCHES variable is not used and cause problem in dependencies
         cmds = ';'.join(['echo "_LOCK_STAGE"',
+                         'echo "INFO merge stage"',
                          'make %s.nvh --silent SOURCE_DICT=%s.nvh DICT_DB=%s USER="\\"%s\\""' % (shlex.quote(stage), project_info["source_dict"],
                                                                                                  dbpath, user_email),
                          'git add -A %s*' % stage,
@@ -543,6 +547,7 @@ def makeStage(project_id, stage, user_email):
 
     else:
         cmds = ';'.join(['echo "_LOCK_STAGE"',
+                         'echo "INFO not merge stage"',
                          'make %s.nvh --silent SOURCE_DICT=%s.nvh ACCEPTED_BATCHES="%s" DICT_DB=%s USER="%s"' % (shlex.quote(stage), project_info["source_dict"],
                                                                                                                  filemask, dbpath, user_email),
                          'git add -A %s*' % stage,

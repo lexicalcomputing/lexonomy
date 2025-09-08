@@ -1,0 +1,14 @@
+{
+    "titling": {
+        "headword": "entry",
+        "headwordSorting": "entry",
+        "sortDesc": false,
+        "numberEntries": "100",
+        "locale": "en",
+        "headwordAnnotationsType": "advanced",
+        "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span>"
+    },
+    "formatting": {},
+    "progress_tracking": {"node": "__lexonomy__complete", "tracked": true},
+    "structure": {"mode": "custom", "tab": "visual"}
+}

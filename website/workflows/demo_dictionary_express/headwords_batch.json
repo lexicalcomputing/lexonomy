@@ -1,0 +1,31 @@
+{
+    "flagging": {
+        "flag_element": "entry.headwords__flag",
+        "flags": [
+            {
+                "color": "#19b811",
+                "key": "y",
+                "label": "ok",
+                "name": "ok"
+            },
+            {
+                "color": "#d90f19",
+                "key": "n",
+                "label": "not ok",
+                "name": "not ok"
+            }
+        ]
+    },
+    "titling": {
+        "headword": "entry",
+        "headwordSorting": "entry",
+        "sortDesc": false,
+        "numberEntries": "100",
+        "locale": "en",
+        "headwordAnnotationsType": "advanced",
+        "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span>"
+    },
+    "formatting": {},
+    "progress_tracking": {"node": "__lexonomy__complete", "tracked": true},
+    "structure": {"mode": "custom", "tab": "visual"}
+}

@@ -1,0 +1,28 @@
+{
+    "ident": {
+        "title": "Template: Dictionary express",
+        "blurb": "This is a demo dictionary for projects testing.",
+        "lang": "",
+        "direction": "ltr"
+    },
+    "structure": {
+        "root": "entry",
+        "mode": "custom",
+        "tab": "visual"
+    },
+    "titling": {
+        "headword": "entry",
+        "headwordSorting": "entry",
+        "sortDesc": false,
+        "numberEntries": "1000",
+        "locale": "",
+        "headwordAnnotationsType": "advanced",
+        "headwordAnnotationsAdvanced": "%(entry) <small style=\"color:darkblue\">%(entry.sense.translation) </small> <small style=\"color:silver\">%(entry.pos)</small>"
+    },
+    "searchability": {
+        "searchableElements": [
+            "entry"
+        ],
+        "templates": []
+    }
+}

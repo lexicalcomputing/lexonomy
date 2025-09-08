@@ -24,6 +24,7 @@ CREATE INDEX project_dicts_stage ON project_dicts (stage);
 
 CREATE TABLE workflows (id TEXT PRIMARY KEY, name TEXT, description TEXT);
 CREATE INDEX workflow_id ON workflows (id);
+INSERT INTO workflows VALUES ('demo_dictionary_express', 'DEMO Dictionary Express', 'Dictionary express demo workflow');
 
 CREATE TABLE recovery_tokens (email text, requestAddress text, token text, expiration datetime, usedDate datetime, usedAddress text);
 CREATE TABLE register_tokens (email text, requestAddress text, token text, expiration datetime, usedDate datetime, usedAddress text);

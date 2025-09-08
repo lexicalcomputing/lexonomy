@@ -1,0 +1,9 @@
+entry: + string
+    lemma: string
+    pos: string
+    postitle: * string
+    example: * string
+        flag: * string
+    __lexonomy__completed: * string
+    headwords__flag: * string
+    sensitive__flag: * string

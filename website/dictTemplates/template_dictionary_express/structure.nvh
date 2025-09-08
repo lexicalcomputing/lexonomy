@@ -1,0 +1,6 @@
+entry: + string
+    lemma: string
+    pos: string
+    postitle: string
+    example: * string
+        flag: * string
