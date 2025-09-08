@@ -25,30 +25,34 @@
             class="highlight">
          <thead>
             <tr>
-               <th class="titleColumn">Title</th>
-               <th>ID</th>
-               <th>Language</th>
-               <th>Author</th>
-               <th if={state.hasProgressColumn}
-                     class="progressColumn">Progress</th>
-               <th class="lastEditColumn">Last edit</th>
-               <th class="actionColumn"></th>
+               <th each={column in state.columnList}
+                     class="{column.id}Column noWrap">
+                  <a if={column.allowSorting}
+                        onclick={onSortClick.bind(this, column.id)}
+                        class="sortArrow {state.orderBy == column.id ? 'active' : ''} ">
+                     {column.label}
+                     <i class="material-icons {state.desc ? 'sortDesc' : 'sortAsc'}">arrow_downwards</i>
+                  </a>
+                  <template if={!column.allowSorting}>
+                     {column.label}
+                  </template>
+               </th>
             </tr>
          </thead>
          <tbody>
-            <tr each={ (dict, idx) in state.dictionaries }>
+            <tr each={(dict, idx) in state.dictionaries}>
                <td class="dict">
-                  <a href="#/{ dict.id }"
-                        id="t_{idx}">{ dict.title }</a>
+                  <a href="#/{dict.id}"
+                        id="t_{idx}">{dict.title}</a>
                </td>
                <td>
-                  { dict.id }
+                  {dict.id}
                </td>
                <td class="dict-lang">
-                  { dict.language }
+                  {dict.language}
                </td>
                <td class="dict-lang">
-                  { dict.creator }
+                  {dict.creator}
                </td>
                <td if={state.hasProgressColumn}>
                   <dict-progress if={dict.stats}
@@ -57,10 +61,10 @@
                <td>
                   <dict-last-edited last-edit={dict.last_edit}/>
                </td>
-               <td class="dict-actions">
+               <td class="dictActions">
                   <a href="#/{dict.id}/edit"
                         class="clickable"
-                        data-dict-id={ dict.id }
+                        data-dict-id={dict.id}
                         title="edit dictionary">
                      <i class="material-icons">edit</i>
                   </a>
@@ -71,12 +75,12 @@
                   </a>
                   <a class="clickable"
                         title="clone dictionary"
-                        onclick={ doCloneDict.bind(this, dict.id) }>
+                        onclick={doCloneDict.bind(this, dict.id)}>
                      <i class="material-icons">content_copy</i>
                   </a>
                   <a class="clickable"
                         title="delete dictionary"
-                        onclick={ doDeleteDict.bind(this, dict.id) }>
+                        onclick={doDeleteDict.bind(this, dict.id)}>
                      <i class="material-icons">delete</i>
                   </a>
                </td>
@@ -110,7 +114,39 @@
             hasMore: false,
             searchDebounceTimer: null,
             searchRequest: null,
-            hasProgressColumn: true
+            hasProgressColumn: true,
+            orderBy: "id",
+            desc: true,
+            columnList: [
+               {
+                  id: "title",
+                  label: "Title",
+                  allowSorting: true
+               }, {
+                  id: "id",
+                  label: "ID",
+                  allowSorting: true
+               }, {
+                  id: "language",
+                  label: "Language",
+                  allowSorting: true
+               }, {
+                  id: "creator",
+                  label: "Author",
+                  allowSorting: true
+               }, {
+                  id: "progress",
+                  label: "Progress",
+                  allowSorting: true
+               }, {
+                  id: "lastEdit",
+                  label: "Last edit",
+                  allowSorting: true
+               }, {
+                  id: "dictActions",
+                  label: ""
+               }
+            ]
          },
 
          onMounted(){
@@ -131,6 +167,12 @@
                      }
                      this.state.dictionaries = payload.entries
                      this.state.hasProgressColumn = this.state.dictionaries.find(d => !!d.stats)
+                     this.state.dictionaries.forEach(dictionary => {
+                        dictionary.progress = String(dictionary.stats?.completed_per || "")
+                        dictionary.lastEdit = dictionary.last_edit?.when || ""
+                     })
+
+                     this.sort()
                   })
                   .always(() => {
                      this.update({isLoading: false})
@@ -158,6 +200,15 @@
                         })
                }
             })
+         },
+
+         onSortClick(orderBy){
+            if(this.state.orderBy == orderBy){
+               this.state.desc = !this.state.desc
+            }
+            this.state.orderBy = orderBy
+            this.sort()
+            this.update()
          },
 
          onSearchInput(evt){
@@ -189,11 +240,34 @@
                isLoading: true
             })
             this.reload()
+         },
+
+         sort(){
+            let direction = this.state.desc ? -1 : 1
+            this.state.dictionaries.sort((a, b) => {
+               if(a[this.state.orderBy] === b[this.state.orderBy]){
+                  if(a.title === b.title){
+                     return a.id.localeCompare(b.id) * direction
+                  } else {
+                     return a.title.localeCompare(b.title) * direction
+                  }
+               } else{
+                  if(a[this.state.orderBy] && b[this.state.orderBy]){
+                     if(this.state.orderBy == "lastEdit"){
+                        return (a.lastEdit > b.lastEdit ? -1 : 1) * direction
+                     } else {
+                        return a[this.state.orderBy].localeCompare(b[this.state.orderBy], undefined,  {numeric: true}) * direction
+                     }
+                  } else {
+                      return a[this.state.orderBy] ? -1 : 1
+                  }
+               }
+            })
          }
       }
    </script>
 
-   <style>
+   <style type="scss">
       .topBar{
          display: flex;
          align-items: center;
@@ -213,8 +287,7 @@
       table td{
          padding: 10px 10px;
       }
-
-      .dict-actions{
+      .dictActions{
          white-space: nowrap;
       }
       .showMoreBtn{
@@ -223,6 +296,27 @@
       .progressColumn{
          min-width: 100px;
          text-align: center;
+      }
+      .sortArrow{
+         text-decoration: none;
+         display: flex;
+         gap: 5px;
+         cursor: pointer;
+         &:hover i{
+            opacity: 1;
+         }
+         i{
+            opacity: 0;
+            width: 24px;
+            &.sortAsc{
+               transform: rotate(180deg);
+            }
+         }
+         &.active{
+            i{
+               opacity: 1;
+            }
+         }
       }
    </style>
 
