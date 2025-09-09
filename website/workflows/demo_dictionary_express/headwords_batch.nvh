@@ -2,6 +2,8 @@ entry: + string
     lemma: string
     pos: string
     postitle: * string
+    sense: * string
+        url: * url
     example: * string
         flag: * string
     __lexonomy__completed: * string

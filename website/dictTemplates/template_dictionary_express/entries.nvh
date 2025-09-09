@@ -1,67 +1,25 @@
-entry: GIFT-n
-  lemma: GIFT
+entry: ahhh-n
+  lemma: ahhh
   pos: n
   postitle: noun
-entry: Peter-n
-  lemma: Peter
-  pos: n
-  postitle: noun
-  example: Peter has loved the water and sailing since childhood.
-  example: Peter taking a bow from the very happy audience.
-  example: Peter Wong was a very good guide.
-  example: Peter and Mark both were involved in this.
-  example: Peter eased into the passenger seat and turned toward the dog.
-  example: Peter Esslemont has a drawing and painting practice.
-  example: Peter - this is a powerful photograph and is most engaging.
-  example: Peter took a look at the distant figure and chuckled.
-  example: Peter – Ha ha... the answer is a resounding YES.
-  example: Peter climbed in the car next to him and drove away.
-entry: ahhhh-n
-  lemma: ahhhh
-  pos: n
-  postitle: noun
-  example: The presentation was very... ahhhh... straightforward.
-  example: I can feel the ahhhh coming through.
-  example: I took a pull... ahhhh smooth.
-  example: Peter – ahhhh, it sounds glorious.
-  example: Fiona – ahhhh, passion fruits of any kind are marvelous.
-  example: Yes yes ahhhh I can't wait.
-  example: The holidays... ahhhh... they were fun times.
-  example: I wanted to kill that girl... ahhhh!
-  example: Like going ahhhh up and down the scales.
-  example: But I will help me through – ahhhh.
-entry: apartment-n
-  lemma: apartment
-  pos: n
-  postitle: noun
-  example: The top four floors are being converted into 36 apartments.
-  example: This comfortable apartment has an open layout.
-  example: She had forgotten her keys inside her apartment.
-  example: Our apartment is 100 meters from a station.
-  example: Many apartments offer excellent views of the city.
-  example: What are the benefits of fully furnished studio apartments?
-  example: There are no single occupancy apartments available on campus.
-  example: The apartments came with double glazing and air conditioning.
-  example: Includes 3 bedroom apartment on second level of hangar.
-  example: White walls always remind me of apartments.
-entry: artific.-j
-  lemma: artific.
-  pos: j
-  postitle: adjective
-  example: Jacob Carter dying, an old tale of an artific maybe his only help.
-  example: Our company can supply you 24 types artific
-  example: As well as tares I also tried artific
-  example: So far, this algorithm had only been tested in a very artific...
-  example: The latter part is actually far more work then creating this type of ' artific
-  example: It is an artific...rage new pilots to get the basics down before venturing out....
-  example: SR-200 mainly use for artific...
-  example: One will find a tastefully selected decoration, costly restored wooden furniture combined with modern peaces and artific...
-  example: Oh wait, let me first buy a law that gives me a monopoly so I can create artific
-  example: In the long run, artific
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22ahhh-n%22%5D
+  example: But ahhh – she called me last night.
+  example: Carrie: ahhh that setting sounds amazing!
+  example: He said ahhh yes, that is the best idea.
+  example: I also took a nice long afternoon nap, ahhh.
+  example: Mark – ahhh Mark, you are too sweet.
+  example: So some I am happy with others ahhh.
+  example: I love this woman! ahhh....ok.
+  example: Makes me think of warmer weather ahhh.
+  example: Can you open wide and say ahhh?
+  example: The crew looks happy and content.... ahhh the good life.
 entry: asdf-n
   lemma: asdf
   pos: n
   postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22asdf-n%22%5D
   example: Projects deployed using asdf include a system definition file.
   example: And add a slime command to load asdf systems.
   example: An asdf system definition is provided with the distribution.
@@ -72,249 +30,211 @@ entry: asdf-n
   example: It's what asdf talked about above.
   example: Why asdf has no support for building in a separate directory.
   example: It has asdf integration similar to groveller.
-entry: breathing-v
-  lemma: breathing
+entry: boob-n
+  lemma: boob
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22boob-n%22%5D
+  example: Her position was strongly entrenched foods that cause man boobs.
+  example: She has a great soft big boobs.
+  example: The bouncing boobs are an added bonus.
+  example: Her boobs are rather nice and look soft.
+  example: So far sore boobs are the only symptom.
+  example: Is there anything better than great animated boobs?
+  example: My wife complained that her boobs were too small.
+  example: Well protected boobs with an inescapable bra.
+  example: This episode delivers on 2 pairs of perfect boobs.
+  example: The western gate of the garden eliminate man boobs.
+entry: breast-n
+  lemma: breast
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22breast-n%22%5D
+  example: This is awesome especially with chicken breasts.
+  example: I love duck breast when cooked right.
+  example: Melanie was diagnosed with breast cancer in 2018.
+  example: Please expect to see more breast form options going forward.
+  example: Many women suffer with breasts that are too large.
+  example: He bit down painful on my breast.
+  example: Causes of breast asymmetry may be numerous.
+  example: Breast cancer arises from the breast epithelium.
+  example: Breast implants remain among the most popular cosmetic alterations.
+  example: We're talking mostly about breast cancer here.
+entry: coz-n
+  lemma: coz
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22coz-n%22%5D
+  example: Economy going south coz no projects too.
+  example: He got kicked out coz his hair was too long!
+  example: You people are mad coz he's half black right?
+  example: Just coz The Social Network is amazing.
+  example: But dont worry, coz you willl still find true love.
+  example: BioPuppy may failed to boot coz of driver missing.
+  example: I love boholano coz people's are friendly and smiling.
+  example: She was upset coz a FEMALE was onstage performing.
+  example: It helped me out coz I was a bit stuck.
+  example: Don't get scared coz of some loser guy.
+entry: crippled-j
+  lemma: crippled
+  pos: j
+  postitle: adjective
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22crippled-j%22%5D
+  example: There are several carrier groups with crippled escorts.
+  example: An old, crippled sailor sold peanuts outside.
+  example: Eventually the crippled aircraft was located and taken under escort.
+  example: There were many thousands of former soldiers with crippled legs.
+  example: The shortages have warped daily life and crippled hospitals.
+  example: Haiti is one of those crippled countries.
+  example: The crippled plant still leaks radiation into the sea.
+  example: Could a crippled sub sink a fully operational battleship?
+  example: This has led to many persons being injured and rendered crippled.
+  example: The resurrected Jesus had already healed the crippled man physically.
+entry: disabled-j
+  lemma: disabled
+  pos: j
+  postitle: adjective
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22disabled-j%22%5D
+  example: Most learning disabled young adults struggle through many driver education efforts.
+  example: Separate side door provides separate disabled access from main doors.
+  example: Results are limited because location services are disabled.
+  example: The hotel adequately suited for disabled guests.
+  example: Most halls are specially modified to accommodate disabled students.
+  example: My adult son is severely disabled and bed bound.
+  example: State authorized decals issued for disabled persons.
+  example: By default, tracking cookies are disabled.
+  example: Most of the adaptive athletes are disabled veterans.
+  example: Some stuff could have been disabled others fixed.
+entry: head-n
+  lemma: head
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22head-n%22%5D
+  example: This technique leaves six print heads for three model materials.
+  example: He was appointed head of several military districts.
+  example: Your best bet for gear cutting is a dividing head.
+  example: He especially noticed that their heads had grown.
+  example: He had purchased 1 head of cattle and sold 4.
+  example: About 3 bags can fit easily onto our adapter heads.
+  example: He still had a thousand questions running through his head.
+  example: These heads are most commonly used as snare batter heads.
+  example: She felt the blonde head move against her chest.
+  example: Big differences in size become important with combo head 3 headers.
+entry: kthat-n
+  lemma: kthat
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22kthat-n%22%5D
+  example: I don't thin kthat 's a sign really.
+  example: And I also thin kthat you should get married TODAY.
+  example: I thin kthat she will get better as she ages.
+  example: Her reply was, "Funny you should as kthat.
+  example: I also thin kthat Edvard Grieg is awesome too!
+  example: This book really made me thin kthat I wanted more books by this author.
+  example: Lack of B12 can cause anemia kthat can lead to other health problems.
+  example: Yuppies are whistling in the dark when htey thin kthat loyal Mexicans are going to love them in heir old age.
+  example: I thin kthat these might just have looked like sneakers because of the angle we see him during the shadowfax scene.
+  example: Food52, a site kthat ofers recipies and food-related products, relied heavily on email during the Black Friday-Cyber Monday period.
+entry: Peter-n
+  lemma: Peter
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22Peter-n%22%5D
+  example: Peter has loved the water and sailing since childhood.
+  example: Peter taking a bow from the very happy audience.
+  example: Peter Wong was a very good guide.
+  example: Peter and Mark both were involved in this.
+  example: Peter eased into the passenger seat and turned toward the dog.
+  example: Peter Esslemont has a drawing and painting practice.
+  example: Peter - this is a powerful photograph and is most engaging.
+  example: Peter took a look at the distant figure and chuckled.
+  example: Peter – Ha ha... the answer is a resounding YES.
+  example: Peter climbed in the car next to him and drove away.
+entry: redneck-n
+  lemma: redneck
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22redneck-n%22%5D
+  example: And those redneck torture zombies are dull.
+  example: Redneck town where men are men and women are truly grateful.
+  example: Ray was doing very funny and accurate slow redneck impressions.
+  example: My redneck friends love his gratuitous gun pictures.
+  example: The head redneck's shelf life expired long ago.
+  example: This is hilarious, redneck kids acting tough.
+  example: I wish this redneck town had a health food store!
+  example: Rednecks were more modern 30 years ago than now.
+  example: I never said rednecks were not nice people.
+  example: Here comes that redneck adrenaline rush, though!
+entry: reservé-n
+  lemma: reservé
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22reserv%C3%A9-n%22%5D
+  example: Here is a 2013 list of "Cols reservés," car-free days.
+  example: Forum reservé aux membres, veuillez vous inscrire pour accéder au forum.
+  example: Example Sentences: Ayer reservé una habitación doble en un hotel.
+  example: France's constitution gives the president of the Republic theoretically unchecked power in the domaine reservé of foreign and security policy.
+  example: That the enthusiasm is not the domaine reservé of only the biggest stars here surely is an important part of it.
+  example: Regulation of prostitution allowed for it to thrive if restricted within well-defined districts, called quartiers reservés, or red light districts.
+  example: Françoise Ugochukwu: Well don't forget to greet, after which you say, 'J'ai reservé ', 'I've booked', and then you mention your name, 'au nom de', and then after that you may decide to go out and in again, and then you need to give the number of your room.
+  example: The most prominent advocate for it was Jessup (1956, 52–53), who saw that international norms were bleeding into the traditional domain reservé of states having absolute control over the laws created within their sovereign borders.
+  example: The French Star has often repeated this sentence in regard to his friendships: Je ne renonce jamais mes amis passé ou future quelques soit les revers de fortune que la vie puisse leurs reservé aka I never forget my friendships past or future regardless of life's misfortunes.
+  example: The technicality of EU trade policy and its character as trade lawyers' domaine reservé – as if the 'standards' were somehow a uniquely rationale and a-political matter of governance - constitutes a serious structural weakness for the EU when accords and political goals are increasingly at odds.
+entry: samovar-n
+  lemma: samovar
+  pos: n
+  postitle: noun
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22samovar-n%22%5D
+  example: A samovar was always ready to dispense boiling hot water.
+  example: Modern factories produce both antique and electric samovars.
+  example: The samovar is visible behind the maid.
+  example: It was usually cooked in big pots that remind greatly samovars.
+  example: The samovar industry is at present organised as follows.
+  example: They had their smoking samovars setup along the road.
+  example: The brothers said every Russian family had a samovar.
+  example: She always had a samovar with fresh cocoa.
+  example: The next case was about a stolen samovar.
+  example: In the course of centuries samovar shapes changed.
+entry: shit-v
+  lemma: shit
   pos: v
   postitle: verb
-entry: card-n
-  lemma: card
-  pos: n
-  postitle: noun
-  example: The gang took banks cards and withdrew cash.
-  example: This review is located under the cards.
-  example: Oct proof of car auto vehicle insurance card maker buy create.
-  example: The indie publishers did not control the cards.
-  example: A book is like your enlarged business card.
-  example: Most application data resides on the internal card.
-  example: When might using the card incur a fee?
-  example: It captures data only related to credit cards.
-  example: Happy guessing everyone who got a mystery card!
-  example: Will the festival bars accept cash or cards?
-entry: coloured-j
-  lemma: coloured
-  pos: j
-  postitle: adjective
-  example: The stylish bedrooms are scattered amongst three lemon coloured buildings.
-  example: The white coloured tail is made of dust.
-  example: Gorgeous lace covers a cream coloured lining.
-  example: In coloured cups this effect is often hardly noticed.
-  example: These daily disposable coloured contact lenses is available in four shades.
-  example: Green coloured vines crawled and filled the wall.
-  example: Avoid contact with light coloured fabrics and upholstery.
-  example: There were also gold coloured and silver coloured units made.
-  example: Black and white and coloured photographs are accepted.
-  example: Each flower is surrounded by a deep red coloured cup.
-entry: coz-i
-  lemma: coz
-  pos: i
-  postitle: conjunction
-entry: crown-n
-  lemma: crown
-  pos: n
-  postitle: noun
-  example: The triple crown is missing 3 tips.
-  example: The 5 tipped crowns signify an enlightened heavenly creature.
-  example: Interesting wooden crown still standing showing when pub had three bars.
-  example: The crown is dense and allows little light through.
-  example: The crown is a poppy seed pod cut in half.
-  example: The dentist installs the dental crowns to protect weak teeth.
-  example: This paper crown model is motivated from the traditional crown.
-  example: This is where restorative dental crowns come in.
-  example: This picture rules, please accept this crown.
-  example: Cap crowns and pills are camouflage, bill is black.
-entry: fag-n
-  lemma: fag
-  pos: n
-  postitle: noun
-  example: His second and bigger problem was the whole fag part.
-  example: But my big stupid fag ass rode it for years anyways
-  example: I find the fag breaks are the biggest problem.
-  example: My sight was taken down by that fag Griffin
-  example: There are also way too many fags here.
-  example: asked Draco his last fag falling to floor.
-  example: It's basically animal waste and fag butts.
-  example: Are you meeting more fag friends?'
-  example: FAG representatives had easy access to newspapers, radio and television.
-  example: Far too many smokers think their fag ends aren't litter.
-entry: flat-n
-  lemma: flat
-  pos: n
-  postitle: noun
-  example: My 8 month old flat out refuses formula.
-  example: I used twilight sky flats from last week.
-  example: The flat has excellent sound insulation from neighbouring properties.
-  example: The blocks of flats were particularly problematic.
-  example: D1 flats are allotted on a weekly basis.
-  example: The spots were mostly flats with subtle breaks and brush.
-  example: The region also has sections of limestone flats.
-  example: The building has been conserved and turned into 5 flats.
-  example: An outside staircase gave access to the upper flat.
-  example: Next bury the flat as described above.
-entry: flip-flop-n
-  lemma: flip-flop
-  pos: n
-  postitle: noun
-  example: Wearing flip-flops around wet areas are advised.
-  example: The company has been producing flip-flops since the 1980s.
-  example: Flip-flops and sandals are prohibited for safety reasons.
-  example: Blame the idiot whose flip-flop fell off.
-  example: She wore navy blue shorts and flip-flops.
-  example: The world has been busy with flip-flops.
-  example: This type of circuit is sometimes called a gated flip-flop.
-  example: The digital chips are all very basic gates and flip-flops.
-  example: Flip-Flop: A fairly easy game to finish things off.
-  example: Flip-flops pull off, and sneakers fill with sand.
-entry: gratias-n
-  lemma: gratias
-  pos: n
-  postitle: noun
-  example: Deo gratias ' (f. 163v).
-  example: The choir answers, "Deo gratias ", to the same tone.
-  example: The response, said afterwards, is Deo gratias ("Thanks be to God").
-  example: Spiritus Sancti gratias or Des Heil'gen Geistes reichte Gnad 47.
-  example: THE AGINCOURT CAROL Deo Gratias, Deo gratias Anglica Redde pro Victoria!
-  example: Owre kynge went forth to Normandy, With grace and myyt of chivalry; The God for hym wrouyt marvelously, Wherefore Englonde may calle, and cry Deo gratias: Deo gratias Anglia redde pro victoria.
-  example: One of the best-known carols is the so-called Agincourt song (Deo gratias Anglia), a proud expression of thanksgiving for the success of king and country in France, but most carols were simple songs of praise to God or the Virgin Mary.
-  example: Some of them clumsily make the forgotten sign of the cross as they hear nearby, "Ave Maria, gratias plena...".
-  example: Add to this another Bethanian who will be starting her postulancy with the teaching Dominican Sisters of Brignoles, France, this September 8, after a year spent in studying French, and also the Korean Bethanian who has recently entered the Sisters of Le Rafflay, in France, the tree is bearing some good fruits and our heart is certainly filled with gratitude for all these souls running with giant steps in the way pf Christian perfection Deo gratias et Mariae!
-  example: Multi (n.s) hominum (gen.pl) a Jesu (abl.s agency) sanatorum (gen.pl) gratias Deo (dat.s) non egerunt (3pl perf.ai).
-entry: heavy-j
-  lemma: heavy
-  pos: j
-  postitle: adjective
-  example: The base is made of heavy case steel.
-  example: Why lug around heavy panels to trade shows?
-  example: In effortless fashion it provides heavy earthy tones.
-  example: The music scene there was generally more oriented towards heavier stuff.
-  example: A heavy progressive or graduated income tax.
-  example: The plunging global economy is taking a heavy toll almost everywhere.
-  example: Michael was wearing a suit of heavy armor.
-  example: The slide occurred after three consecutive days of heavy rain.
-  example: Some rocks are just seemingly heavier than others.
-  example: It causes heavy damage to human life and motor vehicles.
-entry: holiday-n
-  lemma: holiday
-  pos: n
-  postitle: noun
-  example: It is among my personal favorite holidays around.
-  example: Therapy blocks and intensive programs are often provided during school holidays.
-  example: Our helpers are always very generous during the holidays.
-  example: The company doesn't process order during public holidays.
-  example: She also enjoys holidays to exotic destinations too.
-  example: He had spent many a jolly holiday there.
-  example: I reached my limit with holiday shopping ten years ago.
-  example: It was a holiday here so many shops were closed.
-  example: Here are our 5 favorite holiday cake ideas this season.
-  example: It seems the holidays were filled with controversy.
-entry: lorry-n
-  lemma: lorry
-  pos: n
-  postitle: noun
-  example: They lorry murder cases are covered in nine parts.
-  example: The articles suggest movement is mostly by lorries or boats.
-  example: It has trained staff to operate its lorry mounted cranes.
-  example: There was complete silence, the lorry had driven away.
-  example: Lights flash and lorries drone past as night sinks.
-  example: Essentially freight containers and lorries are not considered packaging.
-  example: There was talk of lorries being towed in.
-  example: My money is on the timber lorries.
-  example: A lorry was in the outside lane.
-  example: The bank said I own a lorry.
-entry: mateship-n
-  lemma: mateship
-  pos: n
-  postitle: noun
-  example: These are often used within close friendships to emphasise mateship.
-  example: But mateship is often more than benign.
-  example: The driving theme of mateship is strong throughout the book.
-  example: The greatest binding force in our army is mateship.
-  example: They were a rare mateship that has three mates.
-  example: To learn again the true meaning of mateship.
-  example: This sort of mateship hung on post war.
-  example: But the generals hated this international mateship.
-  example: It was mateship at its rich core.
-  example: For many men self-interest prevailed over mateship.
-entry: outback-n
-  lemma: outback
-  pos: n
-  postitle: noun
-  example: Outback gift tags are sometimes offered free with book purchases.
-  example: Outback Premium has body colored painted outside mirrors.
-  example: Outback calls a spade a bloody spade.
-  example: The practice in outback Queensland is widespread.
-  example: Outback Fashion is a very fun game!
-  example: The bike is perfect for outback travellers or the daily commute.
-  example: Outback is packaged to provide even more comfort and space.
-  example: Outback Guidance is a leading agricultural GPS guidance system manufacturer.
-  example: Outback is the perfect spot for entertaining and relaxation!
-  example: No they are not next door to outback anymore.
-entry: pig-n
-  lemma: pig
-  pos: n
-  postitle: noun
-  example: Making pig noises during play is optional.
-  example: Also, those pigs were adorable baby pigs.
-  example: IC music animal including monkey, pig.
-  example: His pig eyes opened a little in interest.
-  example: Pigs were often kept on board warships to supply fresh meat.
-  example: Then bluntly being shot to death 3 days later by pigs.
-  example: It is a chronic problem in pigs.
-  example: I remember each costume that followed the little pig.
-  example: Eventually the direct selling company becomes the guinea pig.
-  example: The domestic guinea pigs were more sociable.
-entry: rat-n
-  lemma: rat
-  pos: n
-  postitle: noun
-  example: In vivo experiments evaluated acute pulmonary inflammatory responses in rats.
-  example: Constant sleep deprivation in rats leads to death.
-  example: Good nursing care can really help a poorly rat.
-  example: Their agents advised them to avoid becoming drowned rats.
-  example: Rats show a tendency to avoid water.
-  example: How is it being a laboratory rat?
-  example: Really, does anyone smell a rat here?
-  example: About 5% of male rats show abnormal aggression.
-  example: He never shot at another rat after that.
-  example: The worst kind of rat hole we have ever seen.
-entry: thong-n
-  lemma: thong
-  pos: n
-  postitle: noun
-  example: It is more popular here than thong sandals are.
-  example: I love wearing my white side string thong panties.
-  example: Thongs, shorts – leisure life is beautiful!
-  example: I need some black thong sandals fast.
-  example: She wore a matching thong that boasted extremely high leg cuts.
-  example: The drive belts are made of wooden beads and leather thongs.
-  example: Or just simply missing his retired red rally thong?
-  example: Avoid tight fitting pants, thongs and synthetic underwear.
-  example: Jessica was build to ear a thong bikini!
-  example: The woman laughed and pulled the thong tighter.
-entry: truck-n
-  lemma: truck
-  pos: n
-  postitle: noun
-  example: There are switches underneath near the rear truck.
-  example: Why were aid and supply trucks denied access?
-  example: These functions are performed by motor trucks.
-  example: This truck was fast and handled great.
-  example: I am a long haul truck driver.
-  example: This is a very straight solid original paint truck.
-  example: This foul smelling spray is laden into tanker trucks.
-  example: He trains truck drivers for a local company.
-  example: The range was primarily available as cargo and dump truck.
-  example: This gorgeous truck gets lots of attention wherever it goes.
-entry: vacation-n
-  lemma: vacation
-  pos: n
-  postitle: noun
-  example: We had a very very very nice vacation.
-  example: The theme is two summer vacation wallpapers.
-  example: Very few families really consider volunteering during their vacations.
-  example: Been awhile since your last real vacation?
-  example: Of course, vacation habits are different.
-  example: He began teaching school and attending school during his vacations.
-  example: My vacation is actually like a month long.
-  example: Here are 10 reasons to experience adventure travel vacations right now.
-  example: Ready to buy your vacation home yet?
-  example: The best vacation combines the two destinations.
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22shit-v%22%5D
+  example: Oh shit oh shit oh shit please no.
+  example: Also, sports games are almost universally shit.
+  example: The concrete block walls behind me were shot to shit.
+  example: I always had them down as being merely shit.
+  example: And now he is sacked cos he is shit
+  example: Well, everything went to shit fast.
+  example: I might act silly but ain't shit pretty.
+  example: They are really, really shit vs European equivalents.
+  example: Now, where I live public transit is shit.
+  example: Biggest problem with them is the electrical system is shit.
+entry: work-v
+  lemma: work
+  pos: v
+  postitle: verb
+  sense:
+    url: https://app.sketchengine.eu/#concordance?gdex_enabled=1&gdexcnt=100&corpname=preloaded/ententen21_tt31&queryselector=cql&showresults=1&cql=%5Blempos%3D%3D%22work-v%22%5D
+  example: I quit working 20 years ago to raise my child.
+  example: We work towards this goal through multiple projects.
+  example: Everyone works together to guide prospective students through the admissions process.
+  example: The pro worked for couple of days.
+  example: After nets are set they must be worked constantly.
+  example: The individual saving function works on the selected icon.
+  example: Installing it from command line worked perfectly.
+  example: My mind is not working properly today it seems.
+  example: Though inconsistent, the visuals usually worked fine.
+  example: Then it started working again and hasn't failed since.

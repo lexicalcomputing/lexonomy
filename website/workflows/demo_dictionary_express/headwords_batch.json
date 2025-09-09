@@ -1,18 +1,54 @@
 {
     "flagging": {
         "flag_element": "entry.headwords__flag",
+        "sort_additive_flags_alphabetically": 0,
         "flags": [
             {
-                "color": "#19b811",
-                "key": "y",
-                "label": "ok",
-                "name": "ok"
+                "color": "#000000",
+                "key": "d",
+                "label": "don\u2019t know the word",
+                "name": "don\u2019t know the word"
             },
             {
-                "color": "#d90f19",
+                "color": "#949494",
+                "key": "e",
+                "label": "not English",
+                "name": "not English"
+            },
+            {
+                "key": "s",
+                "name": "non-standard",
+                "label": "non-standard",
+                "color": "#fbff44",
+                "additive": false
+            },
+            {
+                "key": "l",
+                "name": "not a lemma",
+                "label": "not a lemma",
+                "color": "#ff0000",
+                "additive": false
+            },
+            {
+                "key": "p",
+                "name": "wrong part of speech",
+                "label": "wrong part of speech",
+                "color": "#f474ff",
+                "additive": false
+            },
+            {
                 "key": "n",
-                "label": "not ok",
-                "name": "not ok"
+                "name": "proper name only",
+                "label": "proper name only",
+                "color": "#0019ff",
+                "additive": false
+            },
+            {
+                "key": "o",
+                "name": "ok",
+                "label": "ok",
+                "color": "#16971c",
+                "additive": false
             }
         ]
     },
@@ -23,9 +59,15 @@
         "numberEntries": "100",
         "locale": "en",
         "headwordAnnotationsType": "advanced",
-        "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span>"
+        "headwordAnnotationsAdvanced": "%(entry.lemma) <small style=\"color:silver\">%(entry.postitle)</small>"
     },
     "formatting": {},
-    "progress_tracking": {"node": "__lexonomy__complete", "tracked": true},
-    "structure": {"mode": "custom", "tab": "visual"}
+    "progress_tracking": {
+        "node": "__lexonomy__complete",
+        "tracked": true
+    },
+    "structure": {
+        "mode": "custom",
+        "tab": "visual"
+    }
 }

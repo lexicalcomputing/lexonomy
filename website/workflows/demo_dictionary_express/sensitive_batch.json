@@ -1,49 +1,38 @@
 {
     "flagging": {
         "flag_element": "entry.sensitive__flag",
+        "sort_additive_flags_alphabetically": 0,
         "flags": [
             {
-                "color": "#32a8a0",
-                "key": "i",
-                "label": "informal",
-                "name": "informal"
+                "key": "n",
+                "name": "neutral",
+                "label": "neutral",
+                "color": "#008000"
             },
             {
-                "color": "#c21d1d",
-                "key": "o",
-                "label": "offensive",
-                "name": "offensive"
-            },
-            {
-                "color": "#1d3ec2",
-                "key": "a",
-                "label": "american english",
-                "name": "american english"
-            },
-            {
-                "color": "#75166f",
-                "key": "b",
-                "label": "british english",
-                "name": "british english"
-            },
-            {
-                "color": "#acc21d",
-                "key": "e",
-                "label": "australian english",
-                "name": "australian english"
+                "key": "s",
+                "name": "sensitive",
+                "label": "sensitive",
+                "color": "#ff0000"
             }
         ]
-    },
-    "titling": {
-        "headword": "entry",
-        "headwordSorting": "entry",
-        "sortDesc": false,
-        "numberEntries": "100",
-        "locale": "en",
-        "headwordAnnotationsType": "advanced",
-        "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span>"
-    },
-    "formatting": {},
-    "progress_tracking": {"node": "__lexonomy__complete", "tracked": true},
-    "structure": {"mode": "custom", "tab": "visual"}
-}
+        },
+        "titling": {
+            "headword": "entry",
+            "headwordSorting": "entry",
+            "sortDesc": false,
+            "numberEntries": "100",
+            "locale": "en",
+            "headwordAnnotationsType": "advanced",
+            "headwordAnnotationsAdvanced": "%(entry.lemma) <small style=\"color:silver\">%(entry.postitle)</small>"
+        },
+        "formatting": {},
+        "progress_tracking": {
+            "node": "__lexonomy__complete",
+            "tracked": true
+        },
+        "structure": {
+            "mode": "custom",
+            "tab": "visual"
+        }
+    }

@@ -1,6 +1,8 @@
 entry: + string
     lemma: string
     pos: string
-    postitle: string
+    postitle: * string
+    sense: * string
+        url: * url
     example: * string
         flag: * string

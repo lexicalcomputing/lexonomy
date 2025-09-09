@@ -1,0 +1,59 @@
+.myEditorContentNode h1{
+   text-transform: none
+}
+.myEditorContentNode .input-field{
+   margin-bottom: 0;
+}
+.myEditorContentNode a{
+   text-decoration: none;
+}
+.errorMessageBar{
+   position: sticky;
+   top: 37px;
+   z-index: 100;
+}
+label{
+   white-space: nowrap;
+}
+
+.example {
+   border-left: 6px solid transparent;
+   padding: 10px 15px;
+}
+.example:has([type="radio"][value="no_ok"]:checked){
+  border-left-color: #f44336;
+  background-color: #ffebee;
+}
+.example:has([type="radio"][value="ok"]:checked){
+  border-left-color: #4caf50;
+  background-color: #e8f5e9;
+}
+.example [type="radio"][value="no_ok"]:checked+span:after{
+    background-color: #f44336;
+    border: 2px solid #f44336;
+}
+.example [type="radio"][value="ok"]:checked+span:after{
+    background-color: #4CAF50 ;
+    border: 2px solid #4CAF50 ;
+}
+.example.exampleCollapsed{
+  display: none;
+}
+:not(.exampleCollapsed) + .moreExamplesButton {
+  display: none;
+}
+.exampleText{
+   margin-bottom: 10px;
+ }
+.exampleRadio{
+   min-width: 205px;
+}
+.exampleNum{
+   position: absolute;
+   left: -35px;
+   font-size: 20px;
+   color: lightgray;
+}
+.alignStart{
+   align-items: flex-start;
+}

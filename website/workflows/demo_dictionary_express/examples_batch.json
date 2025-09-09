@@ -6,7 +6,7 @@
         "numberEntries": "100",
         "locale": "en",
         "headwordAnnotationsType": "advanced",
-        "headwordAnnotationsAdvanced": "<span class='headword'>%(entry)</span>"
+        "headwordAnnotationsAdvanced": "%(entry.lemma) <small style=\"color:silver\">%(entry.postitle)</small>"
     },
     "formatting": {},
     "progress_tracking": {"node": "__lexonomy__complete", "tracked": true},

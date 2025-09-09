@@ -54,7 +54,7 @@ headwords.nvh: $(SOURCE_DICT)
 	cat $(ACCEPTED_BATCHES) > $@.patch
 	$(DIR)/nvh.py put $< $@.patch > $@.merged
 	$(DIR)/nvh.py get $@.merged entry.headwords__flag=ok > $@
-	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
+	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE) --config output.json
 
 ### stage sensitivity ####################################################
 SENSITIVE_TITLE="Label sensitive words"
@@ -70,7 +70,7 @@ sensitive.nvh: headwords.nvh
 	cat $(ACCEPTED_BATCHES) > $@.patch
 	$(DIR)/nvh.py put $< $@.patch > $@.merged
 	$(DIR)/nvh.py get $@.merged entry.sensitive__flag > $@
-	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
+	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE) --config output.json
 
 ### stage examples ####################################################
 EXAMPLES_TITLE="Select examples"
@@ -85,8 +85,8 @@ examples_new_batches: headwords.nvh
 examples.nvh: headwords.nvh
 	cat $(ACCEPTED_BATCHES) > $@.patch
 	$(DIR)/nvh.py put $< $@.patch > $@.merged
-	$(DIR)/nvh.py get $@.merged entry.example.flag='ok' entry.pos,entry.postitle,entry.lemma,entry.headwords__flag,entry.sensitive__flag,entry.example > $@
-	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
+	$(DIR)/nvh.py get $@.merged entry.example.flag='ok' entry.pos,entry.postitle,entry.lemma,entry.headwords__flag,entry.sensitive__flag,entry.example,entry.sense > $@
+	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE) --config output.json
 
 ### stage merge ####################################################
 FINAL_TITLE="Marge all annotations"
@@ -96,5 +96,5 @@ FINAL_TYPE="merge"
 final.nvh: headwords.nvh sensitive.nvh examples.nvh
 	$(DIR)/nvh.py put headwords.nvh sensitive.nvh > $@.sensitive.patch
 	$(DIR)/nvh.py put $@.sensitive.patch examples.nvh > $@.examples.patch
-	$(DIR)/nvh.py get $@.examples.patch entry.example.flag='ok' entry.pos,entry.postitle,entry.lemma,entry.headwords__flag,entry.sensitive__flag,entry.example > $@
-	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE)
+	$(DIR)/nvh.py get $@.examples.patch entry.example.flag='ok' entry.pos,entry.postitle,entry.lemma,entry.headwords__flag,entry.sensitive__flag,entry.example,entry.sense > $@
+	$(DIR)/import2dict.py $(DICT_DB) $@ $(USER) $(TL_NODE) --config output.json

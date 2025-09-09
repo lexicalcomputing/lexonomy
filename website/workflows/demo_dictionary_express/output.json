@@ -1,31 +1,14 @@
 {
-    "ident": {
-        "title": "Template: Dictionary express",
-        "blurb": "This is a demo dictionary for projects testing.",
-        "lang": "",
-        "direction": "ltr"
-    },
-    "structure": {
-        "root": "entry",
-        "mode": "custom",
-        "tab": "visual"
-    },
-    "titling": {
-        "headword": "entry",
-        "headwordSorting": "entry",
-        "sortDesc": false,
-        "numberEntries": "1000",
-        "locale": "",
-        "headwordAnnotationsType": "advanced",
-        "headwordAnnotationsAdvanced": "%(entry.lemma) <small style=\"color:silver\">%(entry.postitle)</small>"
-    },
-    "searchability": {
-        "searchableElements": [
-            "entry"
-        ],
-        "templates": []
-    },
-    "formatting": {
+   "titling": {
+      "headword": "entry",
+      "headwordSorting": "entry",
+      "sortDesc": false,
+      "numberEntries": "100",
+      "locale": "en",
+      "headwordAnnotationsType": "advanced",
+      "headwordAnnotationsAdvanced": "%(entry.lemma) <small style=\"color:silver\">%(entry.postitle)</small>"
+   },
+   "formatting": {
       "layout": {
          "desktop": {
             "schema": {
@@ -279,5 +262,9 @@
             "configured": false
          }
       }
+   },
+   "structure": {
+      "mode": "custom",
+      "tab": "visual"
    }
 }
