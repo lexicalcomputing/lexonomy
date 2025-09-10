@@ -1412,7 +1412,7 @@ def listDicts(searchtext, howmany):
     for d in dicts:
         dictDB = getDB(d["id"])
         configs = readDictConfigs(dictDB)
-        if configs['progress_tracking'].get('tracked', False):
+        if configs.get('progress_tracking', {}).get('tracked', False):
             d['stats'] = getDictStats(dictDB)
         d['last_edit'] = lastEdit(dictDB)
 
