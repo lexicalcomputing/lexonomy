@@ -64,7 +64,7 @@ audio_extensions = ['.3gp','.aa ','.aac','.aax','.act','.aiff','.alac','.amr','.
 image_extensions = [".jpeg", ".jpg", ".png", ".gif", ".bmp", ".tiff", ".svg", ".raw", ".ico", ".webp",
                     ".heic", ".heif", ".psd", ".eps", ".ai", ".tga", ".pdf"]
 
-bool_re = re.compile('(true|false|1|0|yes|no)', re.IGNORECASE)
+bool_re = re.compile('^(true|false|1|0|yes|no)$', re.IGNORECASE)
 url_re = re.compile(r'^(https?://|www\.).*?', re.IGNORECASE)
 audio_re = re.compile(r'.*?('+ '|'.join([re.escape(x) for x in audio_extensions]) + ')$', re.IGNORECASE)
 image_re = re.compile(r'.*?('+ '|'.join([re.escape(x) for x in image_extensions]) + ')$', re.IGNORECASE)
