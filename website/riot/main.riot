@@ -263,7 +263,8 @@
                || (page == "dict-download" && uA.canDownload)
                || (page == "dict-upload" && uA.canUpload)
                || (page != "dict-config-limits" && page.startsWith("dict-config") && uA.canConfig)
-               || (page.startsWith("dict-edit") && uA)){
+               || (page.startsWith("dict-edit") && uA)
+               || (page.startsWith("projects-") && this.authData.isProjectManager)){
                return true
             }
             return false
