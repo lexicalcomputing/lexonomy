@@ -51,7 +51,7 @@ class ConnectionClass {
                window.showToast(failMessage)
             }
          }
-         if(successMessage && response && !response.error && typeof response.statusText == "undefined"){
+         if(successMessage && response && !response.error && response.success !== false && typeof response.statusText == "undefined"){
             M.toast({html: successMessage})
          }
       }.bind(this, failMessage, successMessage)
