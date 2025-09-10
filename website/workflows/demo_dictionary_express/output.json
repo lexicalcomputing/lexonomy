@@ -46,9 +46,10 @@
                            },
                            "styles": {
                               "element": {
-                                 "font-size": "30",
+                                 "font-size": "40",
                                  "line-height": "1",
-                                 "color": "#000000"
+                                 "color": "#ad0000",
+                                 "font-weight": "bold"
                               },
                               "label": {},
                               "bullet": {}
@@ -63,10 +64,17 @@
                            },
                            "styles": {
                               "element": {
-                                 "color": "#878787",
+                                 "color": "#ffffff",
                                  "margin-left": "5",
-                                 "leftPunc": "(",
-                                 "rightPunc": ")"
+                                 "leftPunc": "",
+                                 "rightPunc": "",
+                                 "background-color": "#57a278",
+                                 "border-radius": "5",
+                                 "padding-top": "2",
+                                 "padding-right": "3",
+                                 "padding-bottom": "2",
+                                 "padding-left": "3",
+                                 "line-height": "1"
                               },
                               "label": {},
                               "bullet": {}
@@ -121,7 +129,7 @@
                            "children": []
                         },
                         {
-                           "orientation": "row",
+                           "orientation": "column",
                            "content": {
                               "name": "url",
                               "path": "entry.sense.url"
@@ -130,12 +138,24 @@
                               "element": {
                                  "open-url-new-tab": true,
                                  "set-url-label": true,
-                                 "url-label": "\ud83d\udd17",
+                                 "url-label": "show concordance \ud83d\udd17",
                                  "margin-left": "10",
                                  "custom-css": "",
-                                 "padding-left": ""
+                                 "padding-left": "8",
+                                 "border": "solid",
+                                 "border-color": "#007031",
+                                 "padding-top": "2",
+                                 "padding-right": "8",
+                                 "padding-bottom": "2",
+                                 "background-color": "#fff7e5",
+                                 "border-radius": "20"
                               },
-                              "label": {},
+                              "label": {
+                                 "show-label-before": true,
+                                 "label-text-value": "",
+                                 "background-color": "",
+                                 "border": ""
+                              },
                               "bullet": {}
                            },
                            "children": []
@@ -150,45 +170,24 @@
                      },
                      "styles": {
                         "element": {
-                           "border": "",
-                           "border-width": "0",
-                           "border-color": "#734a4a",
-                           "background-color": "#ffffff",
-                           "text-value": " Examples:",
-                           "container-width-unit": "%",
-                           "container-width": "100",
-                           "color": "#737373",
-                           "margin-left": "20"
+                           "border": "solid",
+                           "border-width": "1",
+                           "border-color": "#007031",
+                           "background-color": "#f0fff7",
+                           "text-value": " Examples",
+                           "container-width-unit": "",
+                           "container-width": "",
+                           "color": "#007031",
+                           "margin-left": "20",
+                           "border-radius": "10",
+                           "padding-top": "10",
+                           "padding-right": "10",
+                           "padding-bottom": "10",
+                           "padding-left": "10",
+                           "font-weight": ""
                         },
                         "label": {},
                         "bullet": {}
-                     },
-                     "children": []
-                  },
-                  {
-                     "orientation": "column",
-                     "content": {
-                        "name": "example",
-                        "path": "entry.example"
-                     },
-                     "styles": {
-                        "element": {
-                           "border": "",
-                           "line-height": "1",
-                           "margin-left": "50"
-                        },
-                        "label": {
-                           "show-label-before": true,
-                           "label-text-value": ""
-                        },
-                        "bullet": {
-                           "show-bullets": "",
-                           "custom-bullet": "\u25cf",
-                           "bullet-use-with-single-item": true,
-                           "align-items": "baseline",
-                           "margin-right": "7",
-                           "color": "#c62132"
-                        }
                      },
                      "children": [
                         {
@@ -200,18 +199,54 @@
                            "styles": {
                               "element": {
                                  "border": "",
-                                 "font-family": "Times New Roman, serif",
-                                 "font-style": ""
+                                 "line-height": "1",
+                                 "margin-left": "50",
+                                 "font-style": "",
+                                 "border-color": "#007031",
+                                 "border-width": "1"
                               },
-                              "label": {},
+                              "label": {
+                                 "show-label-before": true,
+                                 "label-text-value": ""
+                              },
                               "bullet": {
-                                 "show-bullets": "custom",
-                                 "custom-bullet": "\u25aa",
-                                 "color": "#a3a3a3",
-                                 "margin-right": "5"
+                                 "show-bullets": "",
+                                 "custom-bullet": "\u25cf",
+                                 "bullet-use-with-single-item": true,
+                                 "align-items": "baseline",
+                                 "margin-right": "7",
+                                 "color": "#c62132"
                               }
                            },
-                           "children": []
+                           "children": [
+                              {
+                                 "orientation": "column",
+                                 "content": {
+                                    "name": "example",
+                                    "path": "entry.example"
+                                 },
+                                 "styles": {
+                                    "element": {
+                                       "border": "",
+                                       "font-family": "Palatino Linotype, serif",
+                                       "font-style": "",
+                                       "custom-css": "",
+                                       "color": "#000000",
+                                       "font-size": "20",
+                                       "margin-top": "5"
+                                    },
+                                    "label": {},
+                                    "bullet": {
+                                       "show-bullets": "custom",
+                                       "custom-bullet": "\u23f5",
+                                       "color": "#007031",
+                                       "margin-right": "5",
+                                       "font-style": ""
+                                    }
+                                 },
+                                 "children": []
+                              }
+                           ]
                         }
                      ]
                   }

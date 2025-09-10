@@ -5,4 +5,3 @@ entry: + string
     sense: * string
         url: * url
     example: * string
-        flag: * string
