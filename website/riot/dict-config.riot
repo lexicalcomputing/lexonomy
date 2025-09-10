@@ -58,7 +58,8 @@
                Chose configrations found in "{window.trim(state.file.name, 30)}" to import:
             </div>
             <div class="columnContainer">
-               <div each={section in state.configsInFile}>
+               <div each={section in state.configsInFile}
+                     if={!section.onlyForAdmin || authData.isAdmin}>
                   <h3 class="header">{section.label}</h3>
                   <ul if={section.configs.length}>
                      <li each={config in section.configs}>
@@ -97,7 +98,8 @@
 
    <div if={!state.showImport}
          class="columnContainer">
-      <div each={configSection in state.configs}>
+      <div each={configSection in state.configs}
+            if={!configSection.onlyForAdmin || authData.isAdmin}>
          <h3 class="header">{configSection.label}</h3>
          <ul>
             <li each={config in configSection.configs}>
@@ -210,6 +212,7 @@
                   ]
                }, {
                   label: "Admin settings",
+                  onlyForAdmin: true,
                   disableImport: true,
                   configs: [
                      {
@@ -393,8 +396,7 @@
       }
       .columnContainer{
          display: flex;
-         gap: 2vw;
-         justify-content: space-between;
+         gap: 5vw;
          margin: auto;
       }
       li{
