@@ -35,7 +35,7 @@ nav ul a,
 .breadcrumb{
    text-decoration: underline;
 }
-a:not(.btn):hover,
+a:not(.btn):not(.chip):hover,
 nav ul a:hover,
 .breadcrumb:hover{
    color: #c62132;
@@ -407,6 +407,10 @@ span.badge{
       font-size: 1rem;
       line-height: 2rem;
       padding-left: 0.5rem;
+   }
+   &:focus{
+      background-color: #000;
+      color: #fff;
    }
 }
 
