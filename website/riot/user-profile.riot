@@ -4,41 +4,40 @@
    <div if={dictData.siteconfig && !dictData.isSiteconfigLoading}
          class="row">
       <label>Sketch Engine login</label>
-      <div if={dictData.siteconfig.sketchengineLoginPage && authData.ske_username}>
-         <p>Your Lexonomy account is linked to your Sketch Engine account <b>{authData.ske_username}</b>
-            <br/>
-            <a href={dictData.siteconfig.sketchengineLoginPage}>Link to a different Sketch Engine account&nbsp;»</a>
-         </p>
+      <div if={dictData.siteconfig.sketchengineLoginPage && authData.ske_username}
+            class="mb-4">
+         Your Lexonomy account is linked to your Sketch Engine account <b>{authData.ske_username}</b>
+         <br/>
+         <a href={dictData.siteconfig.sketchengineLoginPage}>Link to a different Sketch Engine account&nbsp;»</a>
       </div>
       <div if={dictData.siteconfig.sketchengineLoginPage && !authData.ske_username}>
-         <p><strong>Sketch Engine login</strong></p>
-         <p><a href={dictData.siteconfig.sketchengineLoginPage}>Link Lexonomy to your Sketch Engine account&nbsp;»</a>
-         </p>
+         <strong>Sketch Engine login</strong><
+         <a href={dictData.siteconfig.sketchengineLoginPage}>Link Lexonomy to your Sketch Engine account&nbsp;»</a>
       </div>
-      <div if={!dictData.siteconfig.sketchengineLoginPage}>
-         <div class="input-field">
-            <div>
-               <input id="skeusername"
-                     type="text"
-                     class="validate"
-                     value={authData.ske_username}
-                     style="width: 350px;" />
-               <button class="btn waves-effect waves-light"
-                     onclick={onChangeSkeUsernameClick}>Change username
-                  <i class="material-icons right">send</i>
-               </button>
-            </div>
-            <span class="helper-text">Set your login username to Sketch Engine.</span>
+      <div if={!dictData.siteconfig.sketchengineLoginPage}
+            class="input-field">
+         <div>
+            <input id="skeusername"
+                  type="text"
+                  class="validate"
+                  value={authData.ske_username}
+                  style="width: 350px;" />
+            <button class="btn waves-effect waves-light"
+                  onclick={onChangeSkeUsernameClick}>Change username
+               <i class="material-icons right">send</i>
+            </button>
          </div>
+         <span class="helper-text">Set your login username to Sketch Engine.</span>
       </div>
    </div>
 
    <!-- Sketch Engine API key -->
    <div class="row">
       <label>Sketch Engine API key</label>
-      <p if={dictData.siteconfig.sketchengineLoginPage}>
+      <div if={dictData.siteconfig.sketchengineLoginPage}
+            class="mb-4">
          Unless you need special setup, Please, <a href={dictData.siteconfig.sketchengineLoginPage}>login via Sketch Engine</a> to set API key automatically.
-      </p>
+      </div>
       <div class="input-field">
          <div>
             <input id="skeapi"
@@ -119,24 +118,27 @@
    </div>
 
    <div class="row">
-      <label>Text size</label>
+      <label>Projects</label>
+      <div class="mb-4">
+         This feature streamlines the collaborative dictionary creation process by guiding managers and their teams through a structured, step-by-step workflow. It enables seamless oversight, task assignment, and progress tracking to ensure consistent and efficient content development
+         <br>
+         This tool is still under development.
+      </div>
       <div class="input-field">
-         <div style="">
-            <select id="fontSize"
-                  onchange={onFontSizeChange}>
-               <option each={(item, idx) in new Array(11)}
-                     value={idx + 12}
-                     selected={state.fontSize == idx + 12}>
-                  {100 + (-4 + idx) * 10}%
-               </option>
-            </select>
-            <button class="btn waves-effect waves-light"
-                  onclick={onResetFontSize}>reset
-            </button>
+         <div class="switch">
+             <label>
+               <input name="projects"
+                     type="checkbox"
+                     checked={!!authData.isProjectManager}
+                     onchange={onProjectsChange}>
+               <span class="lever"></span>
+               Enable
+            </label>
          </div>
       </div>
    </div>
 
+   <br>
    <div>
       <a class="btn"
             href="javascript:window.history.back()"
@@ -203,6 +205,10 @@
                key += alphabet[i]
             }
             return key
+         },
+
+         onProjectsChange(evt){
+            this.auth.toggleUserIsManager(evt.target.checked)
          },
 
          onFontSizeChange(evt){

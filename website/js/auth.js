@@ -150,6 +150,28 @@ class AuthClass {
          })
    }
 
+   toggleUserIsManager(isManager, email=null){
+      let data = {
+         email: email || this.data.email,
+         is_manager: isManager * 1
+      }
+      if(email){
+         data.email = email
+      }
+      return window.connection.get({
+         url: `${window.API_URL}set_project_manager.json`,
+         data: data,
+         failMessage: "Could not save the user settings.",
+         successMessage: "User settings were updated."
+      })
+            .done(response => {
+               if(response.email == this.data.email){
+                  this.data.isProjectManager = response.is_manager
+               }
+               this.trigger("userIsManagerChanged")
+            })
+   }
+
    consent(){
       return window.connection.post({
          url: `${window.API_URL}consent.json`,

@@ -265,7 +265,8 @@
 
    <script>
       export default {
-         bindings: [["store", "siteconfigChanged", "onSiteConfigLoaded"]],
+         bindings: [["store", "siteconfigChanged", "onSiteConfigLoaded"],
+                    ["auth", "userIsManagerChanged", "update"]],
 
          onBeforeMount(){
             this.logoLinkUrl = this.dictData.siteconfig && this.dictData.siteconfig.homepage ? this.dictData.siteconfig.homepage : "#"
