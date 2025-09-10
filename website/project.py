@@ -17,6 +17,18 @@ siteconfig = json.load(open(os.path.join(currdir, "siteconfig.json"), encoding="
 def projectExists(projectID):
     return os.path.isdir(os.path.join(siteconfig["dataDir"], "projects", projectID))
 
+def setProjectManager(email, is_manager):
+    error = ''
+    try:
+        conn = ops.getMainDB()
+        conn.execute("UPDATE users SET is_manager=? WHERE email=?",
+                     (is_manager, email))
+        conn.commit()
+        conn.close()
+    except:
+        error = 'Main DB error'
+
+    return email, is_manager, error
 
 def suggestProjectId():
     projectid = ops.generateDictId()

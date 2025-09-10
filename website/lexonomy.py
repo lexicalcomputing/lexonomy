@@ -223,6 +223,19 @@ def listuserdicts(user):
     dicts = ops.getDictsByUser(user["email"])
     return {"dicts": dicts}
 
+@get(siteconfig["rootPath"] + "set_project_manager.json")
+@auth
+def listuserdicts(user):
+    if user['isAdmin']:
+        email, is_manager, error = project.setProjectManager(request.query.email, int(request.query.is_manager))
+    else:
+        email, is_manager, error = project.setProjectManager(user["email"], int(request.query.is_manager))
+
+    if error:
+        return {"success": True, 'email': email, 'is_manager': is_manager, 'error': error}
+    else:
+        return {"success": True, 'email': email, 'is_manager': is_manager}
+
 @post(siteconfig["rootPath"] + "createPDF")
 @auth
 def createPDF(user):
