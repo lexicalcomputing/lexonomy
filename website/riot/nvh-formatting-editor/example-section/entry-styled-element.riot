@@ -42,7 +42,7 @@
          </div>
       </div>
       <div each={childSchema in props.schema.children}
-            class="element-holder-list element-holder-list-{childSchema.orientation}">
+            class="element-holder-list element-holder-list-{props.schema.orientation}">
          <entry-styled-element if={!childSchema.content.name}
                schema={childSchema}
                element={props.element}
@@ -245,6 +245,7 @@
       }
       .entry-styled-element-value-wrapper{
          display: flex; // so bullets are on the same line
+         align-items: baseline;
       }
       .element-holder-has-bullet {
          flex-wrap: nowrap;
@@ -257,6 +258,9 @@
       }
       .element-holder-list-column {
          flex-direction: column;
+      }
+      .element-holder-list-row {
+         flex-direction: row;
       }
       .element-holder-content-block {
          display: flex;
