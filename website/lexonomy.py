@@ -1199,8 +1199,11 @@ def pushapi():
                                      "canDelete": 1, "canEditSource": 1, "canConfig": 1,
                                      "canDownload": 1,"canUpload": 1}}
             dict_config = {"limits": {"entries": ops.DEFAULT_ENTRY_LIMIT}}
+            dictDB.execute("INSERT INTO configs (id, json) VALUES (?, ?)", ("formatting", json.dumps(data["formatting"])))
+            dictDB.commit()
             ops.registerDict(dictDB, dictID, data["email"], dict_config)
             ops.attachDict(dictID, users)
+            dictDB.close()
             return {"dictid": dictID, "success": True}
         elif data["command"] == "createEntries":
             dictDB = ops.getDB(data["dictID"])
