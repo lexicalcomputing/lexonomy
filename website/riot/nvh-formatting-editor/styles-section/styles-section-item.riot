@@ -396,6 +396,8 @@
                <div class="value-wrapper">
                   <select name="font-family"
                         onchange={onChangeStyle}>
+                     <option value=""
+                           selected={!getStyleOptionValue("font-family")}>-- inherit --</option>
                      <option each={option in Object.entries(state.fontFamilyList)}
                            value={option[0]}
                            selected={getStyleOptionValue("font-family") == option[0]}>
@@ -885,7 +887,6 @@
                [";", ";"]
             ],
             fontFamilyList: {
-               "": "-- inherit --",
                "Arial, sans-serif": "Arial",
                "Verdana, sans-serif": "Verdana",
                "Tahoma, sans-serif": "Tahoma",
@@ -982,7 +983,7 @@
 
          refreshAvailableOptions(){
             this.state.availableSections = {
-               text: ["string", "list", "int", "bool"].includes(this.state.elementType)
+               text: ["string", "list", "int", "url", "bool"].includes(this.state.elementType)
                      || this.state.isLabelOptionStyle
                      || this.state.isBulletOptionStyle
                      || !this.state.selectedLayoutContainer.content.name,
