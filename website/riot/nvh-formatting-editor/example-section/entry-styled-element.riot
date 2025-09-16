@@ -188,12 +188,11 @@
          },
 
          getBullet(){
-            if(!this.props.element.parent){
-               return null
+            let idx = 1
+            if(this.props.element.parent){
+               idx = this.props.element.parent.children.filter(child => child.path == this.props.element.path)
+                     .indexOf(this.props.element) + 1
             }
-            let idx = this.props.element.parent.children.filter(child => child.path == this.props.element.path)
-                  .indexOf(this.props.element)
-            idx = idx != -1 ? idx + 1 : null
             if(idx){
                return {
                   number: num => num,
