@@ -3,7 +3,8 @@
 
 @use "./libs/materialize/css/materialize.min.css";
 @use "./libs/materialize/css/materialize-colorpicker.min.css";
-@use "./libs/jquery/css/jquery-ui.css";
+@use "./css/fonts/roboto-condensed.css";
+@use "./css/fonts/material-icons.css";
 @import './css/codemirror-modifications.scss';
 @import './css/browser-update-modifications.scss';
 @import './css/materialize-modifications.scss';

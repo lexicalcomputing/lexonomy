@@ -1,24 +1,17 @@
 <!doctype html>
 <html>
    <head>
+      <title>Lexonomy</title>
       <meta charset="UTF-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="apple-mobile-web-app-title" content="Lexonomy">
+      <meta name="description" content="An online dictionary writing system for writing and publishing dictionaries. This open-source platform allows users to create dictionaries and publish them.">
       <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
       <link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96x96.png">
       <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
-      <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png" />
-      <meta name="apple-mobile-web-app-title" content="Lexonomy" />
-      <link rel="manifest" href="site.webmanifest" />
-
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <meta name="description" content="An online dictionary writing system for writing and publishing dictionaries. This open-source platform allows users to create dictionaries and publish them."/>
-      <title>Lexonomy</title>
-
-      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+      <link rel="manifest" href="site.webmanifest">
       <link href="bundle.css?ver=@VERSION@" rel="stylesheet">
-
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
       <style>
          .appOverlay{
             position: absolute;
@@ -49,8 +42,8 @@
          }
 
          @keyframes appSpinnerAnimation {
-           0%   { transform: rotate(0deg);   transform: rotate(0deg); }
-           100% { transform: rotate(360deg); transform: rotate(360deg); }
+            0%   { transform: rotate(0deg);   transform: rotate(0deg); }
+            100% { transform: rotate(360deg); transform: rotate(360deg); }
          }
       </style>
    </head>
@@ -63,27 +56,11 @@
       </div>
       <main id="root"></main>
       <script>
-        window.LEXONOMY_VERSION = '@VERSION@';
-        window.nvhPlugins = {}
+         window.LEXONOMY_VERSION = '@VERSION@';
+         window.nvhPlugins = {}
       </script>
-      <script
-         src="https://code.jquery.com/jquery-3.6.0.min.js"
-         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-         crossorigin="anonymous">
-      </script>
-      <script
-         src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"
-         integrity="sha256-eTyxS0rkjpLEo16uXTS0uVCS4815lc40K2iVpWDvdSY="
-         crossorigin="anonymous">
-      </script>
-      <!-- jQuery CDN fallback -->
-     <script>
-         window.jQuery || document.write("<script src='libs/jquery/jquery.min.js'><\/script><script src='libs/jquery/jquery-ui.min.js'><\/script>")
-      </script>
-      <!-- jQuery CDN fallback -->
-
       <script type="text/javascript" src="config.js?ver=@VERSION@"></script>
-      <script type="text/javascript" src="bundle.static.js?ver=4"></script>
+      <script type="text/javascript" src="bundle.static.js?ver=5"></script>
       <script type="text/javascript" src="bundle.js?ver=@VERSION@"></script>
    </body>
 </html>

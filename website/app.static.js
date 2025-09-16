@@ -1,6 +1,7 @@
 import './libs/riot/riot.js'
 import './libs/riot/route.js'
 import './libs/riot/observable.js'
+import './libs/jquery/jquery-3.6.0.min.js'
 import './libs/materialize/materialize.js'
 import './libs/materialize/materialize-colorpicker.min.js'
 import './libs/fuzzysort/fuzzysort.js'
