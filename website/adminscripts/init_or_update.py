@@ -735,7 +735,6 @@ def main():
     print(f'\tdbXrefSchemaFile: "{dbXrefSchemaFile}"')
 
     os.makedirs(data_dir, exist_ok=True)
-    os.chmod(data_dir, stat.S_IRWXU | stat.S_IRWXG)
     os.makedirs(dicts_path, exist_ok=True)
     os.makedirs(os.path.join(data_dir, 'uploads'), exist_ok=True)
     os.makedirs(os.path.join(data_dir, 'sqlite_tmp'), exist_ok=True)
