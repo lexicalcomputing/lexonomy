@@ -305,17 +305,17 @@
                         class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper">
-                  <input type="text"
-                        value={getStyleOptionValue("color")}
-                        style="width: 100px; margin: 0;"
-                        name="color"
-                        onchange={onChangeStyle}/>
-                  <input type="color"
-                        class="input-color"
-                        value={getStyleOptionValue("color")}
-                        name="color"
-                        oninput={onColorInput}
-                        onchange={onChangeColorPicker}>
+                  <div class="clr-field"
+                        style="color: {getStyleOptionValue('color') || '#000000'}">
+                     <button type="button"></button>
+                     <input type="text"
+                           data-coloris
+                           class="input-color"
+                           value={getStyleOptionValue("color")}
+                           name="color"
+                           oninput={onColorInput}
+                           onchange={onChangeColorPicker}>
+                  </div>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -442,17 +442,17 @@
                         class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper">
-                  <input type="text"
-                        value={getStyleOptionValue("background-color")}
-                        style="width: 100px; margin: 0;"
-                        name="background-color"
-                        onchange={onChangeStyle}/>
-                  <input type="color"
-                        class="input-color"
-                        value={getStyleOptionValue("background-color") || "#ffffff"}
-                        name="background-color"
-                        oninput={onColorInput}
-                        onchange={onChangeColorPicker}>
+                  <div class="clr-field"
+                        style="color: {getStyleOptionValue('background-color') || '#ffffff'}">
+                     <button type="button"></button>
+                     <input type="text"
+                           data-coloris
+                           class="input-color"
+                           value={getStyleOptionValue("background-color")}
+                           name="background-color"
+                           oninput={onColorInput}
+                           onchange={onChangeColorPicker}>
+                  </div>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -485,17 +485,17 @@
                <div class="styles-section-item-wrapper styles-section-subitem">
                   <div class="label">Color</div>
                   <div class="value-wrapper">
-                     <input type="text"
-                           value={getStyleOptionValue("border-color")}
-                           style="width: 100px; margin: 0;"
-                           name="border-color"
-                           onchange={onChangeStyle}/>
-                     <input type="color"
-                           class="input-color"
-                           value={getStyleOptionValue("border-color")}
-                           name="border-color"
-                           oninput={onColorInput}
-                           onchange={onChangeColorPicker}>
+                     <div class="clr-field"
+                           style="color: {getStyleOptionValue('border-color') || '#000000'}">
+                        <button type="button"></button>
+                        <input type="text"
+                              data-coloris
+                              class="input-color"
+                              value={getStyleOptionValue("border-color")}
+                              name="border-color"
+                              oninput={onColorInput}
+                              onchange={onChangeColorPicker}>
+                     </div>
                   </div>
                </div>
                <div class="styles-section-item-wrapper styles-section-subitem">
@@ -935,6 +935,7 @@
             this.nvhFormattingEditor = window.nvhFormattingEditor
             this.nvhStore = window.nvhStore
             this.refreshStateData()
+            this.updateColoris()
          },
 
          onMounted(){
@@ -1008,6 +1009,7 @@
          onChangeColorPicker(evt){
             // color is changed on color input "oninput" event, but not added to the history
             this.nvhFormattingEditor.addStateToHistory()
+            this.updateColoris()  // update colors in swatches
          },
 
          onChangeStyle(evt) {
@@ -1054,6 +1056,14 @@
                return "Yes/No"
             }
             return window.capitalize(this.state.elementType)
+         },
+
+         updateColoris(){
+            Coloris({
+                  swatches: this.nvhFormattingEditor.getMostUsedColors(),
+                  alpha: true,
+                  defaultColor: "#000000"
+               })
          }
       }
    </script>

@@ -679,6 +679,25 @@ class NVHFormattingEditorClass {
       return result_css;
    }
 
+   getMostUsedColors(count=12){
+      let colors = {}
+      this.forEachElement(element => {
+         ["element", "label", "bullet", "markup"].forEach(type => {
+            let styles = element.styles[type]
+            if(styles){
+               ["color", "background-color", "border-color"].forEach(key => {
+                  if(styles[key]){
+                     colors[styles[key]] = colors[styles[key]] ? colors[styles[key]] + 1 : 1
+                  }
+               })
+            }
+         })
+      })
+      return Object.entries(colors).sort((a, b) => b[1] - a[1])
+            .map(c => c[0])
+            .splice(0, count)
+   }
+
    getMediaMaxSizesRules(styles){
       return ["max-width", "max-height"]
            .filter(prop => styles[prop])

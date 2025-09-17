@@ -7,4 +7,5 @@ import './libs/materialize/materialize-colorpicker.min.js'
 import './libs/fuzzysort/fuzzysort.js'
 import './libs/sortable/sortable.min.js'
 import './libs/dompurify/dompurify.min.js'
+import './libs/coloris/coloris.js'
 

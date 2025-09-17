@@ -262,6 +262,12 @@ table.striped thead tr{
    letter-spacing: -1px;
 }
 
+.clr-field button{
+   aspect-ratio: 1 / 1;
+   height: calc(100% - 2px);
+   right: 1px;
+}
+
 /* responsivity  */
 
 .container{
