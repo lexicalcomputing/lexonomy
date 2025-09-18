@@ -23,10 +23,14 @@ class NVHFormattingEditorClass {
          selectedLayoutContainer: null,
          activeLayout: "desktop" /*desktop, tablet, mobile, pdf*/
       }
-   }
-
-   updateEditor() {
-      this.trigger("updateEditor");
+      this.styleSections = {
+         area: ["background-color", "border", "border-color", "border-width", "box-shadow",
+            "border-radius", "margin-left", "margin-top", "margin-right", "margin-bottom",
+            "padding-left", "padding-top", "padding-right", "padding-bottom",
+            "container-width-unit", "align-items", "direction"],
+         text: ["color", "font-size", "font-weight", "font-style", "text-decoration",
+         "font-family", "line-height"]
+      }
    }
 
    toggleSection(sectionName){
@@ -617,17 +621,20 @@ class NVHFormattingEditorClass {
       }
    }
 
-   getCssRules(schema, type, path) {
+   getCssRules(schema, type, path, section) {
+      // type = ["element", "label", "bullet", "markup"]
+      // section = ["text", "area"]
       let styles = this.getStyles(schema, type, path)
       let result_css = ""
+      let allowedOptions = this.styleSections[section]
       for (let [option, value] of Object.entries(styles)) {
-         if (!value) {
-            continue;
-         }
-         if (["leftPunc", "rightPunc",
-            "border-color", "border-width", "container-width", "label-text-value",
-            "show-label-before", "custom-css", "text-value", "applyURL", "allow-html"].includes(option)) {
-            continue;
+         if(!value
+            || ["border-color", "border-width"].includes(option)
+            //  add only requried styles (text or area)
+            || (section && !allowedOptions.includes(option))
+            // skip non-style options like "show-url", "label-text-value" etc...
+             || (!section && !this.styleSections.text.includes(option) && !this.styleSections.area.includes(option))){
+            continue
          }
          if (["border-radius", "padding-left", "padding-right", "padding-bottom",
               "padding-top", "margin-left", "margin-top", "margin-right",
@@ -646,15 +653,13 @@ class NVHFormattingEditorClass {
             value = borderWidth + " " + value + " " + borderColor;
          } else if (option === "container-width-unit") {
             if (styles["container-width"]) {
+               let containerWidth = parseInt(styles["container-width"])
                if (styles[option] === "px") {
-                  option = "width";
-                  value = Math.min(this.getElementMaxWidth(schema), parseInt(styles["container-width"])) + "px"
+                  option = "width"
+                  value = Math.min(this.getElementMaxWidth(schema), containerWidth) + "px"
                } else if (styles[option] === "%") {
-                  if (parseInt(styles["container-width"]) >= 100) {
-                     styles["container-width"] = "100";
-                  }
-                  option = "width";
-                  value = `${(parseInt(styles["container-width"]) / 100) * this.getElementMaxWidth(schema)}` + "px";
+                  option = "width"
+                  value = `${Math.min(containerWidth, 100) / 100 * this.getElementMaxWidth(schema)}px`
                } else {
                   continue;
                }

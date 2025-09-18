@@ -9,9 +9,10 @@
          class="displayFlex alignCenter">
       <a href={props.rawValue}
             target="{state.elementStyles["open-url-new-tab"] ? '_blank' : '_self'}">
-         <pre if={state.elementStyles["set-url-label"]}>
+         <span if={state.elementStyles["set-url-label"]}
+               class="noWrap">
             {state.elementStyles["url-label"]}
-         </pre>
+         </span>
          <template if={!state.elementStyles["set-url-label"]}>
             {props.value}
          </template>

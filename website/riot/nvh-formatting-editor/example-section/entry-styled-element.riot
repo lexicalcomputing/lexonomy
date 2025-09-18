@@ -4,45 +4,36 @@
       onmouseover={!props.readOnly && onMouseOver}
       onmouseleave={!props.readOnly && onMouseLeave}>
    <div class="element-holder element-holder-{props.schema.orientation}"
-         style="{state.cssRules.element}">
+         style="{state.cssRules.elementArea}">
       <div class="entry-styled-element-value-wrapper">
-         <pre if={state.bulletValue}
+         <span if={state.bulletValue}
+               class="entry-styled-element-bullet"
                style={state.cssRules.bullet}>
             {state.bulletValue}
-         </pre>
-         <pre if={hasLabelBeforeValue()}
+         </span>
+         <span if={hasLabelBeforeValue()}
                class="entry-styled-element-label-before"
                style={state.cssRules.label}>
             {state.labelStyles["label-text-value"]}
-         </pre>
+         </span>
          <raw-html if={!props.schema.content.path && state.elementStyles["text-value"]}
                content={state.elementStyles["text-value"]}/>
          <div if={state.isShowingElementValue}
                class="element-holder-content-wrapper">
             <div if={props.element.value}
-                  class="element-holder-content-block">
+                  class="element-holder-content-block"
+                  style="{state.cssRules.elementText}">
                <div is="{state.valueComponentName}"
                      value={state.value}
                      raw-value={props.element.value}
                      schema={props.schema}>
-                  <!--pre if={hasLabelBeforeValue() && !props.schema.children.length}
-                        slot="left-label"
-                        class="example-item-label-before"
-                        style={state.cssRules.label}>
-                     {state.labelStyles["label-text-value"]}
-                  </pre>
-                  <pre if={hasLabelAfterValue() && !props.schema.children.length}
-                        slot="right-label"
-                        class="example-item-label-after"
-                        style={state.cssRules.label}>
-                     {state.labelStyles["label-text-value"]}
-                  </pre-->
                </div>
             </div>
          </div>
       </div>
       <div each={childSchema in props.schema.children}
-            class="element-holder-list element-holder-list-{props.schema.orientation}">
+            class="element-holder-list element-holder-list-{props.schema.orientation}"
+            style="{state.cssRules.elementText}">
          <entry-styled-element if={!childSchema.content.name}
                schema={childSchema}
                element={props.element}
@@ -52,11 +43,11 @@
                element={childElement}
                read-only={props.readOnly}/>
       </div>
-      <pre if={hasLabelAfterValue()}
+      <span if={hasLabelAfterValue()}
             class="entry-styled-element-label-before"
             style={state.cssRules.label}>
          {state.labelStyles["label-text-value"]}
-      </pre>
+      </span>
    </div>
 
    <script>
@@ -123,7 +114,8 @@
             this.state.labelStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "label")
             this.state.bulletStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "bullet")
             this.state.cssRules = {
-               element: this.nvhFormattingEditor.getCssRules(props.schema, "element"),
+               elementText: this.nvhFormattingEditor.getCssRules(props.schema, "element", null, "text"),
+               elementArea: this.nvhFormattingEditor.getCssRules(props.schema, "element", null, "area"),
                label: this.nvhFormattingEditor.getCssRules(props.schema, "label"),
                bullet: this.nvhFormattingEditor.getCssRules(props.schema, "bullet")
             }
@@ -207,12 +199,12 @@
 
          hasLabelBeforeValue() {
             return this.state.labelStyles["label-text-value"]
-               && (this.state.labelStyles["show-label-before"])
+               && this.state.labelStyles["show-label-before"]
          },
 
          hasLabelAfterValue() {
             return this.state.labelStyles["label-text-value"]
-               && (!this.state.labelStyles["show-label-before"])
+               && !this.state.labelStyles["show-label-before"]
          },
 
          hasSiblings(){
@@ -227,11 +219,6 @@
    </script>
 
    <style type="scss">
-      pre {
-         margin: 0;
-         text-wrap: wrap;
-         font-family: inherit;
-      }
       .link-no-decoration {
          text-decoration: none;
       }
@@ -239,12 +226,20 @@
          display: flex;
          flex-wrap: wrap;
          width: fit-content;
-         align-items: baseline;
-         margin: 2px 0;
+         gap: 3px;
+         &.element-holder-row{
+            align-items: start;
+         }
+         &.element-holder-column{
+            align-items: baseline;
+         }
       }
       .entry-styled-element-value-wrapper{
          display: flex; // so bullets are on the same line
          align-items: baseline;
+         &:empty{
+            display: none!important; // TODO: quick fix, it would better not to render the element at all
+         }
       }
       .element-holder-has-bullet {
          flex-wrap: nowrap;
