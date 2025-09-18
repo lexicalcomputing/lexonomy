@@ -148,6 +148,7 @@
             this.nvhStore = window.nvhStore
             this.nvhData = this.nvhStore.data
             this.nvhFormattingEditor = window.nvhFormattingEditor;
+            this.nvhFormattingEditor.initLayout()
             window.addEventListener("resize", this.isLayoutSchemaChange);
          },
 
@@ -160,7 +161,6 @@
             if(this.dictData.config.formatting.customCss){
                window.CustomStyles.add("nvhEditorCustomStyles", this.dictData.config.formatting.customCss, ".entry-styled")
             }
-            this.nvhFormattingEditor.initLayout()
             window.scrollTo(0, 0)
             this.isLayoutSchemaChange();
          },
