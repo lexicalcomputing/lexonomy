@@ -309,12 +309,12 @@
             if(selectedItem){
                let offsetTop = selectedItem.offsetTop
                let rowHeight = selectedItem.clientHeight
-               let min = list.scrollTop + (3 * rowHeight)
-               let max = list.scrollTop + list.clientHeight - (3 * rowHeight)
+               let min = list.scrollTop
+               let max = list.scrollTop + list.clientHeight - rowHeight
                if(offsetTop < min){
-                  list.scrollTop = offsetTop - (2 * rowHeight)
+                  list.scrollTop = offsetTop
                } else if(offsetTop > max){
-                  list.scrollTop = offsetTop - list.clientHeight + (3 * rowHeight)
+                  list.scrollTop = offsetTop - list.clientHeight + rowHeight
                }
             }
          },
