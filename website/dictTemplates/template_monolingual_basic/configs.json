@@ -111,23 +111,6 @@
                                     "bulletStyles": {}
                                 },
                                 {
-                                    "orientation": "column",
-                                    "content": {
-                                        "name": "",
-                                        "path": null
-                                    },
-                                    "styles": {
-                                        "element": {
-                                            "font-size": "",
-                                            "container-width-unit": "px",
-                                            "container-width": "20"
-                                        },
-                                        "label": {},
-                                        "bullet": {}
-                                    },
-                                    "children": []
-                                },
-                                {
                                     "orientation": "row",
                                     "type": "layout-container",
                                     "content": {
