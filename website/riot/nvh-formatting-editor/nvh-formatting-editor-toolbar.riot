@@ -121,6 +121,15 @@
             this.nvhFormattingEditor = window.nvhFormattingEditor;
          },
 
+         onMounted(){
+            this.boundUpdate = this.update.bind(this)
+            document.addEventListener("fullscreenchange", this.boundUpdate)
+         },
+
+         onBeforeUnmount(){
+            document.removeEventListener("fullscreenchange", this.boundUpdate)
+         },
+
          onUndoClick(){
             this.nvhFormattingEditor.currentLayout.history.undo()
          },
