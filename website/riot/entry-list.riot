@@ -92,10 +92,11 @@
                     ["store", "isEntryListLoadingChanged", "update"],
                     ["store", "isLoadingMoreEntriesChanged", "update"],
                     ["store", "entryIdChanged", "onEntryIdChanged"],
+                    ["store", "entryFlagChanged", "closeFlagDropdown"],
                     ["nvhStore","editorModeChanged", "update"]],
 
          state: {
-            focused: false,
+            focused: true,
             size: 10,
             cursorPosition: null
          },
@@ -166,13 +167,13 @@
             if(!this.dictData.userAccess.canEdit){
                return
             }
-            evt.stopPropagation()
             let id = "ts_" + Date.now() + Math.floor((Math.random() * 10000))
             // create copy of the list. Without copy, UL is moved as child of target node and after riot update is destroyed
             let menuNode = $(evt.target)//.closest(".entry-list-item")
             $("#flagDropdown").clone()
                  .attr({id: id})
                  .data("entryid", entry.id)
+                 .addClass("activeFlagDropdown")
                  .appendTo($("body"))
                  .find("li").each(function(idx, elem){
                      $(elem).click(function(entry){
@@ -193,6 +194,7 @@
                         let dropdownInstace = M.Dropdown.getInstance(menuNode)
                         dropdownInstace && dropdownInstace.destroy()
                         $(`#${listId}`).remove()
+                        menuNode.attr("data-target", "")
 
                      }
                  })
@@ -381,6 +383,14 @@
             let bgColor = this.store.getFlagColor(flag) || 'initial'
             let color = this.store.getFlagTextColor(bgColor)
             return `color: ${color}; background-color: ${bgColor}`
+         },
+
+         closeFlagDropdown(){
+            let dropdownEl = document.querySelector(".activeFlagDropdown")
+            if(dropdownEl){
+               let dropdownTriggerNode = document.querySelector(`[data-target="${dropdownEl.id}"]`)
+               dropdownTriggerNode && M.Dropdown.getInstance(dropdownTriggerNode).destroy()
+            }
          }
       }
    </script>
