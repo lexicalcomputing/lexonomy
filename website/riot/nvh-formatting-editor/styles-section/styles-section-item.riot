@@ -1060,6 +1060,7 @@
 
          updateColoris(){
             Coloris({
+                  parent: ".style-section",  // so it works correctly in fullscren mode
                   swatches: this.nvhFormattingEditor.getMostUsedColors(),
                   alpha: true,
                   defaultColor: "#000000"
