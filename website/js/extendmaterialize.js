@@ -163,6 +163,20 @@ let tooltipExtension = {
 
    _handleElMouseLeave(){
       this._handleMouseLeave()
+   },
+
+   _appendTooltipEl(){
+      var tooltipEl = document.createElement('div')
+      tooltipEl.classList.add('material-tooltip')
+      this.tooltipEl = tooltipEl
+
+      var tooltipContentEl = document.createElement('div')
+      tooltipContentEl.classList.add('tooltip-content')
+      tooltipContentEl.innerHTML = this.options.html
+      tooltipEl.appendChild(tooltipContentEl)
+      // if fullscreen mode was requested on element different from body, we need to attach
+      // the tooltip to this element so it wont be hidden under fullscreenElement
+      ;(window.document.fullscreenElement || document.body).appendChild(tooltipEl)
    }
 }
 $.extend(M.Tooltip.prototype, tooltipExtension)
