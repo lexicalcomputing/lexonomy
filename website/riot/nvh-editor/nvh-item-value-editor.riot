@@ -66,6 +66,7 @@
    <select if={state.config.type == "list"}
          class="nvh-select"
          onchange={onSelectChange}>
+      <option value="">-- not set --</option>
       <option each={value in state.config.values}
             selected={value == props.element.value}
             value={value}>{value}</option>
