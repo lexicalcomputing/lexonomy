@@ -354,20 +354,6 @@ class NVHFormattingEditorClass {
       }
    }
 
-   isChildObjectOfParent(childObject, parent) {
-      if (childObject.content.path === parent && childObject.children.length
-         || !childObject.content.path.includes(parent) && childObject.content.path) {
-         return false;
-      }
-
-      for (let child of childObject.children) {
-         if (!this.isChildObjectOfParent(child, parent)) {
-            return false;
-         }
-      }
-      return true;
-   }
-
    addElement(parent, elementPath, index) {
       let newElement = this.createSchemaElement(elementPath, parent, index)
       this.data.selectedLayoutContainer = newElement
@@ -457,11 +443,7 @@ class NVHFormattingEditorClass {
    }
 
    isMarkupType(path) {
-      if (!path) {
-         return false;
-      }
-      let config = window.nvhStore.getElementConfig(path);
-      return config?.type === "markup";
+      return window.nvhStore.getElementConfig(path)?.type == "markup"
    }
 
    isEveryChildDescendantOf(element, parent){
@@ -473,7 +455,6 @@ class NVHFormattingEditorClass {
    }
 
    isDescendantOf(child, parent){
-      //return !childPath || (childPath != parentPath && childPath.startsWith(parentPath))
       let childPath = child.content.path
       let parentPath = parent.content.path
       return !childPath
@@ -490,8 +471,6 @@ class NVHFormattingEditorClass {
    }
 
    canHaveChildren(schema, childPath){
-      //return !schema.content.path || window.store.schema.getElementByPath(schema.content.path).children.length
-            //TODO and maybe limit each child only one time?
       //      empty container
       if(schema.content.path){
          let children = window.store.schema.getElementByPath(schema.content.path)?.children
@@ -504,21 +483,6 @@ class NVHFormattingEditorClass {
          }
       }
       return true
-   }
-
-   areSchemasEquals(schema1, schema2){
-      return (schema1 === schema2)
-         || (schema1 instanceof Object
-               && schema2 instanceof Object // if they are not strictly equal, they both need to be Objects
-               && Object.keys(schema1).every(key => {
-                  return key == "parent"
-                        || (key == "children"
-                                 && schema1.length == schema2.length
-                                 && schema1.children.every((child, idx) => this.areSchemasEquals(schema1.children[idx], schema2.children[idx])))
-                        || (key != "children"
-                                 && window.objectEquals(schema1[key], schema2[key]))
-                  })
-            )
    }
 
    hasElementUrlChild(path) {
@@ -569,15 +533,6 @@ class NVHFormattingEditorClass {
          return schema.styles[type][path]
       }
       return schema.styles[type]
-   }
-
-   createMarkupStyles(path) {
-      let markupChildren = this.getDirectMarkupChildren(path);
-      let result = [];
-      for (let child of markupChildren) {
-         result.push({ name: child.name, path: child.path, styles: {} });
-      }
-      return result;
    }
 
    getIcon(iconItem) {
@@ -747,18 +702,6 @@ class NVHFormattingEditorClass {
       }
       document.head.removeChild(style)
       return true
-   }
-
-   isLayoutContainerHovered(layoutContainer) {
-      return this.data.hoveredLayoutContainer === layoutContainer;
-   }
-
-   isLayoutContainerActive(layoutContainer) {
-      return this.data.selectedLayoutContainer === layoutContainer;
-   }
-
-   isLayoutContainerDragged(layoutContainer) {
-      return this.data.draggedLayoutContainer === layoutContainer;
    }
 
    hasElementInAncestors(schema, path){
