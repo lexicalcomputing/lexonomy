@@ -220,7 +220,7 @@ class NVHFormattingEditorClass {
          }
       } else {
          this.visibleSections = {
-            elements: true,
+            elements: false,
             style: false,
             editing: true,
             example: true
