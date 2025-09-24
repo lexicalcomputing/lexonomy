@@ -393,7 +393,7 @@ class NVHFormattingEditorClass {
 
    toggleSchemaOrientation(schema){
       schema.orientation === "column" ? schema.orientation = "row" : schema.orientation = "column"
-      this.trigger("updateSchemas", [schema?.parent])
+      this.trigger("updateSchemas", [schema?.parent || schema])
       this.addStateToHistory()
    }
 
