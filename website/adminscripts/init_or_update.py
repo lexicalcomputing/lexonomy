@@ -69,8 +69,11 @@ def get_mainDB_verion(mainDB):
     try:
         r = mainDB.execute("SELECT value FROM configs WHERE id='version'").fetchone()
     except sqlite3.OperationalError:
-        # table does not exists
         mainDB.execute("CREATE TABLE IF NOT EXISTS configs (id TEXT PRIMARY KEY, value TEXT)")
+        r = None
+
+    if not r:
+        # table does not exists
         r = {'value': '0.0.0'}
 
     return r['value']
@@ -646,6 +649,7 @@ def make_updates(args):
     available_updates = Updates()
     mainDB = get_db(lexonomy_db_file)
     is_updated = False
+    error_dicts = set()
 
     for update_number in DBupdates:
         for dict_file in get_dict_list():
@@ -656,14 +660,14 @@ def make_updates(args):
                 dict_version, dict_metadata = get_dict_version(dictDB)
 
                 if update_number in dictDB_updates: 
-                    if versiontuple(dict_version) < versiontuple(update_number):
+                    if versiontuple(dict_version) < versiontuple(update_number) and dict_file not in error_dicts:
                         new_version = update_number
                         method_name = 'update_' + re.sub('\.', '_', update_number)
                         method_to_call = getattr(available_updates, method_name)
                         method_to_call(dictDB)
                         print(f'OK dict ({dict_version}->{new_version}): {dict_file}')
                         update_summary['dicts_updated'] += 1
-                elif update_number in mainDB_updates:
+                elif update_number in mainDB_updates and update_summary['mainDB_failed'] == 0:
                     if versiontuple(mainDB_version) < versiontuple(update_number):
                         new_version = update_number
                         method_name = 'update_' + re.sub('\.', '_', update_number)
@@ -682,20 +686,21 @@ def make_updates(args):
                 if new_version:
                     is_updated = True
                     # Update versions
-                    if versiontuple(dict_version) < versiontuple(update_number):
+                    if versiontuple(dict_version) < versiontuple(update_number) and dict_file not in error_dicts:
                         dict_metadata['version'] = new_version
                         dictDB.execute('INSERT OR REPLACE INTO configs (id, json) VALUES (?,?)', ('metadata', json.dumps(dict_metadata)))
                         dictDB.commit()
-                    if versiontuple(mainDB_version) < versiontuple(update_number):
+                    if versiontuple(mainDB_version) < versiontuple(update_number) and update_summary['mainDB_failed'] == 0:
                         mainDB.execute('INSERT OR REPLACE INTO configs (id, value) VALUES (?,?)', ('version', new_version))
                         mainDB.commit()
             except Exception as e:
                 if update_number in mainDB_updates:
-                    print(f'\033[31mFAIL main DB ({mainDB_version}->{update_number}) {type(e).__name__}: {e}|{dict_file}\033[0m')
+                    print(f'\033[31mFAIL main DB ({mainDB_version}->{update_number}) {type(e).__name__}: {e}\033[0m')
                     update_summary['mainDB_failed'] += 1
                 elif update_number in dictDB_updates:
                     print(f'\033[31mFAIL dict ({dict_version}->{update_number}) {type(e).__name__}: {e}|{dict_file}\033[0m')
                     update_summary['dicts_failed'] += 1
+                    error_dicts.add(dict_file)
 
                 if args.debug:
                     import traceback
