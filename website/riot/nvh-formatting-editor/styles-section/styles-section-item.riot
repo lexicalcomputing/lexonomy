@@ -942,7 +942,7 @@
             let element = this.root.querySelector(".collapsible")
             this.collapsible = M.Collapsible.init(element, {accordion: false})
             this.openFirstCollapsible()
-            window.initFormSelects(this.root, null, {container: $(document.body)})
+            this.initFormSelects()
          },
 
          onBeforeUpdate() {
@@ -951,7 +951,7 @@
 
          onUpdated(){
             this.openFirstCollapsible()
-            window.initFormSelects(this.root, null, {container: $(document.body)})
+            this.initFormSelects()
             //fixed riot bug/feature, if user changes value, then navigates to element without label, label is not updated
             this.root.querySelectorAll("input[type='checkbox']").forEach(element => {
                element.checked = this.getStyleOptionValue(element.getAttribute("name"))
@@ -962,6 +962,10 @@
             if(!this.root.querySelector(".collapsible li.active")){
                this.collapsible.open(0)
             }
+         },
+
+         initFormSelects(){
+            window.initFormSelects(this.root, null, {container: document.getElementById("formatting-fullscreen-wrapper")})  // so it works in fullscreen mode too
          },
 
          refreshStateData(){
