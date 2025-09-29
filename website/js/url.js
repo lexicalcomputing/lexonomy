@@ -34,10 +34,10 @@ class UrlClass {
       return str ? ("?" + str) : ""
    }
 
-   parseQuery(str){
+   parseQuery(str=window.location.href){
         let query = {}
         if(str && str.indexOf("=") != -1){
-            str.split('&').forEach(part => {
+            str.split('?')[1]?.split('&').forEach(part => {
                 let pair = part.split('=')
                 query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1])
             })
