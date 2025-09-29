@@ -67,18 +67,7 @@
          <div if={nvhFormattingEditor.visibleSections.example}
                id="example-container"
                class="formatting-page-container">
-            <div class="header-box">
-               <i class="small material-icons">visibility</i>
-               <h2 class="mr-2">Preview</h2>
-               <div if={!dictData.isEntryListLoaded || dictData.entryList.length}
-                     class="entry-dropdown-wrapper">
-                  <entry-dropdown on-change={onExampleEntryChanged}/>
-                  <i class="small material-icons grey-text">search</i>
-               </div>
-            </div>
-            <div class="example-section-wrapper">
-               <example-section class="example-section"/>
-            </div>
+            <example-section class="example-section"/>
          </div>
       </div>
    </div>
@@ -151,10 +140,6 @@
             }
          },
 
-         onExampleEntryChanged(entry) {
-            this.store.changeEntryId(entry.id);
-         },
-
          saveAndToggleLayoutUsage() {
             this.update({isSaving: true});
             let formatting = this.nvhStore.data.formatting;
@@ -196,7 +181,7 @@
             let leftColWidth = $(this.state.leftContainer.className).width()
             let width = Math.min(this.state.leftContainer.maxWidth, Math.max(this.state.leftContainer.minWidth, leftColWidth + distance))
             $(this.state.leftContainer.className).css("width", width + "px")
-         },
+         }
       }
    </script>
 
@@ -260,9 +245,7 @@
          height: 100%;
          min-width: 100%;
       }
-      .example-section-wrapper {
-         height: 90%;
-      }
+
       .formatting-page-container {
          height: 100%;
          &:not(:first-child){
@@ -306,11 +289,6 @@
       }
       .resizeHandle:hover {
          background-color: #cfcfcf;
-      }
-      .entry-dropdown-wrapper {
-         display: flex;
-         align-items: center;
-         gap: 5px;
       }
    </style>
 </dict-config-formatting>

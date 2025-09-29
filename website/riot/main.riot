@@ -113,7 +113,7 @@
             route('/*/edit/([0-9]+|new)/*(\?*){0,1}', (dictId, entryId, editorMode) => {
                this.goTo('dict-edit', [dictId, entryId, editorMode])
             })
-            route('/*/config/*', (dictId, configId) => {
+            route('/*/config/*(\?*){0,1}', (dictId, configId) => {
                this.goTo('dict-config-' + configId, [dictId])
             })
             route('/*/config', (dictId) => {

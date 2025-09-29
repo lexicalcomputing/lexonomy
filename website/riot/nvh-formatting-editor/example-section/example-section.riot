@@ -1,34 +1,110 @@
 <example-section class="example-section">
-   <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
-      <div if={!nvhStore.data.entry}>Preview is loading ...</div>
-      <entry-styled-element if={nvhStore.data.entry}
-            schema={nvhFormattingEditor.currentLayout.schema}
-            element={nvhStore.data.entry}/>
+   <div class="header-box">
+      <i class="small material-icons">visibility</i>
+      <h2 class="mr-2">Preview</h2>
+      <div class="entry-dropdown-wrapper">
+         <entry-dropdown on-change={onExampleEntryChanged}/>
+         <i class="small material-icons grey-text">search</i>
+         <small if={state.selectedElementPath && !state.isElementInEntry}
+               class="elementNotInEntryWarning grey-text">
+            Entry does not contains '{store.getElementDisplayedName(state.selectedElementPath)}'. Try to &nbsp;
+            <a onclick={onTryToFindEntryWithElementClick}
+                  href="javascript:void(0);">
+               find an entry with '{store.getElementDisplayedName(state.selectedElementPath)}'.
+            </a>
+         </small>
+      </div>
+   </div>
+   <div class="example-section-wrapper">
+      <div class="scrollable-div-layout scrollable-div-layout-{nvhFormattingEditor.data.activeLayout}">
+         <div if={!nvhStore.data.entry}>Preview is loading ...</div>
+         <entry-styled-element if={nvhStore.data.entry}
+               schema={nvhFormattingEditor.currentLayout.schema}
+               element={nvhStore.data.entry}/>
+      </div>
    </div>
 
    <script>
       export default {
          bindings: [["store", "entryChanged", "update"],
+                    ["store", "isEntryLoadingChanged", "onEntryLoadingChange"],
                     ["nvhFormattingEditor", "selectedLayoutContainerChange", "update"]],
 
-         async getEntry() {
-            // TOOD use entires loaded by default
-            let entriesList = await this.store.loadEntryList();
-            if (!entriesList || entriesList.entries.length === 0) {
-               return null;
-            }
-            this.store.changeEntryId(entriesList.entries[0].id);
-            return await this.store.loadEntry();
+         state:{
+            isElementInEntry: true
          },
 
          onBeforeMount(props) {
             this.nvhFormattingEditor = window.nvhFormattingEditor;
             this.store = window.store;
             this.nvhStore = window.nvhStore;
-            // TODO move to the formatting editor
-            this.getEntry()
-                  .then(this.update.bind(this))
-         }
+            this.state.selectedElementPath = this.nvhFormattingEditor.data.selectedLayoutContainer?.content?.path
+            this.setExampleEntry()
+         },
+
+         onBeforeUpdate(){
+            this.state.selectedElementPath = this.nvhFormattingEditor.data.selectedLayoutContainer?.content?.path
+            if(this.state.selectedElementPath){
+               this.state.isElementInEntry = !!this.nvhStore.findElement(element => element.path == this.state.selectedElementPath)
+            }
+         },
+
+         onEntryLoadingChange(){
+            if(!this.dictData.isEntryLoading){
+               if(this.dictData.entry){
+                  this.updateEntryIdInUrl()
+               }
+            }
+         },
+
+         onExampleEntryChanged(entry) {
+            this.store.changeEntryId(entry.id);
+         },
+
+         onTryToFindEntryWithElementClick(){
+            this.store.loadEntries({
+               offset: 0,
+               howmany: 1,
+               advanced_query: `${this.state.selectedElementPath}#>"0"`
+            })
+                  .done(response => {
+                     if(response.success){
+                        if(response.entries.length){
+                           this.store.changeEntryId(response.entries[0].id)
+                        } else {
+                           window.showToast(`No entry with '${this.state.selectedElementPath}' found.`)
+                        }
+                     }
+                  })
+         },
+
+         setExampleEntry(){
+            let entryId = window.url.parseQuery().id
+            if(entryId){
+               if(entryId != this.dictData.entryId){
+                  this.store.changeEntryId(entryId)
+                  this.store.one("isEntryLoadingChanged", () => {
+                     if(!this.dictData.entry){
+                        this.setFirstEntry()
+                     }
+                  })
+               }
+            } else{
+               this.setFirstEntry()
+            }
+         },
+
+         setFirstEntry(){
+            if(this.dictData.isEntryListLoaded){
+               this.store.changeEntryId(this.dictData.entryList[0]?.id)
+            } else if(this.dictData.isEntryListLoading){
+               this.store.one("entryListChanged", this.setFirstEntry)
+            }
+         },
+
+         updateEntryIdInUrl(){
+            window.url.setQuery({id: this.dictData.entryId})
+         },
       }
    </script>
 
@@ -59,6 +135,21 @@
       }
       .entry-styled-element {
          cursor: pointer;
+      }
+      .example-section-wrapper {
+         height: 90%;
+      }
+      .elementNotInEntryWarning{
+         position: absolute;
+         left: 0;
+         bottom: -10px;
+         white-space: nowrap;
+      }
+      .entry-dropdown-wrapper {
+         display: flex;
+         align-items: center;
+         gap: 5px;
+         position: relative;
       }
    </style>
 </example-section>
