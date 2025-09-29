@@ -16,12 +16,13 @@
                style={state.cssRules.label}>
             {state.labelStyles["label-text-value"]}
          </span>
-         <raw-html if={!props.schema.content.path && state.elementStyles["text-value"]}
-               content={state.elementStyles["text-value"]}/>
+         <span if={!props.schema.content.path && state.elementStyles["text-value"]}
+               class="entry-styled-element-text-value">
+            <raw-html content={state.elementStyles["text-value"]}/>
+         </span>
          <div if={state.isShowingElementValue}
                class="element-holder-content-wrapper">
-            <div if={props.element.value}
-                  class="element-holder-content-block"
+            <div class="element-holder-content-block"
                   style="{state.cssRules.elementText}">
                <div is="{state.valueComponentName}"
                      value={state.value}
@@ -44,7 +45,7 @@
                read-only={props.readOnly}/>
       </div>
       <span if={hasLabelAfterValue()}
-            class="entry-styled-element-label-before"
+            class="entry-styled-element-label-after"
             style={state.cssRules.label}>
          {state.labelStyles["label-text-value"]}
       </span>
@@ -124,7 +125,7 @@
             this.refreshBulletValue()
             this.refreshValue()
             // not a container or group
-            this.state.isShowingElementValue = !this.props.schema.children.length && this.props.schema.content.name
+            this.state.isShowingElementValue = !this.props.schema.children.length && this.props.schema.content.name && this.props.element.value
          },
 
          refreshValue() {
@@ -228,6 +229,16 @@
          width: fit-content;
          gap: 3px;
          align-items: baseline;
+         // hide elements without value, element with some styles (padding, bg color,...) produces visual artifacts
+         // TODO: it would better not to render the element at all
+         &:not(:has(.entry-styled-element-bullet,
+                    .entry-styled-element-label-before,
+                    .element-holder-content-wrapper,
+                    .entry-styled-element-text-value,
+                    .entry-styled-element-label-after,
+                    .element-holder-list)) {
+            display: none!important;
+         }
       }
       .entry-styled-element-value-wrapper{
          display: flex; // so bullets are on the same line
