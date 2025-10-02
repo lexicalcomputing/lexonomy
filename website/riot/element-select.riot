@@ -11,7 +11,7 @@
       <option each={option in elementOptionList}
             selected={props.multiple ? props.riotValue.includes(option.path) : option.path == props.riotValue}
             value={option.path}>
-         <span style="color: {option.color}; margin-left: {option.indent * 15}px">
+         <span style="color: {option.color}; margin-left: {(option.indent + indentOffset) * 15}px">
             {store.getElementDisplayedName(option.path)}
          </span>
       </option>
@@ -20,10 +20,14 @@
    <script>
       export default{
          onBeforeMount(){
-            this.elementOptionList = window.nvhStore.getElementTreeList(this.props.rootElement)
+            this.elementOptionList = window.nvhStore.getElementTreeList(this.props.rootElement?.path)
+            this.indentOffset = 0
+            if(this.props.rootElement){
+               this.indentOffset = -1 * this.props.rootElement.indent
+            }
             if(typeof this.props.includeRootElement == "boolean" && !this.props.includeRootElement){
                this.elementOptionList.shift()
-               this.elementOptionList.forEach(element => {element.indent -= 1})
+               this.indentOffset -= 1
             }
          },
 
@@ -40,10 +44,4 @@
          }
       }
    </script>
-
-   <style type="scss">
-      li span{
-         box-sizing: border-box;
-      }
-   </style>
 </element-select>
