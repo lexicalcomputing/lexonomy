@@ -815,33 +815,66 @@
                   </label>
                </div>
             </div>
-            <div if={((state.elementType === "empty") || state.isEmpty) && !state.isLabelOptionStyle && !state.isBulletOptionStyle} class="label">
-               Set custom text
+            <template if={((state.elementType === "empty") || state.isContainer) && !state.isLabelOptionStyle && !state.isBulletOptionStyle}>
+               <div class="label">
+                  Set custom text
                   <i data-tooltip="You can insert plain text or use HTML."
                         class="material-icons tooltipped help tiny">help_outline</i>
-            </div>
-            <div if={(state.elementType === "empty") || state.isEmpty}
+               </div>
+               <div if={(state.elementType === "empty") || state.isContainer}
+                     class="styles-section-item-wrapper">
+                  <div class="value-wrapper">
+                     <textarea style="resize: none; height: 100px; width: 300px;"
+                           value={getStyleOptionValue("text-value")}
+                           name="text-value"
+                           onchange={onChangeStyle}></textarea>
+                  </div>
+               </div>
+            </template>
+            <div if={state.urlDescendantList.length && !state.isGroup}
                   class="styles-section-item-wrapper">
+               <div class="label">
+                  Apply element as URL
+                  <i data-tooltip="Use the URL from a list element to create a link. Only elements of the URL type are available. To change an element's type, go to Configure → Entry Structure."
+                        class="material-icons tooltipped help tiny">help_outline</i>
+               </div>
                <div class="value-wrapper">
-                  <textarea style="resize: none; height: 100px; width: 300px;"
-                        value={getStyleOptionValue("text-value")}
-                        name="text-value"
-                        onchange={onChangeStyle}></textarea>
+                  <select name="urlElement"
+                        onchange={onChangeStyle}>
+                     <option value=""
+                           selected={!getStyleOptionValue("urlElement")}>None</option>
+                     <option each={element in state.urlDescendantList}
+                           value={element.path}
+                           disabled={element.disabled}
+                           selected={getStyleOptionValue("urlElement") == element.path}>
+                        <span style="{!element.disabled ? 'color:' + element.color : ''}; margin-left: {element.indent * 15}px">
+                           {store.getElementDisplayedName(element.path)}
+                        </span>
+                     </option>
+                  </select>
                </div>
             </div>
-            <div if={state.hasUrlChildOfMarkupType}
+            <div if={state.tooltipDescendantList.length}
                   class="styles-section-item-wrapper">
-               <div class="label">Apply URL:</div>
+               <div class="label">
+                  Apply element as tooltip
+                  <i data-tooltip="Display element from the list as tooltip for '{state.selectedLayoutContainer.content.name}' element."
+                        class="material-icons tooltipped help tiny">help_outline</i>
+               </div>
                <div class="value-wrapper">
-                  <div class="value-wrapper">
-                     <label>
-                        <input type="checkbox"
-                              name="applyURL"
-                              onclick={onChangeBoolStyle}
-                              checked={getStyleOptionValue("applyURL")}/>
-                        <span></span>
-                     </label>
-                  </div>
+                  <select name="tooltipElement"
+                        onchange={onChangeStyle}>
+                     <option value=""
+                           selected={!getStyleOptionValue("tooltipElement")}>None</option>
+                     <option each={element in state.tooltipDescendantList}
+                           value={element.path}
+                           disabled={element.disabled}
+                           selected={getStyleOptionValue("tooltipElement") == element.path}>
+                        <span style="{!element.disabled ? 'color:' + element.color : ''}; margin-left: {element.indent * 15}px">
+                           {store.getElementDisplayedName(element.path)}
+                        </span>
+                     </option>
+                  </select>
                </div>
             </div>
             <div class="label">
@@ -873,9 +906,8 @@
             isBulletOptionStyle: false,
             isMarkupType: false,
             hasDirectMarkupChild: false,
-            hasUrlChildOfMarkupType: false,
             isGroup: false,
-            isEmpty: false,
+            isContainer: false,
             iconList: ["🔗", "🔊", "📢", "♫", "📹", "🎞", "📽", "🎥", "🖼"],
             punctuationList: [
                ["(", ")"],
@@ -981,9 +1013,34 @@
             this.state.hasDirectMarkupChild = this.nvhFormattingEditor.getDirectMarkupChildren(this.state.selectedLayoutContainer.content.path).length
             this.state.styles = this.nvhFormattingEditor.getStyles(this.state.selectedLayoutContainer, this.props.type, this.props.type == "markup" ? this.props.path : null)
             this.state.isGroup = this.state.selectedLayoutContainer.children.length
-            this.state.isEmpty = !this.state.selectedLayoutContainer.content.path
-            this.state.hasUrlChildOfMarkupType = this.nvhFormattingEditor.hasElementUrlChild(this.props.path)
+            this.state.isContainer = !this.state.selectedLayoutContainer.content.path
+            this.state.urlDescendantList = this.getDescendantsOfTypeList(["url"])
+            this.state.tooltipDescendantList = this.getDescendantsOfTypeList(["string", "list", "int", "image", "audio", "video", "url", "bool"])
             this.refreshAvailableOptions()
+         },
+
+         getDescendantsOfTypeList(types){
+            let addElementAndItsAncestors = (element) => {
+               pathsToInclude[element.path] = true
+               while(element && element != rootElement){
+                  pathsToInclude[element.path] ??= false
+                  element = element.parent
+               }
+            }
+            let firstNonContainerElement = this.nvhFormattingEditor.findFirstNonContainerAncestor(this.state.selectedLayoutContainer)
+            let rootElement = this.nvhStore.schema.getElementByPath(firstNonContainerElement.content.path)
+            let pathsToInclude = {}
+            this.nvhStore.getElementList(rootElement)
+                  .forEach(el => {
+                     el != rootElement && types.includes(el.type) && addElementAndItsAncestors(el)
+                  })
+            return this.nvhStore.getElementTreeList(rootElement.path)
+                  .filter(el => typeof pathsToInclude[el.path] != "undefined")
+                  .map(el => {
+                     el.indent -= rootElement.indent + 1
+                     el.disabled = !pathsToInclude[el.path]
+                     return el
+                  })
          },
 
          refreshAvailableOptions(){

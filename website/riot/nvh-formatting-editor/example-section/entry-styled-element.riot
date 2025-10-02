@@ -1,55 +1,51 @@
-<entry-styled-element class="entry-styled-element {nvhFormattingEditor.data.hoveredLayoutContainer == props.schema ? 'layout-container-mouse-hover' : ''}"
+<entry-styled-element class="entry-styled-element ese-orientation-{props.schema.orientation}"
       attr-path={props.schema.content.path}
       onclick={!props.readOnly && onClick}
       onmouseover={!props.readOnly && onMouseOver}
-      onmouseleave={!props.readOnly && onMouseLeave}>
-   <div class="element-holder element-holder-{props.schema.orientation}"
-         style="{state.cssRules.elementArea}">
-      <div class="entry-styled-element-value-wrapper">
-         <span if={state.bulletValue}
-               class="entry-styled-element-bullet"
-               style={state.cssRules.bullet}>
-            {state.bulletValue}
-         </span>
-         <span if={hasLabelBeforeValue()}
-               class="entry-styled-element-label-before"
-               style={state.cssRules.label}>
-            {state.labelStyles["label-text-value"]}
-         </span>
-         <span if={!props.schema.content.path && state.elementStyles["text-value"]}
-               class="entry-styled-element-text-value">
-            <raw-html content={state.elementStyles["text-value"]}/>
-         </span>
-         <div if={state.isShowingElementValue}
-               class="element-holder-content-wrapper">
-            <div class="element-holder-content-block"
-                  style="{state.cssRules.elementText}">
-               <div is="{state.valueComponentName}"
-                     value={state.value}
-                     raw-value={props.element.value}
-                     schema={props.schema}>
-               </div>
-            </div>
-         </div>
-      </div>
-      <div each={childSchema in props.schema.children}
-            class="element-holder-list element-holder-list-{props.schema.orientation}"
-            style="{state.cssRules.elementText}">
-         <entry-styled-element if={!childSchema.content.name}
-               schema={childSchema}
-               element={props.element}
-               read-only={props.readOnly}/>
-         <entry-styled-element each={childElement in getSchemaChildElements(childSchema)}
-               schema={childSchema}
-               element={childElement}
-               read-only={props.readOnly}/>
-      </div>
-      <span if={hasLabelAfterValue()}
-            class="entry-styled-element-label-after"
+      onmouseleave={!props.readOnly && onMouseLeave}
+      style="{state.cssRules.elementArea}">
+   <div class="ese-inner-content-wrapper">
+      <span if={state.bulletValue}
+            class="ese-bullet"
+            style={state.cssRules.bullet}>
+         {state.bulletValue}
+      </span>
+      <span if={hasLabelBeforeValue()}
+            class="ese-label-before"
             style={state.cssRules.label}>
          {state.labelStyles["label-text-value"]}
       </span>
+      <styled-element-value-link-wrapper if={!state.isGroup && state.value}
+            read-only={props.readOnly}
+            url={state.url}>
+         <div class="ese-value-wrapper {state.tooltip ? 'tooltipped' : ''}"
+               data-tooltip={state.tooltip}
+               style="{state.cssRules.elementText}">
+            <div is={state.valueComponentName}
+                  value={state.value}
+                  raw-value={props.element.value}
+                  schema={props.schema}>
+            </div>
+         </div>
+      </styled-element-value-link-wrapper>
    </div>
+   <div each={childSchema in props.schema.children}
+         class="ese-children-list ese-children-list-{props.schema.orientation}"
+         style="{state.cssRules.elementText}">
+      <entry-styled-element if={!childSchema.content.name}
+            schema={childSchema}
+            element={props.element}
+            read-only={props.readOnly}/>
+      <entry-styled-element each={childElement in getSchemaChildElements(childSchema)}
+            schema={childSchema}
+            element={childElement}
+            read-only={props.readOnly}/>
+   </div>
+   <span if={hasLabelAfterValue()}
+         class="ese-label-after"
+         style={state.cssRules.label}>
+      {state.labelStyles["label-text-value"]}
+   </span>
 
    <script>
       export default {
@@ -75,12 +71,12 @@
 
          onSelectedLayoutContainerChange(){
             let addClass = !this.props.readOnly && (this.nvhFormattingEditor.data.selectedLayoutContainer == this.props.schema)
-            this.root.querySelector("& > .element-holder").classList.toggle("element-holder-active", addClass)
+            this.root.classList.toggle("ese-active", addClass)
          },
 
          onHoveredLayoutContainerChange(){
             let addClass = !this.props.readOnly && (this.nvhFormattingEditor.data.hoveredLayoutContainer == this.props.schema)
-            this.root.querySelector("& > .element-holder").classList.toggle("element-holder-hovered", addClass)
+            this.root.classList.toggle("ese-hovered", addClass)
          },
 
          onUpdateSchemas(schemas){
@@ -110,7 +106,9 @@
          refreshState(props) {
             this.state.elementType = this.nvhStore.getElementConfig(this.props.schema.content.path)?.type
             let type = ["int", "string", "list", "empty"].includes(this.state.elementType) ? "basic" : this.state.elementType
-            this.state.valueComponentName = `entry-styled-element-${type}`
+            this.state.isGroup = this.props.schema.children.length
+            this.state.isContainer = !this.props.schema.content.name
+            this.state.valueComponentName = this.state.isContainer ? "raw-html" : `entry-styled-element-${type}`
             this.state.elementStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "element")
             this.state.labelStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "label")
             this.state.bulletStyles = this.nvhFormattingEditor.getStyles(this.props.schema, "bullet")
@@ -121,29 +119,33 @@
                bullet: this.nvhFormattingEditor.getCssRules(props.schema, "bullet")
             }
             this.state.directMarkupChildren = window.nvhFormattingEditor.getDirectMarkupChildren(this.props.schema.content.path)
-
+            if(this.state.elementStyles.tooltipElement){
+               this.state.tooltip = this.nvhStore.queryElement(this.state.elementStyles.tooltipElement, this.props.element)?.value
+            }
+            if(this.state.elementStyles.urlElement){
+               this.state.url = this.nvhStore.queryElement(this.state.elementStyles.urlElement, this.props.element)?.value
+            }
             this.refreshBulletValue()
             this.refreshValue()
-            // not a container or group
-            this.state.isShowingElementValue = !this.props.schema.children.length && this.props.schema.content.name && this.props.element.value
          },
 
          refreshValue() {
-            if (this.state.elementType === "empty") {
-               this.state.value = this.state.elementStyles["text-value"]
+            if (this.state.elementType === "empty" || this.state.isContainer) {
+               this.state.value = this.state.elementStyles["text-value"] || ""
             } else {
                let value = this.state.elementStyles["allow-html"] ? this.props.element.value : window.escapeHTML(this.props.element.value)
                if(this.state.directMarkupChildren.length){
                   let createReplaceString = (childPath, find, child) => {
                      let style = this.nvhFormattingEditor.getCssRules(this.props.schema, "markup", childPath)
                      let markupStyles = window.nvhFormattingEditor.getStyles(this.props.schema, "markup", child.path)
-                     let markupUrl = ""
-                     if(this.props.readOnly && markupStyles.applyURL){
-                        markupUrl = window.nvhFormattingEditor.getElementMarkupUrl(child)
-                     }
+                     let markupUrl = (this.props.readOnly && markupStyles.urlElement)
+                            ? this.nvhStore.queryElement(markupStyles.urlElement, this.props.element)?.value
+                            : null
+                     let markupClass = markupStyles.tooltipElement ? 'class="tooltipped"' : ''
+                     let markupTooltip = markupStyles.tooltipElement ? `data-tooltip="${markupStyles.tooltipElement}"` : ''
                      let markupHtml = markupUrl
-                           ? `<a href="${markupUrl}" target="_blank" class="entry-styled-element-markup-link" style="${style}">${find}</a>`
-                           : `<span style="${style}">${find}</span>`
+                           ? `<a href="${markupUrl}" target="_blank" ${markupClass} ${markupTooltip} style="${style}">${find}</a>`
+                           : `<span ${markupClass} ${markupTooltip} style="${style}">${find}</span>`
 
                      return this.getPunc(markupStyles, "left")
                            + markupHtml
@@ -220,64 +222,57 @@
    </script>
 
    <style type="scss">
-      .link-no-decoration {
-         text-decoration: none;
-      }
-      .element-holder {
+      :host{
          display: flex;
          flex-wrap: wrap;
          width: fit-content;
          gap: 3px;
          align-items: baseline;
+         &.ese-orientation-column {
+            flex-direction: column;
+         }
+         &.ese-hovered {
+            outline: 2px solid rgba(255, 20, 0, 0.4);// !important;
+            outline-offset: 3px;
+            border-radius: 5px;
+            &:has(.ese-hovered) {
+               outline: none;
+            }
+         }
          // hide elements without value, element with some styles (padding, bg color,...) produces visual artifacts
          // TODO: it would better not to render the element at all
-         &:not(:has(.entry-styled-element-bullet,
-                    .entry-styled-element-label-before,
-                    .element-holder-content-wrapper,
-                    .entry-styled-element-text-value,
-                    .entry-styled-element-label-after,
-                    .element-holder-list)) {
+         &:not(:has(.ese-bullet,
+                    .ese-label-before,
+                    .ese-value-wrapper,
+                    .ese-label-after,
+                    .ese-children-list)) {
             display: none!important;
          }
       }
-      .entry-styled-element-value-wrapper{
+      .ese-inner-content-wrapper{
          display: flex; // so bullets are on the same line
          align-items: baseline;
          &:empty{
             display: none!important; // TODO: quick fix, it would better not to render the element at all
          }
       }
-      .element-holder-has-bullet {
-         flex-wrap: nowrap;
-      }
-      .element-holder-list {
+      .ese-children-list {
          display: flex;
          flex-wrap: wrap;
          width: fit-content;
          align-items: baseline;
       }
-      .element-holder-list-column {
+      .ese-children-list-column {
          flex-direction: column;
       }
-      .element-holder-list-row {
+      .ese-children-list-row {
          flex-direction: row;
       }
-      .element-holder-content-block {
+      .ese-value-wrapper {
          display: flex;
          align-items: baseline;
       }
-      .element-holder-column {
-         flex-direction: column;
-      }
-      .element-holder-hovered {
-         outline: 2px solid rgba(255, 20, 0, 0.4);// !important;
-         outline-offset: 3px;
-         border-radius: 5px;
-      }
-      .element-holder-hovered:has(.element-holder-hovered) {
-         outline: none;
-      }
-      .element-holder-active {
+      .ese-active {
          //box-shadow: 0 0 0px 3px white, 0 0 11px 7px #dbbc0dc7;
          //border: 1px solid rgba(222, 84, 72, 0.7);
          outline: 3px solid #F44336;
@@ -285,25 +280,22 @@
          border-radius: 5px;
          //animation: pulse 1.7s infinite;
       }
-      .entry-styled-element-label-vertical {
+      .ese-label-vertical {
          width: fit-content;
          text-wrap: nowrap;
       }
-      .entry-styled-element-markup-link{
-         text-decoration: unset;
-         &:hover{
-            color: unset
-         }
-      }
-      .entry-styled-element-label-before {
+      .ese-label-before {
          margin-right: 5px !important;
          width: fit-content;
          text-wrap: nowrap;
       }
-      .entry-styled-element-label-after {
+      .ese-label-after {
          margin-left: 5px !important;
          width: fit-content;
          text-wrap: nowrap;
+      }
+      .link-no-decoration {
+         text-decoration: none;
       }
       raw-html{
          margin: 2px;

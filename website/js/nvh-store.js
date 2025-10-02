@@ -813,6 +813,32 @@ class NVHStoreClass {
       return this.getElementList(rootElement).filter(callback)
    }
 
+   queryElement(selector, element){
+      element = element || this.data.entry
+      if(selector.startsWith(element.path)){
+         // selector could be relative to the element or absolute path
+         selector = selector.substr(element.path.length + 1)
+      }
+      let dotIdx = selector.indexOf(".")
+      let actualSelector = selector
+      if(dotIdx != -1){
+         actualSelector = selector.substr(0, dotIdx)
+      }
+      let match = actualSelector.match(/(?<name>.+)\[(?<index>\d+)\]$/)
+      let name = match?.groups?.name ?? actualSelector
+      let idx = match?.groups?.index ?? 0
+      let children = element.children.filter(child => child.name == name)
+      let child = children[idx] || null
+      if(!child){
+         return null
+      }
+      if(dotIdx == -1){
+         return child
+      } else {
+         return this.queryElement(selector.substr(dotIdx + 1), child)
+      }
+   }
+
    getElementById(id){
       return this.findElement(e => e.id == id)
    }

@@ -485,16 +485,6 @@ class NVHFormattingEditorClass {
       return true
    }
 
-   hasElementUrlChild(path) {
-      return window.store.schema.getElementByPath(path)?.children.some(child => {
-         return window.nvhStore.getElementConfig(child.path)?.type == "url"
-      })
-   }
-
-   getElementMarkupUrl(markupElement){
-      return markupElement?.children.find(child => window.nvhStore.getElementConfig(child.path)?.type === "url")?.value || null
-   }
-
    getElementMarkupChildren(schema){
       let config = window.nvhStore.getElementConfig(schema.content.path)
       if(!config){

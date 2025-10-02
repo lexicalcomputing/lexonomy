@@ -1,0 +1,19 @@
+<styled-element-value-link-wrapper>
+   <a if={props.url && props.readOnly}
+         href={props.url}
+         target="_blank">
+      <slot/>
+   </a>
+   <template if={!props.url || !props.readOnly}>
+      <slot/>
+   </template>
+
+   <style>
+      a{
+         text-decoration: unset;
+         &:hover{
+            color: unset
+         }
+      }
+   </style>
+</styled-element-value-link-wrapper>
