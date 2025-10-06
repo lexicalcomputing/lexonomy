@@ -7,7 +7,7 @@
          <i class="small material-icons grey-text">search</i>
          <small if={state.selectedElementPath && !state.isElementInEntry}
                class="elementNotInEntryWarning grey-text">
-            Entry does not contains '{store.getElementDisplayedName(state.selectedElementPath)}'. Try to &nbsp;
+            Entry does not contain '{store.getElementDisplayedName(state.selectedElementPath)}'. Try to &nbsp;
             <a onclick={onTryToFindEntryWithElementClick}
                   href="javascript:void(0);">
                find an entry with '{store.getElementDisplayedName(state.selectedElementPath)}'.
@@ -50,10 +50,8 @@
          },
 
          onEntryLoadingChange(){
-            if(!this.dictData.isEntryLoading){
-               if(this.dictData.entry){
-                  this.updateEntryIdInUrl()
-               }
+            if(!this.dictData.isEntryLoading && this.dictData.entry){
+               this.updateEntryIdInUrl()
             }
          },
 
