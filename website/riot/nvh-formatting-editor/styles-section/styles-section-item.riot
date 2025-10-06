@@ -582,12 +582,10 @@
             Margin (px)
             <i class="material-icons tooltipped help tiny"
                   data-tooltip="Inserts empty space between elements.">help_outline</i>
-            <div each={side in ["top", "right", "bottom", "left"]}
+            <div each={side in ["all", "top", "right", "bottom", "left"]}
                   class="styles-section-item-wrapper styles-section-subitem">
                <div class="label">
                   {window.capitalize(side)}
-                  <i data-tooltip="Inserts empty space between elements."
-                        class="material-icons tooltipped help tiny">help_outline</i>
                </div>
                <div class="value-wrapper"
                      style="gap: 10px;">
@@ -598,19 +596,19 @@
                         max="50"
                         step="1"
                         name="margin-{side}"
-                        onchange={onChangeStyle}>
+                        onchange={onChangeFourSidesStyle.bind(this, "margin")}>
                   <input type="number"
                         class="input-number"
                         value={getStyleOptionValue("margin-" + side) || 0}
                         min="0"
                         name="margin-{side}"
-                        onchange={onChangeStyle}>
+                        onchange={onChangeFourSidesStyle.bind(this, "margin")}>
                </div>
             </div>
             Padding (px)
             <i class="material-icons tooltipped help tiny"
                   data-tooltip="Inserts empty space inside the element - between the content and the element border.">help_outline</i>
-            <div each={side in ["top", "right", "bottom", "left"]}
+            <div each={side in ["all", "top", "right", "bottom", "left"]}
                   class="styles-section-item-wrapper styles-section-subitem">
                <div class="label">
                   {window.capitalize(side)}
@@ -624,13 +622,13 @@
                         max="50"
                         step="1"
                         name="padding-{side}"
-                        onchange={onChangeStyle}>
+                        onchange={onChangeFourSidesStyle.bind(this, "padding")}>
                   <input type="number"
                         class="input-number"
                         value={getStyleOptionValue("padding-" + side) || 0}
                         min="0"
                         name="padding-{side}"
-                        onchange={onChangeStyle}>
+                        onchange={onChangeFourSidesStyle.bind(this, "padding")}>
                </div>
             </div>
          </div>
@@ -1091,6 +1089,19 @@
             // color is changed on color input "oninput" event, but not added to the history
             this.nvhFormattingEditor.addStateToHistory()
             this.updateColoris()  // update colors in swatches
+         },
+
+         onChangeFourSidesStyle(option, evt){
+            let changes = {}
+            if(evt.target.name == `${option}-all`){
+               ["all", "top", "left", "right", "bottom"].forEach(side => {
+                  changes[`${option}-${side}`] = evt.target.value
+               })
+            } else {
+               changes[evt.target.name] = evt.target.value
+               changes[`${option}-all`] = 0
+            }
+            this.nvhFormattingEditor.changeElementStyleOption(this.nvhFormattingEditor.data.selectedLayoutContainer, this.props.type, this.props.path, changes)
          },
 
          onChangeStyle(evt) {
