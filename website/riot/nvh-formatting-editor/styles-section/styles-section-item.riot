@@ -385,6 +385,26 @@
                   <label for="text-decoration-line-through">
                      <i class="tiny material-icons">format_strikethrough</i>
                   </label>
+                  <input class="value-item input-button"
+                        id="text-script-sup"
+                        type="checkbox"
+                        value="super"
+                        checked={(getStyleOptionValue("script") == "super")}
+                        name="script"
+                        onclick={onChangeStyle}>
+                  <label for="text-script-sup">
+                     a<sup>2</sup>
+                  </label>
+                  <input class="value-item input-button"
+                        id="text-script-sub"
+                        type="checkbox"
+                        value="sub"
+                        checked={(getStyleOptionValue("script") == "sub")}
+                        name="script"
+                        onclick={onChangeStyle}>
+                  <label for="text-script-sub">
+                     a<sub>2</sub>
+                  </label>
                </div>
             </div>
             <div class="styles-section-item-wrapper">
@@ -1093,6 +1113,8 @@
                } else {
                   value = [...styles[option], value]
                }
+            } else if(option == "script" && value == styles.script){
+               value = ""
             } else if ((option === "font-weight" || option === "font-style") && styles[option] == value) {
                value = ""
             } else if (!value && option === "container-width-unit") {

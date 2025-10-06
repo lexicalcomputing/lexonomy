@@ -29,7 +29,7 @@ class NVHFormattingEditorClass {
             "padding-left", "padding-top", "padding-right", "padding-bottom",
             "container-width-unit", "align-items", "direction"],
          text: ["color", "font-size", "font-weight", "font-style", "text-decoration",
-         "font-family", "line-height"]
+         "font-family", "line-height", "script"]
       }
    }
 
@@ -592,6 +592,13 @@ class NVHFormattingEditorClass {
                continue
             }
             value = styles["text-decoration"].join(" ");
+         } else if (option == "script"){
+            if(value == "sub"){
+               result_css += "position: relative; top: 0.5em; font-size: 80%;"
+            } else if(value == "super") {
+               result_css += "position: relative; top: -0.5em; font-size: 80%;"
+            }
+            continue
          } else if (option === "border") {
             let borderColor = styles?.["border-color"] || "black";
             let borderWidth = !styles["border-width"] ? "1px" : styles["border-width"] + "px";
