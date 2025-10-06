@@ -195,6 +195,14 @@ def sendfeedback():
     else:
         return {"success": False, "error": "missing parameters"}
 
+@post(siteconfig["rootPath"]+"workflowrequest.json")
+def sendWorkflowRequest():
+    if request.forms.email != "" and request.forms.text != "":
+        ops.sendWorkflowRequest(request.forms.email, request.forms.text)
+        return {"success": True}
+    else:
+        return {"success": False, "error": "missing parameters"}
+
 @get(siteconfig["rootPath"] + "dmlex_schema.json") # OK
 def dmlex_schema():
     try:

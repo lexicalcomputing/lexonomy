@@ -1,5 +1,5 @@
 <project-dict-name>
-   <h3 class="projectDictName mt-0 dictName_{window.idEscape(props.dict.title)} displayInlineBlock"
+   <h3 class="projectDictName mt-0 dictName_{window.idEscape(props.dict.title)} displayInlineBlock {props.showCounts ? 'pb-2' : ''}"
          style="color: {window.getColorByIndex(props.dict.dictIdx)};">
       <trim-text text={getDictionaryName()}
             max={30}/>
@@ -10,7 +10,8 @@
          <i class="material-icons ml-2">open_in_new</i>
       </a>
    </h3>
-   <div class="projectDictSize displayFlex noWrap">
+   <div if={props.showCounts}
+         class="projectDictSize displayFlex noWrap">
       <span>
          {!props.dict.total ? 'empty' : window.Formatter.num(this.props.dict.total) + " entries"}
       </span>
@@ -42,7 +43,6 @@
          font-size: 1.2rem;
          margin-bottom: 0;
          cursor: default;
-         padding-bottom: 0.5em;
          i{
             font-size: 1rem;
          }

@@ -83,8 +83,8 @@
             dialog.contentNode.find('input:first').focus()
          },
 
-         onButtonClick(dialog, button){
-            button.onClick && button.onClick(dialog, this)
+         onButtonClick(dialog, button, evt){
+            button.onClick && button.onClick(dialog, this, evt)
          },
 
          close(dialogId){

@@ -57,7 +57,7 @@
             {store.getLanguageName(state.project.language)}
             <label>Description</label>
             {state.project.description}
-            <label>Source dictionary:</label>
+            <label>Dictionary:</label>
             <a href="#/{state.project.source_dict}">Open dictionary</a>
             <label>Managers:</label>
             {state.project.managers.join(", ")}
@@ -77,7 +77,7 @@
       <table class="workflowTable">
          <tbody each={(workflow, workflowIdx) in state.project.workflow}>
             <tr if={workflow.type != "merge"}
-                  style="{getWorkflowRowStyle(workflow)}">
+                  class={workflow.inputDictsAreEmpty ? 'disabledStage' : ''}>
                <td>
                   <div class="card-panel positionRelative"
                         style="{getDictNameStyle(workflow.inputDicts[0])}">
@@ -102,16 +102,18 @@
                               <a href="javascript:void(0);"
                                     onclick={onChangeCentralDictionaryClick}>
                                  <i class="material-icons">swap_horiz</i>
-                                 Change central dictionary
+                                 Change dictionary
                               </a>
                            </li>
                         </ul>
                      </span>
                      <div class="dictNameWrapper">
-                        <project-dict-name dict={workflow.inputDicts[0]}/>
-                        <div class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
+                        <project-dict-name dict={workflow.inputDicts[0]}
+                              show-counts={!workflow.inputDictsAreEmpty}/>
+                        <div if={!workflow.inputDictsAreEmpty}
+                              class={!workflow.inputDicts[0].total ? 'tooltipped' : ''}
                               data-tooltip={!workflow.inputDicts[0].total ? 'No entries to export, dictionary is empty.' :''}>
-                           <project-export-to-batches-form class={getDictionaryStatus(workflow.inputDicts[0]).isBusy ? 'hide' : ''}
+                           <project-export-to-batches-form  class={getDictionaryStatus(workflow.inputDicts[0]).isBusy ? 'hide' : ''}
                                  workflow={workflow}
                                  export-to-batches={exportToBatches}/>
                            <project-dictionary-status {...getDictionaryStatus(workflow.inputDicts[0])}/>
@@ -127,14 +129,15 @@
                <td>
                   <div class="workflowWithBatchPanel positionRelative card-panel grey lighten-4">
                      <loading-overlay if={workflow.is_locked}/>
-                     <div class="workflowBar borderBottom mb-2 displayFlex">
+                     <div class="workflowBar displayFlex {workflow.inputDictsAreEmpty ? '' : 'borderBottom mb-2'}">
                         <h3 class="workflowName mt-0">
                            {workflow.title}
                         </h3>
                         <i if={workflow.description}
                               class="material-icons tooltipped help tiny grey-text"
                               data-tooltip={workflow.description}>help_outline</i>
-                        <div class="workflowStatus displayFlex alignCenter grey-text ml-auto">
+                        <div if={!workflow.inputDictsAreEmpty}
+                              class="workflowStatus displayFlex alignCenter grey-text ml-auto">
                            <div class="workflowProgress progress">
                               <div class="determinate {window.getProgressColorClass(workflow.completed_per)}"
                                     style="width: {workflow.completed_per}%;"></div>
@@ -153,8 +156,8 @@
                            show batches
                         </a>
                      </div>
-                     <h4 if={!workflow.batches.length}
-                           class="grey-text mt-12 center-align">
+                     <h4 if={!workflow.batches.length && !workflow.inputDictsAreEmpty}
+                           class="noBatches grey-text center-align">
                         no batches have been generated
                      </h4>
                      <loading-overlay if={workflow.isExportingBatches}
@@ -168,15 +171,16 @@
                </td>
                <td>
                   <div class="taskIcon">
-                     <i class="material-icons rotate90CCW">file_download</i>
+                     <i class="material-icons rotate90CW">file_upload</i>
                   </div>
                </td>
                <td>
                   <div class="card-panel importPanel"
                         style="{getDictNameStyle(workflow.outputDict)}">
                      <project-dict-name dict={workflow.outputDict}
+                           show-counts={!workflow.inputDictsAreEmpty}
                            hide-assigned={true}/>
-                     <span if={!getDictionaryStatus(workflow.outputDict).isBusy}
+                     <span if={!getDictionaryStatus(workflow.outputDict).isBusy && !workflow.inputDictsAreEmpty}
                            class={!workflow.isImportAvailable ? "tooltipped" : ""}
                            data-tooltip={!workflow.isImportAvailable ? "At least one batch must be accepted to allow import." : ""}>
                         <button class="btn {!workflow.isImportAvailable ? 'disabled' : ''}"
@@ -191,13 +195,14 @@
 
 
             <tr if={workflow.type == "merge"}
-                  style="{getWorkflowRowStyle(workflow)}">
+                  class={workflow.inputDictsAreEmpty ? 'disabledStage' : ''}>
                <td>
                   <div class="card-panel mergeDictPanel">
                      <div each={dict in workflow.inputDicts}
                            class="dictNameWrapper"
                            style="{getDictNameStyle(dict)}">
                         <project-dict-name dict={dict}
+                              show-counts={!workflow.inputDictsAreEmpty}
                               hide-assigned={true}/>
                         <project-dictionary-status {...getDictionaryStatus(dict)}/>
                      </div>
@@ -210,10 +215,11 @@
                </td>
                <td>
                   <div class="card-panel grey lighten-4 positionRelative">
-                     <h3 class="workflowName borderBottom mt-0">Merge dictionaries</h3>
+                     <h3 class="workflowName mt-0 {!workflow.inputDictsAreEmpty ? 'borderBottom' : ''}">Merge dictionaries</h3>
                      <span class="alignCenter {!workflow.isMergeAvailable ? 'tooltipped' :''}"
                            data-tooltip={!workflow.isMergeAvailable ? 'Dictionaries to merge must not be empty.' : ''}>
-                        <button class="btn mt-4 {!workflow.isMergeAvailable || workflow.isMerging ? 'disabled' : ''}"
+                        <button if={!workflow.inputDictsAreEmpty}
+                              class="btn mt-4 {!workflow.isMergeAvailable || workflow.isMerging ? 'disabled' : ''}"
                               onclick={onMergeDictionariesClick.bind(this, workflow)}>
                            Merge
                         </button>
@@ -235,6 +241,7 @@
                   <div class="card-panel"
                         style="{getDictNameStyle(workflow.outputDict)}">
                      <project-dict-name dict={workflow.outputDict}
+                           show-counts={!workflow.inputDictsAreEmpty}
                            hide-assigned={true}/>
                      <project-dictionary-status {...getDictionaryStatus(workflow.outputDict)}/>
                   </div>
@@ -336,7 +343,7 @@
                   + this.dictData.dictionaryList.map(dict => `<option value="${dict.id}">${dict.title}</option>`)
                   + "</select>"
             window.modal.open({
-               title: "Change central dictionary",
+               title: "Change dictionary",
                small: true,
                tag: "raw-html",
                props: {
@@ -458,6 +465,7 @@
                               }
                            })
                         }
+                        workflow.inputDictsAreEmpty = workflow.inputDicts.every(dict => !dict.total)
                         workflow.inputDicts.forEach(dict => {
                            dict.remaining = dict.remaining ?? dict.total
                            dict.dictIdx = dictTitleList.includes(dict.title) ? dictTitleList.indexOf(dict.title) : dictTitleList.push(dict.title) - 1
@@ -509,16 +517,8 @@
          },
 
          getDictNameStyle(dict){
-            let bgColor = "#f5f5f5"
-            bgColor = window.changeColorLightness(window.getColorByIndex(dict.dictIdx), 0.9)
+            let bgColor = window.changeColorLightness(window.getColorByIndex(dict.dictIdx), 0.9)
             return `background-color: ${bgColor}`
-         },
-
-         getWorkflowRowStyle(workflow){
-            if(workflow.inputDicts.every(dict => !dict.total)){
-               return "opacity: 0.5;"
-            }
-            return ""
          },
 
          getDictionaryStatus(dictionary){
@@ -582,7 +582,7 @@
             }
          }
          .taskIcon{
-            margin: 19px 15px 15px 15px;
+            margin: 19px 10px 15px 10px;
             display: flex;
             i{
                font-size: 3rem;
@@ -602,6 +602,22 @@
                width: 50px;
                margin: 5px;
             }
+         }
+      }
+      .noBatches{
+         margin-top: 60px;
+      }
+      .disabledStage{
+         .card-panel,
+         .dictNameWrapper{
+            background-color: #fafafa!important;
+            color: #9e9e9e!important;
+            h3{
+               color: #9e9e9e!important;
+            }
+         }
+         .card-panel{
+            min-height: 72px;
          }
       }
       i.right{

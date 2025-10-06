@@ -1,0 +1,53 @@
+<projects-request-workflow-dialog>
+   <div class="input-field mb-8">
+      <input type="text"
+            id="request_wkf_email"
+            oninput={onEmailInput}>
+      <label>Email *</label>
+      <span if={!state.isEmailValid}
+            class="helper-text red-text">
+         Please, enter valid email address.
+      </span>
+   </div>
+   <div class="input-field mb-8">
+      <textarea id="request_wkf_message"
+            class="materialize-textarea"
+            oninput={onMessageInput}
+            rows="5"
+            style="min-height: 100px"></textarea>
+      <label>Message *</label>
+      <span class="helper-text">
+         Please provide a brief overview of your service requirements. We will get back in touch as soon as possible.
+      </span>
+   </div>
+
+   <script>
+      export default{
+         state: {
+            email: "",
+            message: "",
+            isEmailValid: true
+         },
+
+         onEmailInput(evt){
+            let wasValid = this.state.isEmailValid
+            this.state.isEmailValid = window.isEmail(evt.target.value)
+            this.state.email = evt.target.value
+            if(wasValid != this.state.isEmailValid){
+               this.update()
+            }
+            this.refreshSendBtnDisabled()
+         },
+
+         onMessageInput(evt){
+            this.state.message = evt.target.value
+            this.refreshSendBtnDisabled()
+         },
+
+         refreshSendBtnDisabled(){
+            let disabled = !this.state.email || !this.state.isEmailValid || !this.state.message
+            document.getElementById("sendRequestBtn").classList.toggle("disabled", disabled)
+         }
+      }
+   </script>
+</projects-request-workflow-dialog>

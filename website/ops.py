@@ -97,6 +97,19 @@ def sendFeedback(email_from, body_text):
     sendmail(email_from, subject, mail_text_user)
     return True
 
+def sendWorkflowRequest(email_from, body_text):
+    site_url = siteconfig.get('baseUrl', 'None')
+    subject = "Lexonomy workflow request"
+    mail_to = "support@sketchengine.eu"
+    mail_text = body_text + "\n\nMAIL: " + email_from + "\n\nDomain: " + site_url
+    sendmail(mail_to, subject, mail_text)
+    mail_text_user = (
+        "Thank you for your workflow request. We'll be in touch soon.\n\n"
+        "Here is a copy of your request:\n\n"
+        f"{body_text}\n\n\n"
+        "Yours,\nThe Lexonomy team")
+    sendmail(email_from, subject, mail_text_user)
+    return True
 
 # config
 def readDictConfigs(dictDB):
@@ -199,7 +212,7 @@ def verifyLogin(email, sessionkey):
     now = datetime.datetime.utcnow()
     yesterday = now - datetime.timedelta(days=1)
     email = email.lower()
-    c = conn.execute("select email, ske_apiKey, ske_username, apiKey, consent, is_manager from users where email=? and sessionKey=? and sessionLast>=?", 
+    c = conn.execute("select email, ske_apiKey, ske_username, apiKey, consent, is_manager from users where email=? and sessionKey=? and sessionLast>=?",
                      (email, sessionkey, yesterday))
     user = c.fetchone()
     if not user:

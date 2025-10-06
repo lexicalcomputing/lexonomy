@@ -1170,8 +1170,8 @@ class StoreClass {
          data: {
             source_dict_id: dictId
          },
-         failMessage: "Could not update the central dictionary.",
-         successMessage: "The central dictionary was updated."
+         failMessage: "Could not update the dictionary.",
+         successMessage: "The dictionary was updated."
       })
    }
 
@@ -1327,6 +1327,18 @@ class StoreClass {
             text: text
          },
          failMessage: "Could not send the feedback."
+      })
+   }
+
+   requestWorkflow(email, text){
+      return window.connection.post({
+         url: `${window.API_URL}workflowrequest.json`,
+         data: {
+            email: email,
+            text: text
+         },
+         successMessage: "Request for a new workflow was sent.",
+         failMessage: "Could not send the request for a new workflow."
       })
    }
 

@@ -59,6 +59,7 @@
 
             <div class="mb-8">
                <language-select riot-value={state.project.language}
+                     label="Lanugage *"
                      disabled={props.projectID}
                      on-change={onLanguageChange}/>
             </div>
@@ -67,20 +68,24 @@
                <input if={props.projectID}
                      disabled
                      value={state.project.workflow_id}/>
-               <select if={!props.projectID}
-                     id="workflow"
-                     onchange={onWorkflowChange}>
-                  <option value="" selected>-select-</option>
-                  <option each={obj in Object.entries(dictData.workflowList)}
-                        value={obj[0]}>
-                     <div class="displayFlex alignCenter gap10">
-                        <span>{obj[1].name}</span>
-                        <span class="material-icons tooltipped ml-auto workflowHelp"
-                              data-tooltip={obj[1].description}></span>
-                     </div>
-                  </option>
-               </select>
-               <label>Workflow *</label>
+               <template if={!props.projectID}>
+                  <select id="workflow"
+                        onchange={onWorkflowChange}>
+                     <option value="" selected>-select-</option>
+                     <option each={obj in Object.entries(dictData.workflowList)}
+                           value={obj[0]}>
+                        <div class="displayFlex alignCenter gap10">
+                           <span>{obj[1].name}</span>
+                           <span class="material-icons tooltipped ml-auto workflowHelp"
+                                 data-tooltip={obj[1].description}></span>
+                        </div>
+                     </option>
+                  </select>
+                  <label>Workflow *</label>
+                  <span class="helper-text">
+                     Need a custom workflow? <a onclick={onContactClick} class="pointer">contact us</a>
+                  </span>
+               </template>
             </div>
 
             <div class="sourceDictRow input-field mb-8">
@@ -100,26 +105,7 @@
                      target="_blank">
                   <i class="material-icons">open_in_new</i>
                </a>
-               <label>Central dictionary *</label>
-            </div>
-
-            <div class="input-field inputFieldWithProgressBar mb-8">
-               <input if={auth.data.ske_apiKey}
-                     type="text"
-                     id="ref_corpus"
-                     value={getReferenceCorpusValue()}
-                     placeholder={state.project.language ? "Type to search in the list of corpora" : "Select language first"}
-                     class="{state.project.language ? '' : 'disabled'}"
-                     disabled={state.isCorporaLoading}/>
-               <label>Reference corpus</label>
-               <div if={state.isCorporaLoading}
-                     class="progress">
-                  <div class="indeterminate"></div>
-               </div>
-            </div>
-            <div if={!auth.data.ske_apiKey}
-                  class="warning">
-               To select reference corpus you need to set up Sketch Engine connection first. You can do it on your <a href="#/member-profile">profile page</a>.
+               <label>Dictionary *</label>
             </div>
          </div>
 
@@ -145,8 +131,8 @@
                            on-change={onAddManager}
                            dataProcessor={getManagerList}/>
                      <span class="helper-text">
-                        Enter email address to add a new manager. <br>
-                        If there is no user with given email, new account will be created.
+                        Enter an email address to add a new manager. <br>
+                        If no user exists with the given email, a new account will be created.
                      </span>
                   </div>
                </div>
@@ -164,6 +150,7 @@
                   <label>Editors for all stages</label>
                   <span class="helper-text">
                      List of emails separated by comma, space, or a new line.
+                     You can enter multiple emails separated by a comma, space, or a new line."
                   </span>
                   <span class="helper-text red-text">
                      '<span class="invalidAddress"></span>' not a valid email address
@@ -295,8 +282,7 @@
                      __all__: []
                   },
                   workflow_id: null,
-                  source_dict: null,
-                  ref_corpus: null
+                  source_dict: null
                }
             }
             this.state.isBusy = !!this.props.projectID
@@ -360,6 +346,32 @@
             this.refreshSaveBtnDisabled()
          },
 
+         onContactClick(){
+            window.modal.open({
+               title: "Request for custom workflow",
+               tag: "projects-request-workflow-dialog",
+               small: true,
+               buttons: [{
+                  label: "Send",
+                  id: "sendRequestBtn",
+                  class: "btn-primary disabled",
+                  onClick: (dialog, modal, evt) => {
+                     evt.target.classList.add("disabled")
+                     let email = document.getElementById("request_wkf_email").value
+                     let message = document.getElementById("request_wkf_message").value
+                     this.store.requestWorkflow(email, message)
+                           .always(payload => {
+                              if(payload.success){
+                                 modal.close()
+                              } else {
+                                 evt.target.classList.remove("disabled")
+                              }
+                           })
+                  }
+               }]
+            })
+         },
+
          validateProjectId(projectID){
             this.state.isProjectIDValid = /^[a-zA-Z0-9_-]{5,}$/.test(this.state.project.projectID)
             document.getElementById("projectIdError").style.display = this.state.isProjectIDValid ? "none" : "block"
@@ -373,24 +385,6 @@
             this.store.skeLoadCorpora()
                   .done(response => {
                      this.state.corpora = response.data
-                     $("#ref_corpus").autocomplete({
-                        onAutocomplete: corpus => {
-                           this.state.project.ref_corpus = corpus.value
-                           this.refreshSaveBtnDisabled()
-                        },
-                        dropdownOptions: {
-                           constrainWidth: false
-                        }
-                     })
-                     if(this.state.project.ref_corpus){
-                        let corpus = this.state.corpora.find(c => c.corpname == this.state.project.ref_corpus)
-                        if(corpus){
-                           $("#ref_corpus").val(corpus.name)
-                        }
-                     }
-                     if(this.state.project.language){
-                        this.refreshReferenceCorporaList()
-                     }
                   })
                   .always(() => {
                      this.update({isCorporaLoading: false})
@@ -399,26 +393,7 @@
 
          onLanguageChange(language){
             this.state.project.language = language
-            this.state.project.ref_corpus = null
             this.update()
-            $("#ref_corpus").val("")
-            this.refreshReferenceCorporaList()
-         },
-
-         refreshReferenceCorporaList(){
-            let refCorpusNode = $("#ref_corpus")
-            if(this.state.corpora && refCorpusNode[0]){
-               let corpora = this.state.corpora.filter(corpus => corpus.language_id == this.state.project.language)
-                     .map(corpus => {
-                        return {
-                              value: corpus.corpname,
-                              label: corpus.name,
-                              info: corpus.language_name
-                           }
-                        })
-               let instance = M.Autocomplete.getInstance($("#ref_corpus"))
-               instance && instance.updateData(corpora)
-            }
          },
 
          onAddManager(member){
@@ -508,7 +483,6 @@
                projectID: this.state.project.projectID,
                description: this.state.project.description,
                source_dict_id: this.state.project.source_dict,
-               ref_corpus: this.state.project.ref_corpus,
                language: this.state.project.language,
                workflow_id: this.state.project.workflow_id,
                managers: JSON.stringify(this.state.project.managers),
@@ -563,22 +537,13 @@
             }
          },
 
-         getReferenceCorpusValue(){
-            if(this.state.project && this.state.corpusList && this.state.project.referenceCorpus){
-               let corpus = this.state.corpusList.find(c => c.value == this.state.project.referenceCorpus)
-               if(corpus){
-                  return corpus.label
-               }
-            }
-            return ""
-         },
-
          refreshSaveBtnDisabled(){
             let setAllStages = $("#setAllStagesCheckbox").is(":checked")
             let disabled = !this.state.project
                   || !this.state.project.projectID
                   || !this.state.isProjectIDValid
                   || !this.state.project.project_name
+                  || !this.state.project.language
                   || !this.state.project.managers.length
                   || (!this.state.project.annotators.__all__.length
                            && (!setAllStages || Object.entries(this.state.project.annotators)
