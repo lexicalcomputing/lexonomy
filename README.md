@@ -1,9 +1,7 @@
 # Lexonomy
+A cloud-based, open-source dictionary writing system for editing, updating and publishing dictionaries, glossaries and similar lexicographic works.
+Lexonomy is a dictionary editor and online dictionary-writing system for monolingual, bilingual, and multilingual dictionaries, glossaries, and terminology databases. Lexonomy is language-independent and highly flexible and customizable editor, making it suitable for a variety of projects from large-scale dictionary projects to small, specialized glossaries. Lexonomy can retrieve data from text corpora stored in corpus systems such as [Sketch Engine](https://www.sketchengine.eu/ "Sketch Engine"). Dictionaries created in Lexonomy can be published in Lexonomy in its publishing module included in each installation. Lexonomy is also an integral tool in [Dictionary Express](https://dictionary.express/ "Dictionary Express"), a time- and cost-effective method of creating and editing dictionaries. Lexonomy is developed by [Lexical Computing](https://www.lexicalcomputing.com/ "Lexical Computing").
 
-A cloud-based, open-source system for writing and publishing dictionaries.
-
-- To use Lexonomy or to learn about Lexonomy go to [www.lexonomy.eu »](http://www.lexonomy.eu/)
-
-- To learn how to set up a local installation of Lexonomy on your own computer or server, read [Local installation](INSTALL.md) in the repository.
-
-- To understand how Lexonomy is going to develop in the future, read the [Lexonomy development plan](https://github.com/michmech/lexonomy/wiki/Lexonomy-development-plan-(November-2017)) in the repository's wiki.
+- Use Lexonomy online: [www.lexonomy.eu](https://www.lexonomy.eu "www.lexonomy.eu")
+- Get started with Lexonomy: read the User Guide
+- Set up Lexonomy locally: see Local installation in this repository.
